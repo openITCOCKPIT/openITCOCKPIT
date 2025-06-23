@@ -1621,6 +1621,11 @@ class ContainersTable extends Table {
             $containerTypeId = (int)$container['containertype_id'];
             if (in_array($containerTypeId, $options['valide_types'], true)) {
                 $path = $this->treePath($container['id'], $options['delimiter']);
+
+                // Make sure the path starts with the delimiter
+                if (!empty($path) && !str_starts_with($path, $options['delimiter'])) {
+                    $path = $options['delimiter'] . $path;
+                }
                 switch ($containerTypeId) {
                     case CT_TENANT:
                         $containers['tenants'][] = [

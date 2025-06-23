@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
@@ -29,14 +29,8 @@ namespace App\Controller;
 use App\Model\Entity\UsersToOrganizationalChartStructure;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\OrganizationalChartsTable;
-use Cake\Cache\Cache;
-use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\MethodNotAllowedException;
-use Cake\Http\Exception\NotFoundException;
-use Cake\Http\ServerRequest;
 use Cake\ORM\TableRegistry;
-use Cake\Utility\Hash;
-use itnovum\openITCOCKPIT\Core\AngularJS\Api;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
@@ -126,11 +120,6 @@ class OrganizationalChartsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['all_organizationalCharts']);
     }
 
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
-     */
     public function add() {
         if (!$this->isApiRequest()) {
             //Only ship HTML template for angular
@@ -161,8 +150,11 @@ class OrganizationalChartsController extends AppController {
     }
 
 
+    /****************************
+     *       AJAX METHODS       *
+     ****************************/
     public function loadContainers() {
-        if (!$this->isAngularJsRequest()) {
+        if (!$this->request->is('get')) {
             throw new MethodNotAllowedException();
         }
 

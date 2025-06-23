@@ -126,19 +126,18 @@ class MapgeneratorsController extends AppController {
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $selectedContainerIds = $this->request->getQuery('selectedContainers', []);
+        $loadStartContainers = $this->request->getQuery('loadStartContainers', false);
 
         if ($this->hasRootPrivileges === true) {
-            $containers = $ContainersTable->easyPath($this->MY_RIGHTS, CT_TENANT, [], $this->hasRootPrivileges);
+            $containers = $ContainersTable->easyPath($this->MY_RIGHTS, CT_TENANT, [], $this->hasRootPrivileges, [CT_GLOBAL]);
         } else {
-            $containers = $ContainersTable->easyPath($this->getWriteContainers(), CT_TENANT, [], $this->hasRootPrivileges);
+            $containers = $ContainersTable->easyPath($this->getWriteContainers(), CT_TENANT, [], $this->hasRootPrivileges, [CT_GLOBAL]);
         }
 
-        if (!empty($selectedContainerIds)) {
-            $filteredContainers = $ContainersTable->getStartContainersForMapgenerator($selectedContainerIds, $this->MY_RIGHTS);
+        if ($loadStartContainers) {
+            $filteredContainers = $ContainersTable->getStartContainersForMapgenerator($selectedContainerIds, $this->MY_RIGHTS, $this->hasRootPrivileges);
 
-            if (!empty($filteredContainers)) {
-                $containers = $filteredContainers;
-            }
+            $containers = $filteredContainers;
         }
 
         $containers = Api::makeItJavaScriptAble($containers);
@@ -162,8 +161,8 @@ class MapgeneratorsController extends AppController {
 
         $mapgenerator = $MapgeneratorsTable->get($id, [
             'contain' => [
-                'Maps',
-                'Containers'
+                'Containers',
+                'StartContainers',
             ]
         ]);
 
@@ -185,11 +184,6 @@ class MapgeneratorsController extends AppController {
 
         if ($this->request->is('post') || $this->request->is('put')) {
             $data = $this->request->getData();
-            $data['Mapgenerator']['id'] = $id;
-            $data['Mapgenerator']['containers']['_ids'] = $data['Mapgenerator']['container_id'];
-
-            $data['Rotation']['maps']['_ids'] = $data['Rotation']['Map'];
-
 
             $mapgeneratorEntity = $mapgenerator;
             $mapgeneratorEntity = $MapgeneratorsTable->patchEntity($mapgeneratorEntity, $data['Mapgenerator']);

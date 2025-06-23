@@ -1676,45 +1676,18 @@ class ContainersTable extends Table {
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getStartContainersForMapgenerator($selectedContainerIds, $MY_RIGHTS) {
+    public function getStartContainersForMapgenerator($selectedContainerIds, $MY_RIGHTS, $hasRootPrivileges = false) {
 
         $startContainers = [];
         if (empty($selectedContainerIds)) {
-            // if no container is selected, return all containers with write rights
-            $writeContainers = $this->getWriteContainers($MY_RIGHTS);
-            foreach ($writeContainers as $writeContainer) {
-                $startContainers[] = $this->getContainerById($writeContainer['id']);
-            }
-        } else {
-
-            $filteredContainerIds = $this->resolveChildrenOfContainerIds($selectedContainerIds, true, [CT_TENANT, CT_LOCATION, CT_NODE]);
-
-            // remove ROOT_CONTAINER from the list
-            foreach ($filteredContainerIds as $key => $containerId) {
-                if ($filteredContainerIds[$key] === ROOT_CONTAINER) {
-                    unset($filteredContainerIds[$key]);
-                }
-            }
-
-            //add all filtered children containers
-            foreach ($filteredContainerIds as $containerId) {
-                if ($containerId == ROOT_CONTAINER) {
-                    continue;
-                }
-                $startContainers[] = $this->getContainerById($containerId);
-            }
-
-            // add selected Containers to children containers
-            foreach ($selectedContainerIds as $containerId) {
-                if ($containerId == ROOT_CONTAINER) {
-                    continue;
-                }
-                $startContainers[] = $this->getContainerById($containerId);
-            }
-
+            // if no container is selected, return nothing
+            return $startContainers;
         }
 
-        $startContainers = Hash::combine($startContainers, '{n}.id', '{n}.name');
+        $filteredContainerIds = $this->resolveChildrenOfContainerIds($selectedContainerIds, true, [CT_TENANT, CT_LOCATION, CT_NODE]);
+        $startContainerIds = array_merge($filteredContainerIds, $selectedContainerIds);
+        $startContainers = $this->easyPath($startContainerIds, CT_TENANT, [], $hasRootPrivileges, [CT_GLOBAL]);
+
 
         return $startContainers;
 

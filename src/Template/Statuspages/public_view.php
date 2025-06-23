@@ -50,7 +50,7 @@ $logo = new Logo();
                 <a href="<?= $this->Html->Url->build(['controller' => 'Statuspages', 'action' => 'publicView', $id]); ?>"
                    class="d-flex align-items-center position-relative">
                     <img src="<?= $logo->getHeaderLogoForHtml(); ?>" alt="<?= h($systemname); ?> WebApp"
-                         class=" ms-2 img-fluid logo-public" aria-roledescription="logo">
+                         class=" ms-2 logo-public" aria-roledescription="logo">
                     <span class="h5 pt-1 ms-2 text-white text-truncate">
                         <?php if (!empty($statuspage['statuspage']['public_title'])): ?>
                             <?= h($statuspage['statuspage']['public_title']); ?>
@@ -79,7 +79,7 @@ $logo = new Logo();
                                 <img src="<?= $logo->getCustomStatusPageHeaderHtml(); ?>"
                                      alt="<?= h($systemname); ?> WebApp"
                                      class="img-responsive"
-                                     aria-roledescription="logo">
+                                     aria-roledescription="image">
                             <?php endif; ?>
                         </div>
 

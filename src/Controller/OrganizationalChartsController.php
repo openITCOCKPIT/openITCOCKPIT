@@ -116,8 +116,8 @@ class OrganizationalChartsController extends AppController {
             $organizationalCharts[$index]['statesummary'] = '???';
         }
 
-        $this->set('all_organizationalCharts', $organizationalCharts);
-        $this->viewBuilder()->setOption('serialize', ['all_organizationalCharts']);
+        $this->set('all_organizationalcharts', $organizationalCharts);
+        $this->viewBuilder()->setOption('serialize', ['all_organizationalcharts']);
     }
 
     public function add() {

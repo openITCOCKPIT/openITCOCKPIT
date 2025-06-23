@@ -29,6 +29,7 @@ namespace App\Controller;
 use App\Model\Entity\UsersToOrganizationalChartStructure;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\OrganizationalChartsTable;
+use App\Model\Table\OrganizationalChartStructuresTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -126,6 +127,56 @@ class OrganizationalChartsController extends AppController {
             return;
         }
 
+        $data = [
+            [
+                'parent_id'               => null,
+                'container_id'            => 1,
+                'organizational_chart_id' => 1,
+                'x_position'              => 0,
+                'y_position'              => 0,
+            ],
+
+            [
+                'parent_id'               => 1,
+                'container_id'            => 18,
+                'organizational_chart_id' => 1,
+                'x_position'              => 20,
+                'y_position'              => 20,
+            ],
+
+            [
+                'parent_id'               => 1,
+                'container_id'            => 28,
+                'organizational_chart_id' => 1,
+                'x_position'              => 80,
+                'y_position'              => 20,
+            ],
+
+            [
+                'parent_id'               => 2,
+                'container_id'            => 29,
+                'organizational_chart_id' => 1,
+                'x_position'              => 30,
+                'y_position'              => 30,
+            ]
+
+        ];
+
+        /** @var OrganizationalChartStructuresTable $OrganizationalChartStructuresTable */
+        $OrganizationalChartStructuresTable = TableRegistry::getTableLocator()->get('OrganizationalChartStructures');
+
+        foreach ($data as $item) {
+            //Save organizational chart node
+            // todo replace parent_id
+            $ocNode = $OrganizationalChartStructuresTable->newEntity($item);
+
+            $OrganizationalChartStructuresTable->save($ocNode);
+
+            if ($ocNode->hasErrors()) {
+                debug($ocNode->getErrors());
+            }
+        }
+
 
     }
 
@@ -135,6 +186,10 @@ class OrganizationalChartsController extends AppController {
             return;
         }
 
+        /** @var OrganizationalChartStructuresTable $OrganizationalChartStructuresTable */
+        $OrganizationalChartStructuresTable = TableRegistry::getTableLocator()->get('OrganizationalChartStructures');
+
+        debug($OrganizationalChartStructuresTable->getChartTreeForEdit(1));
 
     }
 

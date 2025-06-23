@@ -123,6 +123,16 @@ class OrganizationalCharts extends AbstractMigration {
                     'limit'   => 11,
                     'null'    => true,
                 ])
+                ->addColumn('x_position', 'integer', [
+                    'default' => 0,
+                    'limit'   => 11,
+                    'null'    => false,
+                ])
+                ->addColumn('y_position', 'integer', [
+                    'default' => 0,
+                    'limit'   => 11,
+                    'null'    => false,
+                ])
                 ->addIndex(
                     [
                         'organizational_chart_id',

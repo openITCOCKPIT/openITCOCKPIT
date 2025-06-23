@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Lib\Traits\CustomValidationTrait;
+use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -31,16 +33,18 @@ use itnovum\openITCOCKPIT\Filter\GenericFilter;
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
-class OrganizationalChartsTable extends Table
-{
+class OrganizationalChartsTable extends Table {
+    use PaginationAndScrollIndexTrait;
+    use CustomValidationTrait;
+
+
     /**
      * Initialize method
      *
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config): void
-    {
+    public function initialize(array $config): void {
         parent::initialize($config);
 
         $this->setTable('organizational_charts');
@@ -60,8 +64,7 @@ class OrganizationalChartsTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator): Validator
-    {
+    public function validationDefault(Validator $validator): Validator {
         $validator
             ->scalar('name')
             ->maxLength('name', 255)
@@ -78,5 +81,35 @@ class OrganizationalChartsTable extends Table
     }
 
     public function getOrganizationalChartsIndex(GenericFilter $GenericFilter, PaginateOMat $PaginateOMat, array $MY_RIGHTS) {
+
+        $query = $this->find('all')
+            //->contain(['Containers'])
+            ->disableHydration();
+        if (!empty($GenericFilter->genericFilters())) {
+            $query->where($GenericFilter->genericFilters());
+        }
+
+        if (!empty($MY_RIGHTS)) {
+           /*
+            $query->andWhere([
+                'Containers.parent_id IN' => $MY_RIGHTS
+            ]);
+           */
+        }
+
+        $query->disableHydration();
+        $query->order($GenericFilter->getOrderForPaginator('OrganizationalCharts.name', 'asc'));
+
+        if ($PaginateOMat === null) {
+            //Just execute query
+            $result = $query->toArray();
+        } else {
+            if ($PaginateOMat->useScroll()) {
+                $result = $this->scrollCake4($query, $PaginateOMat->getHandler());
+            } else {
+                $result = $this->paginateCake4($query, $PaginateOMat->getHandler());
+            }
+        }
+        return $result;
     }
 }

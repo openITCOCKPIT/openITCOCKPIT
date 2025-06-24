@@ -30,6 +30,7 @@
 
 namespace MapModule\Controller;
 
+use App\itnovum\openITCOCKPIT\Filter\MapgeneratorFilter;
 use App\itnovum\openITCOCKPIT\Maps\Mapgenerator;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\HostsTable;
@@ -40,7 +41,6 @@ use Cake\Utility\Hash;
 use Exception;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
-use itnovum\openITCOCKPIT\Filter\MapgeneratorFilter;
 use MapModule\Model\Table\MapgeneratorsTable;
 use MapModule\Model\Table\MapsTable;
 

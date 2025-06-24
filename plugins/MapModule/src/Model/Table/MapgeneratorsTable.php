@@ -181,9 +181,18 @@ class MapgeneratorsTable extends Table {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
 
-        $query = $this->find()
+        $query = $this->find();
+
+        $query = $query->select([
+            'id',
+            'name',
+            'interval',
+            'type',
+            'maps_generated' => $query->newExpr('IF(COUNT(Maps.id) > 0, 1, 0)'),
+            'created',
+            'modified',
+        ])
             ->contain([
-                'Maps',
                 'Containers'
             ])
             ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
@@ -191,9 +200,23 @@ class MapgeneratorsTable extends Table {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
                 return $query;
-            });
-        if (!empty($indexFilter)) {
-            $query->where($indexFilter);
+            })
+            ->leftJoinWith('Maps');
+
+        $where = $indexFilter;
+        $having = [];
+
+        if (isset($where['maps_generated'])) {
+            $having['maps_generated'] = $where['maps_generated'];
+            unset($where['maps_generated']);
+        }
+
+        if (!empty($where)) {
+            $query->where($where);
+        }
+
+        if (!empty($having)) {
+            $query->having($having);
         }
 
         if ($limit !== null) {

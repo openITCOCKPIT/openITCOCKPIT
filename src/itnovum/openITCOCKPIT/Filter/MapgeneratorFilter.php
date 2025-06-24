@@ -34,12 +34,12 @@ class MapgeneratorFilter extends Filter {
      */
     public function indexFilter() {
         $filters = [
-            'like'   => [
+            'like' => [
                 'Mapgenerators.name'
             ],
-            'equals' => [
-                'Mapgenerators.interval'
-            ]
+            'bool' => [
+                'maps_generated'
+            ],
         ];
 
         return $this->getConditionsByFilters($filters);

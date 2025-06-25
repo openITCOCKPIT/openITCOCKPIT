@@ -373,10 +373,9 @@ class UsersTable extends Table {
             'errorField' => 'password',
             'message'    => __('The new password can not be the same as the old password is.'),
         ]);
-        // If oAuth has been disabled, require password.
+        // If oAuth has been disabled, require new password for non-LDAP Users
         $rules->add(function (User $entity, $options) {
-            // If oauth changed to false,
-            if ($entity->isDirty('is_oauth') && $entity->get('is_oauth') === false) {
+            if (!$entity->get('samaccountname') && ($entity->isDirty('is_oauth') && $entity->get('is_oauth') === false)) {
                 return $entity->isDirty('password');
             }
             return true;

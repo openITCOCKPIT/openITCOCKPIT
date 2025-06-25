@@ -135,6 +135,12 @@ class MapgeneratorsTable extends Table {
             ->notEmptyString('name');
 
         $validator
+            ->scalar('description')
+            ->maxLength('description', 255)
+            ->requirePresence('description', false)
+            ->allowEmptyString('description', null, true);
+
+        $validator
             ->integer('interval')
             ->greaterThanOrEqual('interval', 10, __('This value need to be at least 10'))
             ->notEmptyString('interval')

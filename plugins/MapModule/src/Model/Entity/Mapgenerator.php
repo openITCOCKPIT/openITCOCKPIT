@@ -40,6 +40,7 @@ use Cake\ORM\Entity;
  *
  * @property int $id
  * @property string $name
+ * @property string $description
  * @property int $interval
  * @property int $type
  * @property int $items_per_line
@@ -62,6 +63,7 @@ class Mapgenerator extends Entity {
      */
     protected $_accessible = [
         'name'               => true,
+        'description'        => true,
         'interval'           => true,
         'type'               => true,
         'has_generated_maps' => true,

@@ -550,6 +550,8 @@ class UsersController extends AppController {
                 $user->setAccess('email', false);
                 $user->setAccess('firstname', false);
                 $user->setAccess('lastname', false);
+                $user->setAccess('company', false);
+                $user->setAccess('department', false);
                 $user->setAccess('password', false);
                 $user->setAccess('samaccountname', false);
                 $user->setAccess('ldap_dn', false);

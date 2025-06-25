@@ -52,13 +52,23 @@ class CreateMapgenerator extends AbstractMigration {
                     'null'    => false,
                 ])
                 ->addColumn('interval', 'integer', [
-                    'default' => '60',
+                    'default' => '90',
                     'limit'   => 11,
                     'null'    => false,
                 ])
                 ->addColumn('type', 'integer', [
-                    'default' => '2',
+                    'default' => '1',
                     'limit'   => 11,
+                    'null'    => false,
+                ])
+                ->addColumn('items_per_line', 'integer', [
+                    'default' => '10',
+                    'limit'   => 11,
+                    'null'    => false,
+                ])
+                ->addColumn('has_generated_maps', 'integer', [
+                    'default' => '0',
+                    'limit'   => 5,
                     'null'    => false,
                 ])
                 ->addColumn('created', 'datetime', [

@@ -157,6 +157,15 @@ class MapgeneratorsTable extends Table {
             ->integer('type')
             ->notEmptyString('type');
 
+        $validator
+            ->integer('items_per_line')
+            ->notEmptyString('items_per_line')
+            ->greaterThanOrEqual('items_per_line', 5, __('This value need to be at least 5'));
+
+        $validator
+            ->integer('has_generated_maps')
+            ->notEmptyString('has_generated_maps');
+
         return $validator;
     }
 
@@ -181,18 +190,9 @@ class MapgeneratorsTable extends Table {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
 
-        $query = $this->find();
-
-        $query = $query->select([
-            'id',
-            'name',
-            'interval',
-            'type',
-            'maps_generated' => $query->newExpr('IF(COUNT(Maps.id) > 0, 1, 0)'),
-            'created',
-            'modified',
-        ])
+        $query = $this->find()
             ->contain([
+                'Maps',
                 'Containers'
             ])
             ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
@@ -200,23 +200,9 @@ class MapgeneratorsTable extends Table {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
                 return $query;
-            })
-            ->leftJoinWith('Maps');
-
-        $where = $indexFilter;
-        $having = [];
-
-        if (isset($where['maps_generated'])) {
-            $having['maps_generated'] = $where['maps_generated'];
-            unset($where['maps_generated']);
-        }
-
-        if (!empty($where)) {
-            $query->where($where);
-        }
-
-        if (!empty($having)) {
-            $query->having($having);
+            });
+        if (!empty($indexFilter)) {
+            $query->where($indexFilter);
         }
 
         if ($limit !== null) {

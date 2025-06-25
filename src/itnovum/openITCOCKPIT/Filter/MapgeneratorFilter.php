@@ -34,11 +34,14 @@ class MapgeneratorFilter extends Filter {
      */
     public function indexFilter() {
         $filters = [
-            'like' => [
+            'like'   => [
                 'Mapgenerators.name'
             ],
-            'bool' => [
-                'maps_generated'
+            'equals' => [
+                'Mapgenerators.items_per_line'
+            ],
+            'bool'   => [
+                'Mapgenerators.has_generated_maps'
             ],
         ];
 

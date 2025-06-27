@@ -26,12 +26,12 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Model\Entity\UsersToOrganizationalChartStructure;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\OrganizationalChartsTable;
 use App\Model\Table\OrganizationalChartStructuresTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\ORM\TableRegistry;
+use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
@@ -64,15 +64,9 @@ class OrganizationalChartsController extends AppController {
             'like' => [
                 'OrganizationalCharts.name',
                 'OrganizationalCharts.description'
-            ],
-            /*
-            'equals' => [
-                'Containers.id', /// ???????
-            ],
-            */
+            ]
         ]);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $GenericFilter->getPage());
-
 
         $MY_RIGHTS = [];
         if ($this->hasRootPrivileges === false) {
@@ -82,41 +76,17 @@ class OrganizationalChartsController extends AppController {
             // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
             $MY_RIGHTS = $this->MY_RIGHTS;
         }
-
-
         $organizationalCharts = $OrganizationalChartsTable->getOrganizationalChartsIndex($GenericFilter, $PaginateOMat, $MY_RIGHTS);
         foreach ($organizationalCharts as $index => $organizationalChart) {
-            $organizationalChart[$index]['allow_edit'] = $this->isWritableContainer($organizationalChart['container']['parent_id']);
-            $users = [];
-            $managers = [];
-            $regionManagers = [];
-            foreach ($organizationalChart['users'] as $user) {
-                if ($user['_joinData']['is_manager'] == 1) {
-                    if ($user['_joinData']['user_role'] == UsersToOrganizationalChartStructure::REGION_MANAGER) {
-                        $regionManagers[] = [
-                            'id'       => $user['id'],
-                            'username' => sprintf('%s %s', $user['firstname'], $user['lastname'])
-                        ];
-                    } else {
-                        $managers[] = [
-                            'id'       => $user['id'],
-                            'username' => sprintf('%s %s', $user['firstname'], $user['lastname'])
-                        ];
-                    }
-
-                } else {
-                    $users[] = [
-                        'id'       => $user['id'],
-                        'username' => sprintf('%s %s', $user['firstname'], $user['lastname'])
-                    ];
-                }
+            if ($this->hasRootPrivileges === true) {
+                $organizationalCharts[$index]['allowEdit'] = true;
+                $organizationalCharts[$index]['allowView'] = true;
+            } else {
+                $containersToCheck = Hash::extract($organizationalChart, 'organizational_chart_structures.{n}.container.id');
+                $organizationalCharts[$index]['allowEdit'] = empty(array_intersect($containersToCheck, $this->getWriteContainers()));
+                $organizationalCharts[$index]['allowView'] = empty(array_intersect($containersToCheck, $MY_RIGHTS));
             }
-            $organizationalCharts[$index]['managers'] = $managers;
-            $organizationalCharts[$index]['region_managers'] = $regionManagers;
-            $organizationalCharts[$index]['users'] = $users;
-            $organizationalCharts[$index]['statesummary'] = '???';
         }
-
         $this->set('all_organizationalcharts', $organizationalCharts);
         $this->viewBuilder()->setOption('serialize', ['all_organizationalcharts']);
     }

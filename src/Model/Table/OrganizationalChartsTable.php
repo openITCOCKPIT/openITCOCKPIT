@@ -28,10 +28,12 @@ namespace App\Model\Table;
 
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use Cake\Database\Expression\Comparison;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
+
 
 /**
  * OrganizationalCharts Model
@@ -100,23 +102,60 @@ class OrganizationalChartsTable extends Table {
         return $validator;
     }
 
+    /**
+     * @param GenericFilter $GenericFilter
+     * @param PaginateOMat $PaginateOMat
+     * @param array $MY_RIGHTS
+     * @return array
+     */
     public function getOrganizationalChartsIndex(GenericFilter $GenericFilter, PaginateOMat $PaginateOMat, array $MY_RIGHTS) {
 
         $query = $this->find('all')
-            //->contain(['Containers'])
-            ->disableHydration();
+            ->select([
+                'OrganizationalCharts.id',
+                'OrganizationalCharts.name',
+                'OrganizationalCharts.description',
+                'OrganizationalCharts.created',
+                'OrganizationalCharts.modified',
+            ])
+            ->contain(['OrganizationalChartStructures' => 'Containers']);
+        if (!empty($MY_RIGHTS)) {
+            $query->select([
+                'permission_status' => $query->newExpr(
+                    'IF(
+                        COUNT(`OrganizationalChartStructures`.`id`) > 0,
+                        IF(
+                          NOT EXISTS (
+                            SELECT 1
+                            FROM `organizational_chart_structures` ocs
+                            WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`
+                              AND ocs.container_id IN (' . implode(',', $MY_RIGHTS) . ')
+                          ),
+                          "not_permitted",
+                          "permitted"
+                        ),
+                        "permitted"
+                      )'
+                )
+            ])->join([
+                [
+                    'table'      => 'organizational_chart_structures',
+                    'alias'      => 'OrganizationalChartStructures',
+                    'type'       => 'LEFT',
+                    'conditions' => [
+                        'OrganizationalCharts.id = OrganizationalChartStructures.organizational_chart_id',
+                    ],
+                ]
+            ]);
+            $query->having([
+                'permission_status' => 'permitted'
+            ])->group(['OrganizationalCharts.id']);
+        }
+
+        $query->disableHydration();
         if (!empty($GenericFilter->genericFilters())) {
             $query->where($GenericFilter->genericFilters());
         }
-
-        if (!empty($MY_RIGHTS)) {
-            /*
-             $query->andWhere([
-                 'Containers.parent_id IN' => $MY_RIGHTS
-             ]);
-            */
-        }
-
         $query->disableHydration();
         $query->order($GenericFilter->getOrderForPaginator('OrganizationalCharts.name', 'asc'));
 

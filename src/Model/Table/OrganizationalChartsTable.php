@@ -126,7 +126,7 @@ class OrganizationalChartsTable extends Table {
                         COUNT(`OrganizationalChartStructures`.`id`) > 0,
                         IF(
                           NOT EXISTS (
-                            SELECT 1
+                            SELECT ocs.organizational_chart_id
                             FROM `organizational_chart_structures` ocs
                             WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`
                               AND ocs.container_id IN (' . implode(',', $MY_RIGHTS) . ')

@@ -89,8 +89,8 @@ class OrganizationalCharts extends AbstractMigration {
                 ->create();
         }
 
-        if (!$this->hasTable('organizational_chart_structures')) {
-            $this->table('organizational_chart_structures')
+        if (!$this->hasTable('organizational_chart_nodes')) {
+            $this->table('organizational_chart_nodes')
                 ->addColumn('id', 'integer', [
                     'autoIncrement' => true,
                     'default'       => null,
@@ -98,21 +98,6 @@ class OrganizationalCharts extends AbstractMigration {
                     'null'          => false,
                 ])
                 ->addPrimaryKey(['id'])
-                ->addColumn('parent_id', 'integer', [
-                    'default' => null,
-                    'limit'   => 11,
-                    'null'    => true,
-                ])
-                ->addColumn('lft', 'integer', [
-                    'default' => null,
-                    'limit'   => 11,
-                    'null'    => false,
-                ])
-                ->addColumn('rght', 'integer', [
-                    'default' => null,
-                    'limit'   => 11,
-                    'null'    => false,
-                ])
                 ->addColumn('organizational_chart_id', 'integer', [
                     'default' => null,
                     'limit'   => 11,
@@ -133,6 +118,16 @@ class OrganizationalCharts extends AbstractMigration {
                     'limit'   => 11,
                     'null'    => false,
                 ])
+                ->addColumn('modified', 'datetime', [
+                    'default' => null,
+                    'limit'   => null,
+                    'null'    => false,
+                ])
+                ->addColumn('created', 'datetime', [
+                    'default' => null,
+                    'limit'   => null,
+                    'null'    => false,
+                ])
                 ->addIndex(
                     [
                         'organizational_chart_id',
@@ -143,26 +138,63 @@ class OrganizationalCharts extends AbstractMigration {
                         'container_id',
                     ]
                 )
+                ->create();
+        }
+
+        if (!$this->hasTable('organizational_chart_connections')) {
+            $this->table('organizational_chart_connections')
+                ->addColumn('id', 'integer', [
+                    'autoIncrement' => true,
+                    'default'       => null,
+                    'limit'         => 11,
+                    'null'          => false,
+                ])
+                ->addPrimaryKey(['id'])
+                ->addColumn('organizational_chart_id', 'integer', [
+                    'default' => null,
+                    'limit'   => 11,
+                    'null'    => true,
+                ])
+                ->addColumn('organizational_chart_input_node_id', 'integer', [
+                    'default' => null,
+                    'limit'   => 11,
+                    'null'    => true,
+                ])
+                ->addColumn('organizational_chart_output_node_id', 'integer', [
+                    'default' => null,
+                    'limit'   => 11,
+                    'null'    => true,
+                ])
+                ->addColumn('modified', 'datetime', [
+                    'default' => null,
+                    'limit'   => null,
+                    'null'    => false,
+                ])
+                ->addColumn('created', 'datetime', [
+                    'default' => null,
+                    'limit'   => null,
+                    'null'    => false,
+                ])
                 ->addIndex(
                     [
-                        'lft',
+                        'organizational_chart_id',
                     ]
                 )
                 ->addIndex(
                     [
-                        'rght',
+                        'organizational_chart_input_node_id',
                     ]
                 )
                 ->addIndex(
                     [
-                        'parent_id',
+                        'organizational_chart_output_node_id',
                     ]
                 )
                 ->create();
         }
 
-        if (!$this->hasTable('users_to_organizational_chart_structures')) {
-            $this->table('users_to_organizational_chart_structures')
+        if (!$this->hasTable('users_to_organizational_chart_nodes')) {
+            $this->table('users_to_organizational_chart_nodes')
                 ->addColumn('id', 'integer', [
                     'autoIncrement' => true,
                     'default'       => null,
@@ -175,7 +207,7 @@ class OrganizationalCharts extends AbstractMigration {
                     'limit'   => 11,
                     'null'    => false,
                 ])
-                ->addColumn('organizational_chart_structure_id', 'integer', [
+                ->addColumn('organizational_chart_node_id', 'integer', [
                     'default' => null,
                     'limit'   => 11,
                     'null'    => false,
@@ -192,7 +224,7 @@ class OrganizationalCharts extends AbstractMigration {
                 ])
                 ->addIndex(
                     [
-                        'organizational_chart_structure_id',
+                        'organizational_chart_node_id',
                     ]
                 )
                 ->addIndex(
@@ -220,11 +252,14 @@ class OrganizationalCharts extends AbstractMigration {
         if ($this->hasTable('organizational_charts')) {
             $this->table('organizational_charts')->drop()->save();
         }
-        if ($this->hasTable('organizational_chart_structures')) {
-            $this->table('organizational_chart_structures')->drop()->save();
+        if ($this->hasTable('organizational_chart_nodes')) {
+            $this->table('organizational_chart_nodes')->drop()->save();
         }
-        if ($this->hasTable('users_to_organizational_chart_structures')) {
-            $this->table('users_to_organizational_chart_structures')->drop()->save();
+        if ($this->hasTable('organizational_chart_connections')) {
+            $this->table('organizational_chart_connections')->drop()->save();
+        }
+        if ($this->hasTable('users_to_organizational_chart_nodes')) {
+            $this->table('users_to_organizational_chart_nodes')->drop()->save();
         }
     }
 }

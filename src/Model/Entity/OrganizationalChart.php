@@ -14,7 +14,7 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\FrozenTime $modified
  * @property \Cake\I18n\FrozenTime $created
  *
- * @property \App\Model\Entity\OrganizationalChartStructure[] $organizational_chart_structures
+ * @property \App\Model\Entity\OrganizationalChartNode[] $organizational_chart_nodes
  */
 class OrganizationalChart extends Entity
 {
@@ -32,6 +32,6 @@ class OrganizationalChart extends Entity
         'description' => true,
         'modified' => true,
         'created' => true,
-        'organizational_chart_structures' => true,
+        'organizational_chart_nodes' => true,
     ];
 }

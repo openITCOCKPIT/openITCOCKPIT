@@ -8,12 +8,12 @@ use App\Model\Table\UsersTable;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
 
 /**
- * OrganizationalChartStructures Controller
+ * OrganizationalChartNodes Controller
  *
- * @property \App\Model\Table\OrganizationalChartStructuresTable $OrganizationalChartStructures
- * @method \App\Model\Entity\OrganizationalChartStructure[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
+ * @property \App\Model\Table\OrganizationalChartNodesTable $OrganizationalChartNodes
+ * @method \App\Model\Entity\OrganizationalChartNode[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
-class OrganizationalChartStructuresController extends AppController {
+class OrganizationalChartNodesController extends AppController {
     public function loadUsers($containerIds = null) {
         if (!$this->isAngularJsRequest()) {
             throw new MethodNotAllowedException();

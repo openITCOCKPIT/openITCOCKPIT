@@ -172,6 +172,36 @@ class OrganizationalChartsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
+        /** @var $OrganizationalChartsTable OrganizationalChartsTable */
+        $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+
+        if (!$OrganizationalChartsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid organizational chart'));
+        }
+
+        $organizationalChart = $OrganizationalChartsTable->get($id, [
+            'contain' => [
+                'OrganizationalChartStructures' => 'UsersToOrganizationalChartStructures'
+            ]
+        ]);
+        $containerIds = Hash::extract($organizationalChart, 'organizational_chart_structures.{n}.container_id');
+        if (!empty($containerIds)) {
+            if (!$this->allowedByContainerId($containerIds)) {
+                $this->render403();
+                return;
+            }
+        }
+        if ($OrganizationalChartsTable->delete($organizationalChart)) {
+            $this->set('success', true);
+            $this->set('message', __('Organizational chart deleted successfully'));
+            $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+            return;
+        }
+
+        $this->response = $this->response->withStatus(400);
+        $this->set('success', false);
+        $this->set('message', __('Issue while deleting Organizational chart'));
+        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
     }
 
 

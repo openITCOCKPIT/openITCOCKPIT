@@ -38,7 +38,7 @@ use itnovum\openITCOCKPIT\Filter\GenericFilter;
 /**
  * OrganizationalCharts Model
  *
- * @property \App\Model\Table\OrganizationalChartStructuresTable&\Cake\ORM\Association\HasMany $OrganizationalChartStructures
+ * @property \App\Model\Table\OrganizationalChartNodesTable&\Cake\ORM\Association\HasMany $OrganizationalChartNodes
  *
  * @method \App\Model\Entity\OrganizationalChart newEmptyEntity()
  * @method \App\Model\Entity\OrganizationalChart newEntity(array $data, array $options = [])
@@ -76,9 +76,13 @@ class OrganizationalChartsTable extends Table {
 
         $this->addBehavior('Timestamp');
 
-        $this->hasMany('OrganizationalChartStructures', [
+        $this->hasMany('OrganizationalChartNodes', [
             'foreignKey' => 'organizational_chart_id',
-        ]);
+        ])->setDependent(true);
+
+        $this->hasMany('OrganizationalChartConnections', [
+            'foreignKey' => 'organizational_chart_id',
+        ])->setDependent(true);
     }
 
     /**
@@ -118,16 +122,16 @@ class OrganizationalChartsTable extends Table {
                 'OrganizationalCharts.created',
                 'OrganizationalCharts.modified',
             ])
-            ->contain(['OrganizationalChartStructures' => 'Containers']);
+            ->contain(['OrganizationalChartNodes' => 'Containers']);
         if (!empty($MY_RIGHTS)) {
             $query->select([
                 'permission_status' => $query->newExpr(
                     'IF(
-                        COUNT(`OrganizationalChartStructures`.`id`) > 0,
+                        COUNT(`OrganizationalChartNodes`.`id`) > 0,
                         IF(
                           NOT EXISTS (
                             SELECT ocs.organizational_chart_id
-                            FROM `organizational_chart_structures` ocs
+                            FROM `organizational_chart_nodes` ocs
                             WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`
                               AND ocs.container_id IN (' . implode(',', $MY_RIGHTS) . ')
                           ),
@@ -139,11 +143,11 @@ class OrganizationalChartsTable extends Table {
                 )
             ])->join([
                 [
-                    'table'      => 'organizational_chart_structures',
-                    'alias'      => 'OrganizationalChartStructures',
+                    'table'      => 'organizational_chart_nodes',
+                    'alias'      => 'OrganizationalChartNodes',
                     'type'       => 'LEFT',
                     'conditions' => [
-                        'OrganizationalCharts.id = OrganizationalChartStructures.organizational_chart_id',
+                        'OrganizationalCharts.id = OrganizationalChartNodes.organizational_chart_id',
                     ],
                 ]
             ]);
@@ -170,5 +174,13 @@ class OrganizationalChartsTable extends Table {
             }
         }
         return $result;
+    }
+
+    /**
+     * @param $id
+     * @return bool
+     */
+    public function existsById($id) {
+        return $this->exists(['OrganizationalCharts.id' => $id]);
     }
 }

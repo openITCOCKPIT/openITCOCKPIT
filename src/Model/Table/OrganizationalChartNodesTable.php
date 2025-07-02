@@ -31,31 +31,31 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 
 /**
- * OrganizationalChartStructures Model
+ * OrganizationalChartNodes Model
  *
- * @property \App\Model\Table\OrganizationalChartStructuresTable&\Cake\ORM\Association\BelongsTo $ParentOrganizationalChartStructures
+ * @property \App\Model\Table\OrganizationalChartNodesTable&\Cake\ORM\Association\BelongsTo $ParentOrganizationalChartNodes
  * @property \App\Model\Table\OrganizationalChartsTable&\Cake\ORM\Association\BelongsTo $OrganizationalCharts
  * @property \App\Model\Table\ContainersTable&\Cake\ORM\Association\BelongsTo $Containers
- * @property \App\Model\Table\OrganizationalChartStructuresTable&\Cake\ORM\Association\HasMany $ChildOrganizationalChartStructures
- * @property \App\Model\Table\UsersToOrganizationalChartStructuresTable&\Cake\ORM\Association\HasMany $UsersToOrganizationalChartStructures
+ * @property \App\Model\Table\OrganizationalChartNodesTable&\Cake\ORM\Association\HasMany $ChildOrganizationalChartNodes
+ * @property \App\Model\Table\UsersToOrganizationalChartNodesTable&\Cake\ORM\Association\HasMany $UsersToOrganizationalChartNodes
  *
- * @method \App\Model\Entity\OrganizationalChartStructure newEmptyEntity()
- * @method \App\Model\Entity\OrganizationalChartStructure newEntity(array $data, array $options = [])
- * @method \App\Model\Entity\OrganizationalChartStructure[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\OrganizationalChartStructure get($primaryKey, $options = [])
- * @method \App\Model\Entity\OrganizationalChartStructure findOrCreate($search, ?callable $callback = null, $options = [])
- * @method \App\Model\Entity\OrganizationalChartStructure patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
- * @method \App\Model\Entity\OrganizationalChartStructure[] patchEntities(iterable $entities, array $data, array $options = [])
- * @method \App\Model\Entity\OrganizationalChartStructure|false save(\Cake\Datasource\EntityInterface $entity, $options = [])
- * @method \App\Model\Entity\OrganizationalChartStructure saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
- * @method \App\Model\Entity\OrganizationalChartStructure[]|\Cake\Datasource\ResultSetInterface|false saveMany(iterable $entities, $options = [])
- * @method \App\Model\Entity\OrganizationalChartStructure[]|\Cake\Datasource\ResultSetInterface saveManyOrFail(iterable $entities, $options = [])
- * @method \App\Model\Entity\OrganizationalChartStructure[]|\Cake\Datasource\ResultSetInterface|false deleteMany(iterable $entities, $options = [])
- * @method \App\Model\Entity\OrganizationalChartStructure[]|\Cake\Datasource\ResultSetInterface deleteManyOrFail(iterable $entities, $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode newEmptyEntity()
+ * @method \App\Model\Entity\OrganizationalChartNode newEntity(array $data, array $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode[] newEntities(array $data, array $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode get($primaryKey, $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode findOrCreate($search, ?callable $callback = null, $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode[] patchEntities(iterable $entities, array $data, array $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode|false save(\Cake\Datasource\EntityInterface $entity, $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode[]|\Cake\Datasource\ResultSetInterface|false saveMany(iterable $entities, $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode[]|\Cake\Datasource\ResultSetInterface saveManyOrFail(iterable $entities, $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode[]|\Cake\Datasource\ResultSetInterface|false deleteMany(iterable $entities, $options = [])
+ * @method \App\Model\Entity\OrganizationalChartNode[]|\Cake\Datasource\ResultSetInterface deleteManyOrFail(iterable $entities, $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TreeBehavior
  */
-class OrganizationalChartStructuresTable extends Table {
+class OrganizationalChartNodesTable extends Table {
     /**
      * Initialize method
      *
@@ -65,25 +65,27 @@ class OrganizationalChartStructuresTable extends Table {
     public function initialize(array $config): void {
         parent::initialize($config);
 
-        $this->setTable('organizational_chart_structures');
+        $this->setTable('organizational_chart_nodes');
         $this->setDisplayField('id');
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Tree', [
-            'scope' => 'OrganizationalChartStructures.organizational_chart_id'
+            'scope' => 'OrganizationalChartNodes.organizational_chart_id'
         ]);
 
         $this->belongsTo('OrganizationalCharts', [
             'foreignKey' => 'organizational_chart_id',
+            'joinType'   => 'INNER'
         ]);
 
         $this->belongsTo('Containers', [
             'foreignKey' => 'container_id',
+            'joinType'   => 'INNER'
         ]);
 
-        $this->hasMany('UsersToOrganizationalChartStructures', [
-            'foreignKey' => 'organizational_chart_structure_id',
-        ]);
+        $this->hasMany('UsersToOrganizationalChartNodes', [
+            'foreignKey' => 'organizational_chart_node_id',
+        ])->setDependent(true);
     }
 
     /**
@@ -140,12 +142,12 @@ class OrganizationalChartStructuresTable extends Table {
             ->contain([
                 //'OrganizationalCharts',
                 'Containers',
-                'UsersToOrganizationalChartStructures' => [
+                'UsersToOrganizationalChartNodes' => [
                     'Users'
                 ]
             ])
             ->where([
-                'OrganizationalChartStructures.organizational_chart_id' => $organizationalChartId
+                'OrganizationalChartNodes.organizational_chart_id' => $organizationalChartId
             ])
             ->disableHydration()
             ->all();

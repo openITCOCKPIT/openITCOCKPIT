@@ -29,22 +29,21 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * OrganizationalChartStructure Entity
+ * OrganizationalChartNode Entity
  *
  * @property int $id
- * @property int|null $parent_id
- * @property int $lft
- * @property int $rght
  * @property int|null $organizational_chart_id
  * @property int|null $container_id
  * @property int $x_position
  * @property int $y_position
+ * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\FrozenTime $created
  *
  * @property \App\Model\Entity\OrganizationalChart $organizational_chart
  * @property \App\Model\Entity\Container $container
- * @property \App\Model\Entity\UsersToOrganizationalChartStructure[] $users_to_organizational_chart_structures
+ * @property \App\Model\Entity\UsersToOrganizationalChartNode[] $users_to_organizational_chart_nodes
  */
-class OrganizationalChartStructure extends Entity {
+class OrganizationalChartNode extends Entity {
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -55,15 +54,14 @@ class OrganizationalChartStructure extends Entity {
      * @var array<string, bool>
      */
     protected $_accessible = [
-        'parent_id'                                => true,
-        'lft'                                      => true,
-        'rght'                                     => true,
-        'organizational_chart_id'                  => true,
-        'container_id'                             => true,
-        'x_position'                               => true,
-        'y_position'                               => true,
-        'organizational_chart'                     => true,
-        'container'                                => true,
-        'users_to_organizational_chart_structures' => true,
+        'organizational_chart_id'             => true,
+        'container_id'                        => true,
+        'x_position'                          => true,
+        'y_position'                          => true,
+        'modified'                            => true,
+        'created'                             => true,
+        'organizational_chart'                => true,
+        'container'                           => true,
+        'users_to_organizational_chart_nodes' => true,
     ];
 }

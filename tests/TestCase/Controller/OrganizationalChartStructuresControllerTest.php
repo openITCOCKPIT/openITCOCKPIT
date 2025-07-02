@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
-use App\Controller\OrganizationalChartStructuresController;
+use App\Controller\OrganizationalChartNodesController;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
 /**
  * App\Controller\OrganizationalChartStructuresController Test Case
  *
- * @uses \App\Controller\OrganizationalChartStructuresController
+ * @uses \App\Controller\OrganizationalChartNodesController
  */
 class OrganizationalChartStructuresControllerTest extends TestCase
 {
@@ -32,7 +32,7 @@ class OrganizationalChartStructuresControllerTest extends TestCase
      * Test index method
      *
      * @return void
-     * @uses \App\Controller\OrganizationalChartStructuresController::index()
+     * @uses \App\Controller\OrganizationalChartNodesController::index()
      */
     public function testIndex(): void
     {
@@ -43,7 +43,7 @@ class OrganizationalChartStructuresControllerTest extends TestCase
      * Test view method
      *
      * @return void
-     * @uses \App\Controller\OrganizationalChartStructuresController::view()
+     * @uses \App\Controller\OrganizationalChartNodesController::view()
      */
     public function testView(): void
     {
@@ -54,7 +54,7 @@ class OrganizationalChartStructuresControllerTest extends TestCase
      * Test add method
      *
      * @return void
-     * @uses \App\Controller\OrganizationalChartStructuresController::add()
+     * @uses \App\Controller\OrganizationalChartNodesController::add()
      */
     public function testAdd(): void
     {
@@ -65,7 +65,7 @@ class OrganizationalChartStructuresControllerTest extends TestCase
      * Test edit method
      *
      * @return void
-     * @uses \App\Controller\OrganizationalChartStructuresController::edit()
+     * @uses \App\Controller\OrganizationalChartNodesController::edit()
      */
     public function testEdit(): void
     {
@@ -76,7 +76,7 @@ class OrganizationalChartStructuresControllerTest extends TestCase
      * Test delete method
      *
      * @return void
-     * @uses \App\Controller\OrganizationalChartStructuresController::delete()
+     * @uses \App\Controller\OrganizationalChartNodesController::delete()
      */
     public function testDelete(): void
     {

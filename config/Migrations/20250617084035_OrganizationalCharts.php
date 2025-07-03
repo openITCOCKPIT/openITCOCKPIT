@@ -98,6 +98,11 @@ class OrganizationalCharts extends AbstractMigration {
                     'null'          => false,
                 ])
                 ->addPrimaryKey(['id'])
+                ->addColumn('uuid', 'string', [
+                    'default' => null,
+                    'limit'   => 37,
+                    'null'    => false,
+                ])
                 ->addColumn('organizational_chart_id', 'integer', [
                     'default' => null,
                     'limit'   => 11,
@@ -130,6 +135,12 @@ class OrganizationalCharts extends AbstractMigration {
                 ])
                 ->addIndex(
                     [
+                        'uuid',
+                    ],
+                    ['unique' => true]
+                )
+                ->addIndex(
+                    [
                         'organizational_chart_id',
                     ]
                 )
@@ -150,6 +161,11 @@ class OrganizationalCharts extends AbstractMigration {
                     'null'          => false,
                 ])
                 ->addPrimaryKey(['id'])
+                ->addColumn('uuid', 'string', [
+                    'default' => null,
+                    'limit'   => 37,
+                    'null'    => false,
+                ])
                 ->addColumn('organizational_chart_id', 'integer', [
                     'default' => null,
                     'limit'   => 11,
@@ -175,6 +191,12 @@ class OrganizationalCharts extends AbstractMigration {
                     'limit'   => null,
                     'null'    => false,
                 ])
+                ->addIndex(
+                    [
+                        'uuid',
+                    ],
+                    ['unique' => true]
+                )
                 ->addIndex(
                     [
                         'organizational_chart_id',

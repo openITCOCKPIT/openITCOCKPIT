@@ -69,10 +69,6 @@ class OrganizationalChartNodesTable extends Table {
         $this->setDisplayField('id');
         $this->setPrimaryKey('id');
 
-        $this->addBehavior('Tree', [
-            'scope' => 'OrganizationalChartNodes.organizational_chart_id'
-        ]);
-
         $this->belongsTo('OrganizationalCharts', [
             'foreignKey' => 'organizational_chart_id',
             'joinType'   => 'INNER'
@@ -95,9 +91,13 @@ class OrganizationalChartNodesTable extends Table {
      * @return \Cake\Validation\Validator
      */
     public function validationDefault(Validator $validator): Validator {
+
         $validator
-            ->integer('parent_id')
-            ->allowEmptyString('parent_id');
+            ->scalar('uuid')
+            ->maxLength('uuid', 37)
+            ->requirePresence('uuid', 'create')
+            ->allowEmptyString('uuid', null, false)
+            ->add('uuid', 'unique', ['rule' => 'validateUnique', 'provider' => 'table']);
 
         $validator
             ->integer('organizational_chart_id')
@@ -105,20 +105,18 @@ class OrganizationalChartNodesTable extends Table {
 
         $validator
             ->integer('container_id')
-            ->allowEmptyString('container_id');
+            ->requirePresence('container_id', 'create')
+            ->allowEmptyString('container_id', null, false)
+            ->greaterThanOrEqual('container_id', 1);
 
         $validator
-            ->integer('x_position')
-            ->greaterThanOrEqual('x_position', 0, __('X position must be greater than or equal to 0'));
+            ->integer('x_position');
+        //->greaterThanOrEqual('x_position', 0, __('X position must be greater than or equal to 0'));
 
         $validator
-            ->integer('y_position')
-            ->greaterThanOrEqual('y_position', 0, __('Y position must be greater than or equal to 0'));
+            ->integer('y_position');
+        //->greaterThanOrEqual('y_position', 0, __('Y position must be greater than or equal to 0'));
 
-
-        $validator
-            ->integer('container_id')
-            ->allowEmptyString('container_id');
 
         return $validator;
     }
@@ -133,6 +131,7 @@ class OrganizationalChartNodesTable extends Table {
     public function buildRules(RulesChecker $rules): RulesChecker {
         $rules->add($rules->existsIn('organizational_chart_id', 'OrganizationalCharts'), ['errorField' => 'organizational_chart_id']);
         $rules->add($rules->existsIn('container_id', 'Containers'), ['errorField' => 'container_id']);
+        $rules->add($rules->isUnique(['uuid']));
 
         return $rules;
     }

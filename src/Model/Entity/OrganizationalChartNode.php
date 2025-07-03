@@ -32,6 +32,7 @@ use Cake\ORM\Entity;
  * OrganizationalChartNode Entity
  *
  * @property int $id
+ * @property string $uuid
  * @property int|null $organizational_chart_id
  * @property int|null $container_id
  * @property int $x_position
@@ -54,6 +55,7 @@ class OrganizationalChartNode extends Entity {
      * @var array<string, bool>
      */
     protected $_accessible = [
+        'uuid'                                => true,
         'organizational_chart_id'             => true,
         'container_id'                        => true,
         'x_position'                          => true,

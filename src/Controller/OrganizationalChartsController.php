@@ -97,57 +97,54 @@ class OrganizationalChartsController extends AppController {
             return;
         }
 
-        $data = [
-            [
-                'parent_id'               => null,
-                'container_id'            => 1,
-                'organizational_chart_id' => 1,
-                'x_position'              => 0,
-                'y_position'              => 0,
-            ],
+        if ($this->request->is('post')) {
 
-            [
-                'parent_id'               => 1,
-                'container_id'            => 18,
-                'organizational_chart_id' => 1,
-                'x_position'              => 20,
-                'y_position'              => 20,
-            ],
+            $data = $this->request->getData(null, []);
+            $connections = $data['organizational_chart_connections'] ?? [];
 
-            [
-                'parent_id'               => 1,
-                'container_id'            => 28,
-                'organizational_chart_id' => 1,
-                'x_position'              => 80,
-                'y_position'              => 20,
-            ],
+            unset($data['organizational_chart_connections']);
 
-            [
-                'parent_id'               => 2,
-                'container_id'            => 29,
-                'organizational_chart_id' => 1,
-                'x_position'              => 30,
-                'y_position'              => 30,
-            ]
-
-        ];
-
-        /** @var OrganizationalChartStructuresTable $OrganizationalChartStructuresTable */
-        $OrganizationalChartStructuresTable = TableRegistry::getTableLocator()->get('OrganizationalChartStructures');
-
-        foreach ($data as $item) {
-            //Save organizational chart node
-            // todo replace parent_id
-            $ocNode = $OrganizationalChartStructuresTable->newEntity($item);
-
-            $OrganizationalChartStructuresTable->save($ocNode);
-
-            if ($ocNode->hasErrors()) {
-                debug($ocNode->getErrors());
+            if (!isset($data['organizational_chart_nodes'])) {
+                $data['organizational_chart_nodes'] = [];
             }
+
+
+            /** @var OrganizationalChartsTable $OrganizationalChartsTable */
+            $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+
+            $entity = $OrganizationalChartsTable->newEmptyEntity();
+            $entity = $OrganizationalChartsTable->patchEntity($entity, $data);
+
+            $OrganizationalChartsTable->save($entity);
+            if ($entity->hasErrors()) {
+                $this->set('error', $entity->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                $this->response = $this->response->withStatus(400);
+                return;
+            }
+
+            $this->set('oc', $entity);
+            $this->viewBuilder()->setOption('serialize', ['oc']);
+            return;
         }
 
+        throw new MethodNotAllowedException();
 
+
+        /** @var OrganizationalChartTable $OrganizationalChartTable */
+
+        /*        $OrganizationalChartTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+
+                $q = $OrganizationalChartTable->find()
+                    ->contain([
+                        'OrganizationalChartNodes',
+                        'OrganizationalChartConnections'
+                    ])
+                    ->all();
+
+                dd($q->toArray());
+
+        */
     }
 
     public function edit($id = null) {

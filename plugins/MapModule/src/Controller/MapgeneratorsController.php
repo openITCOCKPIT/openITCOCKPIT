@@ -357,6 +357,7 @@ class MapgeneratorsController extends AppController {
                 'amountOfNewGeneratedMaps'  => count($Mapgenerator->getNewGeneratedMaps()),
                 'amountOfNewGeneratedItems' => count($Mapgenerator->getGeneratedItems()),
                 'maps'                      => $allGeneratedMapIds,
+                'newMaps'                   => Hash::extract($Mapgenerator->getNewGeneratedMaps(), '{n}.id'),
             ];
 
 

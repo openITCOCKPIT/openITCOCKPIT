@@ -51,7 +51,7 @@ class UsersToOrganizationalChartNodesTable extends Table
         $this->belongsTo('OrganizationalChartNodes', [
             'foreignKey' => 'organizational_chart_node_id',
             'joinType' => 'INNER',
-        ]);
+        ])->setDependent(true);
     }
 
     /**

@@ -6,18 +6,18 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * UsersToOrganizationalChartStructure Entity
+ * UsersToOrganizationalChartNode Entity
  *
  * @property int $id
  * @property int $user_id
- * @property int $organizational_chart_structure_id
+ * @property int $organizational_chart_node_id
  * @property int $is_manager
  * @property int $user_role
  *
  * @property \App\Model\Entity\User $user
- * @property \App\Model\Entity\OrganizationalChartStructure $organizational_chart_structure
+ * @property \App\Model\Entity\OrganizationalChartNode $organizational_chart_node
  */
-class UsersToOrganizationalChartStructure extends Entity
+class UsersToOrganizationalChartNode extends Entity
 {
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
@@ -30,11 +30,11 @@ class UsersToOrganizationalChartStructure extends Entity
      */
     protected $_accessible = [
         'user_id' => true,
-        'organizational_chart_structure_id' => true,
+        'organizational_chart_node_id' => true,
         'is_manager' => true,
         'user_role' => true,
         'user' => true,
-        'organizational_chart_structure' => true,
+        'organizational_chart_node' => true,
     ];
 
     public const USER = 1 << 0;             // 1

@@ -643,7 +643,7 @@ class Menu {
                     '/locations/index'
                 ))
                 ->addLink(new MenuLink(
-                    __('Organizational Charts'),
+                    __('Organizational charts'),
                     'OrganizationalCharts',
                     'organizationalcharts',
                     'index',

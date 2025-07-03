@@ -29,16 +29,14 @@ use Cake\Validation\Validator;
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
-class OrganizationalChartConnectionsTable extends Table
-{
+class OrganizationalChartConnectionsTable extends Table {
     /**
      * Initialize method
      *
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config): void
-    {
+    public function initialize(array $config): void {
         parent::initialize($config);
 
         $this->setTable('organizational_chart_connections');
@@ -50,6 +48,9 @@ class OrganizationalChartConnectionsTable extends Table
         $this->belongsTo('OrganizationalCharts', [
             'foreignKey' => 'organizational_chart_id',
         ]);
+        $this->hasMany('UsersToOrganizationalChartNodes', [
+            'foreignKey' => 'organizational_chart_id'
+        ])->setDependent(true);
     }
 
     /**
@@ -58,8 +59,7 @@ class OrganizationalChartConnectionsTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator): Validator
-    {
+    public function validationDefault(Validator $validator): Validator {
         $validator
             ->integer('organizational_chart_id')
             ->allowEmptyString('organizational_chart_id');
@@ -82,8 +82,7 @@ class OrganizationalChartConnectionsTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules): RulesChecker
-    {
+    public function buildRules(RulesChecker $rules): RulesChecker {
         $rules->add($rules->existsIn('organizational_chart_id', 'OrganizationalCharts'), ['errorField' => 'organizational_chart_id']);
 
         return $rules;

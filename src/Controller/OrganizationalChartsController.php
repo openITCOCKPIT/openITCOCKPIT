@@ -82,7 +82,7 @@ class OrganizationalChartsController extends AppController {
                 $organizationalCharts[$index]['allowEdit'] = true;
                 $organizationalCharts[$index]['allowView'] = true;
             } else {
-                $containersToCheck = Hash::extract($organizationalChart, 'organizational_chart_structures.{n}.container.id');
+                $containersToCheck = Hash::extract($organizationalChart, 'organizational_chart_nodes.{n}.container.id');
                 $organizationalCharts[$index]['allowEdit'] = empty(array_intersect($containersToCheck, $this->getWriteContainers()));
                 $organizationalCharts[$index]['allowView'] = empty(array_intersect($containersToCheck, $MY_RIGHTS));
             }
@@ -178,10 +178,11 @@ class OrganizationalChartsController extends AppController {
 
         $organizationalChart = $OrganizationalChartsTable->get($id, [
             'contain' => [
-                'OrganizationalChartStructures' => 'UsersToOrganizationalChartStructures'
+                'OrganizationalChartNodes' => 'UsersToOrganizationalChartNodes',
+                'OrganizationalChartConnections'
             ]
         ]);
-        $containerIds = Hash::extract($organizationalChart, 'organizational_chart_structures.{n}.container_id');
+        $containerIds = Hash::extract($organizationalChart, 'organizational_chart_nodes.{n}.container_id');
         if (!empty($containerIds)) {
             if (!$this->allowedByContainerId($containerIds)) {
                 $this->render403();

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Model\Table;
 
-use App\Model\Table\UsersToOrganizationalChartStructuresTable;
+use App\Model\Table\UsersToOrganizationalChartNodesTable;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -14,7 +14,7 @@ class UsersToOrganizationalChartStructuresTableTest extends TestCase
     /**
      * Test subject
      *
-     * @var \App\Model\Table\UsersToOrganizationalChartStructuresTable
+     * @var \App\Model\Table\UsersToOrganizationalChartNodesTable
      */
     protected $UsersToOrganizationalChartStructures;
 
@@ -37,7 +37,7 @@ class UsersToOrganizationalChartStructuresTableTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $config = $this->getTableLocator()->exists('UsersToOrganizationalChartStructures') ? [] : ['className' => UsersToOrganizationalChartStructuresTable::class];
+        $config = $this->getTableLocator()->exists('UsersToOrganizationalChartStructures') ? [] : ['className' => UsersToOrganizationalChartNodesTable::class];
         $this->UsersToOrganizationalChartStructures = $this->getTableLocator()->get('UsersToOrganizationalChartStructures', $config);
     }
 
@@ -57,7 +57,7 @@ class UsersToOrganizationalChartStructuresTableTest extends TestCase
      * Test validationDefault method
      *
      * @return void
-     * @uses \App\Model\Table\UsersToOrganizationalChartStructuresTable::validationDefault()
+     * @uses \App\Model\Table\UsersToOrganizationalChartNodesTable::validationDefault()
      */
     public function testValidationDefault(): void
     {
@@ -68,7 +68,7 @@ class UsersToOrganizationalChartStructuresTableTest extends TestCase
      * Test buildRules method
      *
      * @return void
-     * @uses \App\Model\Table\UsersToOrganizationalChartStructuresTable::buildRules()
+     * @uses \App\Model\Table\UsersToOrganizationalChartNodesTable::buildRules()
      */
     public function testBuildRules(): void
     {

@@ -107,10 +107,10 @@ class MapgeneratorsTable extends Table {
             'saveStrategy'     => 'replace',
         ]);
 
-        $this->hasMany('MapgeneratorLevels', [
+        /*$this->hasMany('MapgeneratorLevels', [
             'foreignKey'   => 'mapgenerator_id',
             'saveStrategy' => 'replace'
-        ])->setDependent(true);
+        ])->setDependent(true);*/
 
     }
 
@@ -166,7 +166,7 @@ class MapgeneratorsTable extends Table {
         $validator
             ->integer('items_per_line')
             ->notEmptyString('items_per_line')
-            ->greaterThanOrEqual('items_per_line', 5, __('This value need to be at least 5'));
+            ->greaterThan('items_per_line', 0, __('This value need to be at least 1'));
 
         $validator
             ->integer('has_generated_maps')

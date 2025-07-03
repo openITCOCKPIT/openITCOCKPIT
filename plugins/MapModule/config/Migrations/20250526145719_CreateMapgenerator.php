@@ -62,7 +62,7 @@ class CreateMapgenerator extends AbstractMigration {
                     'null'    => false,
                 ])
                 ->addColumn('items_per_line', 'integer', [
-                    'default' => '10',
+                    'default' => '5',
                     'limit'   => 11,
                     'null'    => false,
                 ])
@@ -89,7 +89,7 @@ class CreateMapgenerator extends AbstractMigration {
                 ->create();
         }
 
-        if (!$this->hasTable('mapgenerator_levels')) {
+        /*if (!$this->hasTable('mapgenerator_levels')) {
             $this->table('mapgenerator_levels')
                 ->addPrimaryKey(['id'])
                 ->addColumn('mapgenerator_id', 'integer', [
@@ -108,7 +108,7 @@ class CreateMapgenerator extends AbstractMigration {
                     'null'    => false,
                 ])
                 ->create();
-        }
+        }*/
 
         if (!$this->hasTable('mapgenerators_to_start_containers')) {
             $this->table('mapgenerators_to_start_containers')

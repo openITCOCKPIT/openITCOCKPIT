@@ -212,19 +212,20 @@ class MapgeneratorsController extends AppController {
             throw new NotFoundException(__('Invalid Map generator'));
         }
 
-        $rotation = $MapgeneratorsTable->get($id, [
+        $mapgenerator = $MapgeneratorsTable->get($id, [
             'contain' => [
                 'Maps',
-                'Containers'
+                'Containers',
+                'StartContainers'
             ]
         ]);
-        $containerIdsToCheck = Hash::extract($rotation, 'containers.{n}.id');
+        $containerIdsToCheck = Hash::extract($mapgenerator, 'containers.{n}.id');
         if (!$this->allowedByContainerId($containerIdsToCheck)) {
             $this->render403();
             return;
         }
 
-        if ($MapgeneratorsTable->delete($rotation)) {
+        if ($MapgeneratorsTable->delete($mapgenerator)) {
             $this->set('message', __('Map generator deleted successfully'));
             $this->viewBuilder()->setOption('serialize', ['message']);
             return;
@@ -235,74 +236,133 @@ class MapgeneratorsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['message']);
     }
 
-    public function generate() {
-        /*if (!$this->isApiRequest() || !$this->request->is('post')) {
-            throw new MethodNotAllowedException();
-        }*/
+    public function generate($id = null) {
+        if (!$this->isApiRequest()) {
+            //Only ship html template
+            return;
+        }
 
-        /** @var $HostsTable HostsTable */
-        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+        /** @var MapgeneratorsTable $MapgeneratorsTable */
+        $MapgeneratorsTable = TableRegistry::getTableLocator()->get('MapModule.Mapgenerators');
 
-        /** @var $ContainersTable ContainersTable */
-        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+        if (!$MapgeneratorsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid Map generator'));
+        }
 
-        /** @var MapsTable $MapsTable */
-        $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
+        $mapgenerator = $MapgeneratorsTable->get($id, [
+            'contain' => [
+                'Containers',
+                'StartContainers',
+                'Maps'
+            ]
+        ]);
 
-        $data = $this->request->getData();
+        if ($this->request->is('get')) {
+            $this->viewBuilder()->setOption('serialize', ['mapgenerator']);
+            $this->set('mapgenerator', $mapgenerator);
+            return;
+        }
 
-        if (empty($data['Mapgenerator']['refresh_interval'])) {
-            $data['Mapgenerator']['refresh_interval'] = 90000;
-        } else {
-            if ($data['Mapgenerator']['refresh_interval'] < 5) {
-                $data['Mapgenerator']['refresh_interval'] = 5;
+        if ($this->request->is('post') || $this->request->is('put')) {
+
+            /** @var $HostsTable HostsTable */
+            $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+
+            /** @var $ContainersTable ContainersTable */
+            $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+
+            /** @var MapsTable $MapsTable */
+            $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
+
+            if (empty($mapgenerator['refresh_interval'])) {
+                $mapgenerator['refresh_interval'] = 90000;
+            } else {
+                if ($mapgenerator['refresh_interval'] < 5) {
+                    $mapgenerator['refresh_interval'] = 5;
+                }
+
+                $mapgenerator['refresh_interval'] = ((int)$mapgenerator['refresh_interval'] * 1000);
             }
 
-            $data['Mapgenerator']['refresh_interval'] = ((int)$data['Mapgenerator']['refresh_interval'] * 1000);
-        }
+            $MY_RIGHTS = [];
+            if ($this->hasRootPrivileges === false) {
+                $MY_RIGHTS = $this->MY_RIGHTS;
+            }
 
-        $MY_RIGHTS = [];
-        if ($this->hasRootPrivileges === false) {
-            $MY_RIGHTS = $this->MY_RIGHTS;
-        }
+            $hosts = $HostsTable->getHostsForMapgenerator($MY_RIGHTS);
 
-        $hosts = $HostsTable->getHostsForMapgenerator($MY_RIGHTS);
+            if (empty($hosts)) {
+                $errors = [
+                    'hosts' => __('No hosts found for map generator')
+                ];
+                $this->set('error', $errors);
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            }
 
-        if (empty($hosts)) {
-            $errors = [
-                'hosts' => __('No hosts found for map generator')
+            $startContainerIds = Hash::extract($mapgenerator, 'start_containers.{n}.id');
+            $containersAndHosts = $ContainersTable->getContainersForMapgeneratorByContainerStructure($hosts, $MY_RIGHTS, $startContainerIds);
+
+            $generatedMaps = [];
+            $mapIds = Hash::extract($mapgenerator['maps'], '{n}.id');
+
+            // get already generated maps
+            if (!empty($mapIds)) {
+
+                $generatedMaps = $MapsTable->getMapsByIds($mapIds);
+
+            }
+
+            // generate maps
+            $Mapgenerator = new Mapgenerator($mapgenerator->toArray(), $containersAndHosts, $generatedMaps);
+            $generatedMapsAndItems = $Mapgenerator->generate();
+
+            $allGeneratedMaps = $Mapgenerator->getAllGeneratedMaps();
+            $allGeneratedMapIds = Hash::extract($allGeneratedMaps, '{n}.id');
+
+            // save new generated maps
+            if ($allGeneratedMapIds) {
+
+                $data = [
+                    'maps' => [
+                        '_ids' => $allGeneratedMapIds
+                    ]
+                ];
+
+                $mapgeneratorEntity = $MapgeneratorsTable->patchEntity($mapgenerator, $data);
+                $MapgeneratorsTable->save($mapgeneratorEntity);
+                if (!$mapgeneratorEntity->hasErrors()) {
+                    if ($this->isJsonRequest()) {
+                        $this->serializeCake4Id($mapgeneratorEntity);
+                    }
+                } else {
+                    if ($this->isJsonRequest()) {
+                        $this->serializeCake4ErrorMessage($mapgeneratorEntity);
+                    }
+                }
+            }
+
+            // return errors from generate
+            if (array_key_exists("error", $generatedMapsAndItems)) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', $generatedMapsAndItems['error']);
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            }
+
+
+            // return most important information
+            $generatedMapsAndItems = [
+                'amountOfTotalMaps'         => count($allGeneratedMaps),
+                'amountOfNewGeneratedMaps'  => count($Mapgenerator->getNewGeneratedMaps()),
+                'amountOfNewGeneratedItems' => count($Mapgenerator->getGeneratedItems()),
+                'maps'                      => $allGeneratedMapIds,
             ];
-            $this->set('error', $errors);
-            $this->viewBuilder()->setOption('serialize', ['error']);
-            return;
+
+
+            $this->viewBuilder()->setOption('serialize', ['generatedMapsAndItems']);
+            $this->set('generatedMapsAndItems', $generatedMapsAndItems);
         }
-
-        $containersAndHosts = $ContainersTable->getContainersForMapgeneratorByContainerStructure($hosts, $MY_RIGHTS);
-
-        $generatedMaps = [];
-
-        // get already generated maps
-        if (!empty($data['Mapgenerator']['maps']['_ids'])) {
-
-            $generatedMaps = $MapsTable->getMapsByIds($data['Mapgenerator']['maps']['_ids']);
-
-        }
-
-        // generate maps
-        $Mapgenerator = new Mapgenerator($data, $containersAndHosts, $generatedMaps);
-        $generatedMapsAndItems = $Mapgenerator->generate();
-
-        // TODO: save new generated maps in MapgeneratorsTable
-
-        if (array_key_exists("error", $generatedMapsAndItems)) {
-            $this->response = $this->response->withStatus(400);
-            $this->set('error', $generatedMapsAndItems['error']);
-            $this->viewBuilder()->setOption('serialize', ['error']);
-            return;
-        }
-
-
-        return $generatedMapsAndItems;
     }
 
 }

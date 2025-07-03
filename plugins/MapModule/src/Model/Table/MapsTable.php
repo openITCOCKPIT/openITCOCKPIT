@@ -2542,7 +2542,7 @@ class MapsTable extends Table {
                 'Maps.id IN' => $mapIds,
             ])->disableHydration();
 
-        return $result->toArray();
+        return $this->emptyArrayIfNull($query->toArray());
 
     }
 

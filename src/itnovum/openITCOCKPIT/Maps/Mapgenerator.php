@@ -62,6 +62,11 @@ class Mapgenerator {
      */
     private $newGeneratedMaps;
 
+    /**
+     * @var array
+     */
+    private $cachedMapsWithItems = [];
+
 
     /**
      * Mapgenerator constructor.
@@ -74,6 +79,8 @@ class Mapgenerator {
         $this->type = $type;
         $this->allGeneratedMaps = $generatedMaps;
         $this->generatedItems = [];
+        $this->newGeneratedMaps = [];
+        $this->cachedMapsWithItems = [];
     }
 
     public function generate() {
@@ -81,7 +88,7 @@ class Mapgenerator {
         foreach ($this->hostsAndData as $hostsAndDataKey => $hostAndData) {
 
             if ($this->type === 1) {
-                // container for map is the mandant (first container in the list)
+                // container for map is the highest in the list (first container in the list)
                 $containerIdForNewMap = $hostAndData['containerHierarchy'][0]['id'];
 
                 $generatedMapsAndItemsByHost = $this->generateByContainerHierarchy($hostAndData, $containerIdForNewMap);
@@ -130,7 +137,7 @@ class Mapgenerator {
             }
 
             // create new map for this container
-            $map = $this->createNewMap($containerName, $this->mapgeneratorData['Mapgenerator']['refresh_interval'], $containerIdForNewMap);
+            $map = $this->createNewMap($containerName, $this->mapgeneratorData['refresh_interval'], $containerIdForNewMap);
 
             if (array_key_exists("error", $map)) {
                 return $map;
@@ -211,23 +218,25 @@ class Mapgenerator {
 
     private function createNewMapSummaryItem(array $mapToAddItems, int $objectId, string $type) {
 
-        $mapsummaryitemEntity = [];
-
         /** @var MapsTable $MapsTable */
         $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
 
-        //get all items of the map to add the new item
-        $mapToAddItemsWithItems = $MapsTable->get($mapToAddItems["id"], [
-            'contain' => [
-                'Containers',
-                'Mapgadgets',
-                'Mapicons',
-                'Mapitems',
-                'Maplines',
-                'Maptexts',
-                'Mapsummaryitems'
-            ]
-        ])->toArray();
+        // load map with items from cache or database
+        if (!isset($this->cachedMapsWithItems[$mapToAddItems["id"]])) {
+            //get all items of the map to add the new item
+            $this->cachedMapsWithItems[$mapToAddItems["id"]] = $MapsTable->get($mapToAddItems["id"], [
+                'contain' => [
+                    'Containers',
+                    'Mapgadgets',
+                    'Mapicons',
+                    'Mapitems',
+                    'Maplines',
+                    'Maptexts',
+                    'Mapsummaryitems'
+                ]
+            ])->toArray();
+        }
+        $mapToAddItemsWithItems = $this->cachedMapsWithItems[$mapToAddItems["id"]];
 
         $MapForAngular = new MapForAngular($mapToAddItemsWithItems);
         $mapToAddItemsWithItems = $MapForAngular->toArray();
@@ -235,18 +244,18 @@ class Mapgenerator {
         /**
          * calculate new x and y position for the new mapsummaryitem
          * by searching for the previous item and its position in the existing items
-         * and calculate the position based on this item
          */
         $x = 0; // x position of the new item
         $y = 0; // y position of the new item
-        $LINE_SIZE = 140; // size of one line in the map
+        $LINE_HEIGHT = 140; // size of one line in the map
         $ITEM_MIN_WIDTH = 200; // minimum width of an item
-        $MAX_X = 1500; // maximum x position in the map
+        $ITEMS_PER_LINE = $this->mapgeneratorData['items_per_line']; // number of items per line
         $mapHasItems = false; // if map has only one item, calculate position based on this item
         $previousItem = [
             'type' => "",
             'id'   => 0,
         ];
+        $itemsPerLineCounter = 0; // counter for items per line
 
         // searching for the previous item and its position in the existing items
         foreach (['Mapgadgets', 'Mapicons', 'Mapitems', 'Maplines', 'Maptexts', 'Mapsummaryitems'] as $itemType) {
@@ -262,24 +271,35 @@ class Mapgenerator {
                     $itemX = ($itemType === 'Maplines') ? $item['endX'] : $item['x'];
                     $itemY = ($itemType === 'Maplines') ? $item['endY'] : $item['y'];
 
-                    if ($itemY > $y || ($itemY === $y && $itemX > $x)) {
-                        $x = $itemX;
+                    // start new line
+                    if ($itemY > $y) {
                         $y = $itemY;
+                        $x = 0;
+                        $itemsPerLineCounter = 1;
                         $previousItem = [
                             'type' => $item['type'],
                             'id'   => $item['object_id']
                         ];
+                    } else if ($itemY === $y) {
+                        $itemsPerLineCounter++;
+                        if ($itemX > $x) {
+                            $x = $itemX;
+                            $previousItem = [
+                                'type' => $item['type'],
+                                'id'   => $item['object_id']
+                            ];
+                        }
                     }
                 }
             }
         }
 
-        // get name of the previous item to calculate the width
+        // get name of the previous item and calculate the width
         $width = $this->calculateItemWidth($previousItem);
 
-        // if y does not fit the line size (130px), add some space to the top
-        if ($y > 0 && $y % $LINE_SIZE !== 0) {
-            $y += ($y % $LINE_SIZE); // add some space to the top
+        // if y does not fit the line height (130px), add some space to the top
+        if ($y > 0 && $y % $LINE_HEIGHT !== 0) {
+            $y += ($y % $LINE_HEIGHT); // add some space to the top
         }
 
         if ($x > 0 || $mapHasItems) {
@@ -289,9 +309,9 @@ class Mapgenerator {
             $x += $width; // add some space to the right
         }
         // if item is too far to the right, move it to the next line
-        if ($x > $MAX_X) {
+        if ($itemsPerLineCounter >= $ITEMS_PER_LINE) {
             $x = 0; // reset x position to start
-            $y += $LINE_SIZE; // add some space to the bottom
+            $y += $LINE_HEIGHT; // add some space to the bottom
         }
 
         /** @var MapsummaryitemsTable $MapsummaryitemsTable */
@@ -299,7 +319,7 @@ class Mapgenerator {
 
         $mapsummaryitemEntity = $MapsummaryitemsTable->newEmptyEntity();
 
-        // add map item to the map
+        // add item to the map
         $mapsummaryitem['Mapsummaryitem'] = [
             "z_index"         => "0",
             "x"               => $x,
@@ -320,6 +340,9 @@ class Mapgenerator {
                 'error' => $mapsummaryitemEntity->getErrors()
             ];
         }
+
+        // add mapsummaryitem to the cached maps with items
+        $this->cachedMapsWithItems[$mapToAddItems["id"]]['mapsummaryitems'][] = $mapsummaryitemEntity->toArray();
 
         return $mapsummaryitemEntity->toArray();
 
@@ -368,5 +391,18 @@ class Mapgenerator {
         return $generatedMapsAndItems;
 
     }
+
+    public function getAllGeneratedMaps(): array {
+        return $this->allGeneratedMaps;
+    }
+
+    public function getGeneratedItems(): array {
+        return $this->generatedItems;
+    }
+
+    public function getNewGeneratedMaps(): array {
+        return $this->newGeneratedMaps;
+    }
+
 
 }

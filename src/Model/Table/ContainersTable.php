@@ -1596,11 +1596,13 @@ class ContainersTable extends Table {
     /**
      * @param array $hosts
      * @param array $MY_RIGHTS
+     * @param array $startContainers
      * @return array
      */
-    public function getContainersForMapgeneratorByContainerStructure($hosts, $MY_RIGHTS) {
+    public function getContainersForMapgeneratorByContainerStructure($hosts, $MY_RIGHTS, $startContainers = []) {
 
         $containersAndHosts = [];
+        $containerCache = []; // cache for containers to avoid multiple database calls
 
         foreach ($hosts as $host) {
 
@@ -1610,7 +1612,7 @@ class ContainersTable extends Table {
             }
 
             $containerHierarchyForHost = [];
-            $mandantContainerId = 0; // this is the first container in the hierarchy and gets checked for rights
+            $startContainerId = 0; // this is the first container in the hierarchy and gets checked for rights
             $currentContainerId = $host['container_id'];
             $skipHost = false;
 
@@ -1619,9 +1621,14 @@ class ContainersTable extends Table {
                 continue;
             }
 
-            while ($mandantContainerId === 0) {
+            while ($startContainerId === 0) {
 
-                $currentContainer = $this->getContainerById($currentContainerId);
+                // load container by id from cache or database
+                if (!isset($containerCache[$currentContainerId])) {
+                    $containerCache[$currentContainerId] = $this->getContainerById($currentContainerId);
+                }
+                $currentContainer = $containerCache[$currentContainerId];
+
                 if (empty($currentContainer)) {
                     // Container not found, skip this host
                     $skipHost = true;
@@ -1635,7 +1642,7 @@ class ContainersTable extends Table {
                         $skipHost = true;
                         break;
                     }
-                    $mandantContainerId = $currentContainer['id'];
+                    $startContainerId = $currentContainer['id'];
                 }
 
                 $containerForHost = [
@@ -1651,15 +1658,46 @@ class ContainersTable extends Table {
                     break;
                 }
 
-            };
+            }
+
+            // reverse array to have higher containers first
+            $containerHierarchyForHost = array_reverse($containerHierarchyForHost);
+
+            // filter hosts and container structure by start containers
+            if (!empty($startContainers)) {
+
+                $startContainerFound = false;
+                foreach ($startContainers as $startContainerId) {
+                    $containerFoundInIteration = false;
+                    $containerDeletePos = 0;
+                    foreach ($containerHierarchyForHost as $containerKey => $container) {
+                        // also check for rights
+                        if ($startContainerId === $container['id']
+                            && ((!empty($MY_RIGHTS) && in_array($container['id'], $MY_RIGHTS, true)) || empty($MY_RIGHTS))) {
+                            $containerFoundInIteration = true;
+                            $startContainerFound = true;
+                            break;
+                        }
+                        $containerDeletePos++;
+                    }
+                    if ($containerFoundInIteration && $containerDeletePos) {
+                        $containerHierarchyForHost = array_slice($containerHierarchyForHost, $containerDeletePos);
+                    }
+                }
+
+                // if start container is not found, skip this host
+                if (!$startContainerFound) {
+                    $skipHost = true;
+                }
+
+            }
 
             if (!$skipHost) {
 
-                // reverse array to have higher containers first
                 $hostObject = [
                     'hostId'             => $host['id'],
                     'hostName'           => $host['name'],
-                    'containerHierarchy' => array_reverse($containerHierarchyForHost),
+                    'containerHierarchy' => $containerHierarchyForHost,
                 ];
 
                 $containersAndHosts[] = $hostObject;

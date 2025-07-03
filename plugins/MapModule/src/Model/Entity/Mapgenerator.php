@@ -50,6 +50,7 @@ use Cake\ORM\Entity;
  *
  * @property Containers[] $containers
  * @property Containers[] $start_containers
+ * @property Maps[] $maps
  */
 class Mapgenerator extends Entity {
     /**
@@ -65,7 +66,6 @@ class Mapgenerator extends Entity {
         'name'               => true,
         'description'        => true,
         'interval'           => true,
-        'type'               => true,
         'has_generated_maps' => true,
         'items_per_line'     => true,
         'type'               => true,
@@ -73,5 +73,6 @@ class Mapgenerator extends Entity {
         'modified'           => true,
         'containers'         => true,
         'start_containers'   => true,
+        'maps'               => true
     ];
 }

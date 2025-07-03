@@ -91,15 +91,19 @@ class OrganizationalChartConnectionsTable extends Table {
 
         $validator
             ->integer('organizational_chart_id')
-            ->allowEmptyString('organizational_chart_id');
+            ->requirePresence('organizational_chart_id', 'create')
+            ->allowEmptyString('organizational_chart_id', null, false);
 
         $validator
             ->integer('organizational_chart_input_node_id')
-            ->allowEmptyString('organizational_chart_input_node_id');
+            ->requirePresence('organizational_chart_input_node_id', 'create')
+            ->allowEmptyString('organizational_chart_input_node_id', null, false);
 
         $validator
             ->integer('organizational_chart_output_node_id')
-            ->allowEmptyString('organizational_chart_output_node_id');
+            ->requirePresence('organizational_chart_output_node_id', 'create')
+            ->allowEmptyString('organizational_chart_output_node_id', null, false);
+        
 
         return $validator;
     }

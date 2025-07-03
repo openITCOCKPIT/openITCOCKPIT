@@ -27,9 +27,11 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Model\Table\ContainersTable;
+use App\Model\Table\OrganizationalChartConnectionsTable;
 use App\Model\Table\OrganizationalChartsTable;
 use App\Model\Table\OrganizationalChartStructuresTable;
 use Cake\Http\Exception\MethodNotAllowedException;
+use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -111,6 +113,8 @@ class OrganizationalChartsController extends AppController {
 
             /** @var OrganizationalChartsTable $OrganizationalChartsTable */
             $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+            /** @var OrganizationalChartConnectionsTable $OrganizationalChartConnectionsTable */
+            $OrganizationalChartConnectionsTable = TableRegistry::getTableLocator()->get('OrganizationalChartConnections');
 
             $entity = $OrganizationalChartsTable->newEmptyEntity();
             $entity = $OrganizationalChartsTable->patchEntity($entity, $data);
@@ -121,6 +125,29 @@ class OrganizationalChartsController extends AppController {
                 $this->viewBuilder()->setOption('serialize', ['error']);
                 $this->response = $this->response->withStatus(400);
                 return;
+            } else {
+                // No errors
+                // save connections
+                $nodeUuidToId = [];
+                foreach ($entity->organizational_chart_nodes as $node) {
+                    $nodeUuidToId[$node->uuid] = $node->id;
+                }
+
+                foreach ($connections as $connection) {
+                    $connectionEntity = $OrganizationalChartConnectionsTable->newEntity([
+                        'uuid'                                => $connection['id'],
+                        'organizational_chart_id'             => $entity->id,
+                        'organizational_chart_input_node_id'  => $nodeUuidToId[$connection['organizational_chart_input_node_id']] ?? 0,
+                        'organizational_chart_output_node_id' => $nodeUuidToId[$connection['organizational_chart_output_node_id']] ?? 0,
+                    ]);
+
+                    $OrganizationalChartConnectionsTable->save($connectionEntity);
+                    if ($connectionEntity->hasErrors()) {
+                        Log::error('Error while saving organizational chart connection: ' . json_encode($connectionEntity->getErrors()));
+                        dd($connectionEntity);
+                    }
+                }
+
             }
 
             $this->set('oc', $entity);
@@ -131,20 +158,6 @@ class OrganizationalChartsController extends AppController {
         throw new MethodNotAllowedException();
 
 
-        /** @var OrganizationalChartTable $OrganizationalChartTable */
-
-        /*        $OrganizationalChartTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
-
-                $q = $OrganizationalChartTable->find()
-                    ->contain([
-                        'OrganizationalChartNodes',
-                        'OrganizationalChartConnections'
-                    ])
-                    ->all();
-
-                dd($q->toArray());
-
-        */
     }
 
     public function edit($id = null) {

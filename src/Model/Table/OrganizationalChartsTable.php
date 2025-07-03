@@ -28,7 +28,6 @@ namespace App\Model\Table;
 
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\Database\Expression\Comparison;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -77,7 +76,8 @@ class OrganizationalChartsTable extends Table {
         $this->addBehavior('Timestamp');
 
         $this->hasMany('OrganizationalChartNodes', [
-            'foreignKey' => 'organizational_chart_id',
+            'foreignKey'       => 'organizational_chart_id',
+            'cascadeCallbacks' => true,
         ])->setDependent(true);
 
         $this->hasMany('OrganizationalChartConnections', [

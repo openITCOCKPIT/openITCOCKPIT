@@ -73,6 +73,7 @@ class MapgeneratorsController extends AppController {
             $Paginator,
             $this->hasRootPrivileges ? [] : $this->MY_RIGHTS);
         foreach ($all_mapgenerators as $key => $mapgenerator) {
+            $mapgenerator['maps'] = Hash::extract($mapgenerator, 'maps.{n}.id');
             $all_mapgenerators[$key]['allowEdit'] = false;
             if ($this->hasRootPrivileges == true) {
                 $all_mapgenerators[$key]['allowEdit'] = true;
@@ -324,7 +325,8 @@ class MapgeneratorsController extends AppController {
             if ($allGeneratedMapIds) {
 
                 $data = [
-                    'maps' => [
+                    'has_generated_maps' => 1,
+                    'maps'               => [
                         '_ids' => $allGeneratedMapIds
                     ]
                 ];

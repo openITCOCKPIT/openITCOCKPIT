@@ -29,6 +29,7 @@ namespace App\Controller;
 
 use App\Model\Table\ContainersTable;
 use App\Model\Table\HostsTable;
+use App\Model\Table\OrganizationalChartsTable;
 use App\Model\Table\SystemsettingsTable;
 use App\Model\Table\TenantsTable;
 use Cake\Core\Plugin;
@@ -115,7 +116,7 @@ class BrowsersController extends AppController {
 
             if ($this->hasRootPrivileges === false) {
                 foreach ($browser as $key => $containerRecord) {
-                    if (!in_array($containerRecord['id'], $this->MY_RIGHTS)) {
+                    if (!in_array($containerRecord['id'], $this->MY_RIGHTS, true)) {
                         unset($browser[$key]);
                     }
                 }
@@ -128,6 +129,7 @@ class BrowsersController extends AppController {
                     'containertype_id' => $node['containertype_id']
                 ];
             }
+
 
             $currentContainer = $ContainersTable->get($containerId)->toArray();
 
@@ -150,8 +152,21 @@ class BrowsersController extends AppController {
 
         }
 
+        $organizationalCharts = [];
 
+        if ($containerId !== ROOT_CONTAINER && $this->allowedByContainerId($containerId, false)) {
+            $MY_RIGHTS = [];
+            if ($this->hasRootPrivileges === false) {
+                $MY_RIGHTS = $this->MY_RIGHTS_LEVEL;
+            }
+            /** @var $OrganizationalChartsTable OrganizationalChartsTable */
+            $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+            $organizationalCharts = $OrganizationalChartsTable->getOrnanizationalChartsByContainerId($containerId, $MY_RIGHTS, 'list');
+
+        }
+
+        $this->set('organizationalCharts', Api::makeItJavaScriptAble($organizationalCharts));
         $this->set('recursiveBrowser', $User->isRecursiveBrowserEnabled());
-        $this->viewBuilder()->setOption('serialize', ['containers', 'recursiveBrowser', 'breadcrumbs']);
+        $this->viewBuilder()->setOption('serialize', ['containers', 'recursiveBrowser', 'breadcrumbs', 'organizationalCharts']);
     }
 }

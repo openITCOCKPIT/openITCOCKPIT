@@ -183,4 +183,30 @@ class OrganizationalChartsTable extends Table {
     public function existsById($id) {
         return $this->exists(['OrganizationalCharts.id' => $id]);
     }
+
+    /**
+     * @param int $containerId
+     * @param array $MY_RIGHTS
+     * @param $type
+     * @return array
+     */
+    public function getOrnanizationalChartsByContainerId(int $containerId, array $MY_RIGHTS = [], $type = 'all'): array {
+        $query = $this->find()
+            ->innerJoinWith('OrganizationalChartNodes');
+        if (!empty($MY_RIGHTS)) {
+            $query->where(['OrganizationalChartNodes.container_id IN' => $MY_RIGHTS]);
+        }
+        $query->where(['OrganizationalChartNodes.container_id' => $containerId])
+            ->group(['OrganizationalCharts.id'])
+            ->disableHydration();
+
+        if ($type === 'list') {
+            $return = [];
+            foreach ($query->toArray() as $user) {
+                $return[$user['id']] = $user['name'];
+            }
+            return $return;
+        }
+        return $query->toArray();
+    }
 }

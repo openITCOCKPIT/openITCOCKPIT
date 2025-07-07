@@ -31,6 +31,7 @@ use App\Model\Table\OrganizationalChartConnectionsTable;
 use App\Model\Table\OrganizationalChartsTable;
 use App\Model\Table\OrganizationalChartStructuresTable;
 use Cake\Http\Exception\MethodNotAllowedException;
+use Cake\Http\Exception\NotFoundException;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -173,6 +174,29 @@ class OrganizationalChartsController extends AppController {
 
     }
 
+    /**
+     * @param null $id
+     */
+    public function view($id = null) {
+        if (!$this->isApiRequest()) {
+            //Only ship HTML template for angular
+            return;
+        }
+
+        /** @var OrganizationalChartsTable $OrganizationalChartsTable */
+        $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+
+        if (!$OrganizationalChartsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid organizational chart'));
+        }
+        $organizationalChart = $OrganizationalChartsTable->get($id);
+        if (!$this->allowedByContainerId($organizationalChart->get('id'))) {
+            throw new ForbiddenException('403 Forbidden');
+        }
+
+        $this->set('organizationalchart', $organizationalChart);
+        $this->viewBuilder()->setOption('serialize', ['organizationalchart']);
+    }
 
     /**
      * @param int|null $id

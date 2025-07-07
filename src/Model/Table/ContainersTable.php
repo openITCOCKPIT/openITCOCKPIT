@@ -1630,27 +1630,21 @@ class ContainersTable extends Table {
                     case CT_TENANT:
                         $containers['tenants'][] = [
                             'key'   => $container['id'],
-                            'value' => [
-                                'name' => $container['name'],
-                                'path' => $path,
-                            ]
+                            'value' => $container['name'],
+                            'path'  => $path
                         ];
                         break;
                     case CT_LOCATION:
                         $containers['locations'][] = [
                             'key'   => $container['id'],
-                            'value' => [
-                                'name' => $container['name'],
-                                'path' => $path,
-                            ]
+                            'value' => $container['name'],
+                            'path'  => $path
                         ];
                     case CT_NODE:
                         $containers['nodes'][] = [
                             'key'   => $container['id'],
-                            'value' => [
-                                'name' => $container['name'],
-                                'path' => $path,
-                            ]
+                            'value' => $container['name'],
+                            'path'  => $path
                         ];
                         break;
 

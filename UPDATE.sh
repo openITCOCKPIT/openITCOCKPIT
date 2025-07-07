@@ -35,7 +35,7 @@ if [[ $1 == "--help" ]]; then
 fi
 
 # Enable debug mode so that CakePHP will create missing folders
-# https://github.com/it-novum/openITCOCKPIT/issues/1446
+# https://github.com/openITCOCKPIT/openITCOCKPIT/issues/1446
 # https://github.com/cakephp/migrations/issues/565
 export OITC_DEBUG=1
 

@@ -2109,7 +2109,9 @@ class ServicesController extends AppController {
                 $Servicestatus->isAcknowledged() ? 1 : 0,
                 $Servicestatus->isInDowntime() ? 1 : 0,
                 $Servicestatus->getLastCheck(),
+                $UserTime->format($Servicestatus->getLastCheck()),
                 $Servicestatus->getNextCheck(),
+                $UserTime->format($Servicestatus->getNextCheck()),
                 $Servicestatus->isActiveChecksEnabled() ? 1 : 0,
                 $Servicestatus->getOutput()
             ];
@@ -2134,7 +2136,9 @@ class ServicesController extends AppController {
             'problem_has_been_acknowledged',
             'in_downtime',
             'last_check',
+            'last_check_formatted',
             'next_check',
+            'next_check_formatted',
             'active_checks_enabled',
             'output'
         ];
@@ -3167,7 +3171,7 @@ class ServicesController extends AppController {
         }
 
         $host = $HostsTable->getHostForSlaBrowserTabWithHosttemplateById($service->get('host_id'));
-        if (!$this->allowedByContainerId($host['hosts_to_containers_sharing']['_ids'])) {
+        if (!$this->allowedByContainerId($host['hosts_to_containers_sharing']['_ids'], false)) {
             $this->render403();
             return;
         }

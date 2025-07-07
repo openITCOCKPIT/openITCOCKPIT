@@ -73,7 +73,7 @@ $logo = new Logo();
                     Open Source Monitoring Solution
 
         Website: https://openitcockpit.io/
-        GitHub: https://github.com/it-novum/openITCOCKPIT
+        GitHub: https://github.com/openITCOCKPIT/openITCOCKPIT
     -->
 
     <meta charset="utf-8">

@@ -206,6 +206,11 @@ class UsersTable extends Table {
             ->allowEmptyString('company');
 
         $validator
+            ->scalar('department')
+            ->maxLength('department', 100)
+            ->allowEmptyString('department');
+
+        $validator
             ->scalar('phone')
             ->maxLength('phone', 100)
             ->allowEmptyString('phone');
@@ -522,6 +527,7 @@ class UsersTable extends Table {
                 'Users.lastname',
                 'Users.position',
                 'Users.company',
+                'Users.department',
                 'Users.phone',
                 'Users.timezone',
                 'Users.i18n',

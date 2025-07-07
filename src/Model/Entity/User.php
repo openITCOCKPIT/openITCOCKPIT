@@ -86,6 +86,7 @@ class User extends Entity {
         'lastname'                => true,
         'position'                => true,
         'company'                 => true,
+        'department'              => true,
         'phone'                   => true,
         'timezone'                => true,
         'i18n'                    => true,

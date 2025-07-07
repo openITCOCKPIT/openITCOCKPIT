@@ -609,6 +609,7 @@ class HostgroupsController extends AppController {
 
         $hostgroups = $HostgroupsTable->getHostgroupsIndex($HostgroupFilter, null, $MY_RIGHTS);
         $User = new User($this->getUser());
+        $UserTime = new UserTime($User->getTimezone(), $User->getDateformat());
 
 
         $all_hostgroups = [];
@@ -672,7 +673,9 @@ class HostgroupsController extends AppController {
                     $Hoststatus->isAcknowledged() ? 1 : 0,
                     $Hoststatus->isInDowntime() ? 1 : 0,
                     $Hoststatus->getLastCheck(),
+                    $UserTime->format($Hoststatus->getLastCheck()),
                     $Hoststatus->getNextCheck(),
+                    $UserTime->format($Hoststatus->getNextCheck()),
                     $Hoststatus->isActiveChecksEnabled() ? 1 : 0,
                     $Hoststatus->getOutput()
                 ];
@@ -699,7 +702,9 @@ class HostgroupsController extends AppController {
             'problem_has_been_acknowledged',
             'in_downtime',
             'last_check',
+            'last_check_formatted',
             'next_check',
+            'next_check_formatted',
             'active_checks_enabled',
             'output'
         ];

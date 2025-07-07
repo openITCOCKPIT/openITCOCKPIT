@@ -11,14 +11,14 @@
     ],
     "type": "project",
     "support": {
-        "issues": "https://github.com/it-novum/openITCOCKPIT/issues",
-        "source": "https://github.com/it-novum/openITCOCKPIT",
+        "issues": "https://github.com/openITCOCKPIT/openITCOCKPIT/issues",
+        "source": "https://github.com/openITCOCKPIT/openITCOCKPIT",
         "irc": "irc://irc.libera.chat/openitcockpit"
     },
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/it-novum/acl"
+            "url": "https://github.com/openITCOCKPIT/acl"
         }
     ],
     "require": {

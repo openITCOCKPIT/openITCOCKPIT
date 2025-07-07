@@ -89,7 +89,7 @@ class PluginManager {
             );
             $this->application->addPlugin($moduleName);
 
-            // https://github.com/it-novum/openITCOCKPIT/pull/1578
+            // https://github.com/openITCOCKPIT/openITCOCKPIT/pull/1578
             // This leads to issues when Plugins/Modules have older version of CakePHP (to run Tests for example)
             // Issues like 'Unknown method "selectQuery" called on App\\Model\\Table\\AgentchecksTable'
             //if (is_file(PLUGIN . $moduleName . DS . 'vendor/autoload.php')) {

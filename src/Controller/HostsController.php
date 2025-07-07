@@ -2633,7 +2633,9 @@ class HostsController extends AppController {
                 $Hoststatus->isAcknowledged() ? 1 : 0,
                 $Hoststatus->isInDowntime() ? 1 : 0,
                 $Hoststatus->getLastCheck(),
+                $UserTime->format($Hoststatus->getLastCheck()),
                 $Hoststatus->getNextCheck(),
+                $UserTime->format($Hoststatus->getNextCheck()),
                 $Hoststatus->isActiveChecksEnabled() ? 1 : 0,
                 $Hoststatus->getOutput()
             ];
@@ -2657,7 +2659,9 @@ class HostsController extends AppController {
             'problem_has_been_acknowledged',
             'in_downtime',
             'last_check',
+            'last_check_formatted',
             'next_check',
+            'next_check_formatted',
             'active_checks_enabled',
             'output'
         ];

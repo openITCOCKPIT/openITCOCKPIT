@@ -33,7 +33,7 @@
 This file got reverted and dropped support for Angular
 
 The AngularJS + Angular routing version is still available in the git history
-=> https://github.com/it-novum/openITCOCKPIT/blob/e786192bd437c05a54cefc82a76cf364ff0c661c/src/Template/Angular/menu.php
+=> https://github.com/openITCOCKPIT/openITCOCKPIT/blob/e786192bd437c05a54cefc82a76cf364ff0c661c/src/Template/Angular/menu.php
 -->
 
 

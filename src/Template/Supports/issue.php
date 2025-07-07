@@ -182,7 +182,7 @@
                                             <i class="fab fa-github"></i>
                                             <?= __('Twitter'); ?>
                                         </a>
-                                        <a href="https://github.com/it-novum/openITCOCKPIT/issues"
+                                        <a href="https://github.com/openITCOCKPIT/openITCOCKPIT/issues"
                                            target="_blank"
                                            class="btn btn-default btn-sm">
                                             <i class="fab fa-github"></i>
@@ -213,4 +213,3 @@
         </div>
     </div>
 </div>
-

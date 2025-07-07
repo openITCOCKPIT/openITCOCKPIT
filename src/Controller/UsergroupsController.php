@@ -170,7 +170,7 @@ class UsergroupsController extends AppController {
         //}
 
         // Lightning fast workaround (we also done this in cake 2)
-        // https://github.com/it-novum/openITCOCKPIT/blob/openITCOCKPIT-3.7.2/app/Controller/UsergroupsController.php#L213-L221
+        // https://github.com/openITCOCKPIT/openITCOCKPIT/blob/openITCOCKPIT-3.7.2/app/Controller/UsergroupsController.php#L213-L221
         /** @var ArosAcosTable $ArosAcosTable */
         $ArosAcosTable = TableRegistry::getTableLocator()->get('ArosAcos');
 

@@ -320,9 +320,10 @@ class MapgeneratorsController extends AppController {
 
             $allGeneratedMaps = $Mapgenerator->getAllGeneratedMaps();
             $allGeneratedMapIds = Hash::extract($allGeneratedMaps, '{n}.id');
+            $amountOfNewGeneratedMaps = count($Mapgenerator->getNewGeneratedMaps());
 
             // save new generated maps
-            if ($allGeneratedMapIds) {
+            if ($amountOfNewGeneratedMaps) {
 
                 $data = [
                     'has_generated_maps' => 1,
@@ -356,7 +357,7 @@ class MapgeneratorsController extends AppController {
             // return most important information
             $generatedMapsAndItems = [
                 'amountOfTotalMaps'         => count($allGeneratedMaps),
-                'amountOfNewGeneratedMaps'  => count($Mapgenerator->getNewGeneratedMaps()),
+                'amountOfNewGeneratedMaps'  => $amountOfNewGeneratedMaps,
                 'amountOfNewGeneratedItems' => count($Mapgenerator->getGeneratedItems()),
                 'maps'                      => $allGeneratedMapIds,
                 'newMaps'                   => Hash::extract($Mapgenerator->getNewGeneratedMaps(), '{n}.id'),

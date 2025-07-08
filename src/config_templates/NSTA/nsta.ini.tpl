@@ -1,5 +1,5 @@
 [nsta]
-; All config options can be found: https://github.com/it-novum/nsta/blob/development/cli/cli.go
+; All config options can be found: https://github.com/openITCOCKPIT/nsta/blob/development/cli/cli.go
 ;
 ; address for local gearman server
 gearman = "127.0.0.1:4730"

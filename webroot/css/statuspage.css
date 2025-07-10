@@ -1,3 +1,28 @@
+/*
+ * Copyright (C) <2015>  <it-novum GmbH>
+ *
+ * This file is dual licensed
+ *
+ * 1.
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, version 3 of the License.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * 2.
+ *     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+ *     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+ *     License agreement and license key will be shipped with the order
+ *     confirmation.
+ */
+
 /** This CSS is used by public status pages only !! **/
 
 
@@ -31,16 +56,18 @@
 /* Implement dark-mode */
 
 :root {
-    --body-bg-color: #4d504f;
+    --body-bg-color: #212631;
     --border-color: #232323;
     --panel-bg-color: #383838;
-    --card-bg-color: #535353;
+    --card-bg-color: var(--cui-body-bg);
     --main-text-color: #bababa;
     --mobile-menu-bg-color: #4084c54c;
 }
 
 
 @media (prefers-color-scheme: dark) {
+
+
     /* Mobile menu */
     .page-header {
         background-color: var(--mobile-menu-bg-color);
@@ -52,7 +79,7 @@
 
     /* page body and content */
     .dark-mode-body {
-        background-color: var(--body-bg-color);
+        background-color: var(--cui-body-bg);
         color: var(--main-text-color);
     }
 
@@ -63,6 +90,7 @@
 
     .card {
         background-color: var(--card-bg-color);
+        color: var(--main-text-color);
     }
 }
 

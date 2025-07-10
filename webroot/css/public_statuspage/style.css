@@ -1,0 +1,180 @@
+/*
+ * Copyright (C) <2015>  <it-novum GmbH>
+ *
+ * This file is dual licensed
+ *
+ * 1.
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, version 3 of the License.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * 2.
+ *     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+ *     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+ *     License agreement and license key will be shipped with the order
+ *     confirmation.
+ */
+
+:root {
+    --cui-body-font-size: 10pt;
+    --cui-body-font-weight: 400;
+    --cui-body-line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+    /* Mobile menu */
+    .page-header {
+        background-color: var(--cui-body-bg);
+    }
+
+    .text-dark {
+        color: var(--cui-body-color) !important;
+    }
+
+    /* page body and content */
+    .dark-mode-body {
+        background-color: #212631;;
+        color: rgba(255, 255, 255, 0.87);
+    }
+
+    .panel {
+        background-color: var(--panel-bg-color);
+        border-color: var(--border-color);
+    }
+
+    .card {
+        background-color: #212631;
+        color: var(--cui-body-bg) !important;
+        border-color: #323a49 !important;
+    }
+}
+
+/*
+body {
+    font-size: 8pt;
+} */
+.italic {
+    font-style: italic;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.wrap {
+    white-space: normal;
+    word-break: break-all;
+}
+
+
+@media (max-width: 991.98px) {
+    .hidden-md-down {
+        display: none !important;
+    }
+}
+
+.h-100 {
+    height: 100% !important;
+}
+
+.h-100vh {
+    height: 100vh !important;
+}
+
+.status-line {
+    width: 8px;
+    border-radius: 6px;
+}
+
+.flex-1 {
+    -webkit-box-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
+}
+
+.d-block {
+    display: block !important;
+}
+
+.l-h-n {
+    line-height: normal;
+}
+
+.pos-right {
+    right: 0;
+}
+
+.pos-bottom {
+    bottom: 0;
+}
+
+.opacity-15 {
+    opacity: 0.15;
+}
+
+.fw-500 {
+    font-weight: 500 !important;
+}
+
+
+.bg-not-monitored {
+    background-color: rgb(88, 86, 214);
+}
+
+.statuspage-icon {
+    font-size: 3.5rem;
+    text-shadow: -1px -1px 0px rgba(255, 255, 255, 0.3), 1px 1px 0px rgba(0, 0, 0, 0.8);
+}
+
+.font-xs {
+    font-size: 85% !important;
+}
+
+.statuspage-item-box {
+    background: #4285F408;
+    background-clip: content-box;
+}
+
+.position-absolute {
+    position: absolute !important;
+}
+
+
+.img-public {
+    max-height: 500px;
+    object-fit: cover;
+}
+
+.img-responsive {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+    /*  max-height: 400px; */
+    object-fit: cover;
+}
+
+.logo-public {
+    max-width: 64px;
+    object-fit: cover;
+}
+
+a {
+    text-decoration: none;
+}
+
+.border-none {
+    border: 0;
+}
+
+.fxw-nw {
+    flex-wrap: nowrap !important;
+}

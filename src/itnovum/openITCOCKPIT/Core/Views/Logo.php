@@ -28,6 +28,22 @@ namespace itnovum\openITCOCKPIT\Core\Views;
 use itnovum\openITCOCKPIT\Core\LoginBackgrounds;
 
 class Logo {
+    public const TYPE_INTERFACE_PDF = 0;
+    public const TYPE_NOTIFICATIONS = 1;
+    public const TYPE_INTERFACE_BIG = 2;
+    public const TYPE_HEADER = 3;
+    public const TYPE_LOGIN_BACKGROUND = 4;
+    public const TYPE_STATUS_PAGE_HEADER = 5;
+
+    public const TYPES = [
+        self::TYPE_INTERFACE_PDF,
+        self::TYPE_NOTIFICATIONS,
+        self::TYPE_INTERFACE_BIG,
+        self::TYPE_HEADER,
+        self::TYPE_LOGIN_BACKGROUND,
+        self::TYPE_STATUS_PAGE_HEADER
+    ];
+
     private $logoName = 'logo.png';
     private $smallLogoName = 'logo_small.png';
 
@@ -42,6 +58,8 @@ class Logo {
     private $customHeaderLogoName = 'logo_custom_header.png';
 
     private $customLoginBackgroundName = 'custom_login_background.png';
+
+    private $customStatusPageHeaderName = 'custom_status_page_header.png';
 
     /**
      * @return string
@@ -281,10 +299,25 @@ class Logo {
     }
 
     /**
+     * @return bool
+     */
+    public function isCustomStatusPageHeader(): bool {
+        $file = sprintf($this->logoBaseForAbsolutePath, WWW_ROOT, $this->customStatusPageHeaderName);
+        return file_exists($file);
+    }
+
+    /**
      * @return string
      */
     public function getCustomLoginBackgroundDiskPath() {
         return sprintf($this->logoBasePath, WWW_ROOT, $this->customLoginBackgroundName);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCustomStatusPageHeaderDiskPath() {
+        return sprintf($this->logoBasePath, WWW_ROOT, $this->customStatusPageHeaderName);
     }
 
     /**
@@ -300,5 +333,34 @@ class Logo {
         $images = $LoginBackgrounds->getImages();
 
         return sprintf('/img/login/%s', $images['images'][0]['image']);
+    }
+
+    public function getCustomStatusPageHeaderHtml(): string {
+        if ($this->isCustomStatusPageHeader()) {
+            return sprintf($this->logoBasePath, '', $this->customStatusPageHeaderName);
+        }
+
+        // No custom status page header - So there is NO header image.
+    }
+
+    /**
+     * From the given $logoType, I will return the path to the actual local file.
+     * This is regardless of whether the file exists or not.
+     *
+     * @param int $logoType I am the type of the image you want to get.
+     * @return string
+     * @throws \Exception In case the given $logoType is unknown.
+     * @see  \itnovum\openITCOCKPIT\Core\Views\Logo::TYPES
+     */
+    public function getLocalPath(int $logoType): string {
+        return match ($logoType) {
+            self::TYPE_INTERFACE_PDF => $this->getCustomLogoPdfPath(),
+            self::TYPE_NOTIFICATIONS => $this->getCustomSmallLogoPdfPath(),
+            self::TYPE_INTERFACE_BIG => $this->getCustomLogoDiskPath(),
+            self::TYPE_HEADER => $this->getCustomHeaderLogoDiskPath(),
+            self::TYPE_LOGIN_BACKGROUND => $this->getCustomLoginBackgroundDiskPath(),
+            self::TYPE_STATUS_PAGE_HEADER => $this->getCustomStatusPageHeaderDiskPath(),
+            default => throw new \Exception('Logo Type not known'),
+        };
     }
 }

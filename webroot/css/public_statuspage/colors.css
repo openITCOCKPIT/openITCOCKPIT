@@ -1,0 +1,155 @@
+/*
+ * Copyright (C) <2015-present>  <it-novum GmbH>
+ *
+ * This file is dual licensed
+ *
+ * 1.
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, version 3 of the License.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * 2.
+ *     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+ *     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+ *     License agreement and license key will be shipped with the order
+ *     confirmation.
+ */
+
+/*
+openITCOCKPIT v5 Color definition classes for PDF files
+*/
+
+.txt-primary {
+    color: #5856d6 !important;
+}
+
+.not-monitored {
+    color: #5856d6 !important;
+}
+
+.ok, .up {
+    color: #00C851 !important;
+}
+
+.warning {
+    color: #ffbb33 !important;
+}
+
+.critical, .down {
+    color: #CC0000 !important;
+}
+
+.unknown, .unreachable {
+    color: #727b84 !important;
+}
+
+.ok-soft, .up-soft {
+    color: #00ea5f !important;
+}
+
+.warning-soft {
+    color: #f9d180 !important;
+}
+
+.critical-soft, .down-soft {
+    color: #ff4444 !important;
+}
+
+.unknown-soft, .unreachable-soft {
+    color: #CFCFCF !important;
+}
+
+.bg-color-danger {
+    background: #CC0000;
+}
+
+.bg-color-warning {
+    background: #ffbb33;
+}
+
+.bg-ok, .bg-up {
+    background-color: #00C851 !important;
+}
+
+.bg-ok-soft, .bg-up-soft {
+    background-color: #00ea5f !important;
+}
+
+.bg-warning {
+    background-color: #ffbb33 !important;
+}
+
+.bg-warning-soft {
+    background-color: #f9d180 !important;
+}
+
+.bg-critical, .bg-down {
+    background-color: #CC0000 !important;
+}
+
+.bg-critical-soft, .bg-down-soft {
+    background-color: #ff4444 !important;
+}
+
+.bg-unknown, .bg-unreachable {
+    background-color: #727b84 !important;
+}
+
+.bg-unknown-soft, .bg-unreachable-soft {
+    background-color: #CFCFCF !important;
+}
+
+.bg-downtime {
+    background-color: #337ab7 !important;
+}
+
+.bg-downtime-cancelled {
+    background-color: #00c4d8 !important;
+}
+
+.bg-ack {
+    background-color: #774DFF !important;
+    border-color: #3c00ff !important;
+    z-index: 2 !important;
+    color: #ffffff;
+}
+
+.bg-not-monitored {
+    background-color: #5856d6 !important;
+}
+
+.text-community {
+    color: #4085C6;
+}
+
+.bg-community {
+    background-color: #4085C6;
+}
+
+.btn-community:hover {
+    background: #143d5b;
+}
+
+.text-enterprise {
+    color: #DD0B2F;
+}
+
+.bg-enterprise {
+    background-color: #DD0B2F;
+}
+
+.btn-enterprise:hover {
+    background: #a61f1c;
+}
+
+.txt-color-white {
+    color: #ffffff !important;
+}

@@ -49,7 +49,6 @@ use Cake\ORM\Entity;
  * @property FrozenTime $modified
  *
  * @property Containers[] $containers
- * @property Containers[] $start_containers
  * @property Maps[] $maps
  */
 class Mapgenerator extends Entity {
@@ -72,7 +71,6 @@ class Mapgenerator extends Entity {
         'created'            => true,
         'modified'           => true,
         'containers'         => true,
-        'start_containers'   => true,
         'maps'               => true
     ];
 }

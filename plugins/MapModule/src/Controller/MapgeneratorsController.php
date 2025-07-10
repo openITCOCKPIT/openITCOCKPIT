@@ -126,24 +126,13 @@ class MapgeneratorsController extends AppController {
         /** @var $ContainersTable ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
-        $selectedContainerIds = $this->request->getQuery('selectedContainers', []);
-        $loadStartContainers = $this->request->getQuery('loadStartContainers', false);
-
         if ($this->hasRootPrivileges === true) {
             $containers = $ContainersTable->easyPath($this->MY_RIGHTS, CT_TENANT, [], $this->hasRootPrivileges, [CT_GLOBAL]);
         } else {
             $containers = $ContainersTable->easyPath($this->getWriteContainers(), CT_TENANT, [], $this->hasRootPrivileges, [CT_GLOBAL]);
         }
 
-        if ($loadStartContainers) {
-            $filteredContainers = $ContainersTable->getStartContainersForMapgenerator($selectedContainerIds, $this->MY_RIGHTS, $this->hasRootPrivileges);
-
-            $containers = $filteredContainers;
-        }
-
-        $containers = Api::makeItJavaScriptAble($containers);
-
-        $this->set('containers', $containers);
+        $this->set('containers', Api::makeItJavaScriptAble($containers));
         $this->viewBuilder()->setOption('serialize', ['containers']);
     }
 
@@ -162,8 +151,7 @@ class MapgeneratorsController extends AppController {
 
         $mapgenerator = $MapgeneratorsTable->get($id, [
             'contain' => [
-                'Containers',
-                'StartContainers',
+                'Containers'
             ]
         ]);
 
@@ -253,7 +241,6 @@ class MapgeneratorsController extends AppController {
         $mapgenerator = $MapgeneratorsTable->get($id, [
             'contain' => [
                 'Containers',
-                'StartContainers',
                 'Maps'
             ]
         ]);
@@ -301,8 +288,8 @@ class MapgeneratorsController extends AppController {
                 return;
             }
 
-            $startContainerIds = Hash::extract($mapgenerator, 'start_containers.{n}.id');
-            $containersAndHosts = $ContainersTable->getContainersForMapgeneratorByContainerStructure($hosts, $MY_RIGHTS, $startContainerIds);
+            $containerIds = Hash::extract($mapgenerator, 'containers.{n}.id');
+            $containersAndHosts = $ContainersTable->getContainersForMapgeneratorByContainerStructure($hosts, $MY_RIGHTS, $containerIds);
 
             $generatedMaps = [];
             $mapIds = Hash::extract($mapgenerator['maps'], '{n}.id');

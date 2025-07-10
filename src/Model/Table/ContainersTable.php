@@ -1596,10 +1596,10 @@ class ContainersTable extends Table {
     /**
      * @param array $hosts
      * @param array $MY_RIGHTS
-     * @param array $startContainers
+     * @param array $containers
      * @return array
      */
-    public function getContainersForMapgeneratorByContainerStructure($hosts, $MY_RIGHTS, $startContainers = []) {
+    public function getContainersForMapgeneratorByContainerStructure($hosts, $MY_RIGHTS, $containers) {
 
         $containersAndHosts = [];
         $containerCache = []; // cache for containers to avoid multiple database calls
@@ -1663,11 +1663,11 @@ class ContainersTable extends Table {
             // reverse array to have higher containers first
             $containerHierarchyForHost = array_reverse($containerHierarchyForHost);
 
-            // filter hosts and container structure by start containers
-            if (!empty($startContainers)) {
+            // filter hosts and container structure by containers
+            if (!empty($containers)) {
 
                 $startContainerFound = false;
-                foreach ($startContainers as $startContainerId) {
+                foreach ($containers as $startContainerId) {
                     $containerFoundInIteration = false;
                     $containerDeletePos = 0;
                     foreach ($containerHierarchyForHost as $containerKey => $container) {
@@ -1706,28 +1706,6 @@ class ContainersTable extends Table {
         }
 
         return $containersAndHosts;
-
-    }
-
-    /**
-     * @param array $selectedContainerIds
-     * @param array $MY_RIGHTS
-     * @return array
-     */
-    public function getStartContainersForMapgenerator($selectedContainerIds, $MY_RIGHTS, $hasRootPrivileges = false) {
-
-        $startContainers = [];
-        if (empty($selectedContainerIds)) {
-            // if no container is selected, return nothing
-            return $startContainers;
-        }
-
-        $filteredContainerIds = $this->resolveChildrenOfContainerIds($selectedContainerIds, true, [CT_TENANT, CT_LOCATION, CT_NODE]);
-        $startContainerIds = array_merge($filteredContainerIds, $selectedContainerIds);
-        $startContainers = $this->easyPath($startContainerIds, CT_TENANT, [], $hasRootPrivileges, [CT_GLOBAL]);
-
-
-        return $startContainers;
 
     }
 

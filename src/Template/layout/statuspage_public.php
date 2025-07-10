@@ -91,8 +91,7 @@ $logo = new Logo();
     <link rel="stylesheet" type="text/css" href="/node_modules/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="/css/coreui/coreui.css">
-    <link rel="stylesheet" type="text/css" href="/css/public_statuspage/colors.css">
-    <link rel="stylesheet" type="text/css" href="/css/public_statuspage/style.css">
+    <link rel="stylesheet" type="text/css" href="/css/statuspage.css">
 
     <title>
         <?= __('Statuspage') ?>

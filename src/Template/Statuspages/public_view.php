@@ -26,8 +26,7 @@
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
 //	under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //	License agreement and license key will be shipped with the order
-//	confirmation.
-//use itnovum\openITCOCKPIT\Core\LoginBackgrounds;
+//	confirmation.;
 use itnovum\openITCOCKPIT\Core\Views\Logo;
 
 /**
@@ -37,34 +36,21 @@ use itnovum\openITCOCKPIT\Core\Views\Logo;
  */
 
 $logo = new Logo();
-//$LoginBackgrounds = new LoginBackgrounds();
-//$images = $LoginBackgrounds->getImages();
-
 ?>
-<!--<div>-->
-
-<header class="container">
-    <nav class="navbar bg-dark border-bottom my-3">
-        <div>
-            <div>
-                <a href="<?= $this->Html->Url->build(['controller' => 'Statuspages', 'action' => 'publicView', $id]); ?>"
-                   class="d-flex align-items-center position-relative">
-                    <img src="<?= $logo->getHeaderLogoForHtml(); ?>" alt="<?= h($systemname); ?> WebApp"
-                         class=" ms-2 logo-public" aria-roledescription="logo">
-                    <span class="h5 pt-1 ms-2 text-white text-truncate">
-                        <?php if (!empty($statuspage['statuspage']['public_title'])): ?>
-                            <?= h($statuspage['statuspage']['public_title']); ?>
-                        <?php else: ?>
-                            <?= h($systemname); ?>
-                        <?php endif; ?>
-                    </span>
-                </a>
-            </div>
-            <div class="ml-auto d-flex"></div>
-        </div>
-    </nav>
-
-</header>
+<div class="container">
+    <header class="header ps-0">
+        <a class="header-brand"
+           href="<?= $this->Html->Url->build(['controller' => 'Statuspages', 'action' => 'publicView', $id]); ?>">
+            <img src="<?= $logo->getHeaderLogoForHtml(); ?>" alt="<?= h($systemname); ?> Public statuspage"
+                 class="logo-public">
+            <?php if (!empty($statuspage['statuspage']['public_title'])): ?>
+                <span class="text-header"><?= h($statuspage['statuspage']['public_title']); ?></span>
+            <?php else: ?>
+                <span class="text-header"><?= h($systemname); ?></span>
+            <?php endif; ?>
+        </a>
+    </header>
+</div>
 
 <div class="container">
     <div class="row">

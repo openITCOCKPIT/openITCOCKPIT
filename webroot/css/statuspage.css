@@ -23,64 +23,33 @@
  *     confirmation.
  */
 
-/** This CSS is used by public status pages only !! **/
-
-
-@media (min-width: 992px) {
-    /* Set the openITCOCKPIT Community Color as navbar bg */
-    .nav-function-top .page-header {
-        background-image: -webkit-gradient(linear, right top, left top, from(#4084c54c), to(transparent));
-        background-image: linear-gradient(270deg, #4084c54c, transparent);
-        background-color: #4d504f;
-        -webkit-box-shadow: 0px 0px 14px 0px #4084c54c;
-        box-shadow: 0px 0px 14px 0px #4084c54c;
-    }
-}
-
-/* Push the content "under" the main menu */
-/* margin for desktop */
-@media (min-width: 992px) {
-    .page-content-margin {
-        margin-top: 5.625rem;
-    }
-}
-
-/* margin for mobile and tablets */
-@media (max-width: 991px) {
-    .page-content-margin {
-        margin-top: 0;
-    }
-}
-
-
-/* Implement dark-mode */
 
 :root {
-    --body-bg-color: #212631;
-    --border-color: #232323;
-    --panel-bg-color: #383838;
-    --card-bg-color: var(--cui-body-bg);
-    --main-text-color: #bababa;
-    --mobile-menu-bg-color: #4084c54c;
-}
+    --cui-body-font-size: 10pt;
+    --cui-body-font-weight: 400;
+    --cui-body-line-height: 1.5;
 
-
-@media (prefers-color-scheme: dark) {
-
-
-    /* Mobile menu */
-    .page-header {
-        background-color: var(--mobile-menu-bg-color);
+    .header {
+        --cui-header-border-color: #323a49;
     }
 
-    .text-dark {
-        color: var(--main-text-color) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .header {
+        background-color: #212631;
+        color: rgba(255, 255, 255, 0.87) !important;
+        --cui-header-border-color: rgba(255, 255, 255, 0.87) !important;
+    }
+
+    .text-header {
+        color: rgba(255, 255, 255, 0.87) !important;
     }
 
     /* page body and content */
     .dark-mode-body {
-        background-color: var(--cui-body-bg);
-        color: var(--main-text-color);
+        background-color: #212631;;
+        color: rgba(255, 255, 255, 0.87);
     }
 
     .panel {
@@ -89,8 +58,164 @@
     }
 
     .card {
-        background-color: var(--card-bg-color);
-        color: var(--main-text-color);
+        background-color: #212631;
+        color: var(--cui-body-bg) !important;
+        border-color: #323a49 !important;
     }
 }
 
+
+.d-block {
+    display: block !important;
+}
+
+.l-h-n {
+    line-height: normal;
+}
+
+.status-line {
+    width: 8px;
+    border-radius: 6px;
+}
+
+.h-100 {
+    height: 100% !important;
+}
+
+.flex-1 {
+    -webkit-box-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
+}
+
+.logo-public {
+    max-width: 64px;
+    object-fit: cover;
+}
+
+.img-responsive {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+    /*  max-height: 400px; */
+    object-fit: cover;
+}
+
+
+.pos-right {
+    right: 0;
+}
+
+.pos-bottom {
+    bottom: 0;
+}
+
+.opacity-15 {
+    opacity: 0.15;
+}
+
+.statuspage-icon {
+    font-size: 3.5rem;
+    text-shadow: -1px -1px 0px rgba(255, 255, 255, 0.3), 1px 1px 0px rgba(0, 0, 0, 0.8);
+}
+
+/* colors*/
+.txt-primary {
+    color: #5856d6 !important;
+}
+
+.not-monitored {
+    color: #5856d6 !important;
+}
+
+.ok, .up {
+    color: #00C851 !important;
+}
+
+.warning {
+    color: #ffbb33 !important;
+}
+
+.critical, .down {
+    color: #CC0000 !important;
+}
+
+.unknown, .unreachable {
+    color: #727b84 !important;
+}
+
+.ok-soft, .up-soft {
+    color: #00ea5f !important;
+}
+
+.warning-soft {
+    color: #f9d180 !important;
+}
+
+.critical-soft, .down-soft {
+    color: #ff4444 !important;
+}
+
+.unknown-soft, .unreachable-soft {
+    color: #CFCFCF !important;
+}
+
+.bg-color-danger {
+    background: #CC0000;
+}
+
+.bg-color-warning {
+    background: #ffbb33;
+}
+
+.bg-ok, .bg-up {
+    background-color: #00C851 !important;
+}
+
+.bg-ok-soft, .bg-up-soft {
+    background-color: #00ea5f !important;
+}
+
+.bg-warning {
+    background-color: #ffbb33 !important;
+}
+
+.bg-warning-soft {
+    background-color: #f9d180 !important;
+}
+
+.bg-critical, .bg-down {
+    background-color: #CC0000 !important;
+}
+
+.bg-critical-soft, .bg-down-soft {
+    background-color: #ff4444 !important;
+}
+
+.bg-unknown, .bg-unreachable {
+    background-color: #727b84 !important;
+}
+
+.bg-unknown-soft, .bg-unreachable-soft {
+    background-color: #CFCFCF !important;
+}
+
+.bg-downtime {
+    background-color: #337ab7 !important;
+}
+
+.bg-downtime-cancelled {
+    background-color: #00c4d8 !important;
+}
+
+.bg-ack {
+    background-color: #774DFF !important;
+    border-color: #3c00ff !important;
+    z-index: 2 !important;
+    color: #ffffff;
+}
+
+.bg-not-monitored {
+    background-color: #5856d6 !important;
+}

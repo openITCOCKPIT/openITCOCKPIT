@@ -44,7 +44,6 @@ use Cake\ORM\Entity;
  * @property int $interval
  * @property int $type
  * @property int $items_per_line
- * @property int $has_generated_maps
  * @property FrozenTime $created
  * @property FrozenTime $modified
  *
@@ -62,15 +61,14 @@ class Mapgenerator extends Entity {
      * @var array
      */
     protected $_accessible = [
-        'name'               => true,
-        'description'        => true,
-        'interval'           => true,
-        'has_generated_maps' => true,
-        'items_per_line'     => true,
-        'type'               => true,
-        'created'            => true,
-        'modified'           => true,
-        'containers'         => true,
-        'maps'               => true
+        'name'           => true,
+        'description'    => true,
+        'interval'       => true,
+        'items_per_line' => true,
+        'type'           => true,
+        'created'        => true,
+        'modified'       => true,
+        'containers'     => true,
+        'maps'           => true
     ];
 }

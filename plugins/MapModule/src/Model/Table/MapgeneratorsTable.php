@@ -154,10 +154,6 @@ class MapgeneratorsTable extends Table {
             ->notEmptyString('items_per_line')
             ->greaterThan('items_per_line', 0, __('This value need to be at least 1'));
 
-        $validator
-            ->integer('has_generated_maps')
-            ->notEmptyString('has_generated_maps');
-
         return $validator;
     }
 
@@ -193,9 +189,25 @@ class MapgeneratorsTable extends Table {
                 }
                 return $query;
             });
-        if (!empty($indexFilter)) {
-            $query->where($indexFilter);
+
+        if (isset($where['has_generated_maps'])) {
+
+            if ($where['has_generated_maps'] === '1') {
+                $this->leftJoin(
+                    ['MapgeneratorsToMaps' => 'mapgenerators_to_maps'],
+                    ['MapgeneratorsToMaps.mapgenerator_id = Mapgenerators.id']
+                )->where(['MapgeneratorsToMaps.map_id IS NOT NULL']);
+            } else if ($where['has_generated_maps'] === '0') {
+                $query->leftJoin(
+                    ['MapgeneratorsToMaps' => 'mapgenerators_to_maps'],
+                    ['MapgeneratorsToMaps.mapgenerator_id = Mapgenerators.id']
+                )->where(['MapgeneratorsToMaps.map_id IS NULL']);
+            }
+            unset($where['has_generated_maps']);
         }
+
+        $query->where($indexFilter);
+
 
         if ($limit !== null) {
             $query->limit($limit);

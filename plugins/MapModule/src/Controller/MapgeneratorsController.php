@@ -204,8 +204,7 @@ class MapgeneratorsController extends AppController {
         $mapgenerator = $MapgeneratorsTable->get($id, [
             'contain' => [
                 'Maps',
-                'Containers',
-                'StartContainers'
+                'Containers'
             ]
         ]);
         $containerIdsToCheck = Hash::extract($mapgenerator, 'containers.{n}.id');
@@ -313,8 +312,7 @@ class MapgeneratorsController extends AppController {
             if ($amountOfNewGeneratedMaps) {
 
                 $data = [
-                    'has_generated_maps' => 1,
-                    'maps'               => [
+                    'maps' => [
                         '_ids' => $allGeneratedMapIds
                     ]
                 ];

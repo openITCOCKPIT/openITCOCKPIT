@@ -200,6 +200,7 @@ class Mapgenerator {
             'name'             => $name,
             'title'            => $name,
             'refresh_interval' => $refreshInterval,
+            'auto_generated'   => 1
         ];
 
         $map = $MapsTable->newEmptyEntity();

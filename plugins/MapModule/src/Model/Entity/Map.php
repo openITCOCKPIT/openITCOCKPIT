@@ -50,6 +50,7 @@ use DistributeModule\Model\Entity\Satellite;
  * @property int $background_size_y
  * @property int $refresh_interval
  * @property string|null $json_data
+ * @property int $auto_generated
  * @property FrozenTime $created
  * @property FrozenTime $modified
  *
@@ -84,6 +85,7 @@ class Map extends Entity {
         'background_size_y'  => true,
         'refresh_interval'   => true,
         'json_data'          => true,
+        'auto_generated'     => true,
         'created'            => true,
         'modified'           => true,
         'mapgadgets'         => true,

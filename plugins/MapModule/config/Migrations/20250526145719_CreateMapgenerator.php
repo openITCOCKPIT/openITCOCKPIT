@@ -66,11 +66,6 @@ class CreateMapgenerator extends AbstractMigration {
                     'limit'   => 11,
                     'null'    => false,
                 ])
-                ->addColumn('has_generated_maps', 'integer', [
-                    'default' => '0',
-                    'limit'   => 5,
-                    'null'    => false,
-                ])
                 ->addColumn('type', 'integer', [
                     'default' => '1',
                     'limit'   => 11,
@@ -139,6 +134,17 @@ class CreateMapgenerator extends AbstractMigration {
                     ]
                 )
                 ->create();
+        }
+
+        if ($this->hasTable('maps')) {
+            $this->table('maps')
+                ->addColumn('auto_generated', 'integer', [
+                    'after'   => 'json_data',
+                    'default' => '0',
+                    'limit'   => 5,
+                    'null'    => false,
+                ])
+                ->update();
         }
     }
 }

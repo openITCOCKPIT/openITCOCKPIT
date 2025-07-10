@@ -39,7 +39,7 @@ class MapgeneratorFilter extends Filter {
                 'Mapgenerators.description'
             ],
             'bool' => [
-                'Mapgenerators.has_generated_maps'
+                'has_generated_maps'
             ],
         ];
 

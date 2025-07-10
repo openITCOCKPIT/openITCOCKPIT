@@ -178,6 +178,8 @@ class MapgeneratorsTable extends Table {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
 
+        $where = $indexFilter;
+
         $query = $this->find()
             ->contain([
                 'Maps',
@@ -191,13 +193,12 @@ class MapgeneratorsTable extends Table {
             });
 
         if (isset($where['has_generated_maps'])) {
-
-            if ($where['has_generated_maps'] === '1') {
-                $this->leftJoin(
+            if ($where['has_generated_maps'] === 1) {
+                $query->leftJoin(
                     ['MapgeneratorsToMaps' => 'mapgenerators_to_maps'],
                     ['MapgeneratorsToMaps.mapgenerator_id = Mapgenerators.id']
                 )->where(['MapgeneratorsToMaps.map_id IS NOT NULL']);
-            } else if ($where['has_generated_maps'] === '0') {
+            } else if ($where['has_generated_maps'] === 0) {
                 $query->leftJoin(
                     ['MapgeneratorsToMaps' => 'mapgenerators_to_maps'],
                     ['MapgeneratorsToMaps.mapgenerator_id = Mapgenerators.id']
@@ -206,8 +207,7 @@ class MapgeneratorsTable extends Table {
             unset($where['has_generated_maps']);
         }
 
-        $query->where($indexFilter);
-
+        $query->where($where);
 
         if ($limit !== null) {
             $query->limit($limit);

@@ -44,15 +44,13 @@ $logo = new Logo();
             <img src="<?= $logo->getHeaderLogoForHtml(); ?>" alt="<?= h($systemname); ?> Public statuspage"
                  class="logo-public">
             <?php if (!empty($statuspage['statuspage']['public_title'])): ?>
-                <span class="text-header"><?= h($statuspage['statuspage']['public_title']); ?></span>
+                <span class="text-header "><?= h($statuspage['statuspage']['public_title']); ?></span>
             <?php else: ?>
                 <span class="text-header"><?= h($systemname); ?></span>
             <?php endif; ?>
         </a>
     </header>
-</div>
 
-<div class="container">
     <div class="row">
         <div class="m-0 w-100">
             <!-- Statuspage over all status -->

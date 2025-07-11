@@ -33,6 +33,10 @@
         --cui-header-border-color: #323a49;
     }
 
+    .header-brand {
+        white-space: normal;
+    }
+
 }
 
 @media (prefers-color-scheme: dark) {
@@ -42,8 +46,10 @@
         --cui-header-border-color: rgba(255, 255, 255, 0.87) !important;
     }
 
+
     .text-header {
         color: rgba(255, 255, 255, 0.87) !important;
+        white-space: wrap !important;
     }
 
     /* page body and content */

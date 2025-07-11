@@ -52,11 +52,6 @@
         color: rgba(255, 255, 255, 0.87);
     }
 
-    .panel {
-        background-color: var(--panel-bg-color);
-        border-color: var(--border-color);
-    }
-
     .card {
         background-color: #212631;
         color: var(--cui-body-bg) !important;

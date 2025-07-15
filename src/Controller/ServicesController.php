@@ -1786,7 +1786,7 @@ class ServicesController extends AppController {
             }
         }
 
-        $canSubmitExternalCommands = $this->hasPermission('externalcommands', 'services');
+        $canSubmitExternalCommands = $this->hasPermission('externalcommands', 'services') && $this->hasPermission('submit', 'cmd', 'nagiosmodule');
 
         $typesForView = $ServicesTable->getServiceTypesWithStyles();
         $serviceType = $typesForView[$mergedService['service_type']];

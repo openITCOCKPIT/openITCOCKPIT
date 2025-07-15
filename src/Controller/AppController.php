@@ -324,6 +324,7 @@ class AppController extends Controller {
             'services.listtocsv'      => 'services.listtocsv',
             'hostgroups.listtocsv'    => 'hostgroups.listtocsv',
             'servicegroups.listtocsv' => 'servicegroups.listtocsv',
+            'users.listtocsv'         => 'users.listtocsv',
             'statuspages.publicview'  => 'statuspages.publicview',
         ];
 

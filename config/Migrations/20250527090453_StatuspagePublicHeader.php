@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) <2015>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
@@ -22,8 +22,28 @@
 //     License agreement and license key will be shipped with the order
 //     confirmation.
 
-if (!defined('OPENITCOCKPIT_VERSION')) {
-    define('OPENITCOCKPIT_VERSION', '5.0.2');
-}
+declare(strict_types=1);
 
-return [];
+use Migrations\AbstractMigration;
+
+class StatuspagePublicHeader extends AbstractMigration {
+    /**
+     * Change Method.
+     *
+     * More information on this method is available here:
+     * https://book.cakephp.org/phinx/0/en/migrations.html#the-change-method
+     * @return void
+     */
+    public function change(): void {
+        if ($this->hasTable('statuspages')) {
+            $this->table('statuspages')
+                ->addColumn('public_title', 'string', [
+                    'after'   => 'description',
+                    'default' => null,
+                    'limit'   => 255,
+                    'null'    => true,
+                ])
+                ->update();
+        }
+    }
+}

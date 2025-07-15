@@ -2318,7 +2318,7 @@ class HostsController extends AppController {
             $parentHostStatus[$uuid] = $ParentHoststatus->toArrayForBrowser();
         }
 
-        $canSubmitExternalCommands = $this->hasPermission('externalcommands', 'hosts');
+        $canSubmitExternalCommands = $this->hasPermission('externalcommands', 'hosts') && $this->hasPermission('submit', 'cmd', 'nagiosmodule');
 
         if ($canUserSeeCheckCommand === false) {
             $mergedHost['hostCommandLine'] = 'Removed due to insufficient permissions';

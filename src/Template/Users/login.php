@@ -55,9 +55,9 @@ $Logo = new \itnovum\openITCOCKPIT\Core\Views\Logo();
             <br>
             If you believe this is a bug, feel free to open an issue at:
             <br>
-            <a href="https://github.com/it-novum/openITCOCKPIT"
+            <a href="https://github.com/openITCOCKPIT/openITCOCKPIT"
                class="text-white fw-bold"
-               target="_blank">https://github.com/it-novum/openITCOCKPIT</a>
+               target="_blank">https://github.com/openITCOCKPIT/openITCOCKPIT</a>
         </p>
         <h3 class="text-end">
             <a

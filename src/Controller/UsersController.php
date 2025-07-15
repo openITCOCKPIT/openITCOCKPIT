@@ -550,6 +550,8 @@ class UsersController extends AppController {
                 $user->setAccess('email', false);
                 $user->setAccess('firstname', false);
                 $user->setAccess('lastname', false);
+                $user->setAccess('company', false);
+                $user->setAccess('department', false);
                 $user->setAccess('password', false);
                 $user->setAccess('samaccountname', false);
                 $user->setAccess('ldap_dn', false);
@@ -599,12 +601,16 @@ class UsersController extends AppController {
                 }
             }
 
-            if ($user->is_oauth === true) {
-                $user->setAccess('is_oauth', false); //do not allow to change is_oauth
-                //oAuth users has no password
-                $data['password'] = '';
-                $data['confirm_password'] = '';
+            // If not LDAP
+            if (!$user->samaccountname) {
+                // ... and now becomes oAuth, remove password validation
+                if ($user->is_oauth === false && $data['is_oauth']) {
+                    // a user that becomes oAuth user, doesnt need a password
+                    $data['password'] = '';
+                    $data['confirm_password'] = '';
+                }
             }
+
             //prevent multiple hash of password
             if ($data['password'] === '' && $data['confirm_password'] === '') {
                 unset($data['password']);

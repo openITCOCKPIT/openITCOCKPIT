@@ -1222,7 +1222,7 @@ class ContainersTable extends Table {
      * @param $containerId
      * @return array
      * @deprecated since ITC-2819
-     * See https://github.com/it-novum/openITCOCKPIT/pull/1377/files?diff=split&w=0 how to restore <= 4.4.1 behavior
+     * See https://github.com/openITCOCKPIT/openITCOCKPIT/pull/1377/files?diff=split&w=0 how to restore <= 4.4.1 behavior
      */
     public function resolveContainerIdForGroupPermissions($containerId): array {
         $visibleContainerIds = [$containerId];

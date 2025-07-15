@@ -65,7 +65,7 @@ trait DatabasePartitionsTrait {
     /**
      * This method creates the first Partition into a Table which has no partitions yet.
      * It is a more dynamic (or elegant) alternative to hardcoded table definitions like here:
-     * https://github.com/it-novum/openITCOCKPIT/blob/cdc26c67341b10389390ba4ae254e619877a980e/partitions_statusengine3.sql#L75-L77
+     * https://github.com/openITCOCKPIT/openITCOCKPIT/blob/cdc26c67341b10389390ba4ae254e619877a980e/partitions_statusengine3.sql#L75-L77
      *
      * The idea is to use MySQL partitions and still be able to use cakephp/migrations to manage the schema
      *
@@ -106,7 +106,7 @@ trait DatabasePartitionsTrait {
     /**
      * This method creates the first Partition into a Table which has no partitions yet.
      * It is a more dynamic (or elegant) alternative to hardcoded table definitions like here:
-     * https://github.com/it-novum/openITCOCKPIT/blob/cdc26c67341b10389390ba4ae254e619877a980e/partitions_statusengine3.sql#L75-L77
+     * https://github.com/openITCOCKPIT/openITCOCKPIT/blob/cdc26c67341b10389390ba4ae254e619877a980e/partitions_statusengine3.sql#L75-L77
      *
      * The idea is to use MySQL partitions and still be able to use cakephp/migrations to manage the schema
      *

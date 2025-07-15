@@ -141,7 +141,7 @@ class LdapIdentifier extends AbstractIdentifier implements IdentifierInterface {
             $filter = Filters::and(
                 Filters::raw($systemsettings['FRONTEND']['FRONTEND.LDAP.QUERY']),
                 Filters::or(
-                    Filters::equal('cn', $username), // Fix login for openLDAP https://github.com/it-novum/openITCOCKPIT/commit/d14c28603dda76558ace345d8ad12dc69caaae08
+                    Filters::equal('cn', $username), // Fix login for openLDAP https://github.com/openITCOCKPIT/openITCOCKPIT/commit/d14c28603dda76558ace345d8ad12dc69caaae08
                     Filters::equal('uid', $username)
                 )
             );

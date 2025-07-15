@@ -64,7 +64,7 @@ class LdapClient {
 
     /**
      * ITC-3127
-     * https://github.com/it-novum/openITCOCKPIT/pull/1500
+     * https://github.com/openITCOCKPIT/openITCOCKPIT/pull/1500
      *
      * Possible values:
      * memberUid
@@ -431,7 +431,7 @@ class LdapClient {
 
         if ($this->openLdapGroupSchema === 'uniqueMember') {
             // Filter by uniqueMember=uid=sAMAccountName*
-            // https://github.com/it-novum/openITCOCKPIT/pull/1500/files
+            // https://github.com/openITCOCKPIT/openITCOCKPIT/pull/1500/files
             $filter = \FreeDSx\Ldap\Search\Filters::and(
                 \FreeDSx\Ldap\Search\Filters::raw($this->rawGroupFilter),
                 \FreeDSx\Ldap\Search\Filters::startsWith('uniqueMember', $uniqueMember)

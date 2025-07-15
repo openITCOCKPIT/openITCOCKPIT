@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
     - name: 🕵️‍♀️ openITCOCKPIT Monitoring Agent
-      url: https://github.com/it-novum/openitcockpit-agent-go/
+      url: https://github.com/openITCOCKPIT/openitcockpit-agent-go/
       about: Please post all issues related to the openITCOCKPIT Monitoring Agent into the corresponding repository.
     - name: 💬 Discord
       url: https://discord.gg/G8KhxKuQ9G

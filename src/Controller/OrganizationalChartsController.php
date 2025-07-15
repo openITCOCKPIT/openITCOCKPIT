@@ -30,6 +30,7 @@ use App\Model\Table\ContainersTable;
 use App\Model\Table\OrganizationalChartConnectionsTable;
 use App\Model\Table\OrganizationalChartsTable;
 use App\Model\Table\OrganizationalChartStructuresTable;
+use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Log\Log;

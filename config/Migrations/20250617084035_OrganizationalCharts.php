@@ -113,6 +113,11 @@ class OrganizationalCharts extends AbstractMigration {
                     'limit'   => 11,
                     'null'    => true,
                 ])
+                ->addColumn('recursive', 'boolean', [
+                    'default' => false,
+                    'limit'   => null,
+                    'null'    => false,
+                ])
                 ->addColumn('x_position', 'integer', [
                     'default' => 0,
                     'limit'   => 11,
@@ -232,11 +237,6 @@ class OrganizationalCharts extends AbstractMigration {
                 ->addColumn('organizational_chart_node_id', 'integer', [
                     'default' => null,
                     'limit'   => 11,
-                    'null'    => false,
-                ])
-                ->addColumn('is_manager', 'integer', [
-                    'default' => 0,
-                    'limit'   => 2,
                     'null'    => false,
                 ])
                 ->addColumn('user_role', 'integer', [

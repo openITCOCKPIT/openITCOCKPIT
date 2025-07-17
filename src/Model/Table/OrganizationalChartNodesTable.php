@@ -120,6 +120,10 @@ class OrganizationalChartNodesTable extends Table {
             ->greaterThanOrEqual('container_id', 1);
 
         $validator
+            ->allowEmptyString('recursive')
+            ->boolean('recursive');
+
+        $validator
             ->integer('x_position');
         //->greaterThanOrEqual('x_position', 0, __('X position must be greater than or equal to 0'));
 

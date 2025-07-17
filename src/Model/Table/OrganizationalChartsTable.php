@@ -275,4 +275,19 @@ class OrganizationalChartsTable extends Table {
         return $query->firstOrFail();
     }
 
+    public function getOrnanizationalChartForEdit(int $id): array {
+        $query = $this->find()
+            ->contain([
+                'OrganizationalChartNodes' => [
+                    'UsersToOrganizationalChartNodes'
+                ],
+                'OrganizationalChartConnections'
+            ])
+            ->where([
+                'OrganizationalCharts.id' => $id,
+            ])
+            ->firstOrFail();
+
+        return $query->toArray();
+    }
 }

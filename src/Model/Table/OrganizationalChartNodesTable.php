@@ -82,6 +82,16 @@ class OrganizationalChartNodesTable extends Table {
         $this->hasMany('UsersToOrganizationalChartNodes', [
             'foreignKey' => 'organizational_chart_node_id',
         ])->setDependent(true);
+
+        $this->hasMany('OrganizationalChartInputConnections', [
+            'className'  => 'OrganizationalChartConnections',
+            'foreignKey' => 'organizational_chart_input_node_id'
+        ])->setDependent(true);
+
+        $this->hasMany('OrganizationalChartOutputConnections', [
+            'className'  => 'OrganizationalChartConnections',
+            'foreignKey' => 'organizational_chart_output_node_id'
+        ])->setDependent(true);
     }
 
     /**

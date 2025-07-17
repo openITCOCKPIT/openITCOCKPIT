@@ -157,11 +157,12 @@ class BrowsersController extends AppController {
         if ($containerId !== ROOT_CONTAINER && $this->allowedByContainerId($containerId, false)) {
             $MY_RIGHTS = [];
             if ($this->hasRootPrivileges === false) {
-                $MY_RIGHTS = $this->MY_RIGHTS_LEVEL;
+                $MY_RIGHTS = $this->MY_RIGHTS;
             }
+
             /** @var $OrganizationalChartsTable OrganizationalChartsTable */
             $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
-            $organizationalCharts = $OrganizationalChartsTable->getOrnanizationalChartsByContainerId($containerId, $MY_RIGHTS, 'list');
+            $organizationalCharts = $OrganizationalChartsTable->getOrganizationalChartsByContainerId($containerId, $MY_RIGHTS, 'list');
 
         }
 

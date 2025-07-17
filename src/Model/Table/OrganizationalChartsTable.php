@@ -28,6 +28,7 @@ namespace App\Model\Table;
 
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -180,33 +181,98 @@ class OrganizationalChartsTable extends Table {
      * @param $id
      * @return bool
      */
-    public function existsById($id) {
+    public function existsById($id): bool {
         return $this->exists(['OrganizationalCharts.id' => $id]);
     }
 
     /**
      * @param int $containerId
      * @param array $MY_RIGHTS
-     * @param $type
+     * @param string $type
      * @return array
      */
-    public function getOrnanizationalChartsByContainerId(int $containerId, array $MY_RIGHTS = [], $type = 'all'): array {
+    public function getOrganizationalChartsByContainerId(int $containerId, array $MY_RIGHTS = [], string $type = 'all'): array {
         $query = $this->find()
             ->innerJoinWith('OrganizationalChartNodes');
+        /* if needed for details
+        ->innerJoinWith('OrganizationalChartNodes', function (Query $q) use ($MY_RIGHTS) {
+            return $q->contain([
+                'OrganizationalChartInputConnections',
+                'OrganizationalChartOutputConnections'
+            ]);
+        });
+        */
         if (!empty($MY_RIGHTS)) {
-            $query->where(['OrganizationalChartNodes.container_id IN' => $MY_RIGHTS]);
+            //$query->where(['OrganizationalChartNodes.container_id IN' => $MY_RIGHTS]);
+            $query->where($query->newExpr(
+                'NOT EXISTS (
+                    SELECT ocs.organizational_chart_id
+                    FROM `organizational_chart_nodes` ocs
+                    WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`
+                      AND ocs.container_id IN (' . implode(',', $MY_RIGHTS) . ')
+                )'
+            ));
         }
+
         $query->where(['OrganizationalChartNodes.container_id' => $containerId])
             ->group(['OrganizationalCharts.id'])
             ->disableHydration();
 
         if ($type === 'list') {
             $return = [];
-            foreach ($query->toArray() as $user) {
-                $return[$user['id']] = $user['name'];
+            foreach ($query->toArray() as $organizationalChart) {
+                $return[$organizationalChart['id']] = $organizationalChart['name'];
             }
             return $return;
         }
         return $query->toArray();
     }
+
+
+    /**
+     * @param int $containerId
+     * @param array $MY_RIGHTS
+     * @param string $type
+     * @return array
+     */
+    public function getOrganizationalChartById(int $organizationalChartId, array $MY_RIGHTS = []): array {
+        $query = $this->find()
+            ->innerJoinWith('OrganizationalChartNodes', function (Query $q) use ($MY_RIGHTS) {
+                return $q->contain([
+                    'Containers' => function (Query $q) use ($MY_RIGHTS) {
+                        return $q->select([
+                            'Containers.id',
+                            'Containers.name',
+                            'Containers.containertype_id'
+                        ])->order([
+                            'Containers.name' => 'asc'
+                        ]);
+                    },
+
+                ])->order([
+                    'Containers.name' => 'asc'
+                ]);
+            })->contain([
+                'OrganizationalChartConnections'
+            ]);
+        if (!empty($MY_RIGHTS)) {
+            //$query->where(['OrganizationalChartNodes.container_id IN' => $MY_RIGHTS]);
+            $query->where($query->newExpr(
+                'NOT EXISTS (
+                    SELECT ocs.organizational_chart_id
+                    FROM `organizational_chart_nodes` ocs
+                    WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`
+                      AND ocs.container_id IN (' . implode(',', $MY_RIGHTS) . ')
+                )'
+            ));
+        }
+
+        $query->where(['OrganizationalChartNodes.organizational_chart_id' => $organizationalChartId])
+            ->group(['OrganizationalCharts.id'])
+            ->disableHydration();
+
+
+        return $query->firstOrFail();
+    }
+
 }

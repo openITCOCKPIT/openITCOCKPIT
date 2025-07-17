@@ -36,6 +36,7 @@ use Cake\Http\Exception\NotFoundException;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
+use itnovum\openITCOCKPIT\Core\AngularJS\Api;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
@@ -74,12 +75,9 @@ class OrganizationalChartsController extends AppController {
 
         $MY_RIGHTS = [];
         if ($this->hasRootPrivileges === false) {
-            /** @var $ContainersTable ContainersTable */
-            //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-            //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
-            // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
             $MY_RIGHTS = $this->MY_RIGHTS;
         }
+
         $organizationalCharts = $OrganizationalChartsTable->getOrganizationalChartsIndex($GenericFilter, $PaginateOMat, $MY_RIGHTS);
         foreach ($organizationalCharts as $index => $organizationalChart) {
             if ($this->hasRootPrivileges === true) {
@@ -262,5 +260,81 @@ class OrganizationalChartsController extends AppController {
         $this->set('locations', $containers['locations']);
         $this->set('nodes', $containers['nodes']);
         $this->viewBuilder()->setOption('serialize', ['tenants', 'locations', 'nodes']);
+    }
+
+    public function loadOrganizationalChartsByContainerId($containerId = null) {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        if (empty($containerId)) {
+            throw new BadRequestException("containerId is missing");
+        }
+
+        /** @var ContainersTable $ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+
+        if (!$ContainersTable->existsById($containerId)) {
+            throw new NotFoundException(__('Invalid container'));
+        }
+
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $containerId = (int)$containerId;
+        $organizationalCharts = [];
+
+        if ($this->allowedByContainerId($containerId, false)) {
+            /** @var OrganizationalChartsTable $OrganizationalChartsTable */
+            $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+            $organizationalCharts = Api::makeItJavaScriptAble(
+                $OrganizationalChartsTable->getOrganizationalChartsByContainerId($containerId, $MY_RIGHTS, 'list')
+            );
+        }
+
+
+        $this->set('organizationalCharts', $organizationalCharts);
+        $this->viewBuilder()->setOption('serialize', ['organizationalCharts']);
+
+    }
+
+
+    public function loadOrganizationalChartById($organizationalChartId = null) {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        if (empty($organizationalChartId)) {
+            throw new BadRequestException("organizationalChartId is missing");
+        }
+
+        /** @var OrganizationalChartsTable $OrganizationalChartsTable */
+        $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+
+        if (!$OrganizationalChartsTable->existsById($organizationalChartId)) {
+            throw new NotFoundException(__('Invalid organizational chart'));
+        }
+
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $organizationalChartId = (int)$organizationalChartId;
+        $organizationalChart = $OrganizationalChartsTable->getOrganizationalChartById($organizationalChartId, $MY_RIGHTS);
+
+        $containers = Api::makeItJavaScriptAble(
+            Hash::combine(
+                $organizationalChart,
+                'organizational_chart_nodes.{n}.container.id',
+                'organizational_chart_nodes.{n}.container'
+            )
+        );
+
+        $this->set('organizationalChart', $organizationalChart);
+        $this->set('containers', $containers);
+        $this->viewBuilder()->setOption('serialize', ['organizationalChart', 'containers']);
     }
 }

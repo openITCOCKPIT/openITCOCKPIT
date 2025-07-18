@@ -169,7 +169,8 @@ class MapgeneratorsController extends AppController {
 
         $mapgenerator = $MapgeneratorsTable->get($id, [
             'contain' => [
-                'Containers'
+                'Containers',
+                'MapgeneratorLevels'
             ]
         ]);
 
@@ -202,8 +203,16 @@ class MapgeneratorsController extends AppController {
                 $data['Mapgenerator']['map_refresh_interval'] = ((int)$data['Mapgenerator']['map_refresh_interval'] * 1000);
             }
 
+            if ($data['Mapgenerator']['mapgenerator_levels'] !== null) {
+                foreach ($data['Mapgenerator']['mapgenerator_levels'] as $levelKey => $level) {
+                    $data['Mapgenerator']['mapgenerator_levels'][$levelKey]['is_container'] = (int)$level['is_container'];
+                }
+            }
+
             $mapgeneratorEntity = $mapgenerator;
             $mapgeneratorEntity = $MapgeneratorsTable->patchEntity($mapgeneratorEntity, $data['Mapgenerator']);
+            $MapgeneratorsTable->checkRules($mapgeneratorEntity);
+
             $MapgeneratorsTable->save($mapgeneratorEntity);
             if (!$mapgeneratorEntity->hasErrors()) {
                 if ($this->isJsonRequest()) {

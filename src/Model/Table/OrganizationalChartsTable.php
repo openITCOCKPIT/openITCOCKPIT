@@ -214,7 +214,7 @@ class OrganizationalChartsTable extends Table {
         $query = $this->find()
             ->contain([
                 'OrganizationalChartNodes' => [
-                    'UsersToOrganizationalChartNodes'
+                    'Users'
                 ],
                 'OrganizationalChartConnections'
             ])

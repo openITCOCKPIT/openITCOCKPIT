@@ -43,7 +43,7 @@ use Cake\ORM\Entity;
  *
  * @property \App\Model\Entity\OrganizationalChart $organizational_chart
  * @property \App\Model\Entity\Container $container
- * @property \App\Model\Entity\UsersToOrganizationalChartNode[] $users_to_organizational_chart_nodes
+ * @property \App\Model\Entity\User[] $users
  */
 class OrganizationalChartNode extends Entity {
     /**
@@ -56,16 +56,16 @@ class OrganizationalChartNode extends Entity {
      * @var array<string, bool>
      */
     protected $_accessible = [
-        'uuid'                                => true,
-        'organizational_chart_id'             => true,
-        'container_id'                        => true,
-        'recursive'                           => true,
-        'x_position'                          => true,
-        'y_position'                          => true,
-        'modified'                            => true,
-        'created'                             => true,
-        'organizational_chart'                => true,
-        'container'                           => true,
-        'users_to_organizational_chart_nodes' => true,
+        'uuid'                    => true,
+        'organizational_chart_id' => true,
+        'container_id'            => true,
+        'recursive'               => true,
+        'x_position'              => true,
+        'y_position'              => true,
+        'modified'                => true,
+        'created'                 => true,
+        'organizational_chart'    => true,
+        'container'               => true,
+        'users'                   => true,
     ];
 }

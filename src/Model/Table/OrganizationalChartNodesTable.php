@@ -79,8 +79,8 @@ class OrganizationalChartNodesTable extends Table {
             'joinType'   => 'INNER'
         ]);
 
-        $this->hasMany('UsersToOrganizationalChartNodes', [
-            'foreignKey' => 'organizational_chart_node_id',
+        $this->belongsToMany('Users', [
+            'through' => 'UsersToOrganizationalChartNodes'
         ])->setDependent(true);
     }
 
@@ -145,9 +145,7 @@ class OrganizationalChartNodesTable extends Table {
             ->contain([
                 //'OrganizationalCharts',
                 'Containers',
-                'UsersToOrganizationalChartNodes' => [
-                    'Users'
-                ]
+                'UsersToOrganizationalChartNodes' => 'Users'
             ])
             ->where([
                 'OrganizationalChartNodes.organizational_chart_id' => $organizationalChartId

@@ -103,7 +103,7 @@ class OrganizationalChartConnectionsTable extends Table {
             ->integer('organizational_chart_output_node_id')
             ->requirePresence('organizational_chart_output_node_id', 'create')
             ->allowEmptyString('organizational_chart_output_node_id', null, false);
-        
+
 
         return $validator;
     }

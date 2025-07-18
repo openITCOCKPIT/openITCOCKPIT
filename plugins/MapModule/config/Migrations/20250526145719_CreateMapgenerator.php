@@ -136,7 +136,7 @@ class CreateMapgenerator extends AbstractMigration {
                 ->create();
         }
 
-        /*if ($this->hasTable('maps')) {
+        if ($this->hasTable('maps')) {
             $this->table('maps')
                 ->addColumn('auto_generated', 'integer', [
                     'after'   => 'json_data',
@@ -145,7 +145,7 @@ class CreateMapgenerator extends AbstractMigration {
                     'null'    => false,
                 ])
                 ->update();
-        }*/
+        }
 
         if (!$this->hasTable('mapgenerator_levels')) {
             $this->table('mapgenerator_levels')

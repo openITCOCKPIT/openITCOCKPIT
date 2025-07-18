@@ -1709,4 +1709,35 @@ class ContainersTable extends Table {
 
     }
 
+    /**
+     * @param $id
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getContainerByName($name, $MY_RIGHTS = []) {
+        $query = $this->find()
+            ->select([
+                'Containers.id',
+                'Containers.parent_id',
+                'Containers.name',
+                'Containers.containertype_id',
+                'Containers.lft',
+                'Containers.rght'
+            ])
+            ->where([
+                'Containers.name' => $name
+            ]);
+
+        if (!empty($MY_RIGHTS)) {
+            $query->andWhere([
+                'Containers.id IN' => $MY_RIGHTS
+            ]);
+        }
+        $result = $query->first();
+        if (empty($result)) {
+            return [];
+        }
+        return $result->toArray();
+    }
+
 }

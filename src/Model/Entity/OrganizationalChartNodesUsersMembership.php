@@ -22,24 +22,22 @@
 //     License agreement and license key will be shipped with the order
 //     confirmation.
 
-declare(strict_types=1);
-
 namespace App\Model\Entity;
 
 use Cake\ORM\Entity;
 
 /**
- * UsersToOrganizationalChartNode Entity
+ * OrganizationalChartNodesUsersMembership Entity
  *
  * @property int $id
  * @property int $user_id
  * @property int $organizational_chart_node_id
  * @property int $user_role
  *
- * @property \App\Model\Entity\User $user
- * @property \App\Model\Entity\OrganizationalChartNode $organizational_chart_node
+ * @property User $user
+ * @property OrganizationalChartNode $organizational_chart_node
  */
-class UsersToOrganizationalChartNode extends Entity {
+class OrganizationalChartNodesUsersMembership extends Entity {
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -47,7 +45,7 @@ class UsersToOrganizationalChartNode extends Entity {
      * be mass assigned. For security purposes, it is advised to set '*' to false
      * (or remove it), and explicitly make individual fields accessible as needed.
      *
-     * @var array<string, bool>
+     * @var array
      */
     protected $_accessible = [
         'user_id'                      => true,
@@ -56,9 +54,5 @@ class UsersToOrganizationalChartNode extends Entity {
         'user'                         => true,
         'organizational_chart_node'    => true,
     ];
-
-    public const USER = 1 << 0;             // 1
-    public const MANAGER = 1 << 1;          // 2
-    public const REGION_MANAGER = 1 << 2;   // 4
-
 }
+

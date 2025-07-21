@@ -117,9 +117,19 @@ class OrganizationalChartsController extends AppController {
             $OrganizationalChartConnectionsTable = TableRegistry::getTableLocator()->get('OrganizationalChartConnections');
 
             $entity = $OrganizationalChartsTable->newEmptyEntity();
-            $entity = $OrganizationalChartsTable->patchEntity($entity, $data);
+            $entity = $OrganizationalChartsTable->patchEntity($entity, $data, [
+                'associated' => [
+                    'OrganizationalChartNodes.Users'
+                ]
+            ]);
 
-            $OrganizationalChartsTable->save($entity);
+            // In my tests, it was enough to only set the deep association in the patchEntity method.
+            // But the CakePHP slack recommended it to set in save as well.
+            $OrganizationalChartsTable->save($entity, [
+                'associated' => [
+                    'OrganizationalChartNodes.Users'
+                ]
+            ]);
             if ($entity->hasErrors()) {
                 $this->set('error', $entity->getErrors());
                 $this->viewBuilder()->setOption('serialize', ['error']);
@@ -144,7 +154,6 @@ class OrganizationalChartsController extends AppController {
                     $OrganizationalChartConnectionsTable->save($connectionEntity);
                     if ($connectionEntity->hasErrors()) {
                         Log::error('Error while saving organizational chart connection: ' . json_encode($connectionEntity->getErrors()));
-                        dd($connectionEntity);
                     }
                 }
 
@@ -214,7 +223,7 @@ class OrganizationalChartsController extends AppController {
 
         $organizationalChart = $OrganizationalChartsTable->get($id, [
             'contain' => [
-                'OrganizationalChartNodes' => 'UsersToOrganizationalChartNodes',
+                'OrganizationalChartNodes' => 'Users',
                 'OrganizationalChartConnections'
             ]
         ]);

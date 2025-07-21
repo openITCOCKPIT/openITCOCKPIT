@@ -37,7 +37,7 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\OrganizationalChartsTable&\Cake\ORM\Association\BelongsTo $OrganizationalCharts
  * @property \App\Model\Table\ContainersTable&\Cake\ORM\Association\BelongsTo $Containers
  * @property \App\Model\Table\OrganizationalChartNodesTable&\Cake\ORM\Association\HasMany $ChildOrganizationalChartNodes
- * @property \App\Model\Table\UsersToOrganizationalChartNodesTable&\Cake\ORM\Association\HasMany $UsersToOrganizationalChartNodes
+ * @property \App\Model\Table\OrganizationalChartNodesUsersMembershipsTable&\Cake\ORM\Association\HasMany $Users
  *
  * @method \App\Model\Entity\OrganizationalChartNode newEmptyEntity()
  * @method \App\Model\Entity\OrganizationalChartNode newEntity(array $data, array $options = [])
@@ -80,7 +80,8 @@ class OrganizationalChartNodesTable extends Table {
         ]);
 
         $this->belongsToMany('Users', [
-            'through' => 'UsersToOrganizationalChartNodes'
+            'through'      => 'OrganizationalChartNodesUsersMemberships',
+            'saveStrategy' => 'replace'
         ])->setDependent(true);
 
         $this->hasMany('OrganizationalChartInputConnections', [
@@ -149,21 +150,5 @@ class OrganizationalChartNodesTable extends Table {
 
         return $rules;
     }
-
-    public function getChartTreeForEdit(int $organizationalChartId): array {
-        $result = $this->find()
-            ->contain([
-                //'OrganizationalCharts',
-                'Containers',
-                'UsersToOrganizationalChartNodes' => 'Users'
-            ])
-            ->where([
-                'OrganizationalChartNodes.organizational_chart_id' => $organizationalChartId
-            ])
-            ->disableHydration()
-            ->all();
-
-        return $result->toArray();
-
-    }
+    
 }

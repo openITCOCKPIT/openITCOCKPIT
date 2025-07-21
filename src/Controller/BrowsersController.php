@@ -83,17 +83,30 @@ class BrowsersController extends AppController {
         /** @var TenantsTable $TenantsTable */
         $TenantsTable = TableRegistry::getTableLocator()->get('Tenants');
 
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        /** @var OrganizationalChartsTable $OrganizationalChartsTable */
+        $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+
         $tenants = $TenantsTable->getTenantsForBrowsersIndex($this->MY_RIGHTS, $User->getId());
         $tenants = Hash::sort($tenants, '{n}.container.name', 'asc', ['type' => 'regular', 'ignoreCase' => true]);
-
         $tenantsFiltered = [];
         $tenantsOfContainerNotVisibleForUser = false;
         foreach ($tenants as $tenant) {
             if (in_array($tenant['container']['id'], $this->MY_RIGHTS, true)) {
+                $organizanionalCharts = $OrganizationalChartsTable->getOrganizationalChartsByContainerId(
+                    $tenant['container']['id'],
+                    $MY_RIGHTS,
+                    'list'
+                );
                 $tenantsFiltered[$tenant['container']['id']] = [
-                    'id'               => $tenant['container']['id'],
-                    'name'             => $tenant['container']['name'],
-                    'containertype_id' => $tenant['container']['containertype_id']
+                    'id'                        => $tenant['container']['id'],
+                    'name'                      => $tenant['container']['name'],
+                    'containertype_id'          => $tenant['container']['containertype_id'],
+                    'has_organizational_charts' => !empty($organizanionalCharts)
                 ];
             } else {
                 $tenantsOfContainerNotVisibleForUser = true;
@@ -102,6 +115,7 @@ class BrowsersController extends AppController {
         $tenants = $tenantsFiltered;
         /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+
         if ($containerId === ROOT_CONTAINER && !empty($tenants) && $tenantsOfContainerNotVisibleForUser === false) {
             //First request if tenants are not empty or ROOT_CONTAINER
 
@@ -121,12 +135,19 @@ class BrowsersController extends AppController {
                     }
                 }
             }
+
             $containers = [];
             foreach ($browser as $node) {
+                $organizanionalCharts = $OrganizationalChartsTable->getOrganizationalChartsByContainerId(
+                    $containerId,
+                    $MY_RIGHTS,
+                    'list'
+                );
                 $containers[$node['id']] = [
-                    'id'               => $node['id'],
-                    'name'             => $node['name'],
-                    'containertype_id' => $node['containertype_id']
+                    'id'                        => $node['id'],
+                    'name'                      => $node['name'],
+                    'containertype_id'          => $node['containertype_id'],
+                    'has_organizational_charts' => !empty($organizanionalCharts)
                 ];
             }
 

@@ -78,11 +78,13 @@ class OrganizationalChartsTable extends Table {
 
         $this->hasMany('OrganizationalChartNodes', [
             'foreignKey'       => 'organizational_chart_id',
+            'saveStrategy'     => 'replace',
             'cascadeCallbacks' => true,
         ])->setDependent(true);
 
         $this->hasMany('OrganizationalChartConnections', [
-            'foreignKey' => 'organizational_chart_id',
+            'foreignKey'   => 'organizational_chart_id',
+            'saveStrategy' => 'replace',
         ])->setDependent(true);
     }
 

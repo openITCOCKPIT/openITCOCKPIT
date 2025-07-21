@@ -37,6 +37,7 @@ use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
+use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
@@ -110,6 +111,12 @@ class OrganizationalChartsController extends AppController {
                 $data['organizational_chart_nodes'] = [];
             }
 
+            // Remove any UUIDs for new nodes
+            foreach ($data['organizational_chart_nodes'] as $index => $node) {
+                if (isset($node['id']) && UUID::is_valid($node['id'])) {
+                    unset($data['organizational_chart_nodes'][$index]['id']);
+                }
+            }
 
             /** @var OrganizationalChartsTable $OrganizationalChartsTable */
             $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
@@ -171,14 +178,120 @@ class OrganizationalChartsController extends AppController {
 
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
+            throw new MethodNotAllowedException();
+        }
+
+        $id = intval($id);
+
+        /** @var OrganizationalChartsTable $OrganizationalChartsTable */
+        $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+
+        if (!$OrganizationalChartsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid organizational chart'));
+        }
+
+        $organizationalChart = $OrganizationalChartsTable->getOrnanizationalChartForEdit($id);
+
+        // Check permissions first
+        $containersToCheck = Hash::extract($organizationalChart, 'organizational_chart_nodes.{n}.container.id');
+        if (!empty(array_intersect($containersToCheck, $this->getWriteContainers()))) {
+            $this->render403();
             return;
         }
 
-        /** @var OrganizationalChartStructuresTable $OrganizationalChartStructuresTable */
-        $OrganizationalChartStructuresTable = TableRegistry::getTableLocator()->get('OrganizationalChartStructures');
+        if ($this->request->is('get')) {
+            // Return the organizational chart for editing
+            $this->set('organizational_chart', $organizationalChart);
+            $this->viewBuilder()->setOption('serialize', ['organizational_chart']);
+            return;
+        }
 
-        debug($OrganizationalChartStructuresTable->getChartTreeForEdit(1));
+        if ($this->request->is('post')) {
+            // Update the organizational chart
+            /** @var OrganizationalChartConnectionsTable $OrganizationalChartConnectionsTable */
+            $OrganizationalChartConnectionsTable = TableRegistry::getTableLocator()->get('OrganizationalChartConnections');
+
+            $data = $this->request->getData(null, []);
+            $connections = $data['organizational_chart_connections'] ?? [];
+
+            unset($data['organizational_chart_connections']);
+
+            if (!isset($data['organizational_chart_nodes'])) {
+                $data['organizational_chart_nodes'] = [];
+            }
+
+            // Remove any UUIDs for new nodes
+            foreach ($data['organizational_chart_nodes'] as $index => $node) {
+                if (isset($node['id']) && UUID::is_valid($node['id'])) {
+                    unset($data['organizational_chart_nodes'][$index]['id']);
+                }
+            }
+
+            $entity = $OrganizationalChartsTable->get($id, [
+                'contain' => [
+                    'OrganizationalChartNodes.Users',
+                    'OrganizationalChartConnections'
+                ]
+            ]);
+            $entity = $OrganizationalChartsTable->patchEntity($entity, $data, [
+                'associated' => [
+                    'OrganizationalChartNodes.Users'
+                ]
+            ]);
+
+            // In my tests, it was enough to only set the deep association in the patchEntity method.
+            // But the CakePHP slack recommended it to set in save as well.
+            $OrganizationalChartsTable->save($entity, [
+                'associated' => [
+                    'OrganizationalChartNodes.Users'
+                ]
+            ]);
+            if ($entity->hasErrors()) {
+                $this->set('error', $entity->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                $this->response = $this->response->withStatus(400);
+                return;
+            } else {
+                // No errors
+                // save connections
+                $nodeUuidToId = [];
+                foreach ($entity->organizational_chart_nodes as $node) {
+                    $nodeUuidToId[$node->uuid] = $node->id;
+                }
+
+                foreach ($connections as $connection) {
+                    $inputId = $connection['organizational_chart_input_node_id'];
+                    if (UUID::is_valid($inputId)) {
+                        // New connection
+                        $inputId = $nodeUuidToId[$connection['organizational_chart_input_node_id']] ?? 0;
+                    }
+
+                    $outputId = $connection['organizational_chart_output_node_id'];
+                    if (UUID::is_valid($outputId)) {
+                        // New connection
+                        $outputId = $nodeUuidToId[$connection['organizational_chart_output_node_id']] ?? 0;
+                    }
+
+
+                    $connectionEntity = $OrganizationalChartConnectionsTable->newEntity([
+                        'uuid'                                => $connection['id'],
+                        'organizational_chart_id'             => $entity->id,
+                        'organizational_chart_input_node_id'  => $inputId,
+                        'organizational_chart_output_node_id' => $outputId
+                    ]);
+
+                    $OrganizationalChartConnectionsTable->save($connectionEntity);
+                    if ($connectionEntity->hasErrors()) {
+                        Log::error('Error while saving organizational chart connection: ' . json_encode($connectionEntity->getErrors()));
+                    }
+                }
+
+            }
+
+            $this->set('oc', $entity);
+            $this->viewBuilder()->setOption('serialize', ['oc']);
+            return;
+        }
 
     }
 

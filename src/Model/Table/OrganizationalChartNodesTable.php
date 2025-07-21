@@ -150,5 +150,5 @@ class OrganizationalChartNodesTable extends Table {
 
         return $rules;
     }
-    
+
 }

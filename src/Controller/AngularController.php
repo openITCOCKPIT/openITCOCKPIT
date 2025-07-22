@@ -402,7 +402,6 @@ class AngularController extends AppController {
                 $servicestatusCountPercentage[$stateId] = 0;
             }
         }
-
         $unhandledHosts = $hoststatusSummary['not_handled'];
         $unhandledHostsSum = array_sum($hoststatusSummary['not_handled']);
         $unhandledServices = $servicestatusSummary['not_handled'];
@@ -413,7 +412,11 @@ class AngularController extends AppController {
         $this->set('hoststatusSum', $hoststatusSum);
         $this->set('servicestatusSum', $servicestatusSum);
         $this->set('hoststatusCountPercentage', $hoststatusCountPercentage);
+        $this->set('hoststatusTotal', $hoststatusSummary['total']);
+        $this->set('cumulativeHoststatus', $hoststatusSummary['cumulative_state']);
         $this->set('servicestatusCountPercentage', $servicestatusCountPercentage);
+        $this->set('servicestatusTotal', $servicestatusSummary['total']);
+        $this->set('cumulativeServicestatus', $servicestatusSummary['cumulative_state']);
         $this->set('unhandledHosts', $unhandledHosts);
         $this->set('unhandledHostsSum', $unhandledHostsSum);
         $this->set('unhandledServices', $unhandledServices);
@@ -430,7 +433,11 @@ class AngularController extends AppController {
             'unhandledHosts',
             'unhandledHostsSum',
             'unhandledServices',
-            'unhandledServicesSum'
+            'unhandledServicesSum',
+            'cumulativeHoststatus',
+            'cumulativeServicestatus',
+            'hoststatusTotal',
+            'servicestatusTotal'
         ]);
     }
 

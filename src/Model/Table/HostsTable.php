@@ -43,7 +43,6 @@ use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Cache\ObjectsCache;
-use itnovum\openITCOCKPIT\Core\FileDebugger;
 use itnovum\openITCOCKPIT\Core\HostConditions;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -3631,31 +3630,32 @@ class HostsTable extends Table {
      */
     public function getHostStateSummary($hoststatus, $extended = true) {
         $hostStateSummary = [
-            'state'        => [
+            'state'            => [
                 0 => 0,
                 1 => 0,
                 2 => 0
             ],
-            'acknowledged' => [
+            'acknowledged'     => [
                 0 => 0,
                 1 => 0,
                 2 => 0
             ],
-            'in_downtime'  => [
+            'in_downtime'      => [
                 0 => 0,
                 1 => 0,
                 2 => 0
             ],
-            'not_handled'  => [
+            'not_handled'      => [
                 0 => 0,
                 1 => 0,
                 2 => 0
             ],
-            'total'        => 0
+            'total'            => 0,
+            'cumulative_state' => -1 // not monitored
         ];
         if ($extended === true) {
             $hostStateSummary = [
-                'state'        => [
+                'state'            => [
                     0         => 0,
                     1         => 0,
                     2         => 0,
@@ -3665,7 +3665,7 @@ class HostsTable extends Table {
                         2 => []
                     ]
                 ],
-                'acknowledged' => [
+                'acknowledged'     => [
                     0         => 0,
                     1         => 0,
                     2         => 0,
@@ -3675,7 +3675,7 @@ class HostsTable extends Table {
                         2 => []
                     ]
                 ],
-                'in_downtime'  => [
+                'in_downtime'      => [
                     0         => 0,
                     1         => 0,
                     2         => 0,
@@ -3685,7 +3685,7 @@ class HostsTable extends Table {
                         2 => []
                     ]
                 ],
-                'not_handled'  => [
+                'not_handled'      => [
                     0         => 0,
                     1         => 0,
                     2         => 0,
@@ -3695,7 +3695,7 @@ class HostsTable extends Table {
                         2 => []
                     ]
                 ],
-                'passive'      => [
+                'passive'          => [
                     0         => 0,
                     1         => 0,
                     2         => 0,
@@ -3705,7 +3705,8 @@ class HostsTable extends Table {
                         2 => []
                     ]
                 ],
-                'total'        => 0
+                'total'            => 0,
+                'cumulative_state' => -1 // not monitored
             ];
         }
         if (empty($hoststatus)) {
@@ -3748,6 +3749,9 @@ class HostsTable extends Table {
                 if ($host['Hoststatus']['scheduled_downtime_depth'] > 0) {
                     $hostStateSummary['in_downtime'][$host['Hoststatus']['current_state']]++;
                 }
+            }
+            if ($hostStateSummary['cumulative_state'] < $host['Hoststatus']['current_state']) {
+                $hostStateSummary['cumulative_state'] = $host['Hoststatus']['current_state'];
             }
             $hostStateSummary['total']++;
         }

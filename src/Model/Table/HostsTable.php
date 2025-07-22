@@ -5437,10 +5437,11 @@ class HostsTable extends Table {
     /**
      * @param array $hosts
      * @param array $mapGeneratorLevels
+     * @param array $containers
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getHostsByNameSplitting($hosts, $mapGeneratorLevels, $MY_RIGHTS = []) {
+    public function getHostsByNameSplitting($hosts, $mapGeneratorLevels, $containers, $MY_RIGHTS = []) {
 
         $hostsAndMaps = [];
 
@@ -5450,6 +5451,7 @@ class HostsTable extends Table {
             $restofHostName = $host['name'];
             $skipHost = false;
             $containerIdForNewMap = 0;
+            $previousPartsAsString = ''; // to build unique names, which can be assigned to a map hierarchy
 
             //split by the defined levels
             foreach ($mapGeneratorLevels as $mapGeneratorLevel) {
@@ -5459,7 +5461,13 @@ class HostsTable extends Table {
                     $pos = strpos($restofHostName, $divider);
                     if ($pos !== false) {
                         $part = substr($restofHostName, 0, $pos);
-                        $hostNameParts[] = $part;
+                        if ($previousPartsAsString !== '') {
+                            $nameToSave = $previousPartsAsString . '/' . $part;
+                        } else {
+                            $nameToSave = $part;
+                        }
+                        $hostNameParts[] = $nameToSave;
+                        $previousPartsAsString = $nameToSave;
                         $restofHostName = substr($restofHostName, $pos + strlen($divider));
                     } else {
                         // No more dividers found, take the rest of the hostname
@@ -5480,7 +5488,7 @@ class HostsTable extends Table {
                     $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
                     $container = $ContainersTable->getContainerByName($part, $MY_RIGHTS);
-                    if (empty($container)) {
+                    if (empty($container) || !in_array($container['id'], $containers)) {
                         // No container found for this level, skip this host
                         $skipHost = true;
                         break;
@@ -5492,7 +5500,7 @@ class HostsTable extends Table {
 
             }
 
-            if (skipHost || count($hostNameParts) !== count($mapGeneratorLevels)) {
+            if ($skipHost || count($hostNameParts) !== count($mapGeneratorLevels)) {
                 // Not enough parts for the defined levels, skip this host
                 continue;
             }

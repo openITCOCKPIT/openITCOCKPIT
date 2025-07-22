@@ -165,12 +165,6 @@ class ContainersTable extends Table {
             'joinTable'        => 'mapgenerators_to_containers',
         ]);
 
-        $this->belongsToMany('MapgeneratorsStartContainers', [
-            'foreignKey'       => 'container_id',
-            'targetForeignKey' => 'mapgenerator_id',
-            'joinTable'        => 'mapgenerators_to_start_containers',
-        ]);
-
         $this->hasMany('Tenants', [
             'foreignKey'       => 'container_id',
             'cascadeCallbacks' => true
@@ -1663,25 +1657,18 @@ class ContainersTable extends Table {
             // reverse array to have higher containers first
             $containerHierarchyForHost = array_reverse($containerHierarchyForHost);
 
-            // filter hosts and container structure by containers
+            // filter hosts and container structure by selected containers
             if (!empty($containers)) {
 
                 $startContainerFound = false;
-                foreach ($containers as $startContainerId) {
-                    $containerFoundInIteration = false;
-                    $containerDeletePos = 0;
+                foreach ($containers as $containerId) {
                     foreach ($containerHierarchyForHost as $containerKey => $container) {
                         // also check for rights
-                        if ($startContainerId === $container['id']
+                        if ($containerId === $container['id']
                             && ((!empty($MY_RIGHTS) && in_array($container['id'], $MY_RIGHTS, true)) || empty($MY_RIGHTS))) {
-                            $containerFoundInIteration = true;
                             $startContainerFound = true;
                             break;
                         }
-                        $containerDeletePos++;
-                    }
-                    if ($containerFoundInIteration && $containerDeletePos) {
-                        $containerHierarchyForHost = array_slice($containerHierarchyForHost, $containerDeletePos);
                     }
                 }
 

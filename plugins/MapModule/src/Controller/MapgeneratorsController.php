@@ -145,9 +145,9 @@ class MapgeneratorsController extends AppController {
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
-            $containers = $ContainersTable->easyPath($this->MY_RIGHTS, CT_TENANT, [], $this->hasRootPrivileges, [CT_GLOBAL]);
+            $containers = $ContainersTable->easyPath($this->MY_RIGHTS, CT_TENANT, [], $this->hasRootPrivileges, [CT_GLOBAL, CT_RESOURCEGROUP]);
         } else {
-            $containers = $ContainersTable->easyPath($this->getWriteContainers(), CT_TENANT, [], $this->hasRootPrivileges, [CT_GLOBAL]);
+            $containers = $ContainersTable->easyPath($this->getWriteContainers(), CT_TENANT, [], $this->hasRootPrivileges, [CT_GLOBAL, CT_RESOURCEGROUP]);
         }
 
         $this->set('containers', Api::makeItJavaScriptAble($containers));
@@ -277,7 +277,8 @@ class MapgeneratorsController extends AppController {
         $mapgenerator = $MapgeneratorsTable->get($id, [
             'contain' => [
                 'Containers',
-                'Maps'
+                'Maps',
+                'MapgeneratorLevels'
             ]
         ]);
 
@@ -325,13 +326,13 @@ class MapgeneratorsController extends AppController {
 
                     if (empty($mapgeneratorLevels) || count($mapgeneratorLevels) < 2) {
                         $errors = [
-                            'hosts' => __('You need at least two mapgenerator levels')
+                            'mapgenerator_levels' => __('You need at least two mapgenerator levels')
                         ];
                         $this->set('error', $errors);
                         $this->viewBuilder()->setOption('serialize', ['error']);
                     }
 
-                    $hostsAndData = $HostsTable->getHostsByNameSplitting($hosts, $mapgeneratorLevels, $MY_RIGHTS);
+                    $hostsAndData = $HostsTable->getHostsByNameSplitting($hosts, $mapgeneratorLevels, $containerIds, $MY_RIGHTS);
                     break;
                 //generate by container structure
                 default:
@@ -350,7 +351,7 @@ class MapgeneratorsController extends AppController {
             }
 
             // generate maps
-            $Mapgenerator = new Mapgenerator($mapgenerator->toArray(), $hostsAndData, $generatedMaps);
+            $Mapgenerator = new Mapgenerator($mapgenerator->toArray(), $hostsAndData, $generatedMaps, $type);
             $generatedMapsAndItems = $Mapgenerator->generate();
 
             $allGeneratedMaps = $Mapgenerator->getAllGeneratedMaps();

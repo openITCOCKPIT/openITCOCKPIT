@@ -119,12 +119,18 @@ class Mapgenerator {
             'maps'  => [],
             'items' => []
         ];
+        $hierarchyAsString = ''; // to build unique names, which can be assigned to a map hierarchy
 
         // create maps
         foreach ($hostAndData['containerHierarchy'] as $containerKey => $container) {
 
             // check if container is already generated
-            $containerName = $container['name'];
+            if ($hierarchyAsString !== '') {
+                $containerName = $hierarchyAsString . '/' . $container['name'];
+            } else {
+                $containerName = $container['name'];
+            }
+            $hierarchyAsString = $containerName;
             $map = null;
 
             if (in_array($containerName, Hash::extract($this->allGeneratedMaps, '{n}.name'), true)) {

@@ -125,7 +125,14 @@ class OrganizationalChartsTable extends Table {
                 'OrganizationalCharts.created',
                 'OrganizationalCharts.modified',
             ])
-            ->contain(['OrganizationalChartNodes' => 'Containers']);
+            ->contain([
+                'OrganizationalChartNodes' => function (Query $q) {
+                    return $q->contain(['Containers'])
+                        ->order([
+                            'Containers.name' => 'asc'
+                        ]);
+                }
+            ]);
         if (!empty($MY_RIGHTS)) {
             $query->select([
                 'permission_status' => $query->newExpr(

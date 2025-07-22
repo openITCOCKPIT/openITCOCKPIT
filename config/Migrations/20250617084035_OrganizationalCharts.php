@@ -113,6 +113,11 @@ class OrganizationalCharts extends AbstractMigration {
                     'limit'   => 11,
                     'null'    => true,
                 ])
+                ->addColumn('containertype_id', 'integer', [
+                    'default' => null,
+                    'limit'   => 11,
+                    'null'    => false,
+                ])
                 ->addColumn('recursive', 'boolean', [
                     'default' => false,
                     'limit'   => null,

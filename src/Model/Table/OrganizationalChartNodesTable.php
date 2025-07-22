@@ -121,6 +121,13 @@ class OrganizationalChartNodesTable extends Table {
             ->greaterThanOrEqual('container_id', 1);
 
         $validator
+            ->integer('containertype_id')
+            ->requirePresence('containertype_id', 'create')
+            ->allowEmptyString('containertype_id', null, false)
+            ->greaterThanOrEqual('containertype_id', 1)
+            ->inList('containertype_id', [CT_TENANT, CT_LOCATION, CT_NODE]);
+
+        $validator
             ->allowEmptyString('recursive')
             ->boolean('recursive');
 

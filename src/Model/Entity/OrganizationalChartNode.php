@@ -35,6 +35,7 @@ use Cake\ORM\Entity;
  * @property string $uuid
  * @property int|null $organizational_chart_id
  * @property int|null $container_id
+ * @property int|null $containertype_id
  * @property boolean $recursive
  * @property int $x_position
  * @property int $y_position
@@ -59,6 +60,7 @@ class OrganizationalChartNode extends Entity {
         'uuid'                    => true,
         'organizational_chart_id' => true,
         'container_id'            => true,
+        'containertype_id'        => true,
         'recursive'               => true,
         'x_position'              => true,
         'y_position'              => true,

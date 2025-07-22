@@ -717,7 +717,7 @@ class AclDependencies {
             ->dependency('OrganizationalCharts', 'add', 'OrganizationalChartNodes', 'loadUsers')
             ->dependency('OrganizationalCharts', 'edit', 'OrganizationalChartNodes', 'loadUsers')
             ->dependency('OrganizationalCharts', 'view', 'OrganizationalCharts', 'loadOrganizationalChartsByContainerId')
-            ->dependency('OrganizationalCharts', 'view', 'OrganizationalCharts', 'loadOrganizationalChartsByContainerId');
+            ->dependency('OrganizationalCharts', 'view', 'OrganizationalCharts', 'loadOrganizationalChartById');
 
 
         //Load Plugin ALC Dependencies

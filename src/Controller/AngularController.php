@@ -412,10 +412,8 @@ class AngularController extends AppController {
         $this->set('hoststatusSum', $hoststatusSum);
         $this->set('servicestatusSum', $servicestatusSum);
         $this->set('hoststatusCountPercentage', $hoststatusCountPercentage);
-        $this->set('hoststatusTotal', $hoststatusSummary['total']);
         $this->set('cumulativeHoststatus', $hoststatusSummary['cumulative_state']);
         $this->set('servicestatusCountPercentage', $servicestatusCountPercentage);
-        $this->set('servicestatusTotal', $servicestatusSummary['total']);
         $this->set('cumulativeServicestatus', $servicestatusSummary['cumulative_state']);
         $this->set('unhandledHosts', $unhandledHosts);
         $this->set('unhandledHostsSum', $unhandledHostsSum);
@@ -435,9 +433,7 @@ class AngularController extends AppController {
             'unhandledServices',
             'unhandledServicesSum',
             'cumulativeHoststatus',
-            'cumulativeServicestatus',
-            'hoststatusTotal',
-            'servicestatusTotal'
+            'cumulativeServicestatus'
         ]);
     }
 

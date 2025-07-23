@@ -257,6 +257,14 @@ class OrganizationalChartsTable extends Table {
                             'Containers.name' => 'asc'
                         ]);
                     },
+                    'Users'      => function (Query $q) {
+                        return $q->select([
+                            'Users.id',
+                            'Users.lastname',
+                            'Users.firstname',
+                            'Users.email'
+                        ]);
+                    },
 
                 ])->order([
                     'Containers.name' => 'asc'
@@ -267,7 +275,7 @@ class OrganizationalChartsTable extends Table {
         if (!empty($MY_RIGHTS)) {
             //$query->where(['OrganizationalChartNodes.container_id IN' => $MY_RIGHTS]);
             $query->where($query->newExpr(
-                'NOT EXISTS (
+                'EXISTS (
                     SELECT ocs.organizational_chart_id
                     FROM `organizational_chart_nodes` ocs
                     WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`

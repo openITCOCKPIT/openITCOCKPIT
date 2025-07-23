@@ -29,10 +29,10 @@ namespace App\Controller;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\OrganizationalChartConnectionsTable;
 use App\Model\Table\OrganizationalChartsTable;
-use App\Model\Table\OrganizationalChartStructuresTable;
-use Cake\Http\Exception\ForbiddenException;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Exception\NotImplementedException;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -86,8 +86,8 @@ class OrganizationalChartsController extends AppController {
                 $organizationalCharts[$index]['allowView'] = true;
             } else {
                 $containersToCheck = Hash::extract($organizationalChart, 'organizational_chart_nodes.{n}.container.id');
-                $organizationalCharts[$index]['allowEdit'] = empty(array_intersect($containersToCheck, $this->getWriteContainers()));
-                $organizationalCharts[$index]['allowView'] = empty(array_intersect($containersToCheck, $MY_RIGHTS));
+                $organizationalCharts[$index]['allowEdit'] = empty(array_diff($containersToCheck, $this->getWriteContainers()));
+                $organizationalCharts[$index]['allowView'] = empty(array_diff($containersToCheck, $MY_RIGHTS));
             }
         }
         $this->set('all_organizationalcharts', $organizationalCharts);
@@ -194,7 +194,7 @@ class OrganizationalChartsController extends AppController {
 
         // Check permissions first
         $containersToCheck = Hash::extract($organizationalChart, 'organizational_chart_nodes.{n}.container.id');
-        if (!empty(array_intersect($containersToCheck, $this->getWriteContainers()))) {
+        if (!empty(array_diff($containersToCheck, $this->getWriteContainers()))) {
             $this->render403();
             return;
         }
@@ -296,6 +296,7 @@ class OrganizationalChartsController extends AppController {
     }
 
     /**
+     * For ACL only
      * @param null $id
      */
     public function view($id = null) {
@@ -304,19 +305,7 @@ class OrganizationalChartsController extends AppController {
             return;
         }
 
-        /** @var OrganizationalChartsTable $OrganizationalChartsTable */
-        $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
-
-        if (!$OrganizationalChartsTable->existsById($id)) {
-            throw new NotFoundException(__('Invalid organizational chart'));
-        }
-        $organizationalChart = $OrganizationalChartsTable->get($id);
-        if (!$this->allowedByContainerId($organizationalChart->get('id'))) {
-            throw new ForbiddenException('403 Forbidden');
-        }
-
-        $this->set('organizationalchart', $organizationalChart);
-        $this->viewBuilder()->setOption('serialize', ['organizationalchart']);
+        throw new NotImplementedException();
     }
 
     /**

@@ -423,6 +423,8 @@ class OrganizationalChartsController extends AppController {
 
         /** @var OrganizationalChartsTable $OrganizationalChartsTable */
         $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+        /** @var ContainersTable $ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if (!$OrganizationalChartsTable->existsById($organizationalChartId)) {
             throw new NotFoundException(__('Invalid organizational chart'));
@@ -435,6 +437,10 @@ class OrganizationalChartsController extends AppController {
 
         $organizationalChartId = (int)$organizationalChartId;
         $organizationalChart = $OrganizationalChartsTable->getOrganizationalChartById($organizationalChartId, $MY_RIGHTS);
+
+        foreach ($organizationalChart['organizational_chart_nodes'] as $index => $node) {
+            $organizationalChart['organizational_chart_nodes'][$index]['container']['path'] = $ContainersTable->getPathByIdAsString($node['container_id']);
+        }
 
         $containers = Api::makeItJavaScriptAble(
             Hash::combine(

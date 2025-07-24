@@ -438,6 +438,9 @@ class OrganizationalChartsController extends AppController {
             $organizationalChart['organizational_chart_nodes'][$index]['container']['path'] = $ContainersTable->getPathByIdAsString($node['container_id']);
         }
 
+        $containersToCheck = Hash::extract($organizationalChart, 'organizational_chart_nodes.{n}.container.id');
+        $allowEdit = empty(array_diff($containersToCheck, $this->getWriteContainers()));
+
         $containers = Api::makeItJavaScriptAble(
             Hash::combine(
                 $organizationalChart,
@@ -448,6 +451,7 @@ class OrganizationalChartsController extends AppController {
 
         $this->set('organizationalChart', $organizationalChart);
         $this->set('containers', $containers);
-        $this->viewBuilder()->setOption('serialize', ['organizationalChart', 'containers']);
+        $this->set('allowEdit', $allowEdit);
+        $this->viewBuilder()->setOption('serialize', ['organizationalChart', 'containers', 'allowEdit']);
     }
 }

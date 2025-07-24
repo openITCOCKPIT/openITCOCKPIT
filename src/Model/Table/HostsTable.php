@@ -3693,7 +3693,8 @@ class HostsTable extends Table {
                         0 => [],
                         1 => [],
                         2 => []
-                    ]
+                    ],
+                    'totalHostIds' => []
                 ],
                 'passive'          => [
                     0         => 0,
@@ -3727,6 +3728,7 @@ class HostsTable extends Table {
                     } else if ($host['Hoststatus']['problem_has_been_acknowledged'] == 0 && $host['Hoststatus']['scheduled_downtime_depth'] == 0) {
                         $hostStateSummary['not_handled'][$host['Hoststatus']['current_state']]++;
                         $hostStateSummary['not_handled']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                        $hostStateSummary['not_handled']['totalHostIds'][] = $host['id'];
                     }
                 }
 

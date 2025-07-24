@@ -4769,7 +4769,8 @@ class ServicesTable extends Table {
                         1 => [],
                         2 => [],
                         3 => []
-                    ]
+                    ],
+                    'totalServiceIds' => []
                 ],
                 'passive'          => [
                     0            => 0,
@@ -4805,6 +4806,7 @@ class ServicesTable extends Table {
                     } else if ($service['Servicestatus']['problem_has_been_acknowledged'] == 0 && $service['Servicestatus']['scheduled_downtime_depth'] == 0) {
                         $serviceStateSummary['not_handled'][$service['Servicestatus']['current_state']]++;
                         $serviceStateSummary['not_handled']['serviceIds'][$service['Servicestatus']['current_state']][] = $service['id'];
+                        $serviceStateSummary['not_handled']['totalServiceIds'][] = $service['id'];
                     }
                 }
                 if ($service['Servicestatus']['scheduled_downtime_depth'] > 0) {

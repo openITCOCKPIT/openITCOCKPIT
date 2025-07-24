@@ -68,6 +68,8 @@ class OrganizationalChartNodesTable extends Table {
         $this->setTable('organizational_chart_nodes');
         $this->setDisplayField('id');
         $this->setPrimaryKey('id');
+        
+        $this->addBehavior('Timestamp');
 
         $this->belongsTo('OrganizationalCharts', [
             'foreignKey' => 'organizational_chart_id',

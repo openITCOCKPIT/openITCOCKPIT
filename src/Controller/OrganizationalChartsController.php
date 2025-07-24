@@ -131,12 +131,8 @@ class OrganizationalChartsController extends AppController {
             ]);
 
             // In my tests, it was enough to only set the deep association in the patchEntity method.
-            // But the CakePHP slack recommended it to set in save as well.
-            $OrganizationalChartsTable->save($entity, [
-                'associated' => [
-                    'OrganizationalChartNodes.Users'
-                ]
-            ]);
+            // According to the CakePHP Slack channel, "The save usually doesn't need it afaik if the patching marked all nested entities as "dirty", as it just follows that along, probably."
+            $OrganizationalChartsTable->save($entity);
             if ($entity->hasErrors()) {
                 $this->set('error', $entity->getErrors());
                 $this->viewBuilder()->setOption('serialize', ['error']);
@@ -152,7 +148,7 @@ class OrganizationalChartsController extends AppController {
 
                 foreach ($connections as $connection) {
                     $connectionEntity = $OrganizationalChartConnectionsTable->newEntity([
-                        'uuid'                                => $connection['id'],
+                        'uuid'                                => $connection['uuid'],
                         'organizational_chart_id'             => $entity->id,
                         'organizational_chart_input_node_id'  => $nodeUuidToId[$connection['organizational_chart_input_node_id']] ?? 0,
                         'organizational_chart_output_node_id' => $nodeUuidToId[$connection['organizational_chart_output_node_id']] ?? 0,
@@ -229,23 +225,18 @@ class OrganizationalChartsController extends AppController {
 
             $entity = $OrganizationalChartsTable->get($id, [
                 'contain' => [
-                    'OrganizationalChartNodes.Users',
-                    'OrganizationalChartConnections'
+                    'OrganizationalChartNodes.Users'
                 ]
             ]);
             $entity = $OrganizationalChartsTable->patchEntity($entity, $data, [
                 'associated' => [
-                    'OrganizationalChartNodes.Users'
+                    'OrganizationalChartNodes.Users',
                 ]
             ]);
 
             // In my tests, it was enough to only set the deep association in the patchEntity method.
-            // But the CakePHP slack recommended it to set in save as well.
-            $OrganizationalChartsTable->save($entity, [
-                'associated' => [
-                    'OrganizationalChartNodes.Users'
-                ]
-            ]);
+            // According to the CakePHP Slack channel, "The save usually doesn't need it afaik if the patching marked all nested entities as "dirty", as it just follows that along, probably."
+            $OrganizationalChartsTable->save($entity);
             if ($entity->hasErrors()) {
                 $this->set('error', $entity->getErrors());
                 $this->viewBuilder()->setOption('serialize', ['error']);
@@ -258,6 +249,12 @@ class OrganizationalChartsController extends AppController {
                 foreach ($entity->organizational_chart_nodes as $node) {
                     $nodeUuidToId[$node->uuid] = $node->id;
                 }
+
+
+                // First delete all existing connections for this organizational chart
+                $OrganizationalChartConnectionsTable->deleteAll([
+                    'organizational_chart_id' => $entity->id
+                ]);
 
                 foreach ($connections as $connection) {
                     $inputId = $connection['organizational_chart_input_node_id'];
@@ -272,9 +269,8 @@ class OrganizationalChartsController extends AppController {
                         $outputId = $nodeUuidToId[$connection['organizational_chart_output_node_id']] ?? 0;
                     }
 
-
                     $connectionEntity = $OrganizationalChartConnectionsTable->newEntity([
-                        'uuid'                                => $connection['id'],
+                        'uuid'                                => $connection['uuid'],
                         'organizational_chart_id'             => $entity->id,
                         'organizational_chart_input_node_id'  => $inputId,
                         'organizational_chart_output_node_id' => $outputId

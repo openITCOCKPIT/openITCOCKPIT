@@ -4692,7 +4692,7 @@ class ServicesTable extends Table {
      * @param bool $extended show details ('acknowledged', 'in downtime', ...
      * @return array
      */
-    public function getServiceStateSummary($servicestatus, $extended = true) {
+    public function getServiceStateSummary($servicestatus, bool $extended = true): array {
         $serviceStateSummary = [
             'state'            => [
                 0 => 0,

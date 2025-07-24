@@ -305,7 +305,7 @@ class AngularController extends AppController {
                 $recursive = true;
             }
         }
-
+        $extended = $this->request->getQuery('extended', null) === 'true';
 
         $MY_RIGHTS = [];
         if ($this->hasRootPrivileges === false) {
@@ -376,36 +376,52 @@ class AngularController extends AppController {
             $servicestatus = $ServicesTable->getServicesWithStatusByConditionsStatusengine3($containerIdsForQuery, []);
         }
 
-        $hoststatusSummary = $HostsTable->getHostStateSummary($hoststatus, false);
-        $servicestatusSummary = $ServicesTable->getServiceStateSummary($servicestatus, false);
+        $hoststatusSummary = $HostsTable->getHostStateSummary($hoststatus, $extended);
+        $servicestatusSummary = $ServicesTable->getServiceStateSummary($servicestatus, $extended);
         $hoststatusSum = $hoststatusSummary['total'];
         $servicestatusSum = $servicestatusSummary['total'];
 
         $hoststatusCount = $hoststatusSummary['state'];
         $servicestatusCount = $servicestatusSummary['state'];
 
-
         $hoststatusCountPercentage = [];
         $servicestatusCountPercentage = [];
         foreach ($hoststatusCount as $stateId => $count) {
-            if ($hoststatusSum > 0) {
-                $hoststatusCountPercentage[$stateId] = round($count / $hoststatusSum * 100, 2);
-            } else {
-                $hoststatusCountPercentage[$stateId] = 0;
+            if (is_numeric($stateId)) {
+                if ($hoststatusSum > 0) {
+                    $hoststatusCountPercentage[$stateId] = round($count / $hoststatusSum * 100, 2);
+                } else {
+                    $hoststatusCountPercentage[$stateId] = 0;
+                }
             }
+
         }
 
         foreach ($servicestatusCount as $stateId => $count) {
-            if ($servicestatusSum > 0) {
-                $servicestatusCountPercentage[$stateId] = round($count / $servicestatusSum * 100, 2);
-            } else {
-                $servicestatusCountPercentage[$stateId] = 0;
+            if (is_numeric($stateId)) {
+                if ($servicestatusSum > 0) {
+                    $servicestatusCountPercentage[$stateId] = round($count / $servicestatusSum * 100, 2);
+                } else {
+                    $servicestatusCountPercentage[$stateId] = 0;
+                }
             }
         }
+
         $unhandledHosts = $hoststatusSummary['not_handled'];
-        $unhandledHostsSum = array_sum($hoststatusSummary['not_handled']);
+        $unhandledHostsSum = 0;
+        foreach ($hoststatusSummary['not_handled'] as $stateId => $count) {
+            if (is_numeric($stateId)) {
+                $unhandledHostsSum += $count;
+            }
+        }
+
         $unhandledServices = $servicestatusSummary['not_handled'];
-        $unhandledServicesSum = array_sum($servicestatusSummary['not_handled']);
+        $unhandledServicesSum = 0;
+        foreach ($servicestatusSummary['not_handled'] as $stateId => $count) {
+            if (is_numeric($stateId)) {
+                $unhandledServicesSum += $count;
+            }
+        }
 
         $this->set('hoststatusCount', $hoststatusCount);
         $this->set('servicestatusCount', $servicestatusCount);

@@ -3628,7 +3628,7 @@ class HostsTable extends Table {
      * @param bool $extended show details ('acknowledged', 'in downtime', ...)
      * @return array
      */
-    public function getHostStateSummary($hoststatus, $extended = true) {
+    public function getHostStateSummary($hoststatus, bool $extended = true) {
         $hostStateSummary = [
             'state'            => [
                 0 => 0,

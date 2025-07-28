@@ -56,8 +56,8 @@ class CreateMapgenerator extends AbstractMigration {
                     'limit'   => 255,
                     'null'    => false,
                 ])
-                ->addColumn('interval', 'integer', [
-                    'default' => '90',
+                ->addColumn('map_refresh_interval', 'integer', [
+                    'default' => '0',
                     'limit'   => 11,
                     'null'    => false,
                 ])
@@ -146,5 +146,32 @@ class CreateMapgenerator extends AbstractMigration {
                 ])
                 ->update();
         }
+
+        if (!$this->hasTable('mapgenerator_levels')) {
+            $this->table('mapgenerator_levels')
+                ->addPrimaryKey(['id'])
+                ->addColumn('mapgenerator_id', 'integer', [
+                    'default' => '0',
+                    'limit'   => 11,
+                    'null'    => false,
+                ])
+                ->addColumn('name', 'string', [
+                    'default' => null,
+                    'limit'   => 255,
+                    'null'    => false,
+                ])
+                ->addColumn('divider', 'string', [
+                    'default' => null,
+                    'limit'   => 255,
+                    'null'    => false,
+                ])
+                ->addColumn('is_container', 'integer', [
+                    'default' => '0',
+                    'limit'   => 11,
+                    'null'    => false,
+                ])
+                ->create();
+        }
+
     }
 }

@@ -39,6 +39,7 @@ use Cake\Datasource\EntityInterface;
 use Cake\ORM\Association\HasMany;
 use Cake\ORM\Behavior\TimestampBehavior;
 use Cake\ORM\Query;
+use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -49,6 +50,7 @@ use MapModule\Model\Entity\Mapgenerator;
  *
  * @property MapgeneratorsTable&HasMany $MapgeneratorsToMaps
  * @property ContainersTable&HasMany $MapgeneratorsToContainers
+ * @property ContainersTable&HasMany $MapgeneratorLevels
  *
  * @method Mapgenerator get($primaryKey, $options = [])
  * @method Mapgenerator newEntity($data = null, array $options = [])
@@ -98,6 +100,11 @@ class MapgeneratorsTable extends Table {
             'saveStrategy'     => 'replace',
         ]);
 
+        $this->hasMany('MapgeneratorLevels', [
+            'foreignKey'   => 'mapgenerator_id',
+            'saveStrategy' => 'replace'
+        ])->setDependent(true);
+
     }
 
     /**
@@ -127,16 +134,8 @@ class MapgeneratorsTable extends Table {
             ->allowEmptyString('description', null, true);
 
         $validator
-            ->integer('interval')
-            ->greaterThanOrEqual('interval', 10, __('This value need to be at least 10'))
-            ->notEmptyString('interval')
-            ->add('interval', 'step', [
-                'rule'    => function ($value, $context) use ($intervalStep) {
-                    $step = $intervalStep;
-                    return $value % $step === 0;
-                },
-                'message' => __('The value must be a multiple of {0}.', $intervalStep)
-            ]);
+            ->integer('map_refresh_interval')
+            ->notEmptyString('map_refresh_interval');
 
         $validator
             ->requirePresence('containers', 'create', __('You have to choose at least one option.'))
@@ -155,6 +154,95 @@ class MapgeneratorsTable extends Table {
             ->greaterThan('items_per_line', 0, __('This value need to be at least 1'));
 
         return $validator;
+    }
+
+    /**
+     * Returns a rules checker object that will be used for validating
+     * application integrity.
+     *
+     * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
+     * @return \Cake\ORM\RulesChecker
+     */
+    public function buildRules(RulesChecker $rules): RulesChecker {
+        $rules->add(function ($entity, $options) {
+            $levels = $entity->mapgenerator_levels;
+            $levelPartErrors = [];
+            $isContainerErrors = [];
+            $levelErrors = [];
+
+            if ($entity->type === 1 && empty($levels)) {
+                return true;
+            }
+
+            // check if there are at least 2 levels
+            if (count($levels) < 2) {
+                $levelErrors['min'] = __('There must be at least 2 levels.');
+            }
+
+            $names = [];
+            $isContainerCount = 0;
+
+            foreach ($levels as $index => $level) {
+                // checks if the level has a name
+                if (empty($level['name'])) {
+                    $levelPartErrors[$index]['name']['empty'] = __('The name cannot be empty.');
+                }
+
+                // check if the name is unique
+                if (in_array($level['name'], $names)) {
+                    $levelPartErrors[$index]['name']['unique'] = __('The name must be unique.');
+                }
+                $names[] = $level['name'];
+
+                // checks if the divider is set (except last level)
+                if ($index < count($levels) - 1 && empty($level['divider'])) {
+                    $levelPartErrors[$index]['divider']['empty'] = __('The divider cannot be empty for non-final levels.');
+                }
+
+                // checks if is_container is only one time set to true
+                if (!empty($level['is_container']) && boolval($level['is_container']) === true) {
+                    $isContainerCount++;
+                }
+            }
+
+            if ($isContainerCount > 1) {
+                $isContainerErrors['unique'] = __('Only one level can be the container level.');
+                return false;
+            }
+
+            if ($isContainerCount === 0) {
+                $isContainerErrors['empty'] = __('At least one level must be set as container.');
+            }
+
+            if (!empty($levelPartErrors)) {
+                $entity->setInvalidField('validate_levels', false);
+                $entity->setErrors([
+                    'validate_levels' => $levelPartErrors
+                ]);
+            }
+
+            if (!empty($isContainerErrors)) {
+                $entity->setInvalidField('validate_levels_is_container', false);
+                $entity->setErrors([
+                    'validate_levels_is_container' => $isContainerErrors
+                ]);
+            }
+
+            if (!empty($levelErrors)) {
+                $entity->setInvalidField('mapgenerator_levels', false);
+                $entity->setErrors([
+                    'mapgenerator_levels' => $levelErrors
+                ]);
+            }
+
+            if (!empty($levelPartErrors) || !empty($isContainerErrors) || !empty($levelErrors)) {
+                return false;
+            }
+
+            return true;
+        }, 'validate_mapgenerator_levels');
+
+        return $rules;
     }
 
     /**

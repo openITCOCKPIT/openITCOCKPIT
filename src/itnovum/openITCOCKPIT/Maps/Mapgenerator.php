@@ -71,6 +71,7 @@ class Mapgenerator {
     /**
      * Mapgenerator constructor.
      * @param array $hostsAndData
+     * @param array $generatedMaps
      * @param int $type
      */
     public function __construct(array $mapgeneratorData, array $hostsAndData, array $generatedMaps = [], int $type = 1) {
@@ -96,6 +97,10 @@ class Mapgenerator {
                     return $generatedMapsAndItemsByHost;
                 }
 
+            } else if ($this->type === 2) {
+
+                $this->generateByHostname($hostAndData);
+
             }
 
         }
@@ -114,12 +119,18 @@ class Mapgenerator {
             'maps'  => [],
             'items' => []
         ];
+        $hierarchyAsString = ''; // to build unique names, which can be assigned to a map hierarchy
 
         // create maps
         foreach ($hostAndData['containerHierarchy'] as $containerKey => $container) {
 
             // check if container is already generated
-            $containerName = $container['name'];
+            if ($hierarchyAsString !== '') {
+                $containerName = $hierarchyAsString . '/' . $container['name'];
+            } else {
+                $containerName = $container['name'];
+            }
+            $hierarchyAsString = $containerName;
             $map = null;
 
             if (in_array($containerName, Hash::extract($this->allGeneratedMaps, '{n}.name'), true)) {
@@ -137,7 +148,7 @@ class Mapgenerator {
             }
 
             // create new map for this container
-            $map = $this->createNewMap($containerName, $this->mapgeneratorData['refresh_interval'], $containerIdForNewMap);
+            $map = $this->createNewMap($containerName, $this->mapgeneratorData['map_refresh_interval'], $containerIdForNewMap);
 
             if (array_key_exists("error", $map)) {
                 return $map;
@@ -184,6 +195,87 @@ class Mapgenerator {
         }
 
         return $generatedMapsAndItems;
+    }
+
+    private function generateByHostname(array $hostAndData) {
+
+        $higherMap = []; // this is the map that is generated that is higher in the hierarchy
+        $lastMap = []; // this is the last map in the hierarchy, used to add items to it
+        //echo chr(10) . " dessign higher map " . ' in ' . $hostAndData["hostId"] . ", " . $hostAndData['hostName'];
+        $generatedMapsAndItems = [
+            'maps'  => [],
+            'items' => []
+        ];
+
+        // create maps
+        foreach ($hostAndData['mapNames'] as $mapNameKey => $mapName) {
+
+            // check if map is already generated
+            $map = null;
+
+            if (in_array($mapName, Hash::extract($this->allGeneratedMaps, '{n}.name'), true)) {
+                //echo chr(10) . " map for container " . $mapName . ' already created, skip!!!';
+                foreach ($this->allGeneratedMaps as $generatedMap) {
+                    if ($mapName === $generatedMap['name']) {
+                        $lastMap = $generatedMap;
+                        if (count($hostAndData['mapNames']) > 1) {
+                            $higherMap = $generatedMap;
+                        }
+                        //echo chr(10) . " assign higher map";
+                    }
+                }
+                continue;
+            }
+
+            // create new map for this mapName
+            $map = $this->createNewMap($mapName, $this->mapgeneratorData['map_refresh_interval'], $hostAndData['containerIdForNewMap']);
+
+            if (array_key_exists("error", $map)) {
+                return $map;
+            }
+
+            $this->allGeneratedMaps[] = $map;
+            $this->newGeneratedMaps[] = $map;
+            $generatedMapsAndItems['maps'][] = $map;
+            $lastMap = $map;
+
+            //echo chr(10) . print_r($container, true) . "; containerKey " . $containerKey;
+
+            // add map as mapsummaryitem to the previously generated map
+            if ($higherMap && $mapNameKey > 0) {
+
+                $mapsummaryitem = $this->createNewMapSummaryItem($higherMap, $map["id"], 'map');
+                //echo chr(10) . " add map  as item " . $mapsummaryitem['id'] . " to higher map " . $higherMap['name'];
+
+                if (array_key_exists("error", $mapsummaryitem)) {
+                    return $mapsummaryitem;
+                }
+
+                $this->generatedItems[] = $mapsummaryitem;
+                $generatedMapsAndItems['items'][] = $mapsummaryitem;
+            }
+
+            if (count($hostAndData['mapNames']) > 1) {
+                $higherMap = $map;
+                //echo chr(10) . " assign higher map";
+            }
+
+        }
+
+        // create Host
+        $newHostItem = $this->createNewMapSummaryItem($lastMap, $hostAndData['hostId'], 'host');
+
+        if (array_key_exists("error", $newHostItem)) {
+            return $newHostItem;
+        }
+
+        if ($newHostItem) {
+            $this->generatedItems[] = $newHostItem;
+            $generatedMapsAndItems['items'][] = $newHostItem;
+        }
+
+        return $generatedMapsAndItems;
+
     }
 
     private function createNewMap(string $name, int $refreshInterval, int $containerId) {

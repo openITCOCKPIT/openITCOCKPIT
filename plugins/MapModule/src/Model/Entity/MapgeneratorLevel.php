@@ -22,36 +22,23 @@
 //     License agreement and license key will be shipped with the order
 //     confirmation.
 
-// 2.
-//	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
-//	under the terms of the openITCOCKPIT Enterprise Edition license agreement.
-//	License agreement and license key will be shipped with the order
-//	confirmation.
-
-declare(strict_types=1);
-
 namespace MapModule\Model\Entity;
 
-use Cake\I18n\FrozenTime;
 use Cake\ORM\Entity;
 
 /**
- * Rotation Entity
+ * MapgeneratorLevel Entity
  *
  * @property int $id
+ * @property int $mapgenerator_id
  * @property string $name
- * @property string $description
- * @property int $map_refresh_interval
- * @property int $type
- * @property int $items_per_line
- * @property FrozenTime $created
- * @property FrozenTime $modified
+ * @property string $divider
+ * @property int $is_container
  *
- * @property Containers[] $containers
- * @property Maps[] $maps
- * @property MapgeneratorLevel[] $mapgenerator_levels
+ * @property Mapgenerator $mapgenerator
  */
-class Mapgenerator extends Entity {
+class MapgeneratorLevel extends Entity {
+
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -62,15 +49,10 @@ class Mapgenerator extends Entity {
      * @var array
      */
     protected $_accessible = [
-        'name'                 => true,
-        'description'          => true,
-        'map_refresh_interval' => true,
-        'items_per_line'       => true,
-        'type'                 => true,
-        'created'              => true,
-        'modified'             => true,
-        'containers'           => true,
-        'maps'                 => true,
-        'mapgenerator_levels'  => true,
+        'mapgenerator_id' => true,
+        'name'            => true,
+        'divider'         => true,
+        'is_container'    => true,
+        'mapgenerator'    => true,
     ];
 }

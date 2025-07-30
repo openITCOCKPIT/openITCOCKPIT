@@ -335,13 +335,16 @@ class Logo {
         return sprintf('/img/login/%s', $images['images'][0]['image']);
     }
 
+    /**
+     * @return string
+     */
     public function getCustomStatusPageHeaderHtml(): string {
         if ($this->isCustomStatusPageHeader()) {
             // Cache images for 1 hour
             return sprintf($this->logoBasePath, '', $this->customStatusPageHeaderName) . '?v=' . date('YmdH');
         }
-
         // No custom status page header - So there is NO header image.
+        return '';
     }
 
     /**

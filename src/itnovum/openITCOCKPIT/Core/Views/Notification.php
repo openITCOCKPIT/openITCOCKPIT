@@ -1,26 +1,26 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
 // 1.
-//  This program is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // 2.
-//  If you purchased an openITCOCKPIT Enterprise Edition you can use this file
-//  under the terms of the openITCOCKPIT Enterprise Edition license agreement.
-//  License agreement and license key will be shipped with the order
-//  confirmation.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 namespace itnovum\openITCOCKPIT\Core\Views;
 
@@ -42,6 +42,11 @@ abstract class Notification {
      * @var int|string
      */
     private $start_time;
+
+    /**
+     * @var int|null
+     */
+    private $reason_type = null;
 
     /**
      * @var UserTime|null
@@ -71,6 +76,10 @@ abstract class Notification {
             $this->start_time = $data['start_time'];
         }
 
+        if (isset($data['reason_type'])) {
+            $this->reason_type = $data['reason_type'];
+        }
+
         $this->UserTime = $UserTime;
     }
 
@@ -86,6 +95,40 @@ abstract class Notification {
      */
     public function getOutput() {
         return $this->output;
+    }
+
+    public function getReasonType(): mixed {
+        return $this->reason_type;
+    }
+
+    public function getReasonTypeString(): string {
+        if ($this->reason_type === null) {
+            return '';
+        }
+
+        // Source: https://github.com/naemon/naemon-core/blob/1e854668f5153aa465cecd95335338411f6aaf02/src/naemon/notifications.h#L67-L77
+        switch ($this->reason_type) {
+            case 0:
+                return 'Alert';
+            case 1:
+                return 'Acknowledgement set';
+            case 2:
+                return 'Start flapping';
+            case 3:
+                return 'Stop flapping';
+            case 4:
+                return 'Flapping disabled';
+            case 5:
+                return 'Downtime start';
+            case 6:
+                return 'Downtime end';
+            case 7:
+                return 'Downtime cancelled';
+            case 8:
+                return 'Custom';
+            default:
+                return '';
+        }
     }
 
     /**

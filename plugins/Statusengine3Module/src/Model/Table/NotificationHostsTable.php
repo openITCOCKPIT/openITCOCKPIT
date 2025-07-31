@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
@@ -103,6 +103,7 @@ class NotificationHostsTable extends Table implements NotificationHostsTableInte
                 'NotificationHosts.hostname',
                 'NotificationHosts.start_time',
                 'NotificationHosts.state',
+                'NotificationHosts.reason_type',
                 'NotificationHosts.output',
 
                 'Hosts.id',

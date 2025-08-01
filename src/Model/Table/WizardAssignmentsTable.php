@@ -379,6 +379,13 @@ class WizardAssignmentsTable extends Table {
                 'description' => __('Check everything regarding VMware. ESX Hosts, vCenter, virtual machines...'),
                 'image'       => 'VMware_logo.svg',
                 'category'    => ['virtualization', 'cloud'],
+            ],
+            'vmware-datastores'      => [
+                'type_id'     => 'vmware-datastores',
+                'title'       => __('VMWare Datastores'),
+                'description' => __('Monitor your VMware Datastores...'),
+                'image'       => 'VMware_logo.svg',
+                'category'    => ['virtualization', 'cloud'],
             ]
         ];
 

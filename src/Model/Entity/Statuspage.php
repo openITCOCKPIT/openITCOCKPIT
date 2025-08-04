@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
@@ -33,9 +33,11 @@ use Cake\ORM\Entity;
  * Statuspage Entity
  *
  * @property int $id
+ * @property string $uuid
  * @property string $name
  * @property string|null $description
  * @property string|null $public_title
+ * @property string|null $public_identifier
  * @property bool $public
  * @property bool $show_downtimes
  * @property bool $show_downtime_comments
@@ -61,10 +63,12 @@ class Statuspage extends Entity {
      * @var array<string, bool>
      */
     protected $_accessible = [
+        'uuid'                          => true,
         'container_id'                  => true,
         'name'                          => true,
         'description'                   => true,
         'public_title'                  => true,
+        'public_identifier'             => true,
         'public'                        => true,
         'show_downtimes'                => true,
         'show_downtime_comments'        => true,

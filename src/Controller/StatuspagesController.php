@@ -1,21 +1,26 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -34,6 +39,7 @@ use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
+use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Core\Views\UserTime;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -123,8 +129,6 @@ class StatuspagesController extends AppController {
         $User = new User($this->getUser());
         $UserTime = $User->getUserTime();
 
-        $statuspage = $StatuspagesTable->get($id);
-
         $MY_RIGHTS = [];
         if ($this->hasRootPrivileges === false) {
             /** @var $ContainersTable ContainersTable */
@@ -148,13 +152,32 @@ class StatuspagesController extends AppController {
      * @throws \Cake\Http\Exception\NotFoundException
      * @throws \Cake\Http\Exception\MethodNotAllowedException
      */
-    public function publicView($id = null) {
-        if (empty($id)) {
+    public function publicView(null|string|int $idOrUuidOrPublicIdentifier = null) {
+        if (empty($idOrUuidOrPublicIdentifier)) {
             throw new NotFoundException('Statuspage not found');
         }
 
         /** @var StatuspagesTable $StatuspagesTable */
         $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+
+        // Did the user pass a numeric ID?
+        if (is_numeric($idOrUuidOrPublicIdentifier)) {
+            $id = (int)$idOrUuidOrPublicIdentifier;
+        } else {
+            // Did the user pass a UUID or a public identifier?
+            $id = 0;
+            $isUuid = UUID::is_valid($idOrUuidOrPublicIdentifier);
+            if ($isUuid) {
+                $entity = $StatuspagesTable->getStatuspageByUuid($idOrUuidOrPublicIdentifier);
+                $id = $entity->id;
+            } else {
+                // User passed a public identifier like "/datacenter" or "/my-status-page"
+                $entity = $StatuspagesTable->getStatuspageByPublicIdentifier($idOrUuidOrPublicIdentifier);
+                $id = $entity->id;
+            }
+
+        }
+
         if (!$StatuspagesTable->existsById($id)) {
             throw new NotFoundException(__('Statuspage not found'));
         }
@@ -188,7 +211,14 @@ class StatuspagesController extends AppController {
 
         if ($this->request->is('post') || $this->request->is('put')) {
             $statuspage = $StatuspagesTable->newEmptyEntity();
-            $statuspage = $StatuspagesTable->patchEntity($statuspage, $this->request->getData('Statuspage', []));
+
+            $data = $this->request->getData('Statuspage', []);
+            if (empty($data['Statuspage']['public_identifier'])) {
+                $data['Statuspage']['public_identifier'] = null;
+            }
+
+            $statuspage = $StatuspagesTable->patchEntity($statuspage, $data);
+            $statuspage->set('uuid', UUID::v4());
             $StatuspagesTable->save($statuspage);
             if ($statuspage->hasErrors()) {
                 $this->response = $this->response->withStatus(400);
@@ -233,8 +263,13 @@ class StatuspagesController extends AppController {
         }
 
         if ($this->request->is('post') && $this->isAngularJsRequest()) {
-            $data = $this->request->getData('Statuspage');
+            $data = $this->request->getData('Statuspage', []);
+            if (empty($data['Statuspage']['public_identifier'])) {
+                $data['Statuspage']['public_identifier'] = null;
+            }
+
             $statuspage = $StatuspagesTable->get($id);
+            $statuspage->setAccess('uuid', false);
             $statuspage = $StatuspagesTable->patchEntity($statuspage, $data);
             $StatuspagesTable->save($statuspage);
             if ($statuspage->hasErrors()) {

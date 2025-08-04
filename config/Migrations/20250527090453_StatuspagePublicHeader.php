@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
@@ -26,6 +26,15 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
+/**
+ * Class StatuspagePublicHeader
+ *
+ * Created:
+ * oitc migrations create StatuspagePublicHeader
+ *
+ * Usage:
+ * openitcockpit-update
+ */
 class StatuspagePublicHeader extends AbstractMigration {
     /**
      * Change Method.

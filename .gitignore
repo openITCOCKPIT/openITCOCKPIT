@@ -131,3 +131,6 @@ plugins/MSTeamsModule
 plugins/IsarFlowModule
 plugins/ScmModule
 plugins/JiraModule
+
+# NFS mounts
+.nfs.*

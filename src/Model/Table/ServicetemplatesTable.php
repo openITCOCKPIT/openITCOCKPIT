@@ -1982,4 +1982,33 @@ class ServicetemplatesTable extends Table {
         }
         return $servicetemplate;
     }
+
+    /**
+     * @param array $MY_RIGHTS
+     * @return array|\Cake\Datasource\EntityInterface|null
+     */
+    public function getDatastoreServicetemplateFoWizardDeploy($MY_RIGHTS = []) {
+        $query = $this->find()
+            ->where([
+                'Servicetemplates.uuid' => '4D0251E1-0A8F-483C-AB65-B7444DB131F8'
+            ])
+            ->contain([
+                'Servicetemplatecommandargumentvalues' => [
+                    'Commandarguments'
+                ],
+                'CheckCommand'                         => [
+                    'Commandarguments'
+                ]
+            ]);
+        if (!empty($MY_RIGHTS)) {
+            $query->where([
+                'Servicetemplates.container_id IN' => $MY_RIGHTS
+            ]);
+        }
+        $query->disableHydration();
+        if (!is_null($query)) {
+            return $query->first();
+        }
+        return [];
+    }
 }

@@ -12,7 +12,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class GolangAgentPush extends AbstractMigration {
+class GolangAgentPush extends \Migrations\BaseMigration {
 
     /**
      * Whether the tables created in this migration

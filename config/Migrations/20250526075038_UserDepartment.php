@@ -35,7 +35,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class UserDepartment extends AbstractMigration {
+class UserDepartment extends \Migrations\BaseMigration {
 
     /**
      * Whether the tables created in this migration

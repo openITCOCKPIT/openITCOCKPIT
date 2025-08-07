@@ -13,7 +13,7 @@ use Migrations\AbstractMigration;
  * oitc migrations migrate
  *
  */
-class MysqlWizardMigration extends AbstractMigration {
+class MysqlWizardMigration extends \Migrations\BaseMigration {
 
     /**
      * Whether the tables created in this migration

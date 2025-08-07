@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
-class Statuspage extends AbstractMigration {
+class Statuspage extends \Migrations\BaseMigration {
     public $autoId = false;
 
     /**

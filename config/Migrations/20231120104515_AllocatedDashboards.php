@@ -14,7 +14,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class AllocatedDashboards extends AbstractMigration {
+class AllocatedDashboards extends \Migrations\BaseMigration {
     /** @inheritdoc */
     public $autoId = false;
 

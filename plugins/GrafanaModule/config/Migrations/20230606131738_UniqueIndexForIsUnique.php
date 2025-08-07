@@ -37,7 +37,7 @@ use Migrations\AbstractMigration;
  * oitc migrations migrate -p GrafanaModule
  *
  */
-class UniqueIndexForIsUnique extends AbstractMigration {
+class UniqueIndexForIsUnique extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

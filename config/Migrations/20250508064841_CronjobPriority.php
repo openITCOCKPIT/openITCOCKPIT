@@ -35,7 +35,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class CronjobPriority extends AbstractMigration {
+class CronjobPriority extends \Migrations\BaseMigration {
 
     /**
      * Whether the tables created in this migration

@@ -13,7 +13,7 @@ use Migrations\AbstractMigration;
  * oitc migrations migrate -p MapModule
  *
  */
-class RotationsTables extends AbstractMigration {
+class RotationsTables extends \Migrations\BaseMigration {
 
     /**
      * Whether the tables created in this migration

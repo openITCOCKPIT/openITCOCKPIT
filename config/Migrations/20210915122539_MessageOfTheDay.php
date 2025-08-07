@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
-class MessageOfTheDay extends AbstractMigration {
+class MessageOfTheDay extends \Migrations\BaseMigration {
     /**
      * Change Method.
      * Class MessageOfTheDay

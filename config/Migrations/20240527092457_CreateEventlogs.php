@@ -26,7 +26,7 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
-class CreateEventlogs extends AbstractMigration {
+class CreateEventlogs extends \Migrations\BaseMigration {
 
     /**
      * Whether the tables created in this migration

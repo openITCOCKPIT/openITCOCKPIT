@@ -37,7 +37,7 @@ use Migrations\AbstractMigration;
  * oitc4 migrations migrate -p MattermostModule
  *
  */
-class CreateMattermostSettings extends AbstractMigration {
+class CreateMattermostSettings extends \Migrations\BaseMigration {
 
     /**
      * Change Method.

@@ -17,7 +17,7 @@ use Migrations\AbstractSeed;
  * Apply:
  * oitc4 migrations seed -p MattermostModule
  */
-class InstallSeed extends AbstractSeed {
+class InstallSeed extends \Migrations\BaseSeed {
     /**
      * Run Method.
      *

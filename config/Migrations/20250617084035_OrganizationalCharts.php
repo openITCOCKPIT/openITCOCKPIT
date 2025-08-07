@@ -36,7 +36,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * oitc migrations migrate
  */
-class OrganizationalCharts extends AbstractMigration {
+class OrganizationalCharts extends \Migrations\BaseMigration {
     /**
      * Whether the tables created in this migration
      * should auto-create an `id` field or not

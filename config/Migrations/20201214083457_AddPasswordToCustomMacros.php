@@ -12,7 +12,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class AddPasswordToCustomMacros extends AbstractMigration {
+class AddPasswordToCustomMacros extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

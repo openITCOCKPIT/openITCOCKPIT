@@ -36,7 +36,7 @@ use Migrations\AbstractMigration;
  * oitc migrations migrate
  *
  */
-class SLAsAssociationsHosttemplatesAndHosts extends AbstractMigration {
+class SLAsAssociationsHosttemplatesAndHosts extends \Migrations\BaseMigration {
 
     /**
      * Whether the tables created in this migration

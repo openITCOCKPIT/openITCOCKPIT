@@ -17,7 +17,7 @@ use Migrations\AbstractSeed;
  * Apply:
  * oitc4 migrations seed -p GrafanaModule
  */
-class InstallSeed extends AbstractSeed {
+class InstallSeed extends \Migrations\BaseSeed {
     /**
      * Run Method.
      *

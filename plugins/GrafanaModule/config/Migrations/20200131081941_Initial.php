@@ -37,7 +37,7 @@ use Migrations\AbstractMigration;
  * oitc migrations migrate -p GrafanaModule
  *
  */
-class Initial extends AbstractMigration {
+class Initial extends \Migrations\BaseMigration {
     /**
      * Whether the tables created in this migration
      * should auto-create an `id` field or not

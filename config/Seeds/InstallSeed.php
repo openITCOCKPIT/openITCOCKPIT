@@ -42,7 +42,7 @@ use Migrations\AbstractSeed;
  * Apply:
  * oitc migrations seed
  */
-class InstallSeed extends AbstractSeed {
+class InstallSeed extends \Migrations\BaseSeed {
     /**
      * Run Method.
      *

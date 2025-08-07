@@ -35,7 +35,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class StatuspagePublicHeader extends AbstractMigration {
+class StatuspagePublicHeader extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

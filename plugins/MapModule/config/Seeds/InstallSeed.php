@@ -12,7 +12,7 @@ use Migrations\AbstractSeed;
  * Apply:
  * oitc4 migrations seed -p MapModule
  */
-class InstallSeed extends AbstractSeed {
+class InstallSeed extends \Migrations\BaseSeed {
     /**
      * Run Method.
      *

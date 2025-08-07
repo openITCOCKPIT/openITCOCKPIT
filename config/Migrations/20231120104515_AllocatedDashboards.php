@@ -16,7 +16,7 @@ use Migrations\AbstractMigration;
  */
 class AllocatedDashboards extends \Migrations\BaseMigration {
     /** @inheritdoc */
-    public $autoId = false;
+    public bool $autoId = false;
 
     /**
      * Up Method.

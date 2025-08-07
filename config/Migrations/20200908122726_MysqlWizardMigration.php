@@ -25,7 +25,7 @@ class MysqlWizardMigration extends \Migrations\BaseMigration {
      *
      * @var bool
      */
-    public $autoId = false;
+    public bool $autoId = false;
 
     /**
      * Change Method.

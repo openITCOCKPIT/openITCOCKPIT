@@ -20,7 +20,7 @@ class MessageOfTheDay extends \Migrations\BaseMigration {
      * https://book.cakephp.org/phinx/0/en/migrations.html#the-change-method
      * @return void
      */
-    public $autoId = false;
+    public bool $autoId = false;
 
     public function change(): void {
         if (!$this->hasTable('messages_otd')) {

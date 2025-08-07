@@ -4692,37 +4692,38 @@ class ServicesTable extends Table {
      * @param bool $extended show details ('acknowledged', 'in downtime', ...
      * @return array
      */
-    public function getServiceStateSummary($servicestatus, $extended = true) {
+    public function getServiceStateSummary($servicestatus, bool $extended = true): array {
         $serviceStateSummary = [
-            'state'        => [
+            'state'            => [
                 0 => 0,
                 1 => 0,
                 2 => 0,
                 3 => 0
             ],
-            'acknowledged' => [
+            'acknowledged'     => [
                 0 => 0,
                 1 => 0,
                 2 => 0,
                 3 => 0
             ],
-            'in_downtime'  => [
+            'in_downtime'      => [
                 0 => 0,
                 1 => 0,
                 2 => 0,
                 3 => 0
             ],
-            'not_handled'  => [
+            'not_handled'      => [
                 0 => 0,
                 1 => 0,
                 2 => 0,
                 3 => 0
             ],
-            'total'        => 0
+            'total'            => 0,
+            'cumulative_state' => -1 // not monitored
         ];
         if ($extended === true) {
             $serviceStateSummary = [
-                'state'        => [
+                'state'            => [
                     0            => 0,
                     1            => 0,
                     2            => 0,
@@ -4734,7 +4735,7 @@ class ServicesTable extends Table {
                         3 => []
                     ]
                 ],
-                'acknowledged' => [
+                'acknowledged'     => [
                     0            => 0,
                     1            => 0,
                     2            => 0,
@@ -4746,7 +4747,7 @@ class ServicesTable extends Table {
                         3 => []
                     ]
                 ],
-                'in_downtime'  => [
+                'in_downtime'      => [
                     0            => 0,
                     1            => 0,
                     2            => 0,
@@ -4758,7 +4759,7 @@ class ServicesTable extends Table {
                         3 => []
                     ]
                 ],
-                'not_handled'  => [
+                'not_handled'      => [
                     0            => 0,
                     1            => 0,
                     2            => 0,
@@ -4768,9 +4769,10 @@ class ServicesTable extends Table {
                         1 => [],
                         2 => [],
                         3 => []
-                    ]
+                    ],
+                    'totalServiceIds' => []
                 ],
-                'passive'      => [
+                'passive'          => [
                     0            => 0,
                     1            => 0,
                     2            => 0,
@@ -4782,7 +4784,8 @@ class ServicesTable extends Table {
                         2 => []
                     ]
                 ],
-                'total'        => 0
+                'total'            => 0,
+                'cumulative_state' => -1 // not monitored
             ];
         }
         if (empty($servicestatus)) {
@@ -4803,6 +4806,7 @@ class ServicesTable extends Table {
                     } else if ($service['Servicestatus']['problem_has_been_acknowledged'] == 0 && $service['Servicestatus']['scheduled_downtime_depth'] == 0) {
                         $serviceStateSummary['not_handled'][$service['Servicestatus']['current_state']]++;
                         $serviceStateSummary['not_handled']['serviceIds'][$service['Servicestatus']['current_state']][] = $service['id'];
+                        $serviceStateSummary['not_handled']['totalServiceIds'][] = $service['id'];
                     }
                 }
                 if ($service['Servicestatus']['scheduled_downtime_depth'] > 0) {
@@ -4824,6 +4828,9 @@ class ServicesTable extends Table {
                 if ($service['Servicestatus']['scheduled_downtime_depth'] > 0) {
                     $serviceStateSummary['in_downtime'][$service['Servicestatus']['current_state']]++;
                 }
+            }
+            if ($serviceStateSummary['cumulative_state'] < $service['Servicestatus']['current_state']) {
+                $serviceStateSummary['cumulative_state'] = $service['Servicestatus']['current_state'];
             }
             $serviceStateSummary['total']++;
         }

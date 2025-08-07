@@ -127,7 +127,7 @@ class AcknowledgementServicesTable extends Table implements AcknowledgementServi
             ->contain([
                 'Objects'
             ])
-            ->order([
+            ->orderBy([
                 'entry_time' => 'DESC',
             ])
             ->first();
@@ -151,7 +151,7 @@ class AcknowledgementServicesTable extends Table implements AcknowledgementServi
                 'entry_time >'          => date('Y-m-d H:i:s', $AcknowledgedServiceConditions->getFrom()),
                 'entry_time <'          => date('Y-m-d H:i:s', $AcknowledgedServiceConditions->getTo())
             ])
-            ->order($AcknowledgedServiceConditions->getOrder());
+            ->orderBy($AcknowledgedServiceConditions->getOrder());
 
         if ($AcknowledgedServiceConditions->hasConditions()) {
             $query->andWhere($AcknowledgedServiceConditions->getConditions());

@@ -39,8 +39,8 @@ use Cake\ORM\Entity;
  * @property int $y
  * @property string $icon
  * @property int $z_index
- * @property FrozenTime $created
- * @property FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property Map $map
  */
@@ -54,7 +54,7 @@ class Mapicon extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'map_id'   => true,
         'x'        => true,
         'y'        => true,

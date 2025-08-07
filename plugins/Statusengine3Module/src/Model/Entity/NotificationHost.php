@@ -61,7 +61,7 @@ class NotificationHost extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'hostname'     => true,
         'contact_name' => true,
         'command_name' => true,

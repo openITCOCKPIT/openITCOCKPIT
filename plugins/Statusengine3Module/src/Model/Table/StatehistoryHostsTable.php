@@ -100,7 +100,7 @@ class StatehistoryHostsTable extends Table implements StatehistoryHostTableInter
                 'StatehistoryHosts.state_time >' => $StatehistoryHostConditions->getFrom(),
                 'StatehistoryHosts.state_time <' => $StatehistoryHostConditions->getTo()
             ])
-            ->order($StatehistoryHostConditions->getOrder());
+            ->orderBy($StatehistoryHostConditions->getOrder());
 
         if ($StatehistoryHostConditions->hasConditions()) {
             $query->andWhere($StatehistoryHostConditions->getConditions());
@@ -154,7 +154,7 @@ class StatehistoryHostsTable extends Table implements StatehistoryHostTableInter
                 'StatehistoryHosts.hostname'      => $StatehistoryHostConditions->getHostUuid(),
                 'StatehistoryHosts.state_time <=' => $StatehistoryHostConditions->getFrom()
             ])
-            ->order([
+            ->orderBy([
                 'StatehistoryHosts.state_time' => 'DESC'
             ])
             ->enableHydration($enableHydration)
@@ -182,7 +182,7 @@ class StatehistoryHostsTable extends Table implements StatehistoryHostTableInter
                 ]
             ]);
         }
-        $query->order([
+        $query->orderBy([
             'StatehistoryHosts.state_time' => 'DESC'
         ])
             ->disableHydration();
@@ -205,7 +205,7 @@ class StatehistoryHostsTable extends Table implements StatehistoryHostTableInter
                 ]
             ]);
         }
-        $query->order([
+        $query->orderBy([
             'StatehistoryHosts.state_time' => 'ASC'
         ])
             ->disableHydration();

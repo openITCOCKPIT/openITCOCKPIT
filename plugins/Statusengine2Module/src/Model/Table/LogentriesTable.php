@@ -109,7 +109,7 @@ class LogentriesTable extends Table implements LogentriesTableInterface {
         //Get all user ids where container assigned are made directly at the user
         $query = $this->find()
             ->where($LogentryFilter->indexFilter())
-            ->order($LogentryFilter->getOrderForPaginator('Logentries.entry_time', 'desc'));
+            ->orderBy($LogentryFilter->getOrderForPaginator('Logentries.entry_time', 'desc'));
 
         if(!empty($LogentryFilter->getMatchingUuids())){
             $query->andWhere(new Comparison(

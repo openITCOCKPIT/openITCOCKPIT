@@ -40,8 +40,8 @@ use Cake\ORM\Entity;
  * @property string $text
  * @property int $font_size
  * @property int $z_index
- * @property FrozenTime $created
- * @property FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property Map $map
  */
@@ -55,7 +55,7 @@ class Maptext extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'map_id'    => true,
         'x'         => true,
         'y'         => true,

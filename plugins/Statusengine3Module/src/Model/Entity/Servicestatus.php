@@ -86,7 +86,7 @@ class Servicestatus extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'status_update_time'            => true,
         'output'                        => true,
         'long_output'                   => true,

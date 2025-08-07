@@ -32,7 +32,7 @@ use Cake\ORM\Entity;
  *
  * @property int $statehistory_id
  * @property int $instance_id
- * @property \Cake\I18n\FrozenTime $state_time
+ * @property \Cake\I18n\DateTime $state_time
  * @property int $state_time_usec
  * @property int $object_id
  * @property int $state_change
@@ -58,7 +58,7 @@ class StatehistoryService extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'instance_id'           => true,
         'state_time_usec'       => true,
         'object_id'             => true,

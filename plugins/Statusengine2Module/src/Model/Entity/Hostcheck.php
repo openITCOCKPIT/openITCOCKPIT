@@ -39,9 +39,9 @@ use Cake\ORM\Entity;
  * @property int $max_check_attempts
  * @property int $state
  * @property int $state_type
- * @property \Cake\I18n\FrozenTime $start_time
+ * @property \Cake\I18n\DateTime $start_time
  * @property int $start_time_usec
- * @property \Cake\I18n\FrozenTime $end_time
+ * @property \Cake\I18n\DateTime $end_time
  * @property int $end_time_usec
  * @property int $command_object_id
  * @property string|null $command_args
@@ -70,7 +70,7 @@ class Hostcheck extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'instance_id'           => true,
         'host_object_id'        => true,
         'check_type'            => true,

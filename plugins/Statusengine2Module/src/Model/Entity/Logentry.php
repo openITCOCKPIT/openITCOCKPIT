@@ -34,8 +34,8 @@ use Cake\ORM\Entity;
  *
  * @property int $logentry_id
  * @property int $instance_id
- * @property \Cake\I18n\FrozenTime $logentry_time
- * @property \Cake\I18n\FrozenTime $entry_time
+ * @property \Cake\I18n\DateTime $logentry_time
+ * @property \Cake\I18n\DateTime $entry_time
  * @property int $entry_time_usec
  * @property int $logentry_type
  * @property string $logentry_data
@@ -54,7 +54,7 @@ class Logentry extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'instance_id'             => true,
         'logentry_time'           => true,
         'entry_time_usec'         => true,

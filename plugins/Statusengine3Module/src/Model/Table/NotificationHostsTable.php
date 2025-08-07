@@ -140,10 +140,10 @@ class NotificationHostsTable extends Table implements NotificationHostsTableInte
                 'NotificationHosts.start_time >' => $HostNotificationConditions->getFrom(),
                 'NotificationHosts.start_time <' => $HostNotificationConditions->getTo()
             ])
-            ->order(
+            ->orderBy(
                 $HostNotificationConditions->getOrder()
             )
-            ->group([
+            ->groupBy([
                 'NotificationHosts.hostname',
                 'NotificationHosts.start_time',
                 'NotificationHosts.start_time_usec'

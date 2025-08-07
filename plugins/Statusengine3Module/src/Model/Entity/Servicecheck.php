@@ -59,7 +59,7 @@ class Servicecheck extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'state'                 => true,
         'is_hardstate'          => true,
         'end_time'              => true,

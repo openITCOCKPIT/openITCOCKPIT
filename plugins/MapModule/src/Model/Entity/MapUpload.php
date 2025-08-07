@@ -39,7 +39,7 @@ use Cake\ORM\Entity;
  * @property string $saved_name
  * @property int|null $user_id
  * @property int|null $container_id
- * @property FrozenTime $created
+ * @property \Cake\I18n\DateTime $created
  *
  * @property User $user
  * @property Container $container
@@ -54,7 +54,7 @@ class MapUpload extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'upload_type'  => true,
         'upload_name'  => true,
         'saved_name'   => true,

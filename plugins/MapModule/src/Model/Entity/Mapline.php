@@ -45,8 +45,8 @@ use Cake\ORM\Entity;
  * @property int|null $object_id
  * @property int $z_index
  * @property int $show_label
- * @property FrozenTime $created
- * @property FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property Map $map
  * @property Object $object
@@ -61,7 +61,7 @@ class Mapline extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'map_id'     => true,
         'startX'     => true,
         'startY'     => true,

@@ -386,6 +386,13 @@ class WizardAssignmentsTable extends Table {
                 'description' => __('Monitor your VMware Datastores...'),
                 'image'       => 'VMware_logo.svg',
                 'category'    => ['virtualization', 'cloud'],
+            ],
+            'vmware-snapshots'       => [
+                'type_id'     => 'vmware-snapshots',
+                'title'       => __('VMWare Snapshots'),
+                'description' => __('Monitor your VMware snapshots to avoid performance issues'),
+                'image'       => 'VMware_logo.svg',
+                'category'    => ['virtualization', 'cloud'],
             ]
         ];
 

@@ -2011,4 +2011,33 @@ class ServicetemplatesTable extends Table {
         }
         return [];
     }
+
+    /**
+     * @param array $MY_RIGHTS
+     * @return array|\Cake\Datasource\EntityInterface|null
+     */
+    public function getSnapshotServicetemplateFoWizardDeploy($MY_RIGHTS = []) {
+        $query = $this->find()
+            ->where([
+                'Servicetemplates.uuid' => '6DDA1E64-B54B-459A-974F-34A09CE49F29'
+            ])
+            ->contain([
+                'Servicetemplatecommandargumentvalues' => [
+                    'Commandarguments'
+                ],
+                'CheckCommand'                         => [
+                    'Commandarguments'
+                ]
+            ]);
+        if (!empty($MY_RIGHTS)) {
+            $query->where([
+                'Servicetemplates.container_id IN' => $MY_RIGHTS
+            ]);
+        }
+        $query->disableHydration();
+        if (!is_null($query)) {
+            return $query->first();
+        }
+        return [];
+    }
 }

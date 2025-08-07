@@ -213,7 +213,8 @@ class StatuspagesController extends AppController {
             $statuspage = $StatuspagesTable->newEmptyEntity();
 
             $data = $this->request->getData('Statuspage', []);
-            if (empty($data['Statuspage']['public_identifier'])) {
+            // empty(false) is also true, which is useful here for checking $data['Statuspage']['public']
+            if (empty($data['Statuspage']['public']) || empty($data['Statuspage']['public_identifier'])) {
                 $data['Statuspage']['public_identifier'] = null;
             }
 
@@ -264,7 +265,9 @@ class StatuspagesController extends AppController {
 
         if ($this->request->is('post') && $this->isAngularJsRequest()) {
             $data = $this->request->getData('Statuspage', []);
-            if (empty($data['Statuspage']['public_identifier'])) {
+
+            // empty(false) is also true, which is useful here for checking $data['Statuspage']['public']
+            if (empty($data['Statuspage']['public']) || empty($data['Statuspage']['public_identifier'])) {
                 $data['Statuspage']['public_identifier'] = null;
             }
 

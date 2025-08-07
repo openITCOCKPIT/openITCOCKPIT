@@ -223,7 +223,10 @@ class StatuspagesTable extends Table {
      */
     public function buildRules(RulesChecker $rules): RulesChecker {
         $rules->add($rules->isUnique(['uuid']));
-        $rules->add($rules->isUnique(['public_identifier']));
+        $rules->add($rules->isUnique(
+            ['public_identifier'],
+            ['allowMultipleNulls' => true]
+        ));
 
         return $rules;
     }

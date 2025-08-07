@@ -1,5 +1,5 @@
 {
-    "name": "your-name-here/dbml",
+    "name": "openitcockpit/dbml",
     "description": "Dbml plugin for CakePHP",
     "type": "cakephp-plugin",
     "keywords": [

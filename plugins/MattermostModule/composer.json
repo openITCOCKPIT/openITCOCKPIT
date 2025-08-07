@@ -1,5 +1,5 @@
 {
-    "name": "open-itcockpit/MattermostModule",
+    "name": "openitcockpit/mattermost-module",
     "description": "MattermostModule plugin for openITCOCKPIT",
     "type": "cakephp-plugin",
     "license": "Dual licensed",

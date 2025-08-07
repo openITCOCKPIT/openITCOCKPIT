@@ -1,5 +1,5 @@
 {
-    "name": "your-name-here/Statusengine3Module",
+    "name": "openitcockpit/statusengine3-module",
     "description": "Statusengine3Module plugin for CakePHP",
     "type": "cakephp-plugin",
     "license": "MIT",

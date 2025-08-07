@@ -1,5 +1,5 @@
 {
-    "name": "open-itcockpit/GrafanaModule",
+    "name": "openitcockpit/grafana-module",
     "description": "GrafanaModule plugin for openITCOCKPIT",
     "type": "cakephp-plugin",
     "license": "Dual licensed",

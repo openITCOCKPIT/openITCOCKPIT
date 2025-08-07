@@ -1,5 +1,5 @@
 {
-    "name": "your-name-here/puppeteer-pdf",
+    "name": "openitcockpit/puppeteer-pdf",
     "description": "PuppeteerPdf plugin for CakePHP",
     "type": "cakephp-plugin",
     "license": "MIT license",

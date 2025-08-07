@@ -248,10 +248,8 @@ class AgentconnectorController extends AppController {
             throw new NotFoundException(__('Agent config not found'));
         }
 
-        $agentConfig = $AgentconfigsTable->get($id, [
-            'contain' => [
-                'Hosts'
-            ]
+        $agentConfig = $AgentconfigsTable->get($id, contain: [
+            'Hosts'
         ]);
         if (!$this->allowedByContainerId($agentConfig->get('host')->get('container_id'))) {
             $this->render403();
@@ -290,10 +288,8 @@ class AgentconnectorController extends AppController {
             throw new NotFoundException(__('Push Agent config not found'));
         }
 
-        $pushAgent = $PushAgentsTable->get($id, [
-            'contain' => [
-                'Agentconfigs'
-            ]
+        $pushAgent = $PushAgentsTable->get($id, contain: [
+            'Agentconfigs'
         ]);
 
         if (!empty($pushAgent->get('agentconfig'))) {
@@ -1437,7 +1433,7 @@ class AgentconnectorController extends AppController {
                 'ipaddress'            => $this->request->getData('ipaddress', null),
                 'remote_address'       => $remoteAddress,
                 'http_x_forwarded_for' => $HTTP_X_FORWARDED_FOR,
-                'last_update'          => new FrozenTime(),
+                'last_update'          => new \Cake\I18n\DateTime(),
                 'checkresults'         => null
             ]);
 
@@ -1554,7 +1550,7 @@ class AgentconnectorController extends AppController {
                 // and ignore the error
             }
 
-            $pushAgent->set('last_update', new FrozenTime());
+            $pushAgent->set('last_update', new \Cake\I18n\DateTime());
             $pushAgent->set('checkresults', json_encode($checkdata));
             $PushAgentsTable->save($pushAgent);
 
@@ -1569,7 +1565,7 @@ class AgentconnectorController extends AppController {
                     $agentUuid,
                     $agentPassword
                 );
-                $pushAgent->set('last_update', new FrozenTime());
+                $pushAgent->set('last_update', new \Cake\I18n\DateTime());
                 $pushAgent->set('checkresults', json_encode($checkdata));
                 $PushAgentsTable->save($pushAgent);
             }

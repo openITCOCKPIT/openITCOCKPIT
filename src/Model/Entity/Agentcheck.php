@@ -10,8 +10,8 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property string $name
  * @property int|null $servicetemplate_id
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Servicetemplate $servicetemplate
  */
@@ -25,7 +25,7 @@ class Agentcheck extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'name'               => true,
         'servicetemplate_id' => true,
         'plugin_name'        => true,

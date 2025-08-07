@@ -94,7 +94,7 @@ class ApikeyAuthenticator extends AbstractAuthenticator implements StatelessInte
         if (!empty($apiKeyId)) {
 
             $apiKeyToUpdate = $ApikeysTable->get($apiKeyId);
-            $apiKeyToUpdate->set('last_use', FrozenTime::now());
+            $apiKeyToUpdate->set('last_use', \Cake\I18n\DateTime::now());
             if (!$ApikeysTable->save($apiKeyToUpdate)) {
                 Log::error(sprintf(
                     'saveLastUseDate: Could not save api key [%s] %s',

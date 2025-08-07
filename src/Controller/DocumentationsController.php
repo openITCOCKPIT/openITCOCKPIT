@@ -165,7 +165,7 @@ class DocumentationsController extends AppController {
             if ($docuExists) {
                 $documentation = $DocumentationsTable->getDocumentationByUuid($uuid);
 
-                /** @var FrozenTime $modified */
+                /** @var \Cake\I18n\DateTime $modified */
                 $modified = $documentation->get('modified');
                 $lastUpdate = $UserTime->format($modified->getTimestamp());
                 $content = $documentation->get('content');

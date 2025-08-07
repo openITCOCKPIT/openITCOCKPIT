@@ -239,7 +239,7 @@ class ServicedependenciesTable extends Table {
                     },
                 ]
             ])
-            ->group('Servicedependencies.id')
+            ->groupBy('Servicedependencies.id')
             ->disableHydration();
 
         $indexFilter = $ServicedependenciesFilter->indexFilter();
@@ -316,7 +316,7 @@ class ServicedependenciesTable extends Table {
             $indexFilter['Servicedependencies.container_id IN'] = $MY_RIGHTS;
         }
         $query->where($indexFilter);
-        $query->order($ServicedependenciesFilter->getOrderForPaginator('Servicedependencies.id', 'asc'));
+        $query->orderBy($ServicedependenciesFilter->getOrderForPaginator('Servicedependencies.id', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query

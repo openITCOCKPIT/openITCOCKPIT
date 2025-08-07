@@ -147,7 +147,7 @@ class SystemfailuresTable extends Table {
         if (!empty($having)) {
             $query->having($having);
         }
-        $query->order($SystemfailuresFilter->getOrderForPaginator('Systemfailures.start_time', 'asc'));
+        $query->orderBy($SystemfailuresFilter->getOrderForPaginator('Systemfailures.start_time', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -260,9 +260,9 @@ class SystemfailuresTable extends Table {
         $fakeDowntimes = [];
 
         foreach ($result as $record) {
-            /** @var FrozenTime $startTime */
+            /** @var \Cake\I18n\DateTime $startTime */
             $startTime = $record['start_time'];
-            /** @var FrozenTime $endTime */
+            /** @var \Cake\I18n\DateTime $endTime */
             $endTime = $record['end_time'];
 
             $fakeDowntimes[] = [

@@ -128,10 +128,8 @@ class ServicegroupsController extends AppController {
             throw new NotFoundException(__('Invalid Servicegroup'));
         }
 
-        $servicegroup = $ServicegroupsTable->get($id, [
-            'contain' => [
-                'Containers'
-            ]
+        $servicegroup = $ServicegroupsTable->get($id, contain: [
+            'Containers'
         ]);
 
         if (!$this->allowedByContainerId($servicegroup->get('container')->get('parent_id'))) {
@@ -235,10 +233,8 @@ class ServicegroupsController extends AppController {
 
             $ContainersTable->acquireLock();
 
-            $servicegroupEntity = $ServicegroupsTable->get($id, [
-                'contain' => [
-                    'Containers'
-                ]
+            $servicegroupEntity = $ServicegroupsTable->get($id, contain: [
+                'Containers'
             ]);
 
             $servicegroupEntity->setAccess('uuid', false);
@@ -292,10 +288,8 @@ class ServicegroupsController extends AppController {
         $ContainersTable->acquireLock();
 
         $servicegroup = $ServicegroupsTable->getServicegroupById($id);
-        $container = $ContainersTable->get($servicegroup->get('container')->get('id'), [
-            'contain' => [
-                'Servicegroups'
-            ]
+        $container = $ContainersTable->get($servicegroup->get('container')->get('id'), contain: [
+            'Servicegroups'
         ]);
 
         if (!$this->allowedByContainerId($servicegroup->get('container')->get('parent_id'))) {
@@ -791,10 +785,8 @@ class ServicegroupsController extends AppController {
                     //Update existing servicegroup
                     //This happens, if a user copy multiple servicegroups, and one run into an validation error
                     //All servicegroups without validation errors got already saved to the database
-                    $newServicegroupEntity = $ServicegroupsTable->get($servicegroupData['Servicegroup']['id'], [
-                        'contain' => [
-                            'Containers'
-                        ]
+                    $newServicegroupEntity = $ServicegroupsTable->get($servicegroupData['Servicegroup']['id'], contain: [
+                        'Containers'
                     ]);
                     $newServicegroupEntity->setAccess('*', false);
                     $newServicegroupEntity->container->setAccess('*', false);

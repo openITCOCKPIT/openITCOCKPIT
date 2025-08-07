@@ -158,7 +158,7 @@ abstract class Acknowledgement {
      */
     public function getEntryTime() {
         if (!is_numeric($this->entry_time)) {
-            if ($this->entry_time instanceof FrozenTime) {
+            if ($this->entry_time instanceof \Cake\I18n\DateTime) {
                 $this->entry_time = $this->entry_time->timestamp;
             } else {
                 $this->entry_time = strtotime($this->entry_time);

@@ -128,7 +128,7 @@ class OrganizationalChartsTable extends Table {
             ->contain([
                 'OrganizationalChartNodes' => function (Query $q) {
                     return $q->contain(['Containers'])
-                        ->order([
+                        ->orderBy([
                             'Containers.name' => 'asc'
                         ]);
                 }
@@ -163,7 +163,7 @@ class OrganizationalChartsTable extends Table {
             ]);
             $query->having([
                 'permission_status' => 'permitted'
-            ])->group(['OrganizationalCharts.id']);
+            ])->groupBy(['OrganizationalCharts.id']);
         }
 
         $query->disableHydration();
@@ -171,7 +171,7 @@ class OrganizationalChartsTable extends Table {
             $query->where($GenericFilter->genericFilters());
         }
         $query->disableHydration();
-        $query->order($GenericFilter->getOrderForPaginator('OrganizationalCharts.name', 'asc'));
+        $query->orderBy($GenericFilter->getOrderForPaginator('OrganizationalCharts.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -224,7 +224,7 @@ class OrganizationalChartsTable extends Table {
         }
 
         $query->where(['OrganizationalChartNodes.container_id' => $containerId])
-            ->group(['OrganizationalCharts.id'])
+            ->groupBy(['OrganizationalCharts.id'])
             ->disableHydration();
 
         if ($type === 'list') {
@@ -253,7 +253,7 @@ class OrganizationalChartsTable extends Table {
                             'Containers.id',
                             'Containers.name',
                             'Containers.containertype_id'
-                        ])->order([
+                        ])->orderBy([
                             'Containers.name' => 'asc'
                         ]);
                     },
@@ -266,7 +266,7 @@ class OrganizationalChartsTable extends Table {
                         ]);
                     },
 
-                ])->order([
+                ])->orderBy([
                     'Containers.name' => 'asc'
                 ]);
             })->contain([
@@ -285,7 +285,7 @@ class OrganizationalChartsTable extends Table {
         }
 
         $query->where(['OrganizationalChartNodes.organizational_chart_id' => $organizationalChartId])
-            ->group(['OrganizationalCharts.id'])
+            ->groupBy(['OrganizationalCharts.id'])
             ->disableHydration();
 
 

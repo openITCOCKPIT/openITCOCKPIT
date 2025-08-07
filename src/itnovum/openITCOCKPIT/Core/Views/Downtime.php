@@ -172,7 +172,7 @@ class Downtime {
         }
 
         if (!is_numeric($this->entryTime)) {
-            if ($this->entryTime instanceof FrozenTime) {
+            if ($this->entryTime instanceof \Cake\I18n\DateTime) {
                 $this->entryTime = $this->entryTime->timestamp;
             } else {
                 $this->entryTime = strtotime($this->entryTime);
@@ -190,7 +190,7 @@ class Downtime {
         }
 
         if (!is_numeric($this->scheduledStartTime)) {
-            if ($this->scheduledStartTime instanceof FrozenTime) {
+            if ($this->scheduledStartTime instanceof \Cake\I18n\DateTime) {
                 $this->scheduledStartTime = $this->scheduledStartTime->timestamp;
             } else {
                 $this->scheduledStartTime = strtotime($this->scheduledStartTime);
@@ -208,7 +208,7 @@ class Downtime {
         }
 
         if (!is_numeric($this->scheduledEndTime)) {
-            if ($this->scheduledEndTime instanceof FrozenTime) {
+            if ($this->scheduledEndTime instanceof \Cake\I18n\DateTime) {
                 $this->scheduledEndTime = $this->scheduledEndTime->timestamp;
             } else {
                 $this->scheduledEndTime = strtotime($this->scheduledEndTime);
@@ -226,7 +226,7 @@ class Downtime {
         }
 
         if (!is_numeric($this->actualEndTime)) {
-            if ($this->actualEndTime instanceof FrozenTime) {
+            if ($this->actualEndTime instanceof \Cake\I18n\DateTime) {
                 $this->actualEndTime = $this->actualEndTime->timestamp;
             } else {
                 $this->actualEndTime = strtotime($this->actualEndTime);

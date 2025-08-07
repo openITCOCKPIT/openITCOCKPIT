@@ -566,7 +566,7 @@ class ServicesTable extends Table {
                 }
             ])
             ->where($where)
-            ->group([
+            ->groupBy([
                 'Services.id'
             ])
             ->disableHydration();
@@ -648,7 +648,7 @@ class ServicesTable extends Table {
         if (!empty($having)) {
             $query->having($having);
         }
-        $query->order([
+        $query->orderBy([
             'servicename' => 'asc'
         ])
             ->limit(ITN_AJAX_LIMIT)
@@ -683,7 +683,7 @@ class ServicesTable extends Table {
                 ->where([
                     'Services.id IN' => $selected
                 ])
-                ->order([
+                ->orderBy([
                     'servicename' => 'asc'
                 ])
                 ->disableHydration()
@@ -777,7 +777,7 @@ class ServicesTable extends Table {
             ->where(
                 $where
             )
-            ->order([
+            ->orderBy([
                 'servicename' => 'asc'
             ])
             ->limit(ITN_AJAX_LIMIT);
@@ -818,7 +818,7 @@ class ServicesTable extends Table {
                 ->where([
                     'Services.id IN' => $selected
                 ])
-                ->order([
+                ->orderBy([
                     'servicename' => 'asc'
                 ])
                 ->disableHydration()
@@ -1443,7 +1443,7 @@ class ServicesTable extends Table {
 
         $query
             ->where($where)
-            ->order(['Services.id' => 'asc'])
+            ->orderBy(['Services.id' => 'asc'])
             ->disableHydration()
             ->all();
         $query = $query->toArray();
@@ -1632,10 +1632,9 @@ class ServicesTable extends Table {
     }
 
     public function getServiceUuidsOfHostByHostId($hostId) {
-        $query = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'uuid'
-        ])
+        $query = $this->find('list',
+        keyField: 'id',
+        valueField: 'uuid')
             ->where([
                 'Services.host_id' => $hostId
             ])
@@ -1710,13 +1709,13 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -1805,12 +1804,12 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -1907,13 +1906,13 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -2096,13 +2095,13 @@ class ServicesTable extends Table {
 
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -2315,13 +2314,13 @@ class ServicesTable extends Table {
 
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -2481,12 +2480,12 @@ class ServicesTable extends Table {
                 ]
             ])
             ->enableHydration($enableHydration)
-            ->order([
+            ->orderBy([
                 'Hosts.name'  => 'asc',
                 'servicename' => 'asc',
                 'Services.id' => 'asc'
             ])
-            ->group(['Services.id'])
+            ->groupBy(['Services.id'])
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());
@@ -2510,7 +2509,7 @@ class ServicesTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'service_id'
             ])
             ->disableHydration()
@@ -2562,11 +2561,11 @@ class ServicesTable extends Table {
 
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'servicename' => 'asc',
             'Services.id' => 'asc'
         ]);
-        $query->group([
+        $query->groupBy([
             'Services.id'
         ]);
 
@@ -2720,13 +2719,13 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -2888,13 +2887,13 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -3203,13 +3202,13 @@ class ServicesTable extends Table {
         }
 
         if ($type === 'all') {
-            $query->order([
+            $query->orderBy([
                 'servicename' => 'asc',
                 'Services.id' => 'asc'
             ]);
         }
 
-        $query->group([
+        $query->groupBy([
             'Services.id'
         ]);
 
@@ -3323,14 +3322,14 @@ class ServicesTable extends Table {
             $query->where(['Hosts.id IN' => $hostIdsFromServiceCondition]);
         }
         if ($type === 'all') {
-            $query->order([
+            $query->orderBy([
                 'Hosts.name'  => 'asc',
                 'servicename' => 'asc',
                 'Services.id' => 'asc'
             ]);
         }
 
-        $query->group([
+        $query->groupBy([
             'Services.id'
         ]);
 
@@ -3388,7 +3387,7 @@ class ServicesTable extends Table {
                     'HostsToContainersSharing.id IN ' => $MY_RIGHTS
                 ]);
             })
-            ->group([
+            ->groupBy([
                 'Servicestatus.current_state',
             ])
             ->disableHydration();
@@ -3464,7 +3463,7 @@ class ServicesTable extends Table {
                 ]);
             });
         }
-        $query->group([
+        $query->groupBy([
             'Servicestatus.current_state',
         ])
             ->disableHydration();
@@ -3614,7 +3613,7 @@ class ServicesTable extends Table {
                 'servicegroup_ids IS NOT NULL',
                 'count > 0'
             ]);
-            $query->group('Services.id');
+            $query->groupBy('Services.id');
         }
         if (!empty($conditions['Host']['name'])) {
             if (isset($conditions['Host']['name_regex']) && $conditions['Host']['name_regex'] === true || $conditions['Host']['name_regex'] === 'true') {
@@ -3705,7 +3704,7 @@ class ServicesTable extends Table {
             ]);
         }
         $query->andWhere($where)
-            ->group(['Services.id'])
+            ->groupBy(['Services.id'])
             ->disableHydration();
         $result = $query->all();
 
@@ -3934,7 +3933,7 @@ class ServicesTable extends Table {
                 'HostsToContainers.container_id IN' => $MY_RIGHTS
             ]);
         }
-        $query->group([
+        $query->groupBy([
             'Services.id'
         ]);
         $query->enableHydration($enableHydration);
@@ -3983,11 +3982,11 @@ class ServicesTable extends Table {
 
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'servicename' => 'asc',
             'Services.id' => 'asc'
         ]);
-        $query->group([
+        $query->groupBy([
             'Services.id'
         ]);
 
@@ -4073,7 +4072,7 @@ class ServicesTable extends Table {
                 'Services.host_id'      => $host_id,
                 'Services.service_type' => MK_SERVICE
             ])
-            ->order(['Services.id' => 'asc'])
+            ->orderBy(['Services.id' => 'asc'])
             ->disableHydration()
             ->all();
         if (empty($query) || $query === null) {
@@ -4135,10 +4134,9 @@ class ServicesTable extends Table {
             return [];
         }
 
-        $query = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'uuid'
-        ])
+        $query = $this->find('list',
+        keyField: 'id',
+        valueField: 'uuid')
             ->where([
                 'Services.id IN' => $serviceIds
             ])
@@ -4479,11 +4477,9 @@ class ServicesTable extends Table {
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
         foreach ($recordsToDelete as $servicegroupId => $serviceIdsToDelete) {
-            $servicegroupEntity = $ServicegroupsTable->get($servicegroupId, [
-                'contain' => [
-                    'Containers',
-                    'Services'
-                ]
+            $servicegroupEntity = $ServicegroupsTable->get($servicegroupId, contain: [
+                'Containers',
+                'Services'
             ]);
             $servicegroupServiceIds = Hash::extract($servicegroupEntity->get('services'), '{n}.id');
             $newServiceIds = array_diff(
@@ -4917,7 +4913,7 @@ class ServicesTable extends Table {
                 'servicegroup_ids IS NOT NULL',
                 'count > 0'
             ]);
-            $query->group('Services.id');
+            $query->groupBy('Services.id');
         }
 
         if (isset($where['Services.keywords rlike'])) {
@@ -5115,7 +5111,7 @@ class ServicesTable extends Table {
         }
 
         $query->andWhere($where);
-        $query->group('Services.id');
+        $query->groupBy('Services.id');
 
         $query->disableHydration();
         $result = $query->all();
@@ -5277,8 +5273,8 @@ class ServicesTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Services.id']);
-        $query->order([
+        $query->groupBy(['Services.id']);
+        $query->orderBy([
             'servicename' => 'asc',
             'Services.id' => 'asc'
         ]);
@@ -5354,7 +5350,7 @@ class ServicesTable extends Table {
         if (!empty($having)) {
             $query->having($having);
         }
-        $query->order([
+        $query->orderBy([
             'servicename' => 'asc'
         ])
             ->limit(ITN_AJAX_LIMIT)
@@ -5387,7 +5383,7 @@ class ServicesTable extends Table {
                 ->where([
                     'Services.id IN' => $selected
                 ])
-                ->order([
+                ->orderBy([
                     'servicename' => 'asc'
                 ])
                 ->disableHydration()
@@ -5530,7 +5526,7 @@ class ServicesTable extends Table {
             );
         }
         $query->andWhere($where);
-        $query->group('Services.id');
+        $query->groupBy('Services.id');
 
         $query->disableHydration();
         $result = $query->all();
@@ -5567,7 +5563,7 @@ class ServicesTable extends Table {
                 'Services.disabled' => 0,
                 $query->newExpr('IF(Services.sla_relevant IS NULL, Servicetemplates.sla_relevant, Services.sla_relevant) = 1')
             ])
-            ->order([
+            ->orderBy([
                 'servicename',
                 'Services.id'
             ])
@@ -5582,10 +5578,9 @@ class ServicesTable extends Table {
      */
     public function getActiveAndSlaRelavantServicesIdsByHostIdAsList($id) {
         //$list = $this->MODEL->find('list', ['keyField' => 'id', 'valueField' => ('user_type')])->toArray();
-        $query = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'id'
-        ]);
+        $query = $this->find('list',
+        keyField: 'id',
+        valueField: 'id');
         $query->select([
             'Services.id',
             'is_sla_relevant' => $query->newExpr('IF(Services.sla_relevant IS NULL, Servicetemplates.sla_relevant, Services.sla_relevant)')
@@ -5653,7 +5648,7 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Servicestatus.current_state']);
+        $query->groupBy(['Servicestatus.current_state']);
         return $this->emptyArrayIfNull($query->toArray());
     }
 }

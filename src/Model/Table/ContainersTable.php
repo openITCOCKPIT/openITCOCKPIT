@@ -388,7 +388,7 @@ class ContainersTable extends Table {
     public function treePath($id = null, $delimiter = '/') {
         try {
             $containerNames = [];
-            $tree = $this->find('path', ['for' => $id])
+            $tree = $this->find('path', for: $id)
                 ->disableHydration()
                 ->toArray();
 
@@ -413,7 +413,7 @@ class ContainersTable extends Table {
     public function getTreePathForBrowser($id, $MY_RIGHTS_LEVEL = []) {
         try {
             $result = [];
-            $tree = $this->find('path', ['for' => $id])
+            $tree = $this->find('path', for: $id)
                 ->disableHydration()
                 ->toArray();
 
@@ -518,9 +518,7 @@ class ContainersTable extends Table {
 
             $tmpResult = Cache::remember($cacheKey, function () use ($containerId) {
                 try {
-                    $query = $this->find('children', [
-                        'for' => $containerId
-                    ])->disableHydration()->select(['id', 'containertype_id'])->all();
+                    $query = $this->find('children', for: $containerId)->disableHydration()->select(['id', 'containertype_id'])->all();
                     return $query->toArray();
                 } catch (RecordNotFoundException $e) {
                     return [];
@@ -586,7 +584,7 @@ class ContainersTable extends Table {
      */
     public function getPathById($id, bool $flat = false) {
         try {
-            $path = $this->find('path', ['for' => $id])
+            $path = $this->find('path', for: $id)
                 ->disableHydration()
                 ->all()
                 ->toArray();
@@ -603,7 +601,7 @@ class ContainersTable extends Table {
         $cacheKey = sprintf('%s:%s', $cacheKey, $id);
         $path = Cache::remember($cacheKey, function () use ($id) {
             try {
-                $path = $this->find('path', ['for' => $id])
+                $path = $this->find('path', for: $id)
                     ->disableHydration()
                     ->all()
                     ->toArray();
@@ -621,7 +619,7 @@ class ContainersTable extends Table {
      * @return string
      */
     public function getPathByIdAsString($id, $delimiter = '/') {
-        $path = $this->find('path', ['for' => $id])
+        $path = $this->find('path', for: $id)
             ->disableHydration()
             ->all()
             ->toArray();
@@ -681,9 +679,7 @@ class ContainersTable extends Table {
      */
     public function getChildren($id, $threaded = false) {
         try {
-            $query = $this->find('children', [
-                'for' => $id
-            ]);
+            $query = $this->find('children', for: $id);
 
             if ($threaded) {
                 $query->find('threaded');
@@ -844,7 +840,7 @@ class ContainersTable extends Table {
     public function getContainerWithAllChildren($containerId, $MY_RIGHTS = []) {
         $parentContainer = $this->getContainerById($containerId);
 
-        $query = $this->find('children', ['for' => $containerId]);
+        $query = $this->find('children', for: $containerId);
 
         $query->select([
             'Containers.id',

@@ -19,8 +19,8 @@ use itnovum\openITCOCKPIT\Core\Views\UserTime;
  * @property int $duration
  * @property string|null $comment
  * @property string|null $author
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Object $object
  */
@@ -34,7 +34,7 @@ class Systemdowntime extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'objecttype_id'   => true,
         'object_id'       => true,
         'downtimetype_id' => true,

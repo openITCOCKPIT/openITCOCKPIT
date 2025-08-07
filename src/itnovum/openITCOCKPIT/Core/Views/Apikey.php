@@ -97,14 +97,14 @@ class Apikey {
     }
 
     /**
-     * @return string|null|FrozenTime
+     * @return string|null|\Cake\I18n\DateTime
      */
     public function getLastUse() {
         return $this->last_use;
     }
 
     /**
-     * @param string|FrozenTime $lastUse
+     * @param string|\Cake\I18n\DateTime $lastUse
      */
     public function setLastUse($lastUse) {
         $this->last_use = $lastUse;

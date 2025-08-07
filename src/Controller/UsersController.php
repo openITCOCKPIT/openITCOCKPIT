@@ -475,7 +475,7 @@ class UsersController extends AppController {
         $User = new \itnovum\openITCOCKPIT\Core\ValueObjects\User($this->getUser());
         $UserTime = $User->getUserTime();
         foreach ($user['User']['apikeys'] as $i => $apikey) {
-            if (isset($apikey['last_use']) && $apikey['last_use'] instanceof FrozenTime) {
+            if (isset($apikey['last_use']) && $apikey['last_use'] instanceof \Cake\I18n\DateTime) {
                 $user['User']['apikeys'][$i]['last_use'] = $UserTime->format($apikey['last_use']->getTimestamp());
             }
         }

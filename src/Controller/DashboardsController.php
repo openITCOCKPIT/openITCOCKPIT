@@ -233,7 +233,7 @@ class DashboardsController extends AppController {
                     ->first();
 
                 if ($tab) {
-                    $tab->set('modified', new FrozenTime());
+                    $tab->set('modified', new \Cake\I18n\DateTime());
                     $DashboardTabsTable->save($tab);
                 }
 
@@ -656,7 +656,7 @@ class DashboardsController extends AppController {
 
         $updateAvailable = false;
         if ($sourceTab !== null && $tab !== null) {
-            /** @var FrozenTime $modified */
+            /** @var \Cake\I18n\DateTime $modified */
             $modified = $sourceTab->get('modified');
             $modified = $modified->getTimestamp();
 
@@ -765,7 +765,7 @@ class DashboardsController extends AppController {
             ];
         }
 
-        $FrozenTime = new FrozenTime();
+        $FrozenTime = new \Cake\I18n\DateTime();
         $tabToUpdate = $DashboardTabsTable->patchEntity($tabToUpdate, [
             'last_update' => $FrozenTime->getTimestamp(),
             'locked'      => (bool)$sourceTabWithWidgets->get('locked'),

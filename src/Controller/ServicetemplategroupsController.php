@@ -208,10 +208,8 @@ class ServicetemplategroupsController extends AppController {
 
             $ContainersTable->acquireLock();
 
-            $servicetemplategroupEntity = $ServicetemplategroupsTable->get($id, [
-                'contain' => [
-                    'Containers'
-                ]
+            $servicetemplategroupEntity = $ServicetemplategroupsTable->get($id, contain: [
+                'Containers'
             ]);
             $servicetemplategroupEntity->setAccess('uuid', false);
             $servicetemplategroupEntity = $ServicetemplategroupsTable->patchEntity($servicetemplategroupEntity, $this->request->getData('Servicetemplategroup'));
@@ -403,10 +401,8 @@ class ServicetemplategroupsController extends AppController {
 
         $ContainersTable->acquireLock();
 
-        $servicetemplategroupEntity = $ServicetemplategroupsTable->get($id, [
-            'contain' => [
-                'Containers'
-            ]
+        $servicetemplategroupEntity = $ServicetemplategroupsTable->get($id, contain: [
+            'Containers'
         ]);
 
         if (!$this->isWritableContainer($servicetemplategroupEntity->get('container')->get('parent_id'))) {
@@ -414,10 +410,8 @@ class ServicetemplategroupsController extends AppController {
             return;
         }
 
-        $container = $ContainersTable->get($servicetemplategroupEntity->get('container')->get('id'), [
-            'contain' => [
-                'Servicetemplategroups'
-            ]
+        $container = $ContainersTable->get($servicetemplategroupEntity->get('container')->get('id'), contain: [
+            'Servicetemplategroups'
         ]);
         if ($ContainersTable->allowDelete($container->id, CT_SERVICETEMPLATEGROUP)) {
             if ($ContainersTable->delete($container)) {
@@ -521,10 +515,8 @@ class ServicetemplategroupsController extends AppController {
                     //Update existing servicetemplategroup
                     //This happens, if a user copy multiple servicetemplategroup, and one run into an validation error
                     //All servicetemplategroup without validation errors got already saved to the database
-                    $newServicetemplategroupEntity = $ServicetemplategroupsTable->get($servicetemplategroupData['Servicetemplategroup']['id'], [
-                        'contain' => [
-                            'Containers'
-                        ]
+                    $newServicetemplategroupEntity = $ServicetemplategroupsTable->get($servicetemplategroupData['Servicetemplategroup']['id'], contain: [
+                        'Containers'
                     ]);
                     $newServicetemplategroupEntity->setAccess('*', false);
                     $newServicetemplategroupEntity->setAccess('description', true);

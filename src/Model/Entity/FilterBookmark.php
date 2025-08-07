@@ -18,7 +18,7 @@ use Cake\ORM\Entity;
  * @property bool $favorite
  **/
 class FilterBookmark extends Entity {
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'       => true,
         'plugin'     => true,
         'controller' => true,

@@ -23,7 +23,7 @@ class Proxy extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'ipaddress' => true,
         'port' => true,
         'enabled' => true

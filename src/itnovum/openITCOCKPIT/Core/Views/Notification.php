@@ -136,7 +136,7 @@ abstract class Notification {
      */
     public function getStartTime() {
         if (!is_numeric($this->start_time)) {
-            if ($this->start_time instanceof FrozenTime) {
+            if ($this->start_time instanceof \Cake\I18n\DateTime) {
                 $this->start_time = $this->start_time->timestamp;
             } else {
                 $this->start_time = strtotime($this->start_time);

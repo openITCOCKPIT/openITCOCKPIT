@@ -204,7 +204,7 @@ class HostgroupsTable extends Table {
                         'Containers.parent_id IN'     => $containerIds,
                         'Containers.containertype_id' => CT_HOSTGROUP
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -222,7 +222,7 @@ class HostgroupsTable extends Table {
                         'Containers.parent_id IN'     => $containerIds,
                         'Containers.containertype_id' => CT_HOSTGROUP
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -310,7 +310,7 @@ class HostgroupsTable extends Table {
         }
         $query->where($where);
 
-        $query->order($HostgroupFilter->getOrderForPaginator('Containers.name', 'asc'));
+        $query->orderBy($HostgroupFilter->getOrderForPaginator('Containers.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -426,10 +426,8 @@ class HostgroupsTable extends Table {
      * @return \App\Model\Entity\Hostgroup
      */
     public function getHostgroupById($id) {
-        return $this->get($id, [
-            'contain' => [
-                'Containers'
-            ]
+        return $this->get($id, contain: [
+            'Containers'
         ]);
     }
 
@@ -562,7 +560,7 @@ class HostgroupsTable extends Table {
             ->where(
                 $where
             )
-            ->order([
+            ->orderBy([
                 'Containers.name' => 'asc'
             ])
             ->limit(ITN_AJAX_LIMIT)
@@ -594,7 +592,7 @@ class HostgroupsTable extends Table {
                     'Containers.parent_id IN' => $HostgroupConditions->getContainerIds()
                 ]);
             }
-            $query->order([
+            $query->orderBy([
                 'Containers.name' => 'asc'
             ])
                 ->limit(ITN_AJAX_LIMIT)
@@ -633,7 +631,7 @@ class HostgroupsTable extends Table {
             ->where(
                 $where
             )
-            ->order([
+            ->orderBy([
                 'Containers.name' => 'asc'
             ])
             ->disableHydration()
@@ -666,7 +664,7 @@ class HostgroupsTable extends Table {
             $where['Containers.parent_id IN'] = $MY_RIGHTS;
         }
         $query->where($where)
-            ->order(
+            ->orderBy(
                 $HostgroupFilter->getOrderForPaginator('Containers.name', 'asc')
             )->disableHydration();
 
@@ -1241,10 +1239,8 @@ class HostgroupsTable extends Table {
         // Through hosttemplate maybe?
         /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        $host = $HostsTable->get($hostId, [
-            'contain' => [
-                'Hostgroups'
-            ]
+        $host = $HostsTable->get($hostId, contain: [
+            'Hostgroups'
         ]);
 
         if (empty($host->get('hostgroups'))) {
@@ -1332,7 +1328,7 @@ class HostgroupsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->order([
+        $query->orderBy([
             'Containers.name' => 'asc'
         ]);
 
@@ -1427,7 +1423,7 @@ class HostgroupsTable extends Table {
                         'Containers.containertype_id' => CT_HOSTGROUP,
                         'Hosts.id IN '                => $hostIds
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -1444,7 +1440,7 @@ class HostgroupsTable extends Table {
                         'Containers.containertype_id' => CT_HOSTGROUP,
                         'Hosts.id IN '                => $hostIds
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -1477,7 +1473,7 @@ class HostgroupsTable extends Table {
             ->contain([
                 'Containers'
             ])
-            ->order(['Hostgroups.id' => 'asc']);
+            ->orderBy(['Hostgroups.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere([

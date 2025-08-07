@@ -26,7 +26,7 @@ class TimeperiodTimerange extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'timeperiod_id' => true,
         'day'           => true,
         'start'         => true,

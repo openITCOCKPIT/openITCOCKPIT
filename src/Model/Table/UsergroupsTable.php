@@ -138,7 +138,7 @@ class UsergroupsTable extends Table {
                     ]);
                 }
             ])
-            ->order($GenericFilter->getOrderForPaginator('Usergroups.name', 'asc'))
+            ->orderBy($GenericFilter->getOrderForPaginator('Usergroups.name', 'asc'))
             ->disableHydration();
 
 
@@ -237,7 +237,7 @@ class UsergroupsTable extends Table {
             ->where([
                 'Ldapgroups.dn IN' => $memberOfGroups
             ])
-            ->order(['Usergroups.name' => 'asc'])
+            ->orderBy(['Usergroups.name' => 'asc'])
             ->disableHydration()
             ->first();
 
@@ -256,7 +256,7 @@ class UsergroupsTable extends Table {
                 'Usergroups.description',
             ])
             ->where(['Usergroups.id IN' => $ids])
-            ->order(['Usergroups.id' => 'asc']);
+            ->orderBy(['Usergroups.id' => 'asc']);
 
         $query->disableHydration()
             ->all();

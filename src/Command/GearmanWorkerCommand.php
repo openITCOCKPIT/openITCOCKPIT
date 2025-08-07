@@ -1104,9 +1104,9 @@ class GearmanWorkerCommand extends Command {
                     if (!empty($payload['RawResult'])) {
                         $jsonResults = json_decode($payload['RawResult'], true);
                         foreach ($jsonResults as $result) {
-                            $lastUpdate = new FrozenDate($result['last_update']);
-                            $created = new FrozenDate($result['created']);
-                            $modified = new FrozenDate($result['modified']);
+                            $lastUpdate = new \Cake\I18n\Date($result['last_update']);
+                            $created = new \Cake\I18n\Date($result['created']);
+                            $modified = new \Cake\I18n\Date($result['modified']);
                             $data = [
                                 'uuid'                 => $result['uuid'], // Agent UUID
                                 'satellite_id'         => $payload['SatelliteID'],

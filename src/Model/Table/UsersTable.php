@@ -421,7 +421,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -439,7 +439,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -500,13 +500,13 @@ class UsersTable extends Table {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $UsersFilter->getOrderForPaginator('full_name', 'asc'),
                 ['Users.id' => 'asc']
             )
         );
-        $query->group([
+        $query->groupBy([
             'Users.id'
         ]);
 
@@ -812,7 +812,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -831,7 +831,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -881,11 +881,11 @@ class UsersTable extends Table {
             ->where([
                 'Users.id IN' => $userIds
             ])
-            ->order([
+            ->orderBy([
                 'full_name' => 'asc',
                 'Users.id'  => 'asc'
             ])
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration()
@@ -1200,7 +1200,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -1219,7 +1219,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -1241,7 +1241,7 @@ class UsersTable extends Table {
             ->where([
                 'Users.id IN' => $userIds
             ])
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->contain([
@@ -1402,7 +1402,7 @@ class UsersTable extends Table {
                     'Usergroups.id IN ' => $usergroupsIds
                 ]);
         }
-        $query->group([
+        $query->groupBy([
             'Users.id'
         ])
             ->disableAutoFields()
@@ -1427,7 +1427,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -1445,7 +1445,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -1492,7 +1492,7 @@ class UsersTable extends Table {
             ]);
         }
 
-        $query->group([
+        $query->groupBy([
             'Users.id'
         ]);
 
@@ -1598,7 +1598,7 @@ class UsersTable extends Table {
 
         if (!empty($userIdQuery)) {
             $userToUpdate = $this->get($userIdQuery->id);
-            $userToUpdate->set('last_login', FrozenTime::now());
+            $userToUpdate->set('last_login', \Cake\I18n\DateTime::now());
             if (!$this->save($userToUpdate)) {
                 Log::error(sprintf(
                     'UserTable: Could not save user [%s] %s',
@@ -1661,7 +1661,7 @@ class UsersTable extends Table {
                 ]
             );
         }
-        $query->group(['DashboardTabs.id'])
+        $query->groupBy(['DashboardTabs.id'])
             ->disableHydration()
             ->all();
         $result = $this->emptyArrayIfNull($query->toArray());

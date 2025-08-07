@@ -41,9 +41,9 @@ use Cake\ORM\Entity;
  * @property string|null $remote_address
  * @property string|null $http_x_forwarded_for
  * @property string $checkresults
- * @property \Cake\I18n\FrozenTime $last_update
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $last_update
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Agentconfig $agentconfig
  */
@@ -57,7 +57,7 @@ class PushAgent extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'                 => true,
         'agentconfig_id'       => true,
         'password'             => true,
@@ -77,7 +77,7 @@ class PushAgent extends Entity {
      *
      * @var array
      */
-    protected $_hidden = [
+    protected array $_hidden = [
         'password',
     ];
 }

@@ -167,10 +167,10 @@ class UsercontainerrolesTable extends Table {
                 ]
             );
         }
-        $query->group([
+        $query->groupBy([
             'Usercontainerroles.id'
         ])
-            ->order([
+            ->orderBy([
                 'Usercontainerroles.name' => 'asc',
                 'Usercontainerroles.id'   => 'asc'
             ])
@@ -198,10 +198,10 @@ class UsercontainerrolesTable extends Table {
                 ->where([
                     'Usercontainerroles.id IN' => $selected
                 ])
-                ->group([
+                ->groupBy([
                     'Usercontainerroles.id'
                 ])
-                ->order([
+                ->orderBy([
                     'Usercontainerroles.name' => 'asc',
                     'Usercontainerroles.id'   => 'asc'
                 ])->disableHydration();
@@ -252,12 +252,12 @@ class UsercontainerrolesTable extends Table {
                 'ContainersUsercontainerrolesMemberships.container_id IN' => $MY_RIGHTS,
                 $UsercontainerrolesFilter->indexFilter()
             ])
-            ->order(array_merge(
+            ->orderBy(array_merge(
                     $UsercontainerrolesFilter->getOrderForPaginator('Usercontainerroles.name', 'asc'),
                     ['Usercontainerroles.id' => 'asc']
                 )
             )
-            ->group([
+            ->groupBy([
                 'Usercontainerroles.id'
             ]);
 
@@ -392,7 +392,7 @@ class UsercontainerrolesTable extends Table {
                 'Containers',
             ])
             ->matching('Containers')
-            ->order(['Usercontainerroles.id' => 'asc']);
+            ->orderBy(['Usercontainerroles.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere([
@@ -400,7 +400,7 @@ class UsercontainerrolesTable extends Table {
             ]);
         }
 
-        $query->group([
+        $query->groupBy([
             'Usercontainerroles.id'
         ]);
 
@@ -551,12 +551,11 @@ class UsercontainerrolesTable extends Table {
         if (!is_array($userRoleContainerIds)) {
             $userRoleContainerIds = [$userRoleContainerIds];
         }
-        return $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => function ($row) {
-                return Hash::extract($row['containers'], '{n}.id');
-            }
-        ])->select([
+        return $this->find('list',
+        keyField: 'id',
+        valueField: function ($row) {
+            return Hash::extract($row['containers'], '{n}.id');
+        })->select([
             'Usercontainerroles.id'
         ])->contain([
             'Containers' => function (\Cake\ORM\Query $q) {
@@ -592,10 +591,10 @@ class UsercontainerrolesTable extends Table {
                 ]
             );
         }
-        $query->group([
+        $query->groupBy([
             'Usercontainerroles.id'
         ])
-            ->order([
+            ->orderBy([
                 'Usercontainerroles.name' => 'asc',
                 'Usercontainerroles.id'   => 'asc'
             ])

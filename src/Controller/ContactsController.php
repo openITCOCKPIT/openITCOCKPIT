@@ -395,13 +395,11 @@ class ContactsController extends AppController {
                     //Create/clone contact
                     $sourceContactId = $contactData['Source']['id'];
                     if (!$Cache->has($sourceContactId)) {
-                        $sourceContact = $ContactsTable->get($sourceContactId, [
-                            'contain' => [
-                                'Customvariables',
-                                'Containers',
-                                'HostCommands',
-                                'ServiceCommands'
-                            ]
+                        $sourceContact = $ContactsTable->get($sourceContactId, contain: [
+                            'Customvariables',
+                            'Containers',
+                            'HostCommands',
+                            'ServiceCommands'
                         ])->toArray();
                         foreach ($sourceContact['customvariables'] as $i => $customvariable) {
                             unset($sourceContact['customvariables'][$i]['id']);

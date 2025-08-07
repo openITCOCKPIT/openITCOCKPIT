@@ -299,7 +299,7 @@ class ServiceescalationsTable extends Table {
                     },
                 ]
             ])
-            ->group('Serviceescalations.id')
+            ->groupBy('Serviceescalations.id')
             ->disableHydration();
         $indexFilter = $ServiceescalationsFilter->indexFilter();
         $containFilter = [
@@ -386,7 +386,7 @@ class ServiceescalationsTable extends Table {
         $query->where($indexFilter);
 
 
-        $query->order($ServiceescalationsFilter->getOrderForPaginator('Serviceescalations.id', 'asc'));
+        $query->orderBy($ServiceescalationsFilter->getOrderForPaginator('Serviceescalations.id', 'asc'));
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $this->emptyArrayIfNull($query->toArray());
@@ -601,7 +601,7 @@ class ServiceescalationsTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'serviceescalation_id'
             ])
             ->disableHydration()
@@ -628,7 +628,7 @@ class ServiceescalationsTable extends Table {
         });
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Containers.name' => 'asc'
         ]);
 

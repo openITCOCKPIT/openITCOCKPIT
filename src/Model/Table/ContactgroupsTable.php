@@ -129,7 +129,7 @@ class ContactgroupsTable extends Table {
         });
 
         $query->disableHydration();
-        $query->order($ContactgroupsFilter->getOrderForPaginator('Containers.name', 'asc'));
+        $query->orderBy($ContactgroupsFilter->getOrderForPaginator('Containers.name', 'asc'));
 
 
         if ($PaginateOMat === null) {
@@ -597,7 +597,7 @@ class ContactgroupsTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'contactgroup_id'
             ])
             ->disableHydration()
@@ -624,7 +624,7 @@ class ContactgroupsTable extends Table {
         });
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Containers.name' => 'asc'
         ]);
 
@@ -697,7 +697,7 @@ class ContactgroupsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->order([
+        $query->orderBy([
             'Containers.name' => 'asc'
         ]);
 

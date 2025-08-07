@@ -186,7 +186,7 @@ trait Cake2ResultTableTrait {
     }
 
     private function asString($value) {
-        if ($value instanceof FrozenTime) {
+        if ($value instanceof \Cake\I18n\DateTime) {
             /** @var FrozenTime $value */
             return date('Y-m-d H:i:s', $value->getTimestamp());
         }

@@ -31,7 +31,7 @@ class ArosAco extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'aro_id'  => true,
         'aco_id'  => true,
         '_create' => true,

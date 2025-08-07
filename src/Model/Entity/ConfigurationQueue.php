@@ -11,8 +11,8 @@ use Cake\ORM\Entity;
  * @property string $data
  * @property string|null $json_data
  * @property string|null $module
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  */
 class ConfigurationQueue extends Entity
 {
@@ -25,7 +25,7 @@ class ConfigurationQueue extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'task' => true,
         'data' => true,
         'json_data' => true,

@@ -10,8 +10,8 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property int|null $cronjob_id
  * @property int|null $is_running
- * @property \Cake\I18n\FrozenTime $start_time
- * @property \Cake\I18n\FrozenTime $end_time
+ * @property \Cake\I18n\DateTime $start_time
+ * @property \Cake\I18n\DateTime $end_time
  *
  * @property \App\Model\Entity\Cronjob $cronjob
  */
@@ -26,7 +26,7 @@ class Cronschedule extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'cronjob_id' => true,
         'is_running' => true,
         'start_time' => true,

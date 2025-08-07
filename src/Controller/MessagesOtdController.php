@@ -62,9 +62,7 @@ class MessagesOtdController extends AppController {
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function view($id = null) {
-        $messagesOtd = $this->MessagesOtd->get($id, [
-            'contain' => ['Users'],
-        ]);
+        $messagesOtd = $this->MessagesOtd->get($id, contain: ['Users']);
 
         $this->set(compact('messagesOtd'));
     }
@@ -87,7 +85,7 @@ class MessagesOtdController extends AppController {
             $MessagesOtdTable = TableRegistry::getTableLocator()->get('MessagesOtd');
             $requestData = $this->request->getData();
             if (!empty($requestData['MessagesOtd']['date'])) {
-                $frozenDate = new FrozenDate($requestData['MessagesOtd']['date']);
+                $frozenDate = new \Cake\I18n\Date($requestData['MessagesOtd']['date']);
                 $requestData['MessagesOtd']['date'] = $frozenDate->format('Y-m-d');
             }
             $requestData['MessagesOtd']['user_id'] = $User->getId();
@@ -143,8 +141,8 @@ class MessagesOtdController extends AppController {
             $User = new User($this->getUser());
             $requestData = $this->request->getData();
             if (!empty($requestData['MessagesOtd']['date'])) {
-                /** @var FrozenDate $frozenDate */
-                $frozenDate = new FrozenDate($requestData['MessagesOtd']['date']);
+                /** @var \Cake\I18n\Date $frozenDate */
+                $frozenDate = new \Cake\I18n\Date($requestData['MessagesOtd']['date']);
                 $requestData['MessagesOtd']['date'] = $frozenDate->format('Y-m-d');
             }
             $requestData['MessagesOtd']['user_id'] = $User->getId();
@@ -208,10 +206,8 @@ class MessagesOtdController extends AppController {
             throw new NotFoundException(__('Invalid message of the day'));
         }
 
-        $messageOtd = $MessagesOtdTable->get($id, [
-            'contain' => [
-                'Usergroups'
-            ]
+        $messageOtd = $MessagesOtdTable->get($id, contain: [
+            'Usergroups'
         ]);
         if ($messageOtd->get('notify_users')) {
             /** @var UsersTable $UsersTable */
@@ -246,7 +242,7 @@ class MessagesOtdController extends AppController {
                             'contentId' => '100'
                         ]
                     ]);
-                    $frozenDate = new FrozenDate($messageOtd->get('date'));
+                    $frozenDate = new \Cake\I18n\Date($messageOtd->get('date'));
                     $BBCodeParser = new BBCodeParser();
                     $content = $messageOtd->get('content');
                     $content = str_replace("'", "", $content);

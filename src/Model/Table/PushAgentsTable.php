@@ -343,14 +343,14 @@ class PushAgentsTable extends Table {
 
         $query->where($where);
         $query->disableHydration();
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $GenericFilter->getOrderForPaginator('Hosts.name', 'asc'),
                 ['PushAgents.id' => 'asc']
             )
 
         );
-        $query->group('PushAgents.id');
+        $query->groupBy('PushAgents.id');
         //FileDebugger::dieQuery($query);
 
         if ($PaginateOMat === null) {
@@ -454,7 +454,7 @@ class PushAgentsTable extends Table {
                 ]
             ]);
         $query->disableHydration();
-        $query->order('PushAgents.ipaddress', 'asc');
+        $query->orderBy('PushAgents.ipaddress', 'asc');
 
         return $this->emptyArrayIfNull($query->toArray());
     }

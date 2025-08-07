@@ -60,7 +60,7 @@ class Container extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'containertype_id' => true,
         'name' => true,
         'parent_id' => true,

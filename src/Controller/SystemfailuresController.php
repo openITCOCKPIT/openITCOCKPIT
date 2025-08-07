@@ -60,9 +60,9 @@ class SystemfailuresController extends AppController {
         $UserTime = $User->getUserTime();
 
         foreach ($systemfailures as $index => $systemfailure) {
-            /** @var FrozenTime $FrozenStartTime */
+            /** @var \Cake\I18n\DateTime $FrozenStartTime */
             $FrozenStartTime = $systemfailure['start_time'];
-            /** @var FrozenTime $FrozenEndTime */
+            /** @var \Cake\I18n\DateTime $FrozenEndTime */
             $FrozenEndTime = $systemfailure['end_time'];
 
             $systemfailures[$index]['start_time'] = $UserTime->format($FrozenStartTime->timestamp);

@@ -50,7 +50,7 @@ class Contact extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'                               => true,
         'name'                               => true,
         'description'                        => true,

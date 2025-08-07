@@ -188,7 +188,7 @@ abstract class Statehistory {
      */
     public function getStateTime() {
         if (!is_numeric($this->state_time)) {
-            if ($this->state_time instanceof FrozenTime) {
+            if ($this->state_time instanceof \Cake\I18n\DateTime) {
                 $this->state_time = $this->state_time->timestamp;
             } else {
                 $this->state_time = strtotime($this->state_time);

@@ -675,7 +675,7 @@ class HostsTable extends Table {
                 'Hosts.uuid',
                 'Hosts.name'
             ])
-            ->group([
+            ->groupBy([
                 'Hosts.id'
             ])
             ->enableHydration($enableHydration);
@@ -819,8 +819,8 @@ class HostsTable extends Table {
         }
         $query->contain('HostsToContainersSharing');
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -985,8 +985,8 @@ class HostsTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order(
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy(
             array_merge(
                 $HostFilter->getOrderForPaginator('Hoststatus.current_state', 'desc'),
                 ['Hosts.id' => 'asc']
@@ -1133,8 +1133,8 @@ class HostsTable extends Table {
 
         $query->where($where);
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order(
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy(
             array_merge(
                 $HostFilter->getOrderForPaginator('Hoststatus.current_state', 'desc'),
                 ['Hosts.id' => 'asc']
@@ -1212,8 +1212,8 @@ class HostsTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order(
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy(
             array_merge(
                 $HostFilter->getOrderForPaginator('Hosts.name', 'asc'),
                 ['Hosts.id' => 'asc']
@@ -1291,8 +1291,8 @@ class HostsTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order(
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy(
             array_merge(
                 $HostFilter->getOrderForPaginator('Hosts.name', 'asc'),
                 ['Hosts.id' => 'asc']
@@ -1355,8 +1355,8 @@ class HostsTable extends Table {
 
         ]);
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order(
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy(
             array_merge(
                 $HostFilter->getOrderForPaginator('Hosts.name', 'asc'),
                 ['Hosts.id' => 'asc']
@@ -1445,9 +1445,9 @@ class HostsTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
+        $query->groupBy(['Hosts.id']);
         if (!empty($HostConditions->getOrder())) {
-            $query->order(
+            $query->orderBy(
                 array_merge(
                     $HostConditions->getOrder(),
                     ['Hosts.id' => 'asc']
@@ -1536,8 +1536,8 @@ class HostsTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -1590,8 +1590,8 @@ class HostsTable extends Table {
             ]);
         }
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -2064,8 +2064,8 @@ class HostsTable extends Table {
         if (!empty($where)) {
             $query->where($where);
         }
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -2116,8 +2116,8 @@ class HostsTable extends Table {
             if (!empty($where)) {
                 $query->where($where);
             }
-            $query->group(['Hosts.id']);
-            $query->order([
+            $query->groupBy(['Hosts.id']);
+            $query->orderBy([
                 'Hosts.name' => 'asc',
                 'Hosts.id'   => 'asc'
             ]);
@@ -2512,12 +2512,12 @@ class HostsTable extends Table {
                 ['Hosts.eventhandler_command_id' => $commandId]
             ]
         ])
-            ->order([
+            ->orderBy([
                 'Hosts.name' => 'asc',
                 'Hosts.id'   => 'asc'
             ])
             ->enableHydration($enableHydration)
-            ->group(['Hosts.id'])
+            ->groupBy(['Hosts.id'])
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());
@@ -2541,7 +2541,7 @@ class HostsTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'host_id'
             ])
             ->disableHydration()
@@ -2573,11 +2573,11 @@ class HostsTable extends Table {
 
         $query->where($where);
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
-        $query->group([
+        $query->groupBy([
             'Hosts.id'
         ]);
 
@@ -2621,7 +2621,7 @@ class HostsTable extends Table {
             ->where([
                 'Agentconfigs.use_push_mode' => 0
             ])
-            ->group([
+            ->groupBy([
                 'Hosts.id'
             ]);
         $query->all();
@@ -2751,9 +2751,9 @@ class HostsTable extends Table {
 
         ]);
         $query->disableHydration();
-        $query->group(['Hosts.id']);
+        $query->groupBy(['Hosts.id']);
         if ($type === 'all') {
-            $query->order(
+            $query->orderBy(
                 array_merge(
                     $HostFilter->getOrderForPaginator('Hosts.name', 'asc'),
                     ['Hosts.id' => 'asc']
@@ -2832,7 +2832,7 @@ class HostsTable extends Table {
             ->contain([
                 'HostsToContainersSharing'
             ])
-            ->group([
+            ->groupBy([
                 'Hoststatus.current_state',
             ])
             ->disableHydration();
@@ -2909,7 +2909,7 @@ class HostsTable extends Table {
         $query->contain([
             'HostsToContainersSharing'
         ])
-            ->group([
+            ->groupBy([
                 'Servicestatus.current_state',
             ])
             ->disableHydration();
@@ -2974,7 +2974,7 @@ class HostsTable extends Table {
             ->contain([
                 'HostsToContainersSharing'
             ])
-            ->group([
+            ->groupBy([
                 'Hoststatus.current_state',
             ])
             ->disableHydration();
@@ -3044,7 +3044,7 @@ class HostsTable extends Table {
         $query->contain([
             'HostsToContainersSharing'
         ])
-            ->group([
+            ->groupBy([
                 'Servicestatus.current_state',
             ])
             ->disableHydration();
@@ -3309,7 +3309,7 @@ class HostsTable extends Table {
                 'hostgroup_ids IS NOT NULL',
                 'count > 0'
             ]);
-            $query->group('Hosts.id');
+            $query->groupBy('Hosts.id');
         }
 
         if (!empty($conditions['Host']['name'])) {
@@ -3380,7 +3380,7 @@ class HostsTable extends Table {
             ]);
         }
         $query->andWhere($where)
-            ->group(['Hosts.id'])
+            ->groupBy(['Hosts.id'])
             ->disableHydration();
         $result = $query->all();
 
@@ -3422,7 +3422,7 @@ class HostsTable extends Table {
                 'Hosts.host_url'
             ])
             ->where(['Hosts.id IN' => $ids])
-            ->order(['Hosts.id' => 'asc']);
+            ->orderBy(['Hosts.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
@@ -3434,7 +3434,7 @@ class HostsTable extends Table {
         }
 
         $query
-            ->group(['Hosts.id'])
+            ->groupBy(['Hosts.id'])
             ->disableHydration()
             ->all();
 
@@ -3508,7 +3508,7 @@ class HostsTable extends Table {
                 ]
             ])
             ->where(['Hosts.id IN' => $ids])
-            ->order(['Hosts.id' => 'asc'])
+            ->orderBy(['Hosts.id' => 'asc'])
             ->disableHydration()
             ->all();
 
@@ -3848,7 +3848,7 @@ class HostsTable extends Table {
         if ($offset !== null) {
             $query->offset($offset);
         }
-        $query->group('Hosts.id');
+        $query->groupBy('Hosts.id');
         $query->disableHydration()->all();
 
         if ($count === true) {
@@ -3942,7 +3942,7 @@ class HostsTable extends Table {
                 'HostsToContainersSharing'
             ])->where([
                 'HostsToContainers.container_id IN' => $MY_RIGHTS
-            ])->group([
+            ])->groupBy([
                 'Host.id'
             ]);
         }
@@ -4240,8 +4240,8 @@ class HostsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -4371,8 +4371,8 @@ class HostsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -4647,7 +4647,7 @@ class HostsTable extends Table {
         }
         $query->contain('HostsToContainersSharing');
         $query->disableHydration();
-        $query->group(['Hosts.id']);
+        $query->groupBy(['Hosts.id']);
 
         $result = $query->count();
 
@@ -4739,7 +4739,7 @@ class HostsTable extends Table {
                 'hostgroup_ids IS NOT NULL',
                 'count > 0'
             ]);
-            $query->group('Hosts.id');
+            $query->groupBy('Hosts.id');
         }
 
         if (isset($where['Hosts.keywords rlike'])) {
@@ -4909,7 +4909,7 @@ class HostsTable extends Table {
             );
         }
         $query->andWhere($where);
-        $query->group('Hosts.id');
+        $query->groupBy('Hosts.id');
         $query->disableHydration();
         $result = $query->all();
         if ($result === null) {
@@ -5048,8 +5048,8 @@ class HostsTable extends Table {
             ]);
         }
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -5113,8 +5113,8 @@ class HostsTable extends Table {
         if (!empty($where)) {
             $query->where($where);
         }
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -5147,8 +5147,8 @@ class HostsTable extends Table {
             if (!empty($where)) {
                 $query->where($where);
             }
-            $query->group(['Hosts.id']);
-            $query->order([
+            $query->groupBy(['Hosts.id']);
+            $query->orderBy([
                 'Hosts.name' => 'asc',
                 'Hosts.id'   => 'asc'
             ]);
@@ -5280,7 +5280,7 @@ class HostsTable extends Table {
         }
 
         $query->andWhere($where);
-        $query->group('Hosts.id');
+        $query->groupBy('Hosts.id');
         $query->disableHydration();
         $result = $query->all();
         if ($result === null) {
@@ -5336,7 +5336,7 @@ class HostsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Hoststatus.current_state']);
+        $query->groupBy(['Hoststatus.current_state']);
         return $this->emptyArrayIfNull($query->toArray());
     }
 

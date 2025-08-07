@@ -36,8 +36,8 @@ use Cake\ORM\Entity;
  * @property int|null $organizational_chart_id
  * @property int|null $organizational_chart_input_node_id
  * @property int|null $organizational_chart_output_node_id
- * @property \Cake\I18n\FrozenTime $modified
- * @property \Cake\I18n\FrozenTime $created
+ * @property \Cake\I18n\DateTime $modified
+ * @property \Cake\I18n\DateTime $created
  *
  * @property \App\Model\Entity\OrganizationalChart $organizational_chart
  */
@@ -51,7 +51,7 @@ class OrganizationalChartConnection extends Entity {
      *
      * @var array<string, bool>
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'                                => true,
         'organizational_chart_id'             => true,
         'organizational_chart_input_node_id'  => true,

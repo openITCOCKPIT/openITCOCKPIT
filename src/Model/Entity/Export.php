@@ -13,8 +13,8 @@ use Cake\ORM\Entity;
  * @property string $text
  * @property int $finished
  * @property int $successfully
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  */
 class Export extends Entity {
     /**
@@ -26,7 +26,7 @@ class Export extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'task'         => true,
         'text'         => true,
         'finished'     => true,

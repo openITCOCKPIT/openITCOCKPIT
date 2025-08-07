@@ -542,11 +542,9 @@ class NagiosConfigGenerator {
             }
 
             if (!$HosttemplatesCache->has($host->get('hosttemplate_id'))) {
-                $hosttemplate = $HosttemplatesTable->get($host->get('hosttemplate_id'), [
-                    'contain' => [
-                        'Hosttemplatecommandargumentvalues' => [
-                            'Commandarguments'
-                        ]
+                $hosttemplate = $HosttemplatesTable->get($host->get('hosttemplate_id'), contain: [
+                    'Hosttemplatecommandargumentvalues' => [
+                        'Commandarguments'
                     ]
                 ]);
                 $HosttemplatesCache->set($host->get('hosttemplate_id'), $hosttemplate);

@@ -14,8 +14,8 @@ use Cake\ORM\TableRegistry;
  * @property string $name
  * @property string $description
  * @property int $container_id
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\CalendarHoliday[] $calendar_holidays
  */
@@ -29,7 +29,7 @@ class Calendar extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'name'              => true,
         'description'       => true,
         'container_id'      => true,

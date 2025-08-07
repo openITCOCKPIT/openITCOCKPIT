@@ -43,8 +43,8 @@ use Cake\ORM\Entity;
  * @property bool $show_downtime_comments
  * @property bool $show_acknowledgements
  * @property bool $show_acknowledgement_comments
- * @property FrozenTime $created
- * @property FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\StatuspagesToContainer[] $statuspages_to_containers
  * @property \App\Model\Entity\StatuspagesToHostgroup[] $statuspages_to_hostgroups
@@ -62,7 +62,7 @@ class Statuspage extends Entity {
      *
      * @var array<string, bool>
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'                          => true,
         'container_id'                  => true,
         'name'                          => true,

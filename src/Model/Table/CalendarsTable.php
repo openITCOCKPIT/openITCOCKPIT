@@ -150,7 +150,7 @@ class CalendarsTable extends Table {
         }
         $query->where($where);
 
-        $query->order($CalendarFilter->getOrderForPaginator('Calendars.name', 'asc'));
+        $query->orderBy($CalendarFilter->getOrderForPaginator('Calendars.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query

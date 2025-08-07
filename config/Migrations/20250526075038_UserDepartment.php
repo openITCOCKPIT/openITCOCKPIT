@@ -26,6 +26,15 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
+/**
+ * Class UserDepartment
+ *
+ * Created:
+ * oitc migrations create UserDepartment
+ *
+ * Usage:
+ * openitcockpit-update
+ */
 class UserDepartment extends AbstractMigration {
 
     /**

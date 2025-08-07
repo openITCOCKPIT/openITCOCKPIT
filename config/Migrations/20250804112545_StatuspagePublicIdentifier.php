@@ -27,15 +27,15 @@ declare(strict_types=1);
 use Migrations\AbstractMigration;
 
 /**
- * Class StatuspagePublicHeader
+ * Class StatuspagePublicIdentifier
  *
  * Created:
- * oitc migrations create StatuspagePublicHeader
+ * oitc migrations create StatuspagePublicIdentifier
  *
  * Usage:
  * openitcockpit-update
  */
-class StatuspagePublicHeader extends AbstractMigration {
+class StatuspagePublicIdentifier extends AbstractMigration {
     /**
      * Change Method.
      *
@@ -46,12 +46,39 @@ class StatuspagePublicHeader extends AbstractMigration {
     public function change(): void {
         if ($this->hasTable('statuspages')) {
             $this->table('statuspages')
-                ->addColumn('public_title', 'string', [
-                    'after'   => 'description',
+                ->addColumn('uuid', 'string', [
+                    'after'   => 'id',
+                    'default' => null,
+                    'limit'   => 37,
+                    'null'    => true,
+                ])
+                ->addColumn('public_identifier', 'string', [
+                    'after'   => 'public_title',
                     'default' => null,
                     'limit'   => 255,
                     'null'    => true,
                 ])
+                ->addIndex(
+                    [
+                        'uuid',
+                    ],
+                // Unfortunatly we cannot use 'unique' here, because the uuid is a new column,
+                // and we cannot guarantee that the uuid is unique in the existing data.
+                // However, the InstallSeed will ensure that all existing status pages will
+                // have a UUID - so we can create a unique index in a future migration.
+                // For example with openITCOCKP'IT 5.1.0 we can add the unique index
+                //['unique' => true]
+                )
+
+                // https://dev.mysql.com/doc/refman/8.4/en/create-index.html#create-index-unique
+                // > A UNIQUE index permits multiple NULL values for columns that can contain NULL.
+                // This is exactly what we want for the optional public_identifier column.
+                ->addIndex(
+                    [
+                        'public_identifier',
+                    ],
+                    ['unique' => true]
+                )
                 ->update();
         }
     }

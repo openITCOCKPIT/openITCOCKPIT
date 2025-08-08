@@ -125,7 +125,7 @@ class PluginManager {
 
         /** @var SplFileInfo $folder */
         foreach ($Finder as $folder) {
-            if (str_ends_with('Module', $folder->getFilename())) {
+            if (str_ends_with($folder->getFilename(), 'Module')) {
                 $modules[] = $folder->getFilename();
             }
         }

@@ -25,8 +25,6 @@
 namespace itnovum\openITCOCKPIT\Core\Views;
 
 
-use Cake\I18n\DateTime;
-use DateTime;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 
 class UserTime {
@@ -71,8 +69,8 @@ class UserTime {
             if ($t_time instanceof \Cake\I18n\DateTime) {
                 /** @var \Cake\I18n\DateTime $t_time */
                 $t_time = $t_time->timestamp;
-            } else if ($t_time instanceof DateTime) {
-                /** @var DateTime $t_time */
+            } else if ($t_time instanceof \DateTime) {
+                /** @var \DateTime $t_time */
                 $t_time = $t_time->getTimestamp();
             }
         }
@@ -98,8 +96,8 @@ class UserTime {
             if ($t_time instanceof \Cake\I18n\DateTime) {
                 /** @var \Cake\I18n\DateTime $t_time */
                 $t_time = $t_time->timestamp;
-            } else if ($t_time instanceof DateTime) {
-                /** @var DateTime $t_time */
+            } else if ($t_time instanceof \DateTime) {
+                /** @var \DateTime $t_time */
                 $t_time = $t_time->getTimestamp();
             }
         }
@@ -130,8 +128,8 @@ class UserTime {
             $duration = 0;
         }
 
-        $zero = new DateTime("@0");
-        $seconds = new DateTime("@$duration");
+        $zero = new \DateTime("@0");
+        $seconds = new \DateTime("@$duration");
         $closure = function ($duration) {
             //Check how much "time" we need
             if ($duration >= 31536000) {
@@ -202,8 +200,8 @@ class UserTime {
             if ($t_time instanceof \Cake\I18n\DateTime) {
                 /** @var \Cake\I18n\DateTime $t_time */
                 $t_time = $t_time->timestamp;
-            } else if ($t_time instanceof DateTime) {
-                /** @var DateTime $t_time */
+            } else if ($t_time instanceof \DateTime) {
+                /** @var \DateTime $t_time */
                 $t_time = $t_time->getTimestamp();
             }
         }

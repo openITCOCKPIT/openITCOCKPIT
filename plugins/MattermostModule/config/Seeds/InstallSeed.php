@@ -79,7 +79,7 @@ class InstallSeed extends \Migrations\BaseSeed {
                     'name'         => $record['name']
                 ])
                 ->execute();
-            $result = $stm->fetchAll();
+            $result = $stm->fetchAll('assoc');
 
             if (empty($result)) {
                 $table->insert($record)->save();

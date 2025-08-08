@@ -49,7 +49,6 @@ use App\Model\Table\ServicesTable;
 use Cake\Core\Plugin;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\Exception\RecordNotFoundException;
-use Cake\Datasource\RepositoryInterface;
 use Cake\ORM\Association\HasMany;
 use Cake\ORM\Behavior\TimestampBehavior;
 use Cake\ORM\Query;
@@ -189,16 +188,18 @@ class MapsTable extends Table {
         }
     }
 
-    public function bindCoreAssociations(RepositoryInterface $coreTable) {
+    public function bindCoreAssociations(Table $coreTable) {
         switch ($coreTable->getAlias()) {
             case 'Satellites':
-                $coreTable->belongsToMany('Maps', [
-                    'className'        => 'MapModules.Maps',
-                    'foreignKey'       => 'satellite_id',
-                    'targetForeignKey' => 'map_id',
-                    'joinTable'        => 'maps_to_satellites',
-                    'saveStrategy'     => 'replace'
-                ]);
+                if (!$coreTable->hasAssociation('Maps')) {
+                    $coreTable->belongsToMany('Maps', [
+                        'className'        => 'MapModules.Maps',
+                        'foreignKey'       => 'satellite_id',
+                        'targetForeignKey' => 'map_id',
+                        'joinTable'        => 'maps_to_satellites',
+                        'saveStrategy'     => 'replace'
+                    ]);
+                }
                 break;
         }
     }

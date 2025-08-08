@@ -24,8 +24,6 @@
 
 declare(strict_types=1);
 
-use Migrations\BaseSeed;
-
 /**
  * Class InstallSeed
  *
@@ -342,7 +340,7 @@ class InstallSeed extends \Migrations\BaseSeed {
 
         //Check if records exists
         foreach ($data as $index => $record) {
-            $QueryBuilder = $this->getAdapter()->getQueryBuilder();
+            $QueryBuilder = $this->getAdapter()->getSelectBuilder();
 
             $stm = $QueryBuilder->select('*')
                 ->from($table->getName())

@@ -1,26 +1,26 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
 // 1.
-//  This program is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // 2.
-//  If you purchased an openITCOCKPIT Enterprise Edition you can use this file
-//  under the terms of the openITCOCKPIT Enterprise Edition license agreement.
-//  License agreement and license key will be shipped with the order
-//  confirmation.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 
 /***************************************************************
@@ -42,7 +42,7 @@ use Cake\Http\Exception\UnauthorizedException;
 use Cake\Log\Log;
 
 // Use tail -F /opt/openitc/frontend/auth/debug.log to trace the debug file...
-$debug = false;
+$debug = true;
 
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
@@ -77,11 +77,23 @@ if ($debug === true) {
 try {
     if (isset($_SESSION['Auth'])) {
         if (get_class($_SESSION['Auth']) === 'App\Model\Entity\User') {
+            // CakePHP 4.x
             //Login success
             //The current session contains a valid openITCOCKPIT user...
             header("HTTP/1.0 200 Ok");
             return;
         }
+
+        if (!empty($_SESSION['Auth']) && is_array($_SESSION['Auth'])) {
+            if (isset($_SESSION['Auth']['id'])) {
+                // CakePHP 5.x
+                //Login success
+                //The current session contains a valid openITCOCKPIT user...
+                header("HTTP/1.0 200 Ok");
+                return;
+            }
+        }
+
     }
 
     if (isset($_COOKIE['CookieAuth'])) {

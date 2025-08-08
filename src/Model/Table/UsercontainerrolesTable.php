@@ -243,7 +243,7 @@ class UsercontainerrolesTable extends Table {
                                 ' ',
                                 'Users.lastname'  => 'literal'
                             ])
-                        ])->order('full_name');
+                        ])->orderBy('full_name');
                     return $q;
                 }
             ])

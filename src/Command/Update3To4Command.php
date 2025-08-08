@@ -996,7 +996,7 @@ class Update3To4Command extends Command {
                 'NotificationHosts.notification_type'   => 0,
                 'NotificationHosts.contacts_notified >' => 0
             ])
-            ->group(['Contactnotifications.contactnotification_id']);
+            ->groupBy(['Contactnotifications.contactnotification_id']);
 
         if ($asCount === true) {
             return $query->count();
@@ -1091,7 +1091,7 @@ class Update3To4Command extends Command {
                 'NotificationServices.notification_type'   => 1,
                 'NotificationServices.contacts_notified >' => 0
             ])
-            ->group(['Contactnotifications.contactnotification_id']);
+            ->groupBy(['Contactnotifications.contactnotification_id']);
 
         if ($asCount === true) {
             return $query->count();

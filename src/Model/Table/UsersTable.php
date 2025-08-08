@@ -39,7 +39,6 @@ use Authentication\PasswordHasher\DefaultPasswordHasher;
 use Cake\Database\Query;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\Event;
-use Cake\I18n\DateTime;
 use Cake\Log\Log;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -398,7 +397,7 @@ class UsersTable extends Table {
             $Hasher = $this->getDefaultPasswordHasher();
             $entity->password = $Hasher->hash($entity->password);
         }
-        return true;
+        $event->setResult(true);
     }
 
     /**

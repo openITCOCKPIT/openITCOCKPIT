@@ -296,7 +296,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         if (!empty($cache) && !empty($cache['previousState']) && $cache['previousState'] !== $this->state) {
             $sendingMail = true;
         }
-        $io->out($sendingMail, 0);
+        $io->out($sendingMail ? 'true' : 'false', 0);
         return $sendingMail;
     }
 

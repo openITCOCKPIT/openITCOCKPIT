@@ -35,8 +35,8 @@
  */
 
 use App\Identifier\ApikeyIdentifier;
+use Authentication\Identifier\AbstractIdentifier;
 use Authentication\Identifier\IdentifierCollection;
-use Authentication\Identifier\IdentifierInterface;
 use Authentication\PasswordHasher\DefaultPasswordHasher;
 use Cake\Http\Exception\UnauthorizedException;
 use Cake\Log\Log;
@@ -76,24 +76,21 @@ if ($debug === true) {
 
 try {
     if (isset($_SESSION['Auth'])) {
-        if (get_class($_SESSION['Auth']) === 'App\Model\Entity\User') {
-            // CakePHP 4.x
+        if (!empty($_SESSION['Auth']) && is_array($_SESSION['Auth'])) {
+            // CakePHP 5.x
             //Login success
             //The current session contains a valid openITCOCKPIT user...
             header("HTTP/1.0 200 Ok");
             return;
         }
 
-        if (!empty($_SESSION['Auth']) && is_array($_SESSION['Auth'])) {
-            if (isset($_SESSION['Auth']['id'])) {
-                // CakePHP 5.x
-                //Login success
-                //The current session contains a valid openITCOCKPIT user...
-                header("HTTP/1.0 200 Ok");
-                return;
-            }
+        if (!is_array($_SESSION['Auth']) && get_class($_SESSION['Auth']) === 'App\Model\Entity\User') {
+            // CakePHP 4.x
+            //Login success
+            //The current session contains a valid openITCOCKPIT user...
+            header("HTTP/1.0 200 Ok");
+            return;
         }
-
     }
 
     if (isset($_COOKIE['CookieAuth'])) {
@@ -111,8 +108,8 @@ try {
         $IdentifierCollection = new IdentifierCollection([
             'Authentication.Password' => [
                 'fields' => [
-                    IdentifierInterface::CREDENTIAL_USERNAME => 'email',
-                    IdentifierInterface::CREDENTIAL_PASSWORD => 'password'
+                    AbstractIdentifier::CREDENTIAL_USERNAME => 'email',
+                    AbstractIdentifier::CREDENTIAL_PASSWORD => 'password'
                 ]
             ]
         ]);

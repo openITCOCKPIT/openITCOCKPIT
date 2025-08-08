@@ -33,7 +33,7 @@ declare(strict_types=1);
 namespace MapModule\Model\Entity;
 
 use App\Model\Entity\Container;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\ORM\Entity;
 use DistributeModule\Model\Entity\Satellite;
 

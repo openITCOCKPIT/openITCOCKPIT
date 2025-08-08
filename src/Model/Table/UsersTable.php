@@ -39,7 +39,7 @@ use Authentication\PasswordHasher\DefaultPasswordHasher;
 use Cake\Database\Query;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\Event;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\Log\Log;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;

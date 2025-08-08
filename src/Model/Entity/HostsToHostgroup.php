@@ -25,7 +25,7 @@ class HostsToHostgroup extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'host_id'      => true,
         'hostgroup_id' => true,
         'host'         => true,

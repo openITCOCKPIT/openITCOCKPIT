@@ -116,7 +116,7 @@ class AgentchecksTable extends Table {
             'Servicetemplates'
         ]);
         $query->where($where);
-        $query->order($AgentchecksFilter->getOrderForPaginator('Agentchecks.name', 'asc'));
+        $query->orderBy($AgentchecksFilter->getOrderForPaginator('Agentchecks.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -244,7 +244,7 @@ class AgentchecksTable extends Table {
         $query = $this->find()
             ->contain(['Servicetemplates'])
             ->where($where)
-            ->order('Agentchecks.name')
+            ->orderBy('Agentchecks.name')
             ->disableHydration()
             ->all();
 

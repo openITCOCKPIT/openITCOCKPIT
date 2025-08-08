@@ -223,10 +223,8 @@ class OrganizationalChartsController extends AppController {
                 }
             }
 
-            $entity = $OrganizationalChartsTable->get($id, [
-                'contain' => [
-                    'OrganizationalChartNodes.Users'
-                ]
+            $entity = $OrganizationalChartsTable->get($id, contain: [
+                'OrganizationalChartNodes.Users'
             ]);
             $entity = $OrganizationalChartsTable->patchEntity($entity, $data, [
                 'associated' => [
@@ -319,11 +317,9 @@ class OrganizationalChartsController extends AppController {
             throw new NotFoundException(__('Invalid organizational chart'));
         }
 
-        $organizationalChart = $OrganizationalChartsTable->get($id, [
-            'contain' => [
-                'OrganizationalChartNodes' => 'Users',
-                'OrganizationalChartConnections'
-            ]
+        $organizationalChart = $OrganizationalChartsTable->get($id, contain: [
+            'OrganizationalChartNodes' => 'Users',
+            'OrganizationalChartConnections'
         ]);
         $containerIds = Hash::extract($organizationalChart, 'organizational_chart_nodes.{n}.container_id');
         if (!empty($containerIds)) {

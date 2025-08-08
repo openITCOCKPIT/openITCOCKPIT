@@ -161,25 +161,23 @@ class ServiceescalationsController extends AppController {
             throw new NotFoundException('Service escalation not found');
         }
 
-        $serviceescalation = $ServiceescalationsTable->get($id, [
-            'contain' => [
-                'Services'      => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id', 'name']);
-                },
-                'Servicegroups' => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-                'Contacts'      => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-                'Contactgroups' => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-            ]
+        $serviceescalation = $ServiceescalationsTable->get($id, contain: [
+            'Services'      => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id', 'name']);
+            },
+            'Servicegroups' => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
+            'Contacts'      => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
+            'Contactgroups' => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
         ]);
 
         if (!$this->allowedByContainerId($serviceescalation->get('container_id'))) {

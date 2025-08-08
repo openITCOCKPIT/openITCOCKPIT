@@ -25,7 +25,7 @@ class HosttemplatesToHostgroup extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'hosttemplate_id' => true,
         'hostgroup_id'    => true,
         'hosttemplate'    => true,

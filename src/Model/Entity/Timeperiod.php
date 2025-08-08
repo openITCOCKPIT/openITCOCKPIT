@@ -13,8 +13,8 @@ use Cake\ORM\Entity;
  * @property string $name
  * @property string|null $description
  * @property int|null $calendar_id
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Container $container
  * @property \App\Model\Entity\TimeperiodTimerange[] $timeperiod_timeranges
@@ -30,7 +30,7 @@ class Timeperiod extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'                  => true,
         'container_id'          => true,
         'name'                  => true,

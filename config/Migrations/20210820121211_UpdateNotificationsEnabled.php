@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
-class UpdateNotificationsEnabled extends AbstractMigration {
+class UpdateNotificationsEnabled extends \Migrations\BaseMigration {
     /**
      * Change Method.
      * Class UpdateNotificationsEnabled

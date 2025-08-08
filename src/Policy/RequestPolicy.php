@@ -1,27 +1,26 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-
 // 2.
-//	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
-//	under the terms of the openITCOCKPIT Enterprise Edition license agreement.
-//	License agreement and license key will be shipped with the order
-//	confirmation.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 namespace App\Policy;
 
@@ -30,23 +29,23 @@ use Acl\Controller\Component\AclComponent;
 use Acl\Model\Table\ArosTable;
 use App\Model\Table\UsergroupsTable;
 use Authentication\Authenticator\UnauthenticatedException;
+use Authorization\IdentityInterface;
 use Authorization\Policy\RequestPolicyInterface;
 use Cake\Controller\ComponentRegistry;
-use Cake\Controller\Exception\SecurityException;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Http\ServerRequest;
 use Cake\ORM\TableRegistry;
-use itnovum\openITCOCKPIT\Core\FileDebugger;
 
 class RequestPolicy implements RequestPolicyInterface {
 
     /**
      * Method to check if the request can be accessed
      *
-     * @param \Authorization\IdentityInterface|null Identity
-     * @param \Cake\Http\ServerRequest $request Server Request
+     * @param IdentityInterface|null Identity
+     * @param ServerRequest $request Server Request
      * @return bool
      */
-    public function canAccess($identity, ServerRequest $request) {
+    public function canAccess($identity, ServerRequest $request): bool|\Authorization\Policy\ResultInterface {
         $controller = $request->getParam('controller');
         $action = $request->getParam('action');
         $plugin = $request->getParam('plugin'); //not used
@@ -55,11 +54,11 @@ class RequestPolicy implements RequestPolicyInterface {
 
         if ($identity === null) {
             //User is not logged in!
-
             if (strtolower($controller) === 'users' && strtolower($action) === 'login') {
                 return true;
             }
 
+            // Allow public access to the status pages
             if (strtolower($controller) === 'statuspages' && strtolower($action) === 'publicview') {
                 return true;
             }
@@ -84,7 +83,7 @@ class RequestPolicy implements RequestPolicyInterface {
         ]);
 
         if ($usergroupHasAros === false) {
-            throw new SecurityException('No Aros defined for given usergroup_id!');
+            throw new BadRequestException('No Aros defined for given usergroup_id!');
         }
 
         // Uncomment to disable ACL permission checks

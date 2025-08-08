@@ -6,7 +6,7 @@ namespace App\itnovum\openITCOCKPIT\Core\MonitoringEngine;
 
 use Cake\Console\ConsoleIo;
 use Cake\Core\Configure;
-use Cake\Filesystem\Folder;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 use Cake\Log\Log;
 
 /**

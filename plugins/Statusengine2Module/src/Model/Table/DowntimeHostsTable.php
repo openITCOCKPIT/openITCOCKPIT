@@ -145,8 +145,8 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 'DowntimeHosts.scheduled_start_time >' => date('Y-m-d H:i:s', $DowntimeHostConditions->getFrom()),
                 'DowntimeHosts.scheduled_start_time <' => date('Y-m-d H:i:s', $DowntimeHostConditions->getTo()),
             ])
-            ->order($DowntimeHostConditions->getOrder())
-            ->group('DowntimeHosts.downtimehistory_id');
+            ->orderBy($DowntimeHostConditions->getOrder())
+            ->groupBy('DowntimeHosts.downtimehistory_id');
 
 
         if ($DowntimeHostConditions->hasContainerIds()) {
@@ -271,8 +271,8 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 ['HostsToContainers' => 'hosts_to_containers'],
                 ['HostsToContainers.host_id = Hosts.id']
             )
-            ->order($DowntimeHostConditions->getOrder())
-            ->group('DowntimeHosts.downtimehistory_id');
+            ->orderBy($DowntimeHostConditions->getOrder())
+            ->groupBy('DowntimeHosts.downtimehistory_id');
 
 
         if ($DowntimeHostConditions->hasHostUuids()) {
@@ -354,7 +354,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 ['Objects' => 'nagios_objects'],
                 ['Objects.object_id = DowntimeHosts.object_id', 'DowntimeHosts.downtime_type = 2'] //Downtime.downtime_type = 2 Host downtime
             )
-            ->order([
+            ->orderBy([
                 'DowntimeHosts.entry_time' => 'DESC'
             ])
             ->where([

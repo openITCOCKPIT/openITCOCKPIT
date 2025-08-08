@@ -12,7 +12,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class GolangPushAgentIndex extends AbstractMigration {
+class GolangPushAgentIndex extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

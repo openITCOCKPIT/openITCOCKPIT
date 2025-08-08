@@ -180,7 +180,7 @@ class ServicegroupsTable extends Table {
                         'Containers.parent_id IN'     => $containerIds,
                         'Containers.containertype_id' => CT_SERVICEGROUP,
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -198,7 +198,7 @@ class ServicegroupsTable extends Table {
                         'Containers.parent_id IN'     => $containerIds,
                         'Containers.containertype_id' => CT_SERVICEGROUP,
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -303,7 +303,7 @@ class ServicegroupsTable extends Table {
 
 
         $query->disableHydration();
-        $query->order($ServicegroupFilter->getOrderForPaginator('Containers.name', 'asc'));
+        $query->orderBy($ServicegroupFilter->getOrderForPaginator('Containers.name', 'asc'));
 
 
         if ($PaginateOMat === null) {
@@ -338,7 +338,7 @@ class ServicegroupsTable extends Table {
             $where['Containers.parent_id IN'] = $MY_RIGHTS;
         }
         $query->where($where)
-            ->order(
+            ->orderBy(
                 $ServicegroupFilter->getOrderForPaginator('Containers.name', 'asc')
             )->disableHydration();
 
@@ -425,10 +425,8 @@ class ServicegroupsTable extends Table {
      * @return \App\Model\Entity\Servicegroup
      */
     public function getServicegroupById($id) {
-        return $this->get($id, [
-            'contain' => [
-                'Containers'
-            ]
+        return $this->get($id, contain: [
+            'Containers'
         ]);
     }
 
@@ -786,11 +784,11 @@ class ServicegroupsTable extends Table {
         }
 
         $query
-            ->order([
+            ->orderBy([
                 'Containers.name' => 'asc',
                 'Containers.id'   => 'asc'
             ])
-            ->group([
+            ->groupBy([
                 'Containers.id'
             ])
             ->disableHydration()
@@ -821,11 +819,11 @@ class ServicegroupsTable extends Table {
             }
 
             $query
-                ->order([
+                ->orderBy([
                     'Containers.name' => 'asc',
                     'Containers.id'   => 'asc'
                 ])
-                ->group([
+                ->groupBy([
                     'Containers.id'
                 ])
                 ->disableHydration()
@@ -997,10 +995,8 @@ class ServicegroupsTable extends Table {
         // Through servicetemplate maybe?
         /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-        $service = $ServicesTable->get($serviceId, [
-            'contain' => [
-                'Servicegroups'
-            ]
+        $service = $ServicesTable->get($serviceId, contain: [
+            'Servicegroups'
         ]);
 
         if (empty($service->get('servicegroups'))) {
@@ -1088,7 +1084,7 @@ class ServicegroupsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->order([
+        $query->orderBy([
             'Containers.name' => 'asc'
         ]);
 
@@ -1176,7 +1172,7 @@ class ServicegroupsTable extends Table {
                         'Containers.parent_id IN'     => $containerIds,
                         'Containers.containertype_id' => CT_SERVICEGROUP
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -1210,7 +1206,7 @@ class ServicegroupsTable extends Table {
                         'Containers.parent_id IN'     => $containerIds,
                         'Containers.containertype_id' => CT_SERVICEGROUP
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -1243,7 +1239,7 @@ class ServicegroupsTable extends Table {
             ->contain([
                 'Containers'
             ])
-            ->order(['Servicegroups.id' => 'asc']);
+            ->orderBy(['Servicegroups.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere([

@@ -167,17 +167,15 @@ class ServicedependenciesController extends AppController {
         if (!$ServicedependenciesTable->existsById($id)) {
             throw new NotFoundException('Service dependency not found');
         }
-        $servicedependency = $ServicedependenciesTable->get($id, [
-            'contain' => [
-                'Services'      => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id', 'name']);
-                },
-                'Servicegroups' => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-            ]
+        $servicedependency = $ServicedependenciesTable->get($id, contain: [
+            'Services'      => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id', 'name']);
+            },
+            'Servicegroups' => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
         ]);
 
         if (!$this->allowedByContainerId($servicedependency->get('container_id'))) {

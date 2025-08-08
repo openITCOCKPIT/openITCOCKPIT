@@ -91,7 +91,7 @@ class DeletedServicesTable extends Table {
         $query = $this->find('all')
             ->where($ServiceFilter->deletedFilter())
             ->disableHydration()
-            ->order($ServiceFilter->getOrderForPaginator('DeletedDeleteds.created', 'desc'));
+            ->orderBy($ServiceFilter->getOrderForPaginator('DeletedDeleteds.created', 'desc'));
 
 
         if ($PaginateOMat === null) {

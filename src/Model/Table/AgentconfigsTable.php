@@ -213,12 +213,12 @@ class AgentconfigsTable extends Table {
             ->where([
                 'Agentconfigs.use_push_mode' => 0
             ])
-            ->group(['Agentconfigs.id']);
+            ->groupBy(['Agentconfigs.id']);
 
 
         $query->where($GenericFilter->genericFilters());
         $query->disableHydration();
-        $query->order($GenericFilter->getOrderForPaginator('Hosts.name', 'asc'));
+        $query->orderBy($GenericFilter->getOrderForPaginator('Hosts.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -240,9 +240,7 @@ class AgentconfigsTable extends Table {
      */
     public function getHostIdsByMode($mode = 'push') {
         $usePushMode = (int)$mode === 'push';
-        $query = $this->find('list', [
-            'valueField' => 'host_id'
-        ])->where([
+        $query = $this->find('list', valueField: 'host_id')->where([
             'Agentconfigs.use_push_mode' => $usePushMode
         ]);
 

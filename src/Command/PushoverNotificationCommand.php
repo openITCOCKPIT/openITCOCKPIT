@@ -28,8 +28,8 @@ namespace App\Command;
 use App\Model\Table\HostsTable;
 use App\Model\Table\ProxiesTable;
 use App\Model\Table\ServicesTable;
+use Cake\Command\Command;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Datasource\Exception\RecordNotFoundException;
@@ -127,7 +127,7 @@ class PushoverNotificationCommand extends Command {
 
         try {
             $host = $HostsTable->getHostByUuid($this->hostUuid, false);
-        }catch (RecordNotFoundException $e){
+        } catch (RecordNotFoundException $e) {
             throw new \RuntimeException(sprintf('Host with uuid "%s" could not be found!', $this->hostUuid));
         }
 
@@ -139,7 +139,7 @@ class PushoverNotificationCommand extends Command {
 
             try {
                 $service = $ServicesTable->getServiceByUuid($this->serviceUuid, false);
-            }catch (RecordNotFoundException $e){
+            } catch (RecordNotFoundException $e) {
                 throw new \RuntimeException(sprintf('Service with uuid "%s" could not be found!', $this->serviceUuid));
             }
 

@@ -263,7 +263,7 @@ class SystemHealthUsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -281,7 +281,7 @@ class SystemHealthUsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -342,13 +342,13 @@ class SystemHealthUsersTable extends Table {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $SystemHealthUsersFilter->getOrderForPaginator('full_name', 'asc'),
                 ['Users.id' => 'asc']
             )
         );
-        $query->group([
+        $query->groupBy([
             'Users.id'
         ]);
 

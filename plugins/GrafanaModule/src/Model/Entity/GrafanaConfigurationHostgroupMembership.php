@@ -47,7 +47,7 @@ class GrafanaConfigurationHostgroupMembership extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'configuration_id' => true,
         'hostgroup_id'     => true,
         'excluded'         => true

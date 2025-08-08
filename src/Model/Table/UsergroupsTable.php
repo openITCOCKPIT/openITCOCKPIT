@@ -54,6 +54,8 @@ class UsergroupsTable extends Table {
             'foreignKey' => 'usergroup_id'
         ]);
 
+        // The AclBehavior creates a hasMany association for Aros, but we want to use a hasOne association instead.
+        $this->associations()->remove('Aros');
         $this->hasOne('Aros', [
             'className'  => 'Acl.Aros',
             'foreignKey' => 'foreign_key',
@@ -138,7 +140,7 @@ class UsergroupsTable extends Table {
                     ]);
                 }
             ])
-            ->order($GenericFilter->getOrderForPaginator('Usergroups.name', 'asc'))
+            ->orderBy($GenericFilter->getOrderForPaginator('Usergroups.name', 'asc'))
             ->disableHydration();
 
 
@@ -237,7 +239,7 @@ class UsergroupsTable extends Table {
             ->where([
                 'Ldapgroups.dn IN' => $memberOfGroups
             ])
-            ->order(['Usergroups.name' => 'asc'])
+            ->orderBy(['Usergroups.name' => 'asc'])
             ->disableHydration()
             ->first();
 
@@ -256,7 +258,7 @@ class UsergroupsTable extends Table {
                 'Usergroups.description',
             ])
             ->where(['Usergroups.id IN' => $ids])
-            ->order(['Usergroups.id' => 'asc']);
+            ->orderBy(['Usergroups.id' => 'asc']);
 
         $query->disableHydration()
             ->all();

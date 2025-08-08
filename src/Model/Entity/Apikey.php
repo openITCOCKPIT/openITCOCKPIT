@@ -11,7 +11,7 @@ use Cake\ORM\Entity;
  * @property int $user_id
  * @property string $apikey
  * @property string|null $description
- * @property \Cake\I18n\FrozenTime|null $last_use
+ * @property \Cake\I18n\DateTime|null $last_use
  *
  * @property \App\Model\Entity\User $user
  */
@@ -26,7 +26,7 @@ class Apikey extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'user_id'     => true,
         'apikey'      => true,
         'description' => true,

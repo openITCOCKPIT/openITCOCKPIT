@@ -13,7 +13,7 @@ use Migrations\AbstractMigration;
  * oitc migrations migrate -p GrafanaModule
  *
  */
-class Colors extends AbstractMigration {
+class Colors extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

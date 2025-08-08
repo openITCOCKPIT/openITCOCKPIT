@@ -36,9 +36,9 @@ use Cake\ORM\Entity;
  * @property int $notification_type
  * @property int $notification_reason
  * @property int $object_id
- * @property \Cake\I18n\FrozenTime $start_time
+ * @property \Cake\I18n\DateTime $start_time
  * @property int $start_time_usec
- * @property \Cake\I18n\FrozenTime $end_time
+ * @property \Cake\I18n\DateTime $end_time
  * @property int $end_time_usec
  * @property int $state
  * @property string|null $output
@@ -58,7 +58,7 @@ class NotificationHost extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'instance_id'         => true,
         'notification_type'   => true,
         'notification_reason' => true,

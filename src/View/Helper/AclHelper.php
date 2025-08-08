@@ -40,7 +40,7 @@ class AclHelper extends Helper {
      *
      * @var array
      */
-    protected $_defaultConfig = [];
+    protected array $_defaultConfig = [];
 
     /**
      * @param string $action

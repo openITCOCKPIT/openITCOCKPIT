@@ -51,7 +51,7 @@ use Cake\Core\Plugin;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -233,7 +233,7 @@ class DashboardsController extends AppController {
                     ->first();
 
                 if ($tab) {
-                    $tab->set('modified', new FrozenTime());
+                    $tab->set('modified', new \Cake\I18n\DateTime());
                     $DashboardTabsTable->save($tab);
                 }
 
@@ -656,7 +656,7 @@ class DashboardsController extends AppController {
 
         $updateAvailable = false;
         if ($sourceTab !== null && $tab !== null) {
-            /** @var FrozenTime $modified */
+            /** @var \Cake\I18n\DateTime $modified */
             $modified = $sourceTab->get('modified');
             $modified = $modified->getTimestamp();
 
@@ -765,7 +765,7 @@ class DashboardsController extends AppController {
             ];
         }
 
-        $FrozenTime = new FrozenTime();
+        $FrozenTime = new \Cake\I18n\DateTime();
         $tabToUpdate = $DashboardTabsTable->patchEntity($tabToUpdate, [
             'last_update' => $FrozenTime->getTimestamp(),
             'locked'      => (bool)$sourceTabWithWidgets->get('locked'),

@@ -204,9 +204,7 @@ class TenantsController extends AppController {
 
             $ContainersTable->acquireLock();
 
-            $oldTenant = $TenantsTable->get($id, [
-                'contain' => ['Containers']
-            ]);
+            $oldTenant = $TenantsTable->get($id, contain: ['Containers']);
             $oldTenantForChangelog = $oldTenant->toArray();
             if (!$this->allowedByContainerId($oldTenant->get('container_id'))) {
                 $this->render403();

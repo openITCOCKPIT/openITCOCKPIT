@@ -88,7 +88,7 @@ class StatusmapsController extends AppController {
                     'Satellites.id',
                     'Satellites.name'
                 ])
-                ->order([
+                ->orderBy([
                     'Satellites.name' => 'asc'
                 ])
                 ->toArray();

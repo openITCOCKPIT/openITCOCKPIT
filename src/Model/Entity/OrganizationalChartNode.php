@@ -39,8 +39,8 @@ use Cake\ORM\Entity;
  * @property boolean $recursive
  * @property int $x_position
  * @property int $y_position
- * @property \Cake\I18n\FrozenTime $modified
- * @property \Cake\I18n\FrozenTime $created
+ * @property \Cake\I18n\DateTime $modified
+ * @property \Cake\I18n\DateTime $created
  *
  * @property \App\Model\Entity\OrganizationalChart $organizational_chart
  * @property \App\Model\Entity\Container $container
@@ -56,7 +56,7 @@ class OrganizationalChartNode extends Entity {
      *
      * @var array<string, bool>
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'                    => true,
         'organizational_chart_id' => true,
         'container_id'            => true,

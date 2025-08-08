@@ -142,10 +142,10 @@ class NotificationHostsLogTable extends Table implements NotificationHostsLogTab
             ->where([
                 'NotificationHostsLog.start_time >' => $HostNotificationConditions->getFrom(),
             ])
-            ->group([
+            ->groupBy([
                 'NotificationHostsLog.hostname'
             ])
-            ->order(
+            ->orderBy(
                 ['count' => 'DESC', 'start_time' => 'DESC']
             );
         $query->select([

@@ -31,7 +31,6 @@
 declare(strict_types=1);
 
 use Cake\ORM\TableRegistry;
-use Migrations\AbstractSeed;
 
 /**
  * Class InstallSeed
@@ -42,7 +41,7 @@ use Migrations\AbstractSeed;
  * Apply:
  * oitc migrations seed
  */
-class InstallSeed extends AbstractSeed {
+class InstallSeed extends \Migrations\BaseSeed {
     /**
      * Run Method.
      *
@@ -155,7 +154,7 @@ class InstallSeed extends AbstractSeed {
 
         //Check if records exists
         foreach ($data as $index => $record) {
-            $QueryBuilder = $this->getAdapter()->getQueryBuilder();
+            $QueryBuilder = $this->getAdapter()->getSelectBuilder();
 
             $stm = $QueryBuilder->select('*')
                 ->from($table->getName())
@@ -164,7 +163,7 @@ class InstallSeed extends AbstractSeed {
                     'task'   => $record['task']
                 ])
                 ->execute();
-            $result = $stm->fetchAll();
+            $result = $stm->fetchAll('assoc');
 
             if (empty($result)) {
                 $table->insert($record)->save();

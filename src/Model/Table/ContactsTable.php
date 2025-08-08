@@ -341,7 +341,7 @@ class ContactsTable extends Table {
         $query->distinct('Contacts.id');
 
         $query->disableHydration();
-        $query->order($ContactsFilter->getOrderForPaginator('Contacts.name', 'asc'));
+        $query->orderBy($ContactsFilter->getOrderForPaginator('Contacts.name', 'asc'));
 
 
         if ($PaginateOMat === null) {
@@ -391,7 +391,7 @@ class ContactsTable extends Table {
             ])
             ->contain('Containers')
             ->where(['Contacts.id IN' => $ids])
-            ->order(['Contacts.id' => 'asc']);
+            ->orderBy(['Contacts.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
@@ -815,7 +815,7 @@ class ContactsTable extends Table {
             ->where([
                 'command_id' => $commandId
             ])
-            ->group([
+            ->groupBy([
                 'contact_id'
             ])
             ->disableHydration()
@@ -835,7 +835,7 @@ class ContactsTable extends Table {
             ->where([
                 'command_id' => $commandId
             ])
-            ->group([
+            ->groupBy([
                 'contact_id'
             ])
             ->disableHydration()
@@ -869,7 +869,7 @@ class ContactsTable extends Table {
         ]);
         $query->distinct('Contacts.id');
         $query->enableHydration($enableHydration);
-        $query->order(['Contacts.name' => 'asc']);
+        $query->orderBy(['Contacts.name' => 'asc']);
 
         $result = $query->all();
 
@@ -895,7 +895,7 @@ class ContactsTable extends Table {
                     'Contacts.service_timeperiod_id' => $timeperiodId
                 ]
             ])
-            ->group([
+            ->groupBy([
                 'Contacts.id'
             ]);
 
@@ -912,7 +912,7 @@ class ContactsTable extends Table {
 
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Contacts.name' => 'asc',
             'Contacts.id'
         ]);
@@ -1306,7 +1306,7 @@ class ContactsTable extends Table {
             })->where([
                 'Contacts.id IN' => $ids
             ])
-            ->group(['Contacts.id'])
+            ->groupBy(['Contacts.id'])
             ->disableHydration();
         return $this->emptyArrayIfNull($query->toArray());
     }

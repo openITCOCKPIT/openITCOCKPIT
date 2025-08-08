@@ -1,4 +1,27 @@
 <?php
+// Copyright (C) <2015-present>  <it-novum GmbH>
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
+
 declare(strict_types=1);
 
 namespace App\Controller;
@@ -8,7 +31,6 @@ use App\Model\Table\SystemsettingsTable;
 use App\Model\Table\UsersTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\FrozenDate;
 use Cake\Mailer\Mailer;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -62,9 +84,7 @@ class MessagesOtdController extends AppController {
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function view($id = null) {
-        $messagesOtd = $this->MessagesOtd->get($id, [
-            'contain' => ['Users'],
-        ]);
+        $messagesOtd = $this->MessagesOtd->get($id, contain: ['Users']);
 
         $this->set(compact('messagesOtd'));
     }
@@ -87,7 +107,7 @@ class MessagesOtdController extends AppController {
             $MessagesOtdTable = TableRegistry::getTableLocator()->get('MessagesOtd');
             $requestData = $this->request->getData();
             if (!empty($requestData['MessagesOtd']['date'])) {
-                $frozenDate = new FrozenDate($requestData['MessagesOtd']['date']);
+                $frozenDate = new \Cake\I18n\Date($requestData['MessagesOtd']['date']);
                 $requestData['MessagesOtd']['date'] = $frozenDate->format('Y-m-d');
             }
             $requestData['MessagesOtd']['user_id'] = $User->getId();
@@ -143,8 +163,8 @@ class MessagesOtdController extends AppController {
             $User = new User($this->getUser());
             $requestData = $this->request->getData();
             if (!empty($requestData['MessagesOtd']['date'])) {
-                /** @var FrozenDate $frozenDate */
-                $frozenDate = new FrozenDate($requestData['MessagesOtd']['date']);
+                /** @var \Cake\I18n\Date $frozenDate */
+                $frozenDate = new \Cake\I18n\Date($requestData['MessagesOtd']['date']);
                 $requestData['MessagesOtd']['date'] = $frozenDate->format('Y-m-d');
             }
             $requestData['MessagesOtd']['user_id'] = $User->getId();
@@ -208,10 +228,8 @@ class MessagesOtdController extends AppController {
             throw new NotFoundException(__('Invalid message of the day'));
         }
 
-        $messageOtd = $MessagesOtdTable->get($id, [
-            'contain' => [
-                'Usergroups'
-            ]
+        $messageOtd = $MessagesOtdTable->get($id, contain: [
+            'Usergroups'
         ]);
         if ($messageOtd->get('notify_users')) {
             /** @var UsersTable $UsersTable */
@@ -246,7 +264,7 @@ class MessagesOtdController extends AppController {
                             'contentId' => '100'
                         ]
                     ]);
-                    $frozenDate = new FrozenDate($messageOtd->get('date'));
+                    $frozenDate = new \Cake\I18n\Date($messageOtd->get('date'));
                     $BBCodeParser = new BBCodeParser();
                     $content = $messageOtd->get('content');
                     $content = str_replace("'", "", $content);

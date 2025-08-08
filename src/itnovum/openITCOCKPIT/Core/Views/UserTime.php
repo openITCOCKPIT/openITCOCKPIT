@@ -25,8 +25,6 @@
 namespace itnovum\openITCOCKPIT\Core\Views;
 
 
-use Cake\I18n\FrozenTime;
-use DateTime;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 
 class UserTime {
@@ -68,11 +66,11 @@ class UserTime {
      */
     public function format($t_time) {
         if (gettype($t_time) === 'object') {
-            if ($t_time instanceof FrozenTime) {
-                /** @var FrozenTime $t_time */
+            if ($t_time instanceof \Cake\I18n\DateTime) {
+                /** @var \Cake\I18n\DateTime $t_time */
                 $t_time = $t_time->timestamp;
-            } else if ($t_time instanceof DateTime) {
-                /** @var DateTime $t_time */
+            } else if ($t_time instanceof \DateTime) {
+                /** @var \DateTime $t_time */
                 $t_time = $t_time->getTimestamp();
             }
         }
@@ -83,7 +81,7 @@ class UserTime {
         if (!is_numeric($t_time)) {
             $t_time = 0;
         }
-        $time = FrozenTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
+        $time = \Cake\I18n\DateTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
         return $time->format($this->format);
     }
 
@@ -95,11 +93,11 @@ class UserTime {
     public function customFormat($format, $t_time) {
 
         if (gettype($t_time) === 'object') {
-            if ($t_time instanceof FrozenTime) {
-                /** @var FrozenTime $t_time */
+            if ($t_time instanceof \Cake\I18n\DateTime) {
+                /** @var \Cake\I18n\DateTime $t_time */
                 $t_time = $t_time->timestamp;
-            } else if ($t_time instanceof DateTime) {
-                /** @var DateTime $t_time */
+            } else if ($t_time instanceof \DateTime) {
+                /** @var \DateTime $t_time */
                 $t_time = $t_time->getTimestamp();
             }
         }
@@ -110,7 +108,7 @@ class UserTime {
         if (!is_numeric($t_time)) {
             $t_time = 0;
         }
-        $time = FrozenTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
+        $time = \Cake\I18n\DateTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
         return $time->format($format);
     }
 
@@ -130,8 +128,8 @@ class UserTime {
             $duration = 0;
         }
 
-        $zero = new DateTime("@0");
-        $seconds = new DateTime("@$duration");
+        $zero = new \DateTime("@0");
+        $seconds = new \DateTime("@$duration");
         $closure = function ($duration) {
             //Check how much "time" we need
             if ($duration >= 31536000) {
@@ -199,11 +197,11 @@ class UserTime {
      */
     public function timeAgoInWords($t_time, $options = []) {
         if (gettype($t_time) === 'object') {
-            if ($t_time instanceof FrozenTime) {
-                /** @var FrozenTime $t_time */
+            if ($t_time instanceof \Cake\I18n\DateTime) {
+                /** @var \Cake\I18n\DateTime $t_time */
                 $t_time = $t_time->timestamp;
-            } else if ($t_time instanceof DateTime) {
-                /** @var DateTime $t_time */
+            } else if ($t_time instanceof \DateTime) {
+                /** @var \DateTime $t_time */
                 $t_time = $t_time->getTimestamp();
             }
         }
@@ -214,7 +212,7 @@ class UserTime {
         if (!is_numeric($t_time)) {
             $t_time = 0;
         }
-        $time = FrozenTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
+        $time = \Cake\I18n\DateTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
         return $time->timeAgoInWords($options);
     }
 

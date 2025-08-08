@@ -11,7 +11,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class SaveMapeditorSettings extends AbstractMigration {
+class SaveMapeditorSettings extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

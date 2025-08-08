@@ -122,7 +122,7 @@ class StatehistoryServicesTable extends Table implements StatehistoryServiceTabl
                 'StatehistoryServices.state_time >' => date('Y-m-d H:i:s', $StatehistoryServiceConditions->getFrom()),
                 'StatehistoryServices.state_time <' => date('Y-m-d H:i:s', $StatehistoryServiceConditions->getTo())
             ])
-            ->order($StatehistoryServiceConditions->getOrder());
+            ->orderBy($StatehistoryServiceConditions->getOrder());
 
         if ($StatehistoryServiceConditions->hasConditions()) {
             $query->andWhere($StatehistoryServiceConditions->getConditions());
@@ -187,7 +187,7 @@ class StatehistoryServicesTable extends Table implements StatehistoryServiceTabl
                 'Objects.name2'                      => $StatehistoryServiceConditions->getServiceUuid(),
                 'StatehistoryServices.state_time <=' => date('Y-m-d H:i:s', $StatehistoryServiceConditions->getFrom())
             ])
-            ->order([
+            ->orderBy([
                 'StatehistoryServices.state_time' => 'DESC'
             ])
             ->enableHydration($enableHydration)

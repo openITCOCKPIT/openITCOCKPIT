@@ -179,7 +179,7 @@ class TimeperiodsTable extends Table {
             ->where([
                 'Timeperiods.container_id IN' => $MY_RIGHTS
             ])
-            ->order(['Timeperiods.name' => 'asc'])
+            ->orderBy(['Timeperiods.name' => 'asc'])
             ->disableHydration()
             ->all();
         return $this->formatResultAsCake2($query->toArray(), false);
@@ -189,10 +189,9 @@ class TimeperiodsTable extends Table {
      * @return array
      */
     public function getAllTimeperiodsUuidsAsList() {
-        $query = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'uuid'
-        ])
+        $query = $this->find('list',
+        keyField: 'id',
+        valueField: 'uuid')
             ->disableHydration();
         return $query->toArray();
     }
@@ -205,7 +204,7 @@ class TimeperiodsTable extends Table {
     public function getTimeperiodsIndex(TimeperiodsFilter $TimeperiodsFilter, $PaginateOMat = null) {
         $query = $this->find('all')->disableHydration();
         $query->where($TimeperiodsFilter->indexFilter());
-        $query->order($TimeperiodsFilter->getOrderForPaginator('Timeperiods.name', 'asc'));
+        $query->orderBy($TimeperiodsFilter->getOrderForPaginator('Timeperiods.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -370,7 +369,7 @@ class TimeperiodsTable extends Table {
             ->where([
                 'Timeperiods.id IN' => $ids
             ])
-            ->order(['Timeperiods.id' => 'asc']);
+            ->orderBy(['Timeperiods.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere([
@@ -670,7 +669,7 @@ class TimeperiodsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->order([
+        $query->orderBy([
             'Timeperiods.name' => 'asc'
         ]);
 

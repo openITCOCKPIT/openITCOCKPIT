@@ -105,7 +105,7 @@ class AcknowledgementServicesTable extends Table implements AcknowledgementServi
             ->where([
                 'service_description' => $uuid
             ])
-            ->order([
+            ->orderBy([
                 'entry_time' => 'DESC',
             ])
             ->first();
@@ -125,7 +125,7 @@ class AcknowledgementServicesTable extends Table implements AcknowledgementServi
                 'entry_time >'        => $AcknowledgedServiceConditions->getFrom(),
                 'entry_time <'        => $AcknowledgedServiceConditions->getTo()
             ])
-            ->order($AcknowledgedServiceConditions->getOrder());
+            ->orderBy($AcknowledgedServiceConditions->getOrder());
 
         if ($AcknowledgedServiceConditions->hasConditions()) {
             $query->andWhere($AcknowledgedServiceConditions->getConditions());
@@ -170,7 +170,7 @@ class AcknowledgementServicesTable extends Table implements AcknowledgementServi
             ->where([
                 'service_description IN' => $uuids
             ])
-            ->order([
+            ->orderBy([
                 'entry_time' => 'DESC',
             ])
             ->disableHydration()

@@ -26,10 +26,8 @@ namespace App;
 
 use App\Authenticator\ApikeyAuthenticator;
 use App\Authenticator\oAuthAuthenticator;
-use App\Authenticator\SslAuthenticator;
 use App\Identifier\ApikeyIdentifier;
 use App\Identifier\LdapIdentifier;
-use App\Identifier\oAuthIdentifier;
 use App\Identifier\PasswordIdentifier;
 use App\Identifier\SslIdentifier;
 use App\Identity\AppIdentity;
@@ -41,7 +39,7 @@ use App\Policy\RequestPolicy;
 use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
-use Authentication\Identifier\IdentifierInterface;
+use Authentication\Identifier\AbstractIdentifier;
 use Authorization\AuthorizationService;
 use Authorization\AuthorizationServiceInterface;
 use Authorization\AuthorizationServiceProviderInterface;
@@ -78,8 +76,9 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         parent::bootstrap();
 
         $PluginManager = new PluginManager($this);
+        $PluginManager->loadModules();
 
-        $this->addPlugin('Acl');
+        $this->addPlugin('Acl', ['bootstrap' => true]);
         $this->addPlugin('Authentication');
         $this->addPlugin('Authorization');
 
@@ -141,8 +140,8 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             'identityClass'           => AppIdentity::class
         ]);
         $fields = [
-            IdentifierInterface::CREDENTIAL_USERNAME => 'email',
-            IdentifierInterface::CREDENTIAL_PASSWORD => 'password'
+            AbstractIdentifier::CREDENTIAL_USERNAME => 'email',
+            AbstractIdentifier::CREDENTIAL_PASSWORD => 'password'
         ];
 
 
@@ -153,77 +152,79 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         }
         $isLdapAuth = Cache::read('isLdapAuth', 'permissions');
 
-        // Load LDAP identifier
-        if ($isLdapAuth) {
-            $service->loadIdentifier('Authentication.Ldap', [
-                'className' => LdapIdentifier::class
-            ]);
-        }
+        // Load Apikey identifier
+        $service->loadAuthenticator('Authentication.Apikey', [
+            'identifier'   => [
+                'Authentication.Apikey' => [
+                    'className' => ApikeyIdentifier::class
+                ]
+            ],
+            'className'    => ApikeyAuthenticator::class,
+            'queryParam'   => 'apikey',
+            'header'       => 'Authorization',
+            'apikeyPrefix' => 'X-OITC-API',
+        ]);
 
         // Load SSL identifier
         if (isset($_SERVER['SSL_VERIFIED'])) {
-            $service->loadIdentifier('Authentication.Ssl', [
-                'className' => SslIdentifier::class
+            $service->loadAuthenticator('Authentication.Ssl', [
+                'identifier' => [
+                    'Authentication.Ssl' => [
+                        'className' => SslIdentifier::class
+                    ]
+                ]
             ]);
         }
 
         // Load oAuth identifier
         if (isset($_GET['code'])) {
-            $service->loadIdentifier('Authentication.oAuth', [
-                'className' => oAuthIdentifier::class
+            $service->loadAuthenticator('Authentication.oAuth', [
+                'identifier' => [
+                    'Authentication.oAuth' => [
+                        'className' => oAuthAuthenticator::class
+                    ]
+                ]
             ]);
         }
 
-        // Load Apikey identifier
-        $service->loadIdentifier('Authentication.Apikey', [
-            'className' => ApikeyIdentifier::class
-        ]);
+        $passwordIdentifier = [
+            'Authentication.Password' => [
+                'className' => PasswordIdentifier::class,
+                'fields'    => $fields
+            ],
+        ];
 
-        // Load identifiers (Username / Password)
-        $service->loadIdentifier('Authentication.Password', [
-            'className' => PasswordIdentifier::class,
-            'fields'    => $fields
-        ]);
-
-        // Try to login the user through an SSL Certificate
-        if (isset($_SERVER['SSL_VERIFIED'])) {
-            $service->loadAuthenticator('Authentication.Ssl', [
-                'className' => SslAuthenticator::class
-            ]);
+        if ($isLdapAuth) {
+            // Load LDAP identifier
+            $passwordIdentifier['Authentication.Ldap'] = [
+                'className' => LdapIdentifier::class,
+            ];
         }
 
         // Load the authenticators, you want session first
         $expireAt = new \DateTime();
         $expireAt->setTimestamp(time() + (3600 * 24 * 31)); // In one month
         $service->loadAuthenticator('Authentication.Cookie', [
-            'rememberMeField' => 'remember_me',
+            'identifier'      => $passwordIdentifier,
             'fields'          => $fields,
+            'rememberMeField' => 'remember_me',
             'cookie'          => [
-                'expires'  => $expireAt,
-                'httponly' => true,
-                'secure'   => true
+                'expires' => $expireAt
             ]
         ]);
-        $service->loadAuthenticator('Authentication.Session');
+        $service->loadAuthenticator('Authentication.Session', [
+            'identifier' => $passwordIdentifier,
+        ]);
+
+        // Load identifiers (Username / Password)
         $service->loadAuthenticator('Authentication.Form', [
-            'fields'   => $fields,
-            'loginUrl' => '/users/login',
-        ]);
-
-        //oAuth
-        $service->loadAuthenticator('Authentication.oAuth', [
-            'className' => oAuthAuthenticator::class,
-        ]);
-
-        //Stateless API Key login
-        $service->loadAuthenticator('Authentication.Apikey', [
-            'queryParam'   => 'apikey',
-            'header'       => 'Authorization',
-            'apikeyPrefix' => 'X-OITC-API',
-            'className'    => ApikeyAuthenticator::class,
+            'identifier' => $passwordIdentifier,
+            'fields'     => $fields,
+            'loginUrl'   => '/users/login',
         ]);
 
         return $service;
+
     }
 
     /**
@@ -264,7 +265,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 
             //Add the authentication middleware
             //Response a 403 to .json requests and redirect .html requests to login page
-            ->add(new AppAuthenticationMiddleware($this, [
+            ->add(new AppAuthenticationMiddleware($this, null, [
                 //Only redirect .html requests if login is invalid - no json requests
                 'htmlUnauthenticatedRedirect' => '/a/users/login'
             ]))

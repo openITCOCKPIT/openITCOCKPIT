@@ -10,8 +10,8 @@ use Cake\ORM\Entity;
  * @property int $command_id
  * @property string $name
  * @property string $human_name
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Command $command
  * @property \App\Model\Entity\Hostcommandargumentvalue[] $hostcommandargumentvalues
@@ -33,7 +33,7 @@ class Commandargument extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'command_id' => true,
         'name' => true,
         'human_name' => true,

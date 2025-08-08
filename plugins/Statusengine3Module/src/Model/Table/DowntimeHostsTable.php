@@ -149,12 +149,12 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
             ->bind(':end1', $endTimestamp, 'integer')
             ->bind(':start2', $startTimestamp, 'integer')
             ->bind(':end2', $endTimestamp, 'integer');
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $DowntimeHostConditions->getOrder(),
                 ['DowntimeHosts.internal_downtime_id' => 'asc']
             )
-        )->group('DowntimeHosts.internal_downtime_id');
+        )->groupBy('DowntimeHosts.internal_downtime_id');
 
 
         if ($DowntimeHostConditions->hasContainerIds()) {
@@ -274,12 +274,12 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 ['HostsToContainers' => 'hosts_to_containers'],
                 ['HostsToContainers.host_id = Hosts.id']
             )
-            ->order(
+            ->orderBy(
                 array_merge(
                     $DowntimeHostConditions->getOrder(),
                     ['DowntimeHosts.internal_downtime_id' => 'asc']
                 )
-            )->group('DowntimeHosts.internal_downtime_id');
+            )->groupBy('DowntimeHosts.internal_downtime_id');
 
 
         if ($DowntimeHostConditions->hasHostUuids()) {
@@ -360,7 +360,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 ['Hosts' => 'hosts'],
                 ['DowntimeHosts.hostname = Hosts.uuid']
             )
-            ->order([
+            ->orderBy([
                 'DowntimeHosts.entry_time' => 'DESC'
             ])
             ->where([
@@ -406,7 +406,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 'DowntimeHosts.internal_downtime_id',
                 'DowntimeHosts.was_cancelled',
             ])
-            ->order([
+            ->orderBy([
                 'DowntimeHosts.entry_time' => 'DESC'
             ])
             ->where([
@@ -470,7 +470,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 'DowntimeHosts.was_cancelled'          => 0,
                 'DowntimeHosts.hostname IN'            => $uuids
             ])
-            ->order([
+            ->orderBy([
                 'DowntimeHosts.scheduled_start_time' => 'DESC'
             ]);
 

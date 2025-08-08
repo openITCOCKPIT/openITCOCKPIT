@@ -25,7 +25,7 @@ class HostsToParenthostSelect extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'host_id'       => true,
         'parenthost_id' => true,
         'host'          => true,

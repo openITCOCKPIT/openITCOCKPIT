@@ -58,8 +58,8 @@ use SLAModule\Model\Entity\Sla;
  * @property int $host_type
  * @property int|null $disabled
  * @property int $usage_flag
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Container $container
  * @property \App\Model\Entity\Hosttemplate $hosttemplate
@@ -97,7 +97,7 @@ class Host extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'                          => true,
         'container_id'                  => true,
         'name'                          => true,

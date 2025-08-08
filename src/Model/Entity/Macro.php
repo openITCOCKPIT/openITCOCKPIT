@@ -11,8 +11,8 @@ use Cake\ORM\Entity;
  * @property string $value
  * @property string $description
  * @property int $password
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  */
 class Macro extends Entity
 {
@@ -26,7 +26,7 @@ class Macro extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'name' => true,
         'value' => true,
         'description' => true,
@@ -40,7 +40,7 @@ class Macro extends Entity
      *
      * @var array
      */
-    protected $_hidden = [
+    protected array $_hidden = [
         'password'
     ];
 }

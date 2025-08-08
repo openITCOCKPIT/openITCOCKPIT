@@ -191,10 +191,8 @@ class ContactgroupsController extends AppController {
 
             $ContainersTable->acquireLock();
 
-            $contactgroupEntity = $ContactgroupsTable->get($id, [
-                'contain' => [
-                    'Containers'
-                ]
+            $contactgroupEntity = $ContactgroupsTable->get($id, contain: [
+                'Containers'
             ]);
             $contactgroupEntity->setAccess('uuid', false);
             $contactgroupEntity = $ContactgroupsTable->patchEntity($contactgroupEntity, $this->request->getData('Contactgroup'));
@@ -245,10 +243,8 @@ class ContactgroupsController extends AppController {
 
         $ContainersTable->acquireLock();
 
-        $contactgroupEntity = $ContactgroupsTable->get($id, [
-            'contain' => [
-                'Containers'
-            ]
+        $contactgroupEntity = $ContactgroupsTable->get($id, contain: [
+            'Containers'
         ]);
 
         if (!$this->isWritableContainer($contactgroupEntity->get('container')->get('parent_id'))) {
@@ -275,10 +271,8 @@ class ContactgroupsController extends AppController {
             return;
         }
 
-        $container = $ContainersTable->get($contactgroupEntity->get('container')->get('id'), [
-            'contain' => [
-                'Contactgroups'
-            ]
+        $container = $ContainersTable->get($contactgroupEntity->get('container')->get('id'), contain: [
+            'Contactgroups'
         ]);
         if ($ContainersTable->allowDelete($container->id, CT_CONTACTGROUP)) {
             if ($ContainersTable->delete($container)) {
@@ -358,11 +352,9 @@ class ContactgroupsController extends AppController {
                     //Create/clone contact group
                     $sourceContactgroupId = $contactgroupData['Source']['id'];
                     if (!$Cache->has($sourceContactgroupId)) {
-                        $sourceContactgroup = $ContactgroupsTable->get($sourceContactgroupId, [
-                            'contain' => [
-                                'Containers',
-                                'Contacts'
-                            ]
+                        $sourceContactgroup = $ContactgroupsTable->get($sourceContactgroupId, contain: [
+                            'Containers',
+                            'Contacts'
                         ])->toArray();
                         $contacts = Hash::extract($sourceContactgroup['contacts'], '{n}.id');
                         $sourceContactgroup['contacts'] = $contacts;

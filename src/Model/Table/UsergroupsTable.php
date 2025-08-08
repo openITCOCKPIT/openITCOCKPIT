@@ -54,6 +54,8 @@ class UsergroupsTable extends Table {
             'foreignKey' => 'usergroup_id'
         ]);
 
+        // The AclBehavior creates a hasMany association for Aros, but we want to use a hasOne association instead.
+        $this->associations()->remove('Aros');
         $this->hasOne('Aros', [
             'className'  => 'Acl.Aros',
             'foreignKey' => 'foreign_key',

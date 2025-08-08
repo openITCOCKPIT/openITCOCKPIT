@@ -1,4 +1,27 @@
 <?php
+// Copyright (C) <2015-present>  <it-novum GmbH>
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
+
 declare(strict_types=1);
 
 /**
@@ -37,24 +60,19 @@ if (!defined('PLUGIN')) {
  */
 require CORE_PATH . 'config' . DS . 'bootstrap.php';
 
+/*
+ * Load global functions for collections, translations, debugging etc.
+ */
+require CAKE . 'functions.php';
+
 use App\Lib\Constants;
 use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Core\Configure\Engine\PhpConfig;
 use Cake\Database\TypeFactory;
 use Cake\Datasource\ConnectionManager;
-use Cake\Error\ConsoleErrorHandler;
-
-// CakePHP 4.3.x (for php 7.2, bionic)
-use Cake\Error\ErrorHandler;
-
-// CakePHP 4.3.x (for php 7.2, bionic)
 use Cake\Error\ErrorTrap;
-
-// CakePHP 4.4.x (requires php 7.4)
 use Cake\Error\ExceptionTrap;
-
-// CakePHP 4.4.x (requires php 7.4)
 use Cake\Http\ServerRequest;
 use Cake\Log\Log;
 use Cake\Mailer\Mailer;
@@ -169,22 +187,8 @@ ini_set('intl.default_locale', Configure::read('App.defaultLocale'));
  * Register application error and exception handlers.
  */
 $isCli = PHP_SAPI === 'cli';
-if (class_exists('\Cake\Error\ErrorTrap')) {
-    // CakePHP 4.4 / php >=  7.4
-    if ($isCli) {
-        (new ErrorTrap(Configure::read('Error')))->register();
-    } else {
-        (new ExceptionTrap(Configure::read('Error')))->register();
-    }
-} else {
-    // CakePHP 4.3.x / php 7.2
-    if ($isCli) {
-        (new ConsoleErrorHandler(Configure::read('Error')))->register();
-    } else {
-        (new ErrorHandler(Configure::read('Error')))->register();
-    }
-}
-
+(new ErrorTrap(Configure::read('Error')))->register();
+(new ExceptionTrap(Configure::read('Error')))->register();
 
 /*
  * Include the CLI bootstrap overrides.

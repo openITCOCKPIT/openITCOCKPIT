@@ -243,7 +243,7 @@ class UsersController extends AppController {
                 return;
             }
 
-            $this->RequestHandler->renderAs($this, 'json');
+            //$this->RequestHandler->renderAs($this, 'json');
             $this->response = $this->response->withStatus(400);
             $errors = $result->getErrors();
             $errors['Password'][] = __('Invalid username or password');

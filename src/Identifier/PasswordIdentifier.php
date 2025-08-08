@@ -1,4 +1,27 @@
 <?php
+// Copyright (C) <2015-present>  <it-novum GmbH>
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
+
 declare(strict_types=1);
 
 /**
@@ -21,7 +44,6 @@ use App\Model\Table\UsersTable;
 use Authentication\Identifier\AbstractIdentifier;
 use Authentication\Identifier\IdentifierInterface;
 use Authentication\Identifier\Resolver\ResolverAwareTrait;
-use Authentication\Identifier\Resolver\ResolverInterface;
 use Authentication\PasswordHasher\PasswordHasherFactory;
 use Authentication\PasswordHasher\PasswordHasherInterface;
 use Authentication\PasswordHasher\PasswordHasherTrait;
@@ -63,7 +85,7 @@ class PasswordIdentifier extends AbstractIdentifier implements IdentifierInterfa
      *
      * @var array
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'fields'         => [
             self::CREDENTIAL_USERNAME => 'username',
             self::CREDENTIAL_PASSWORD => 'password',
@@ -93,14 +115,14 @@ class PasswordIdentifier extends AbstractIdentifier implements IdentifierInterfa
     /**
      * @inheritdoc
      */
-    public function identify(array $data) {
-        if (!isset($data[self::CREDENTIAL_USERNAME])) {
+    public function identify(array $credentials): \ArrayAccess|array|null {
+        if (!isset($credentials[self::CREDENTIAL_USERNAME])) {
             return null;
         }
 
-        $identity = $this->_findIdentity($data[self::CREDENTIAL_USERNAME]);
-        if (array_key_exists(self::CREDENTIAL_PASSWORD, $data)) {
-            $password = $data[self::CREDENTIAL_PASSWORD];
+        $identity = $this->_findIdentity($credentials[self::CREDENTIAL_USERNAME]);
+        if (array_key_exists(self::CREDENTIAL_PASSWORD, $credentials)) {
+            $password = $credentials[self::CREDENTIAL_PASSWORD];
             if (!$this->_checkPassword($identity, $password)) {
                 return null;
             }
@@ -144,9 +166,16 @@ class PasswordIdentifier extends AbstractIdentifier implements IdentifierInterfa
      * @param string $identifier The username/identifier.
      * @return \ArrayAccess|array|null
      */
-    protected function _findIdentity(string $identifier) {
+    protected function _findIdentity(string $identifier): \ArrayAccess|array|null {
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        return $UsersTable->getUserByEmailForLogin($identifier);
+        $user = $UsersTable->getUserByEmailForLogin($identifier);
+        if ($user) {
+            // Make all fields available as we need the user's password hash
+            $user->setHidden([], false);
+            return $user->toArray();
+        }
+
+        return null;
     }
 }

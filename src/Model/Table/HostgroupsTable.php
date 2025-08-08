@@ -29,7 +29,7 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Lib\Traits\PluginManagerTableTrait;
 use App\Model\Entity\Changelog;
 use App\Model\Entity\Hostgroup;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
@@ -1083,7 +1083,7 @@ class HostgroupsTable extends Table {
         $where = [];
 
         if ($this->isValidRegularExpression($hostgroupRegex)) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'Containers.name',
                 $hostgroupRegex,
                 'string',

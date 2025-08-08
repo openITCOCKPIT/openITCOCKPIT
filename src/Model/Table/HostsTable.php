@@ -33,7 +33,7 @@ use App\Model\Entity\Host;
 use App\Model\Entity\Hostdependency;
 use App\Model\Entity\Hostescalation;
 use Cake\Core\Plugin;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\ORM\Query;
@@ -926,7 +926,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.keywords rlike'],
                 'string',
@@ -936,7 +936,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.not_keywords not rlike'],
                 'string',
@@ -946,7 +946,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['hostpriority IN'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.priority IS NULL), Hosttemplates.priority, Hosts.priority)',
                 $where['hostpriority IN'],
                 'integer[]',
@@ -956,7 +956,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['hostdescription LIKE'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.description IS NULL OR Hosts.description=""), Hosttemplates.description, Hosts.description)',
                 $where['hostdescription LIKE'],
                 'string',
@@ -1094,7 +1094,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.keywords rlike'],
                 'string',
@@ -1103,7 +1103,7 @@ class HostsTable extends Table {
             unset($where['Hosts.keywords rlike']);
         }
         if (isset($where['Hosts.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.not_keywords not rlike'],
                 'string',
@@ -1112,7 +1112,7 @@ class HostsTable extends Table {
             unset($where['Hosts.not_keywords not rlike']);
         }
         if (isset($where['hostpriority IN'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.priority IS NULL), Hosttemplates.priority, Hosts.priority)',
                 $where['hostpriority IN'],
                 'integer[]',
@@ -1122,7 +1122,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['hostdescription LIKE'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.description IS NULL OR Hosts.description=""), Hosttemplates.description, Hosts.description)',
                 $where['hostdescription LIKE'],
                 'string',
@@ -1422,7 +1422,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.keywords rlike'],
                 'string',
@@ -1432,7 +1432,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.not_keywords not rlike'],
                 'string',
@@ -1513,7 +1513,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.keywords rlike'],
                 'string',
@@ -1523,7 +1523,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.not_keywords not rlike'],
                 'string',
@@ -3315,7 +3315,7 @@ class HostsTable extends Table {
         if (!empty($conditions['Host']['name'])) {
             if (isset($conditions['Host']['name_regex']) && $conditions['Host']['name_regex'] === true || $conditions['Host']['name_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Host']['name'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.name',
                         $conditions['Host']['name'],
                         'string',
@@ -3324,7 +3324,7 @@ class HostsTable extends Table {
                 }
             } else {
                 // Use LIKE
-                $where[] = new Comparison(
+                $where[] = new ComparisonExpression(
                     'Hosts.name',
                     sprintf('%%%s%%', $conditions['Host']['name']),
                     'string',
@@ -3336,7 +3336,7 @@ class HostsTable extends Table {
         if (!empty($conditions['Host']['address'])) {
             if (isset($conditions['Host']['address_regex']) && $conditions['Host']['address_regex'] === true || $conditions['Host']['address_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Host']['address'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.address',
                         $conditions['Host']['address'],
                         'string',
@@ -3349,7 +3349,7 @@ class HostsTable extends Table {
         }
 
         if (!empty($conditions['Host']['keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $conditions['Host']['keywords'],
                 'string',
@@ -3358,7 +3358,7 @@ class HostsTable extends Table {
         }
 
         if (!empty($conditions['Host']['not_keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $conditions['Host']['not_keywords'],
                 'string',
@@ -4743,7 +4743,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.keywords rlike'],
                 'string',
@@ -4753,7 +4753,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.not_keywords not rlike'],
                 'string',
@@ -4863,7 +4863,7 @@ class HostsTable extends Table {
         if (!empty($conditions['Host']['name'])) {
             if (isset($conditions['Host']['name_regex']) && $conditions['Host']['name_regex'] === true || $conditions['Host']['name_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Host']['name'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.name',
                         $conditions['Host']['name'],
                         'string',
@@ -4879,7 +4879,7 @@ class HostsTable extends Table {
         if (!empty($conditions['Host']['address'])) {
             if (isset($conditions['Host']['address_regex']) && $conditions['Host']['address_regex'] === true || $conditions['Host']['address_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Host']['address'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.address',
                         $conditions['Host']['address'],
                         'string',
@@ -4892,7 +4892,7 @@ class HostsTable extends Table {
         }
 
         if (!empty($conditions['Host']['keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $conditions['Host']['keywords'],
                 'string',
@@ -4901,7 +4901,7 @@ class HostsTable extends Table {
         }
 
         if (!empty($conditions['Host']['not_keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $conditions['Host']['not_keywords'],
                 'string',
@@ -5212,7 +5212,7 @@ class HostsTable extends Table {
         if (!empty($conditions['filter[Hosts.name]'])) {
             if (isset($conditions['filter[Hosts.name_regex]']) && $conditions['filter[Hosts.name_regex]'] === true || $conditions['filter[Hosts.name_regex]'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['filter[Hosts.name]'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.name',
                         $conditions['filter[Hosts.name]'],
                         'string',
@@ -5228,7 +5228,7 @@ class HostsTable extends Table {
         if (!empty($conditions['filter[Hosts.address]'])) {
             if (isset($conditions['filter[Hosts.address_regex']) && $conditions['filter[Hosts.address_regex]'] === true || $conditions['filter[Hosts.address_regex]'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['filter[Hosts.address]'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.address',
                         $conditions['filter[Hosts.address]'],
                         'string',
@@ -5256,7 +5256,7 @@ class HostsTable extends Table {
                 $compareValue = explode(',', $compareValue);
             }
             $compareValue = sprintf('.*(%s).*', implode('|', $compareValue));
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 //implode(',',$conditions['filter[Hosts.keywords][]']),
                 $compareValue,
@@ -5270,7 +5270,7 @@ class HostsTable extends Table {
                 $compareValue = explode(',', $compareValue);
             }
             $compareValue = sprintf('.*(%s).*', implode('|', $compareValue));
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 //implode(',',$conditions['filter[Hosts.not_keywords][]']),
                 $compareValue,

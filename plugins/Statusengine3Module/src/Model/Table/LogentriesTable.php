@@ -29,7 +29,7 @@ namespace Statusengine3Module\Model\Table;
 
 use App\Lib\Interfaces\LogentriesTableInterface;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Core\LogentryConditions;
@@ -103,7 +103,7 @@ class LogentriesTable extends Table implements LogentriesTableInterface {
         if (!empty($LogentryFilter->getMatchingUuids())) {
             //Refactoring: to avoid "Timeout exceeded in regular expression match." error
             /*
-            $query->andWhere(new Comparison(
+            $query->andWhere(new ComparisonExpression(
                 'Logentries.logentry_data',
                 sprintf('.*(%s).*', implode('|', $LogentryFilter->getMatchingUuids())),
                 'string',
@@ -112,7 +112,7 @@ class LogentriesTable extends Table implements LogentriesTableInterface {
             */
             $comparisons = [];
             foreach ($LogentryFilter->getMatchingUuids() as $uuid) {
-                $comparisons[] = new Comparison(
+                $comparisons[] = new ComparisonExpression(
                     'Logentries.logentry_data',
                     sprintf('%%%s%%', $uuid),
                     'string',

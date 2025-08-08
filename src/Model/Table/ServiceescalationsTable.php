@@ -5,7 +5,7 @@ namespace App\Model\Table;
 use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -312,7 +312,7 @@ class ServiceescalationsTable extends Table {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
-            $where = new Comparison(
+            $where = new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))',
                 $indexFilter['Services.servicename LIKE'],
                 'string',
@@ -332,7 +332,7 @@ class ServiceescalationsTable extends Table {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
-            $where = new Comparison(
+            $where = new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(ServicesExcluded.name IS NULL, Servicetemplates.name, ServicesExcluded.name))',
                 $indexFilter['ServicesExcluded.servicename LIKE'],
                 'string',

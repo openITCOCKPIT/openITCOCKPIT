@@ -28,7 +28,7 @@ use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\Service;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
@@ -253,7 +253,7 @@ class ServicedependenciesTable extends Table {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
-            $where = new Comparison(
+            $where = new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))',
                 $indexFilter['Services.servicename LIKE'],
                 'string',
@@ -272,7 +272,7 @@ class ServicedependenciesTable extends Table {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
-            $where = new Comparison(
+            $where = new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(ServicesDependent.name IS NULL, Servicetemplates.name, ServicesDependent.name))',
                 $indexFilter['ServicesDependent.servicename LIKE'],
                 'string',

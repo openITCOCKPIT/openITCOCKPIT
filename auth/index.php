@@ -42,7 +42,7 @@ use Cake\Http\Exception\UnauthorizedException;
 use Cake\Log\Log;
 
 // Use tail -F /opt/openitc/frontend/auth/debug.log to trace the debug file...
-$debug = true;
+$debug = false;
 
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);

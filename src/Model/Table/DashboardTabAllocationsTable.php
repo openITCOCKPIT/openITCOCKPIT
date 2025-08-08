@@ -244,7 +244,7 @@ class DashboardTabAllocationsTable extends Table {
         }
         $query->where($where);
 
-        $query->order($DashboardTabAllocationsFilter->getOrderForPaginator('DashboardTabAllocations.name', 'asc'));
+        $query->orderBy($DashboardTabAllocationsFilter->getOrderForPaginator('DashboardTabAllocations.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -310,7 +310,7 @@ class DashboardTabAllocationsTable extends Table {
                     'UsergroupsToDashboardTabAllocations.usergroup_id' => $User->getUsergroupId()
                 ]
             ]
-        )->group([
+        )->groupBy([
             'DashboardTabAllocations.id'
         ]);
         $query->disableHydration()
@@ -373,7 +373,7 @@ class DashboardTabAllocationsTable extends Table {
             ]);
         }
 
-        $query->group(['DashboardTabAllocations.dashboard_tab_id'])
+        $query->groupBy(['DashboardTabAllocations.dashboard_tab_id'])
             ->disableHydration()
             ->all();
         return $this->emptyArrayIfNull($query->toArray());

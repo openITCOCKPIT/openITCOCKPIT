@@ -209,7 +209,7 @@ class AutomapsTable extends Table {
             ]);
         }
 
-        $query->order($AutomapsFilter->getOrderForPaginator('Automaps.name', 'asc'));
+        $query->orderBy($AutomapsFilter->getOrderForPaginator('Automaps.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -262,7 +262,7 @@ class AutomapsTable extends Table {
             }
         }
 
-        $query->order(['Automaps.name' => 'ASC']);
+        $query->orderBy(['Automaps.name' => 'ASC']);
         $automapsWithLimit = $query->toArray();
         $selectedAutomaps = [];
         if (!empty($selected)) {
@@ -275,7 +275,7 @@ class AutomapsTable extends Table {
                     'Automaps.id IN' => $selected
                 ]);
 
-            $query->order(['Automaps.name' => 'ASC']);
+            $query->orderBy(['Automaps.name' => 'ASC']);
 
             $selectedAutomaps = $query->toArray();
         }
@@ -293,7 +293,7 @@ class AutomapsTable extends Table {
     public function getAutomapsForCopy($ids = [], array $MY_RIGHTS = []) {
         $query = $this->find()
             ->where(['Automaps.id IN' => $ids])
-            ->order(['Automaps.id' => 'asc']);
+            ->orderBy(['Automaps.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere([

@@ -100,7 +100,7 @@ class StatehistoryServicesTable extends Table implements StatehistoryServiceTabl
                 'StatehistoryServices.state_time >'        => $StatehistoryServiceConditions->getFrom(),
                 'StatehistoryServices.state_time <'        => $StatehistoryServiceConditions->getTo()
             ])
-            ->order($StatehistoryServiceConditions->getOrder());
+            ->orderBy($StatehistoryServiceConditions->getOrder());
 
         if ($StatehistoryServiceConditions->hasConditions()) {
             $query->andWhere($StatehistoryServiceConditions->getConditions());
@@ -155,7 +155,7 @@ class StatehistoryServicesTable extends Table implements StatehistoryServiceTabl
                 'StatehistoryServices.service_description' => $StatehistoryServiceConditions->getServiceUuid(),
                 'StatehistoryServices.state_time <='       => $StatehistoryServiceConditions->getFrom()
             ])
-            ->order([
+            ->orderBy([
                 'StatehistoryServices.state_time' => 'DESC'
             ])
             ->enableHydration($enableHydration)
@@ -183,7 +183,7 @@ class StatehistoryServicesTable extends Table implements StatehistoryServiceTabl
                 ]
             ]);
         }
-        $query->order([
+        $query->orderBy([
             'StatehistoryServices.state_time' => 'DESC'
         ])
             ->disableHydration();
@@ -206,7 +206,7 @@ class StatehistoryServicesTable extends Table implements StatehistoryServiceTabl
                 ]
             ]);
         }
-        $query->order([
+        $query->orderBy([
             'StatehistoryServices.state_time' => 'ASC'
         ])
             ->disableHydration();

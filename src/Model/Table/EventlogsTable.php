@@ -177,13 +177,13 @@ class EventlogsTable extends Table {
         $where['Eventlogs.created >='] = date('Y-m-d H:i:s', $EventlogsFilter->getFrom());
         $where['Eventlogs.created <='] = date('Y-m-d H:i:s', $EventlogsFilter->getTo());
 
-        $query->group(['Eventlogs.id']);
+        $query->groupBy(['Eventlogs.id']);
 
         $query->where($where);
         if (!empty($having)) {
             $query->having($having);
         }
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $EventlogsFilter->getOrderForPaginator('Eventlogs.id', 'desc'),
                 ['Eventlogs.id' => 'desc']

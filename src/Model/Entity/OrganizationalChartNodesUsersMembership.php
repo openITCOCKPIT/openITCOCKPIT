@@ -47,7 +47,7 @@ class OrganizationalChartNodesUsersMembership extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'user_id'                      => true,
         'organizational_chart_node_id' => true,
         'user_role'                    => true,

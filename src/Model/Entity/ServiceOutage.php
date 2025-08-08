@@ -30,7 +30,7 @@ class ServiceOutage extends Entity {
      *
      * @var array<string, bool>
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'host_id'      => true,
         'end_time'     => true,
         'output'       => true,

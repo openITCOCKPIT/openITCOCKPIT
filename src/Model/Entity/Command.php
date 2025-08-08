@@ -32,7 +32,7 @@ class Command extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'name'             => true,
         'command_line'     => true,
         'command_type'     => true,

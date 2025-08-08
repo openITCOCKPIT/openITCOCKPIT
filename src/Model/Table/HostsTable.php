@@ -33,7 +33,7 @@ use App\Model\Entity\Host;
 use App\Model\Entity\Hostdependency;
 use App\Model\Entity\Hostescalation;
 use Cake\Core\Plugin;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\ORM\Query;
@@ -675,7 +675,7 @@ class HostsTable extends Table {
                 'Hosts.uuid',
                 'Hosts.name'
             ])
-            ->group([
+            ->groupBy([
                 'Hosts.id'
             ])
             ->enableHydration($enableHydration);
@@ -819,8 +819,8 @@ class HostsTable extends Table {
         }
         $query->contain('HostsToContainersSharing');
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -926,7 +926,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.keywords rlike'],
                 'string',
@@ -936,7 +936,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.not_keywords not rlike'],
                 'string',
@@ -946,7 +946,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['hostpriority IN'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.priority IS NULL), Hosttemplates.priority, Hosts.priority)',
                 $where['hostpriority IN'],
                 'integer[]',
@@ -956,7 +956,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['hostdescription LIKE'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.description IS NULL OR Hosts.description=""), Hosttemplates.description, Hosts.description)',
                 $where['hostdescription LIKE'],
                 'string',
@@ -985,8 +985,8 @@ class HostsTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order(
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy(
             array_merge(
                 $HostFilter->getOrderForPaginator('Hoststatus.current_state', 'desc'),
                 ['Hosts.id' => 'asc']
@@ -1094,7 +1094,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.keywords rlike'],
                 'string',
@@ -1103,7 +1103,7 @@ class HostsTable extends Table {
             unset($where['Hosts.keywords rlike']);
         }
         if (isset($where['Hosts.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.not_keywords not rlike'],
                 'string',
@@ -1112,7 +1112,7 @@ class HostsTable extends Table {
             unset($where['Hosts.not_keywords not rlike']);
         }
         if (isset($where['hostpriority IN'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.priority IS NULL), Hosttemplates.priority, Hosts.priority)',
                 $where['hostpriority IN'],
                 'integer[]',
@@ -1122,7 +1122,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['hostdescription LIKE'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.description IS NULL OR Hosts.description=""), Hosttemplates.description, Hosts.description)',
                 $where['hostdescription LIKE'],
                 'string',
@@ -1133,8 +1133,8 @@ class HostsTable extends Table {
 
         $query->where($where);
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order(
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy(
             array_merge(
                 $HostFilter->getOrderForPaginator('Hoststatus.current_state', 'desc'),
                 ['Hosts.id' => 'asc']
@@ -1212,8 +1212,8 @@ class HostsTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order(
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy(
             array_merge(
                 $HostFilter->getOrderForPaginator('Hosts.name', 'asc'),
                 ['Hosts.id' => 'asc']
@@ -1291,8 +1291,8 @@ class HostsTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order(
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy(
             array_merge(
                 $HostFilter->getOrderForPaginator('Hosts.name', 'asc'),
                 ['Hosts.id' => 'asc']
@@ -1355,8 +1355,8 @@ class HostsTable extends Table {
 
         ]);
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order(
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy(
             array_merge(
                 $HostFilter->getOrderForPaginator('Hosts.name', 'asc'),
                 ['Hosts.id' => 'asc']
@@ -1422,7 +1422,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.keywords rlike'],
                 'string',
@@ -1432,7 +1432,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.not_keywords not rlike'],
                 'string',
@@ -1445,9 +1445,9 @@ class HostsTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
+        $query->groupBy(['Hosts.id']);
         if (!empty($HostConditions->getOrder())) {
-            $query->order(
+            $query->orderBy(
                 array_merge(
                     $HostConditions->getOrder(),
                     ['Hosts.id' => 'asc']
@@ -1513,7 +1513,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.keywords rlike'],
                 'string',
@@ -1523,7 +1523,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.not_keywords not rlike'],
                 'string',
@@ -1536,8 +1536,8 @@ class HostsTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -1590,8 +1590,8 @@ class HostsTable extends Table {
             ]);
         }
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -2064,8 +2064,8 @@ class HostsTable extends Table {
         if (!empty($where)) {
             $query->where($where);
         }
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -2116,8 +2116,8 @@ class HostsTable extends Table {
             if (!empty($where)) {
                 $query->where($where);
             }
-            $query->group(['Hosts.id']);
-            $query->order([
+            $query->groupBy(['Hosts.id']);
+            $query->orderBy([
                 'Hosts.name' => 'asc',
                 'Hosts.id'   => 'asc'
             ]);
@@ -2512,12 +2512,12 @@ class HostsTable extends Table {
                 ['Hosts.eventhandler_command_id' => $commandId]
             ]
         ])
-            ->order([
+            ->orderBy([
                 'Hosts.name' => 'asc',
                 'Hosts.id'   => 'asc'
             ])
             ->enableHydration($enableHydration)
-            ->group(['Hosts.id'])
+            ->groupBy(['Hosts.id'])
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());
@@ -2541,7 +2541,7 @@ class HostsTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'host_id'
             ])
             ->disableHydration()
@@ -2573,11 +2573,11 @@ class HostsTable extends Table {
 
         $query->where($where);
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
-        $query->group([
+        $query->groupBy([
             'Hosts.id'
         ]);
 
@@ -2621,7 +2621,7 @@ class HostsTable extends Table {
             ->where([
                 'Agentconfigs.use_push_mode' => 0
             ])
-            ->group([
+            ->groupBy([
                 'Hosts.id'
             ]);
         $query->all();
@@ -2751,9 +2751,9 @@ class HostsTable extends Table {
 
         ]);
         $query->disableHydration();
-        $query->group(['Hosts.id']);
+        $query->groupBy(['Hosts.id']);
         if ($type === 'all') {
-            $query->order(
+            $query->orderBy(
                 array_merge(
                     $HostFilter->getOrderForPaginator('Hosts.name', 'asc'),
                     ['Hosts.id' => 'asc']
@@ -2832,7 +2832,7 @@ class HostsTable extends Table {
             ->contain([
                 'HostsToContainersSharing'
             ])
-            ->group([
+            ->groupBy([
                 'Hoststatus.current_state',
             ])
             ->disableHydration();
@@ -2909,7 +2909,7 @@ class HostsTable extends Table {
         $query->contain([
             'HostsToContainersSharing'
         ])
-            ->group([
+            ->groupBy([
                 'Servicestatus.current_state',
             ])
             ->disableHydration();
@@ -2974,7 +2974,7 @@ class HostsTable extends Table {
             ->contain([
                 'HostsToContainersSharing'
             ])
-            ->group([
+            ->groupBy([
                 'Hoststatus.current_state',
             ])
             ->disableHydration();
@@ -3044,7 +3044,7 @@ class HostsTable extends Table {
         $query->contain([
             'HostsToContainersSharing'
         ])
-            ->group([
+            ->groupBy([
                 'Servicestatus.current_state',
             ])
             ->disableHydration();
@@ -3309,13 +3309,13 @@ class HostsTable extends Table {
                 'hostgroup_ids IS NOT NULL',
                 'count > 0'
             ]);
-            $query->group('Hosts.id');
+            $query->groupBy('Hosts.id');
         }
 
         if (!empty($conditions['Host']['name'])) {
             if (isset($conditions['Host']['name_regex']) && $conditions['Host']['name_regex'] === true || $conditions['Host']['name_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Host']['name'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.name',
                         $conditions['Host']['name'],
                         'string',
@@ -3324,7 +3324,7 @@ class HostsTable extends Table {
                 }
             } else {
                 // Use LIKE
-                $where[] = new Comparison(
+                $where[] = new ComparisonExpression(
                     'Hosts.name',
                     sprintf('%%%s%%', $conditions['Host']['name']),
                     'string',
@@ -3336,7 +3336,7 @@ class HostsTable extends Table {
         if (!empty($conditions['Host']['address'])) {
             if (isset($conditions['Host']['address_regex']) && $conditions['Host']['address_regex'] === true || $conditions['Host']['address_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Host']['address'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.address',
                         $conditions['Host']['address'],
                         'string',
@@ -3349,7 +3349,7 @@ class HostsTable extends Table {
         }
 
         if (!empty($conditions['Host']['keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $conditions['Host']['keywords'],
                 'string',
@@ -3358,7 +3358,7 @@ class HostsTable extends Table {
         }
 
         if (!empty($conditions['Host']['not_keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $conditions['Host']['not_keywords'],
                 'string',
@@ -3380,7 +3380,7 @@ class HostsTable extends Table {
             ]);
         }
         $query->andWhere($where)
-            ->group(['Hosts.id'])
+            ->groupBy(['Hosts.id'])
             ->disableHydration();
         $result = $query->all();
 
@@ -3422,7 +3422,7 @@ class HostsTable extends Table {
                 'Hosts.host_url'
             ])
             ->where(['Hosts.id IN' => $ids])
-            ->order(['Hosts.id' => 'asc']);
+            ->orderBy(['Hosts.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
@@ -3434,7 +3434,7 @@ class HostsTable extends Table {
         }
 
         $query
-            ->group(['Hosts.id'])
+            ->groupBy(['Hosts.id'])
             ->disableHydration()
             ->all();
 
@@ -3508,7 +3508,7 @@ class HostsTable extends Table {
                 ]
             ])
             ->where(['Hosts.id IN' => $ids])
-            ->order(['Hosts.id' => 'asc'])
+            ->orderBy(['Hosts.id' => 'asc'])
             ->disableHydration()
             ->all();
 
@@ -3848,7 +3848,7 @@ class HostsTable extends Table {
         if ($offset !== null) {
             $query->offset($offset);
         }
-        $query->group('Hosts.id');
+        $query->groupBy('Hosts.id');
         $query->disableHydration()->all();
 
         if ($count === true) {
@@ -3942,7 +3942,7 @@ class HostsTable extends Table {
                 'HostsToContainersSharing'
             ])->where([
                 'HostsToContainers.container_id IN' => $MY_RIGHTS
-            ])->group([
+            ])->groupBy([
                 'Host.id'
             ]);
         }
@@ -4240,8 +4240,8 @@ class HostsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -4371,8 +4371,8 @@ class HostsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -4647,7 +4647,7 @@ class HostsTable extends Table {
         }
         $query->contain('HostsToContainersSharing');
         $query->disableHydration();
-        $query->group(['Hosts.id']);
+        $query->groupBy(['Hosts.id']);
 
         $result = $query->count();
 
@@ -4739,11 +4739,11 @@ class HostsTable extends Table {
                 'hostgroup_ids IS NOT NULL',
                 'count > 0'
             ]);
-            $query->group('Hosts.id');
+            $query->groupBy('Hosts.id');
         }
 
         if (isset($where['Hosts.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.keywords rlike'],
                 'string',
@@ -4753,7 +4753,7 @@ class HostsTable extends Table {
         }
 
         if (isset($where['Hosts.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $where['Hosts.not_keywords not rlike'],
                 'string',
@@ -4863,7 +4863,7 @@ class HostsTable extends Table {
         if (!empty($conditions['Host']['name'])) {
             if (isset($conditions['Host']['name_regex']) && $conditions['Host']['name_regex'] === true || $conditions['Host']['name_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Host']['name'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.name',
                         $conditions['Host']['name'],
                         'string',
@@ -4879,7 +4879,7 @@ class HostsTable extends Table {
         if (!empty($conditions['Host']['address'])) {
             if (isset($conditions['Host']['address_regex']) && $conditions['Host']['address_regex'] === true || $conditions['Host']['address_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Host']['address'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.address',
                         $conditions['Host']['address'],
                         'string',
@@ -4892,7 +4892,7 @@ class HostsTable extends Table {
         }
 
         if (!empty($conditions['Host']['keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $conditions['Host']['keywords'],
                 'string',
@@ -4901,7 +4901,7 @@ class HostsTable extends Table {
         }
 
         if (!empty($conditions['Host']['not_keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $conditions['Host']['not_keywords'],
                 'string',
@@ -4909,7 +4909,7 @@ class HostsTable extends Table {
             );
         }
         $query->andWhere($where);
-        $query->group('Hosts.id');
+        $query->groupBy('Hosts.id');
         $query->disableHydration();
         $result = $query->all();
         if ($result === null) {
@@ -5048,8 +5048,8 @@ class HostsTable extends Table {
             ]);
         }
         $query->disableHydration();
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -5113,8 +5113,8 @@ class HostsTable extends Table {
         if (!empty($where)) {
             $query->where($where);
         }
-        $query->group(['Hosts.id']);
-        $query->order([
+        $query->groupBy(['Hosts.id']);
+        $query->orderBy([
             'Hosts.name' => 'asc',
             'Hosts.id'   => 'asc'
         ]);
@@ -5147,8 +5147,8 @@ class HostsTable extends Table {
             if (!empty($where)) {
                 $query->where($where);
             }
-            $query->group(['Hosts.id']);
-            $query->order([
+            $query->groupBy(['Hosts.id']);
+            $query->orderBy([
                 'Hosts.name' => 'asc',
                 'Hosts.id'   => 'asc'
             ]);
@@ -5212,7 +5212,7 @@ class HostsTable extends Table {
         if (!empty($conditions['filter[Hosts.name]'])) {
             if (isset($conditions['filter[Hosts.name_regex]']) && $conditions['filter[Hosts.name_regex]'] === true || $conditions['filter[Hosts.name_regex]'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['filter[Hosts.name]'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.name',
                         $conditions['filter[Hosts.name]'],
                         'string',
@@ -5228,7 +5228,7 @@ class HostsTable extends Table {
         if (!empty($conditions['filter[Hosts.address]'])) {
             if (isset($conditions['filter[Hosts.address_regex']) && $conditions['filter[Hosts.address_regex]'] === true || $conditions['filter[Hosts.address_regex]'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['filter[Hosts.address]'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.address',
                         $conditions['filter[Hosts.address]'],
                         'string',
@@ -5256,7 +5256,7 @@ class HostsTable extends Table {
                 $compareValue = explode(',', $compareValue);
             }
             $compareValue = sprintf('.*(%s).*', implode('|', $compareValue));
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 //implode(',',$conditions['filter[Hosts.keywords][]']),
                 $compareValue,
@@ -5270,7 +5270,7 @@ class HostsTable extends Table {
                 $compareValue = explode(',', $compareValue);
             }
             $compareValue = sprintf('.*(%s).*', implode('|', $compareValue));
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 //implode(',',$conditions['filter[Hosts.not_keywords][]']),
                 $compareValue,
@@ -5280,7 +5280,7 @@ class HostsTable extends Table {
         }
 
         $query->andWhere($where);
-        $query->group('Hosts.id');
+        $query->groupBy('Hosts.id');
         $query->disableHydration();
         $result = $query->all();
         if ($result === null) {
@@ -5336,7 +5336,7 @@ class HostsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Hoststatus.current_state']);
+        $query->groupBy(['Hoststatus.current_state']);
         return $this->emptyArrayIfNull($query->toArray());
     }
 

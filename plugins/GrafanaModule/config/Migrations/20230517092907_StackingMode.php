@@ -13,7 +13,7 @@ use Migrations\AbstractMigration;
  * oitc migrations migrate -p GrafanaModule
  *
  */
-class StackingMode extends AbstractMigration {
+class StackingMode extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

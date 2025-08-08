@@ -48,7 +48,7 @@ class Logentry extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'logentry_type' => true,
         'logentry_data' => true,
         'node_name'     => true,

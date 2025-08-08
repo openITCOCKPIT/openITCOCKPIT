@@ -165,8 +165,8 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
                 'DowntimeServices.scheduled_start_time >' => date('Y-m-d H:i:s', $DowntimeServiceConditions->getFrom()),
                 'DowntimeServices.scheduled_start_time <' => date('Y-m-d H:i:s', $DowntimeServiceConditions->getTo()),
             ])
-            ->order($DowntimeServiceConditions->getOrder())
-            ->group('DowntimeServices.downtimehistory_id');
+            ->orderBy($DowntimeServiceConditions->getOrder())
+            ->groupBy('DowntimeServices.downtimehistory_id');
 
 
         if ($DowntimeServiceConditions->hasContainerIds()) {
@@ -313,8 +313,8 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
                 ['HostsToContainers' => 'hosts_to_containers'],
                 ['HostsToContainers.host_id = Hosts.id']
             )
-            ->order($DowntimeServiceConditions->getOrder())
-            ->group('DowntimeServices.downtimehistory_id');
+            ->orderBy($DowntimeServiceConditions->getOrder())
+            ->groupBy('DowntimeServices.downtimehistory_id');
 
 
         if ($DowntimeServiceConditions->hasContainerIds()) {
@@ -403,7 +403,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
                 ['Objects' => 'nagios_objects'],
                 ['Objects.object_id = DowntimeServices.object_id', 'DowntimeServices.downtime_type = 1'] //Downtime.downtime_type = 1 Service downtime
             )
-            ->order([
+            ->orderBy([
                 'DowntimeServices.entry_time' => 'DESC'
             ])
             ->where([

@@ -32,7 +32,7 @@
 
 use App\Lib\Environments;
 use Cake\Core\Configure;
-use Cake\Filesystem\Folder;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 use itnovum\openITCOCKPIT\Core\AngularJS\AngularAssets;
 
 $AngularAssets = new AngularAssets();

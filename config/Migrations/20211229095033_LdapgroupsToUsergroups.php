@@ -12,7 +12,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class LdapgroupsToUsergroups extends AbstractMigration {
+class LdapgroupsToUsergroups extends \Migrations\BaseMigration {
     /**
      * Whether the tables created in this migration
      * should auto-create an `id` field or not
@@ -23,7 +23,7 @@ class LdapgroupsToUsergroups extends AbstractMigration {
      *
      * @var bool
      */
-    public $autoId = false;
+    public bool $autoId = false;
 
     /**
      * Change Method.

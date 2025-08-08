@@ -426,7 +426,7 @@ class HosttemplatesTable extends Table {
         }
 
         $query->where($where);
-        $query->order($HosttemplateFilter->getOrderForPaginator('Hosttemplates.name', 'asc'));
+        $query->orderBy($HosttemplateFilter->getOrderForPaginator('Hosttemplates.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -676,7 +676,7 @@ class HosttemplatesTable extends Table {
             ])
             ->contain($contain)
             ->where(['Hosttemplates.id IN' => $ids])
-            ->order(['Hosttemplates.id' => 'asc']);
+            ->orderBy(['Hosttemplates.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere(['Hosttemplates.container_id IN' => $MY_RIGHTS]);
@@ -717,7 +717,7 @@ class HosttemplatesTable extends Table {
                 'Hosttemplates.name'
             ])
             ->where($where)
-            ->order([
+            ->orderBy([
                 'Hosttemplates.name' => 'asc'
             ])
             ->limit(ITN_AJAX_LIMIT)
@@ -735,7 +735,7 @@ class HosttemplatesTable extends Table {
                     'Hosttemplates.id IN'           => $selected,
                     'Hosttemplates.container_id IN' => $containerIds
                 ])
-                ->order([
+                ->orderBy([
                     'Hosttemplates.name' => 'asc'
                 ]);
 
@@ -776,7 +776,7 @@ class HosttemplatesTable extends Table {
             ->where(
                 $where
             )
-            ->order([
+            ->orderBy([
                 'Hosttemplates.name' => 'asc',
             ])
             ->disableHydration();
@@ -1149,7 +1149,7 @@ class HosttemplatesTable extends Table {
                 ['Hosttemplates.eventhandler_command_id' => $commandId]
             ]
         ])
-            ->order(['Hosttemplates.name' => 'asc'])
+            ->orderBy(['Hosttemplates.name' => 'asc'])
             ->enableHydration($enableHydration)
             ->all();
 
@@ -1174,7 +1174,7 @@ class HosttemplatesTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'hosttemplate_id'
             ])
             ->disableHydration()
@@ -1196,7 +1196,7 @@ class HosttemplatesTable extends Table {
         }
         $query->where($where);
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Hosttemplates.name' => 'asc'
         ]);
 
@@ -1306,7 +1306,7 @@ class HosttemplatesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->order([
+        $query->orderBy([
             'Hosttemplates.name' => 'asc'
         ]);
 

@@ -160,25 +160,23 @@ class HostescalationsController extends AppController {
             throw new NotFoundException('Host escalation not found');
         }
 
-        $hostescalation = $HostescalationsTable->get($id, [
-            'contain' => [
-                'Hosts'         => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id', 'name']);
-                },
-                'Hostgroups'    => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-                'Contacts'      => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-                'Contactgroups' => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-            ]
+        $hostescalation = $HostescalationsTable->get($id, contain: [
+            'Hosts'         => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id', 'name']);
+            },
+            'Hostgroups'    => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
+            'Contacts'      => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
+            'Contactgroups' => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
         ]);
 
         if (!$this->allowedByContainerId($hostescalation->get('container_id'))) {

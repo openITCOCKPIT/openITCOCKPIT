@@ -13,8 +13,8 @@ use Cake\ORM\Entity;
  * @property string $name
  * @property string $value
  * @property int $password
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Object $object
  */
@@ -29,7 +29,7 @@ class Customvariable extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'object_id'     => true,
         'objecttype_id' => true,
         'name'          => true,

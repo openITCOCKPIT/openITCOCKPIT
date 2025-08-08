@@ -110,7 +110,7 @@ class UsergroupsController extends AppController {
         if ($this->request->is('get') && $this->isJsonRequest()) {
             $acos = $AcosTable->find('threaded')
                 ->disableHydration()
-                ->orderAsc('alias')
+                ->orderByAsc('alias')
                 ->all();
             $AclDependencies = new AclDependencies();
             $acos = $AclDependencies->filterAcosForFrontend($acos->toArray());
@@ -339,9 +339,7 @@ class UsergroupsController extends AppController {
         // For this reason we use the same lock to avoid broken nested set.
         $ContainersTable->acquireLock();
 
-        $usergroup = $UsergroupsTable->get($id, [
-            'contain' => 'Users'
-        ]);
+        $usergroup = $UsergroupsTable->get($id, contain: 'Users');
 
         if ($usergroup->get('name') === 'Administrator') {
             throw new \RuntimeException('The "Administrator" can not be deleted!');

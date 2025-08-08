@@ -5,8 +5,8 @@ namespace App\Command;
 
 use App\Model\Table\HostsTable;
 use App\Model\Table\ServicesTable;
+use Cake\Command\Command;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Datasource\Exception\RecordNotFoundException;

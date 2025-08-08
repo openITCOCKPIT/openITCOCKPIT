@@ -31,7 +31,7 @@
 namespace itnovum\openITCOCKPIT\Core\Views;
 
 
-use Cake\Filesystem\Folder;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 
 class MultipleBarChart {
 

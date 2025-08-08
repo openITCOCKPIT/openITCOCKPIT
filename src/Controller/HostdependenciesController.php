@@ -173,17 +173,15 @@ class HostdependenciesController extends AppController {
         if (!$HostdependenciesTable->existsById($id)) {
             throw new NotFoundException('Host dependency not found');
         }
-        $hostdependency = $HostdependenciesTable->get($id, [
-            'contain' => [
-                'Hosts'      => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id', 'name']);
-                },
-                'Hostgroups' => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-            ]
+        $hostdependency = $HostdependenciesTable->get($id, contain: [
+            'Hosts'      => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id', 'name']);
+            },
+            'Hostgroups' => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
         ]);
 
         if (!$this->allowedByContainerId($hostdependency->get('container_id'))) {

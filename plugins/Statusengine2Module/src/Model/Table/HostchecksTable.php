@@ -120,7 +120,7 @@ class HostchecksTable extends Table implements HostchecksTableInterface {
                 'Hostchecks.start_time >'  => date('Y-m-d H:i:s', $HostcheckConditions->getFrom()),
                 'Hostchecks.start_time <'  => date('Y-m-d H:i:s', $HostcheckConditions->getTo())
             ])
-            ->order($HostcheckConditions->getOrder());
+            ->orderBy($HostcheckConditions->getOrder());
 
         if($HostcheckConditions->hasConditions()){
             $query->andWhere($HostcheckConditions->getConditions());

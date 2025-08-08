@@ -201,8 +201,8 @@ class NotificationServicesTable extends Table implements NotificationServicesTab
                 'NotificationServices.notification_type'   => 1,
                 'NotificationServices.contacts_notified >' => 0
             ])
-            ->order($ServiceNotificationConditions->getOrder())
-            ->group(['Contactnotifications.contactnotification_id']);
+            ->orderBy($ServiceNotificationConditions->getOrder())
+            ->groupBy(['Contactnotifications.contactnotification_id']);
 
 
         if ($ServiceNotificationConditions->getServiceUuid()) {

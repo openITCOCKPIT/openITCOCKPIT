@@ -34,19 +34,19 @@ use Cake\ORM\Entity;
  * @property int $instance_id
  * @property int $downtime_type
  * @property int $object_id
- * @property \Cake\I18n\FrozenTime $entry_time
+ * @property \Cake\I18n\DateTime $entry_time
  * @property string $author_name
  * @property string $comment_data
  * @property int $internal_downtime_id
  * @property int $triggered_by_id
  * @property int $is_fixed
  * @property int $duration
- * @property \Cake\I18n\FrozenTime $scheduled_start_time
- * @property \Cake\I18n\FrozenTime $scheduled_end_time
+ * @property \Cake\I18n\DateTime $scheduled_start_time
+ * @property \Cake\I18n\DateTime $scheduled_end_time
  * @property int $was_started
- * @property \Cake\I18n\FrozenTime $actual_start_time
+ * @property \Cake\I18n\DateTime $actual_start_time
  * @property int $actual_start_time_usec
- * @property \Cake\I18n\FrozenTime $actual_end_time
+ * @property \Cake\I18n\DateTime $actual_end_time
  * @property int $actual_end_time_usec
  * @property int $was_cancelled
  *
@@ -62,7 +62,7 @@ class DowntimeHost extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'instance_id'            => true,
         'downtime_type'          => true,
         'object_id'              => true,

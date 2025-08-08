@@ -12,7 +12,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class GolangAgent extends AbstractMigration {
+class GolangAgent extends \Migrations\BaseMigration {
 
     public function up(): void {
         $this->table('agentconfigs')

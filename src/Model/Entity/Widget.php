@@ -22,8 +22,8 @@ use Cake\ORM\Entity;
  * @property string $directive
  * @property string $icon
  * @property string|null $json_data
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\DashboardTab $dashboard_tab
  * @property \App\Model\Entity\Type $type
@@ -40,7 +40,7 @@ class Widget extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'dashboard_tab_id' => true,
         'type_id'          => true,
         'host_id'          => true,

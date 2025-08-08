@@ -39,7 +39,7 @@ use App\Model\Table\ServicesTable;
 use App\Model\Table\ServicetemplatesTable;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\ORM\TableRegistry;
 use Exception;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -165,7 +165,7 @@ class DocumentationsController extends AppController {
             if ($docuExists) {
                 $documentation = $DocumentationsTable->getDocumentationByUuid($uuid);
 
-                /** @var FrozenTime $modified */
+                /** @var \Cake\I18n\DateTime $modified */
                 $modified = $documentation->get('modified');
                 $lastUpdate = $UserTime->format($modified->getTimestamp());
                 $content = $documentation->get('content');

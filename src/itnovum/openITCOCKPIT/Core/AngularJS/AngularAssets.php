@@ -25,7 +25,7 @@
 namespace itnovum\openITCOCKPIT\Core\AngularJS;
 
 
-use Cake\Filesystem\Folder;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 
 class AngularAssets implements AngularAssetsInterface {
 

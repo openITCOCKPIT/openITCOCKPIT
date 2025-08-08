@@ -10,8 +10,8 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property string $name
  * @property string|null $description
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\User[] $users
  */
@@ -26,7 +26,7 @@ class Usergroup extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'name'        => true,
         'description' => true,
         'created'     => true,

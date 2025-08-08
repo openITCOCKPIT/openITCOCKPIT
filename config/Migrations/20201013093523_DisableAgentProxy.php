@@ -35,7 +35,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class DisableAgentProxy extends AbstractMigration {
+class DisableAgentProxy extends \Migrations\BaseMigration {
 
     /**
      * Change Method.

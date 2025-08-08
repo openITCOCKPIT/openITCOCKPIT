@@ -14,9 +14,8 @@ use Cake\ORM\Entity;
  * @property string $name
  * @property string|null $description
  * @property int|null $deleted_perfdata
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
- *
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  */
 class DeletedHost extends Entity {
 
@@ -29,7 +28,7 @@ class DeletedHost extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'             => true,
         'hosttemplate_id'  => true,
         'host_id'          => true,

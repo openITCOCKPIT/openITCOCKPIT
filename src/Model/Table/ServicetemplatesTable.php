@@ -481,7 +481,7 @@ class ServicetemplatesTable extends Table {
         }
 
         $query->where($where);
-        $query->order($ServicetemplateFilter->getOrderForPaginator('Servicetemplates.name', 'asc'));
+        $query->orderBy($ServicetemplateFilter->getOrderForPaginator('Servicetemplates.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -886,12 +886,11 @@ class ServicetemplatesTable extends Table {
 
         $where = $ServicetemplateFilter->ajaxFilter();
         $where['Servicetemplates.container_id IN'] = $containerIds;
-        $query = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'template_name'
-        ])
+        $query = $this->find('list',
+        keyField: 'id',
+        valueField: 'template_name')
             ->where($where)
-            ->order([
+            ->orderBy([
                 'Servicetemplates.template_name' => 'asc'
             ])
             ->limit(ITN_AJAX_LIMIT)
@@ -904,15 +903,14 @@ class ServicetemplatesTable extends Table {
 
         $selectedServicetemplates = [];
         if (!empty($selected)) {
-            $query = $this->find('list', [
-                'keyField'   => 'id',
-                'valueField' => 'template_name'
-            ])
+            $query = $this->find('list',
+            keyField: 'id',
+            valueField: 'template_name')
                 ->where([
                     'Servicetemplates.id IN'           => $selected,
                     'Servicetemplates.container_id IN' => $containerIds
                 ])
-                ->order([
+                ->orderBy([
                     'Servicetemplates.template_name' => 'asc'
                 ]);
 
@@ -955,7 +953,7 @@ class ServicetemplatesTable extends Table {
                 ]
             ])
             ->where(['Servicetemplates.id IN' => $ids])
-            ->order(['Servicetemplates.id' => 'asc']);
+            ->orderBy(['Servicetemplates.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere(['Servicetemplates.container_id IN' => $MY_RIGHTS]);
@@ -1206,7 +1204,7 @@ class ServicetemplatesTable extends Table {
                 ['Servicetemplates.eventhandler_command_id' => $commandId]
             ]
         ])
-            ->order(['Servicetemplates.name' => 'asc'])
+            ->orderBy(['Servicetemplates.name' => 'asc'])
             ->enableHydration($enableHydration)
             ->all();
 
@@ -1231,7 +1229,7 @@ class ServicetemplatesTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'servicetemplate_id'
             ])
             ->disableHydration()
@@ -1253,7 +1251,7 @@ class ServicetemplatesTable extends Table {
         }
         $query->where($where);
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Servicetemplates.name' => 'asc'
         ]);
 
@@ -1464,7 +1462,7 @@ class ServicetemplatesTable extends Table {
         }
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Servicetemplates.name' => 'asc'
         ]);
 
@@ -1666,7 +1664,7 @@ class ServicetemplatesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->order([
+        $query->orderBy([
             'Servicetemplates.name' => 'asc'
         ]);
 
@@ -1719,7 +1717,7 @@ class ServicetemplatesTable extends Table {
         $query->andWhere([
             'Servicetemplates.id IN ' => $servicetemplateIds
         ])
-            ->order(['Servicetemplates.name' => 'asc'])
+            ->orderBy(['Servicetemplates.name' => 'asc'])
             ->enableHydration($enableHydration)
             ->all();
 

@@ -126,7 +126,7 @@ class LocationsTable extends Table {
             ]);
         }
 
-        $query->order($LocationFilter->getOrderForPaginator('Containers.name', 'asc'));
+        $query->orderBy($LocationFilter->getOrderForPaginator('Containers.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query

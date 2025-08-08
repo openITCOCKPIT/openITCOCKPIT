@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
-class FilterBookmarks extends AbstractMigration {
-    public $autoId = false;
+class FilterBookmarks extends \Migrations\BaseMigration {
+    public bool $autoId = false;
 
     /**
      * Change Method.

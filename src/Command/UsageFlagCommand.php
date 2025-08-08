@@ -83,7 +83,7 @@ class UsageFlagCommand extends Command {
                 'id',
                 'host_id'
             ])
-            ->group([
+            ->groupBy([
                 'host_id'
             ])
             ->disableHydration()
@@ -103,7 +103,7 @@ class UsageFlagCommand extends Command {
                 'id',
                 'service_id'
             ])
-            ->group([
+            ->groupBy([
                 'service_id'
             ])
             ->disableHydration()
@@ -136,7 +136,7 @@ class UsageFlagCommand extends Command {
                 'id',
                 'host_id'
             ])
-            ->group([
+            ->groupBy([
                 'host_id'
             ])
             ->disableHydration()
@@ -156,7 +156,7 @@ class UsageFlagCommand extends Command {
                 'id',
                 'service_id'
             ])
-            ->group([
+            ->groupBy([
                 'service_id'
             ])
             ->disableHydration()

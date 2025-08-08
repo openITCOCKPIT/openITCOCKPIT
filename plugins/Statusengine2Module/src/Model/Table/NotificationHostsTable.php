@@ -182,8 +182,8 @@ class NotificationHostsTable extends Table implements NotificationHostsTableInte
                 'NotificationHosts.start_time <'      => date('Y-m-d H:i:s', $HostNotificationConditions->getTo()),
                 'NotificationHosts.notification_type' => 0
             ])
-            ->order($HostNotificationConditions->getOrder())
-            ->group(['Contactnotifications.contactnotification_id']);
+            ->orderBy($HostNotificationConditions->getOrder())
+            ->groupBy(['Contactnotifications.contactnotification_id']);
 
 
         if ($HostNotificationConditions->getHostUuid()) {

@@ -38,7 +38,7 @@ use Migrations\AbstractMigration;
  * Run migration:
  * oitc4 migrations migrate
  */
-class Initial extends AbstractMigration {
+class Initial extends \Migrations\BaseMigration {
 
     /**
      * Whether the tables created in this migration
@@ -50,7 +50,7 @@ class Initial extends AbstractMigration {
      *
      * @var bool
      */
-    public $autoId = false;
+    public bool $autoId = false;
 
     /**
      * Up Method.

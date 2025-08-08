@@ -1987,7 +1987,7 @@ class ServicetemplatesTable extends Table {
      * @param array $MY_RIGHTS
      * @return array|\Cake\Datasource\EntityInterface|null
      */
-    public function getDatastoreServicetemplateFoWizardDeploy($MY_RIGHTS = []) {
+    public function getDatastoreServicetemplateForWizardDeploy($MY_RIGHTS = []) {
         $query = $this->find()
             ->where([
                 'Servicetemplates.uuid' => '4D0251E1-0A8F-483C-AB65-B7444DB131F8'
@@ -2016,7 +2016,7 @@ class ServicetemplatesTable extends Table {
      * @param array $MY_RIGHTS
      * @return array|\Cake\Datasource\EntityInterface|null
      */
-    public function getSnapshotServicetemplateFoWizardDeploy($MY_RIGHTS = []) {
+    public function getSnapshotServicetemplateForWizardDeploy($MY_RIGHTS = []) {
         $query = $this->find()
             ->where([
                 'Servicetemplates.uuid' => '6DDA1E64-B54B-459A-974F-34A09CE49F29'

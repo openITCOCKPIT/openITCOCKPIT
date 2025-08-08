@@ -49,7 +49,7 @@ use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\Exception\RecordNotFoundException;
-use Cake\Filesystem\Folder;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 use Cake\I18n\FrozenDate;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;

@@ -31,7 +31,7 @@ use Cake\Console\Arguments;
 use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
-use Cake\Filesystem\Folder;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 use itnovum\openITCOCKPIT\Core\Interfaces\CronjobInterface;
 
 /**

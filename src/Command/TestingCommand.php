@@ -30,17 +30,15 @@ use App\Model\Table\HostsTable;
 use App\Model\Table\HosttemplatesTable;
 use App\Model\Table\SystemsettingsTable;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\DbBackend;
-use itnovum\openITCOCKPIT\Perfdata\UnitScaler;
 
 /**
  * Testing command.
  */
-class TestingCommand extends Command {
+class TestingCommand extends \Cake\Command\Command {
 
     /**
      * Hook method for defining this command's option parser.

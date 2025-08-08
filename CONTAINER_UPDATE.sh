@@ -288,7 +288,7 @@ oitc compress
 #Acc ALC dependencies config for itc core
 echo "---------------------------------------------------------------"
 echo "Scan for new user permissions. This will take a while..."
-oitc Acl.acl_extras aco_sync
+oitc acl.aco_sync
 
 #Set default permissions, check for always allowed permissions and dependencies
 oitc roles --enable-defaults --admin

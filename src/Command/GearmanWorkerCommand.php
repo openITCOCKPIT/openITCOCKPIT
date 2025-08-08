@@ -43,7 +43,7 @@ use App\Model\Table\ChangelogsTable;
 use App\Model\Table\ExportsTable;
 use App\Model\Table\SystemsettingsTable;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
+use Cake\Command\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Configure;

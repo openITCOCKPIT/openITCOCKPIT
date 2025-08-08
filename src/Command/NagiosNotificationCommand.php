@@ -33,7 +33,7 @@ use App\Model\Table\HostsTable;
 use App\Model\Table\ServicesTable;
 use App\Model\Table\SystemsettingsTable;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
+use Cake\Command\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Plugin;

@@ -35,7 +35,7 @@ namespace App\Command;
 use App\Model\Table\ProxiesTable;
 use App\Model\Table\RegistersTable;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
+use Cake\Command\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\ORM\TableRegistry;

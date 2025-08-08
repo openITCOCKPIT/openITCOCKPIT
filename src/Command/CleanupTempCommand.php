@@ -27,8 +27,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use Cake\Command\Command;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use itnovum\openITCOCKPIT\CakePHP\Folder;

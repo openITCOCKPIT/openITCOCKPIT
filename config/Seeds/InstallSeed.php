@@ -31,7 +31,7 @@
 declare(strict_types=1);
 
 use Cake\ORM\TableRegistry;
-use Migrations\AbstractSeed;
+use Migrations\BaseSeed;
 
 /**
  * Class InstallSeed

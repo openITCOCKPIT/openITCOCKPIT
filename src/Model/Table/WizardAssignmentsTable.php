@@ -305,14 +305,14 @@ class WizardAssignmentsTable extends Table {
             ],
             'vmware-through-vcenter' => [
                 'type_id'     => 'vmware-through-vcenter',
-                'title'       => __('VMware (through vCenter)'),
+                'title'       => __('VMware (through vCenter)') . ' - ' . __('deprecated'),
                 'description' => __('Check everything regarding VMware. vCenter, virtual machines...'),
                 'image'       => 'VMware_logo.svg',
                 'category'    => ['virtualization', 'cloud'],
             ],
             'vmware-esx-directly'    => [
                 'type_id'     => 'vmware-esx-directly',
-                'title'       => __('VMware (esx directly)'),
+                'title'       => __('VMware (esx directly)') . ' - ' . __('deprecated'),
                 'description' => __('Check everything regarding VMware. ESX Hosts, virtual machines...'),
                 'image'       => 'VMware_logo.svg',
                 'category'    => ['virtualization', 'cloud'],
@@ -326,7 +326,7 @@ class WizardAssignmentsTable extends Table {
             ],
             'vmware-snapshot'        => [
                 'type_id'     => 'vmware-snapshot',
-                'title'       => __('VMware Snapshot'),
+                'title'       => __('VMware Snapshot') . ' - ' . __('deprecated'),
                 'description' => __('Monitor your VMware snapshots to avoid performance issues'),
                 'image'       => 'VMware_logo.svg',
                 'category'    => ['virtualization', 'cloud'],

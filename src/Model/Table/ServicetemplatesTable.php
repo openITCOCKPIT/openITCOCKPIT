@@ -887,8 +887,8 @@ class ServicetemplatesTable extends Table {
         $where = $ServicetemplateFilter->ajaxFilter();
         $where['Servicetemplates.container_id IN'] = $containerIds;
         $query = $this->find('list',
-        keyField: 'id',
-        valueField: 'template_name')
+            keyField: 'id',
+            valueField: 'template_name')
             ->where($where)
             ->orderBy([
                 'Servicetemplates.template_name' => 'asc'
@@ -904,8 +904,8 @@ class ServicetemplatesTable extends Table {
         $selectedServicetemplates = [];
         if (!empty($selected)) {
             $query = $this->find('list',
-            keyField: 'id',
-            valueField: 'template_name')
+                keyField: 'id',
+                valueField: 'template_name')
                 ->where([
                     'Servicetemplates.id IN'           => $selected,
                     'Servicetemplates.container_id IN' => $containerIds
@@ -1988,7 +1988,7 @@ class ServicetemplatesTable extends Table {
     public function getDatastoreServicetemplateForWizardDeploy($MY_RIGHTS = []) {
         $query = $this->find()
             ->where([
-                'Servicetemplates.uuid' => '4D0251E1-0A8F-483C-AB65-B7444DB131F8'
+                'Servicetemplates.uuid' => '3fadc046-9e2c-4056-bebe-e9f40416f474'
             ])
             ->contain([
                 'Servicetemplatecommandargumentvalues' => [
@@ -2017,7 +2017,7 @@ class ServicetemplatesTable extends Table {
     public function getSnapshotServicetemplateForWizardDeploy($MY_RIGHTS = []) {
         $query = $this->find()
             ->where([
-                'Servicetemplates.uuid' => '6DDA1E64-B54B-459A-974F-34A09CE49F29'
+                'Servicetemplates.uuid' => 'fd6e117c-856b-4e99-bbd1-f1d757302954'
             ])
             ->contain([
                 'Servicetemplatecommandargumentvalues' => [

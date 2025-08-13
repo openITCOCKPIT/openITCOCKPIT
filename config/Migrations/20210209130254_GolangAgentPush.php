@@ -12,7 +12,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class GolangAgentPush extends AbstractMigration {
+class GolangAgentPush extends \Migrations\BaseMigration {
 
     /**
      * Whether the tables created in this migration
@@ -24,7 +24,7 @@ class GolangAgentPush extends AbstractMigration {
      *
      * @var bool
      */
-    public $autoId = false;
+    public bool $autoId = false;
 
     public function up(): void {
         if ($this->hasTable('agentconnector')) {

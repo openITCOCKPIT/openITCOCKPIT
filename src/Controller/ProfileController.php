@@ -222,10 +222,8 @@ class ProfileController extends AppController {
 
         /** @var $UsersTable UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        $user = $UsersTable->get($User->getId(), [
-            'contain' => [
-                'Containers'
-            ]
+        $user = $UsersTable->get($User->getId(), contain: [
+            'Containers'
         ]);
 
         if ($user === null) {
@@ -476,10 +474,8 @@ class ProfileController extends AppController {
 
         /** @var $UsersTable UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        $user = $UsersTable->get($User->getId(), [
-            'contain' => [
-                'Containers'
-            ]
+        $user = $UsersTable->get($User->getId(), contain: [
+            'Containers'
         ]);
 
         //prevent multiple hash of password

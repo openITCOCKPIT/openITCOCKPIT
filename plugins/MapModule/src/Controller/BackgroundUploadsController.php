@@ -1,21 +1,26 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -26,8 +31,7 @@
 namespace MapModule\Controller;
 
 use Authentication\IdentityInterface;
-use Cake\Core\Exception\Exception;
-use Cake\Filesystem\Folder;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
@@ -96,6 +100,8 @@ class BackgroundUploadsController extends AppController {
                     throw new \Exception(__('Cannot move uploaded file'));
                 }
 
+                $User = new User($this->getUser());
+
                 $imageConfig = [
                     'fullPath'      => $fullFilePath,
                     'uuidFilename'  => $saveFilename,
@@ -107,7 +113,7 @@ class BackgroundUploadsController extends AppController {
                     'upload_type'  => $this->TYPE_BACKGROUND,
                     'upload_name'  => $uploadFilename . '.' . $fileExtension,
                     'saved_name'   => $saveFilename . '.' . $fileExtension,
-                    'user_id'      => $User = new User($this->getUser()),
+                    'user_id'      => $User->getId(),
                     'container_id' => '1',
                 ]);
                 $MapUploadsTable->save($mapUpload);
@@ -233,13 +239,14 @@ class BackgroundUploadsController extends AppController {
                 }
                 $uploadFilename = str_replace('.' . $fileExtension, '', pathinfo($_FILES['file']['name'], PATHINFO_BASENAME));
 
+                $User = new User($this->getUser());
 
                 $mapUpload = $MapUploadsTable->newEmptyEntity();
                 $mapUpload = $MapUploadsTable->patchEntity($mapUpload, [
                     'upload_type'  => $this->TYPE_ICON,
                     'upload_name'  => $uploadFilename . '.' . $fileExtension,
                     'saved_name'   => $fileName,
-                    'user_id'      => $User = new User($this->getUser()),
+                    'user_id'      => $User->getId(),
                     'container_id' => '1',
                 ]);
                 $MapUploadsTable->save($mapUpload);

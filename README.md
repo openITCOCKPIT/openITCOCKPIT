@@ -133,7 +133,7 @@ openITCOCKPIT's development is publicly available in GitHub. Everybody is welcom
 
 * Official [Discord Server](https://discord.gg/G8KhxKuQ9G)
 * Join [#openitcockpit](https://web.libera.chat/#openitcockpit) on Libera Chat
-* [it-novum GmbH](https://it-services.it-novum.com/support-2/) provides commercial support
+* [Allgeier IT Services GmbH](https://www.allgeier-its.com/) provides commercial support
 
 # Security
 
@@ -147,6 +147,7 @@ here: [https://openitcockpit.io/security/](https://openitcockpit.io/security/)
 
 ```
 Copyright (C) 2015-2025  it-novum GmbH
+Copyright (C) 2025-today Allgeier IT Services GmbH
 
 
 openITCOCKPIT is dual licensed

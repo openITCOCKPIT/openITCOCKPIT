@@ -394,7 +394,7 @@ class ContainersTable extends Table {
     public function treePath($id = null, $delimiter = '/') {
         try {
             $containerNames = [];
-            $tree = $this->find('path', ['for' => $id])
+            $tree = $this->find('path', for: $id)
                 ->disableHydration()
                 ->toArray();
 
@@ -419,7 +419,7 @@ class ContainersTable extends Table {
     public function getTreePathForBrowser($id, $MY_RIGHTS_LEVEL = []) {
         try {
             $result = [];
-            $tree = $this->find('path', ['for' => $id])
+            $tree = $this->find('path', for: $id)
                 ->disableHydration()
                 ->toArray();
 
@@ -524,9 +524,7 @@ class ContainersTable extends Table {
 
             $tmpResult = Cache::remember($cacheKey, function () use ($containerId) {
                 try {
-                    $query = $this->find('children', [
-                        'for' => $containerId
-                    ])->disableHydration()->select(['id', 'containertype_id'])->all();
+                    $query = $this->find('children', for: $containerId)->disableHydration()->select(['id', 'containertype_id'])->all();
                     return $query->toArray();
                 } catch (RecordNotFoundException $e) {
                     return [];
@@ -592,7 +590,7 @@ class ContainersTable extends Table {
      */
     public function getPathById($id, bool $flat = false) {
         try {
-            $path = $this->find('path', ['for' => $id])
+            $path = $this->find('path', for: $id)
                 ->disableHydration()
                 ->all()
                 ->toArray();
@@ -609,7 +607,7 @@ class ContainersTable extends Table {
         $cacheKey = sprintf('%s:%s', $cacheKey, $id);
         $path = Cache::remember($cacheKey, function () use ($id) {
             try {
-                $path = $this->find('path', ['for' => $id])
+                $path = $this->find('path', for: $id)
                     ->disableHydration()
                     ->all()
                     ->toArray();
@@ -627,7 +625,7 @@ class ContainersTable extends Table {
      * @return string
      */
     public function getPathByIdAsString($id, $delimiter = '/') {
-        $path = $this->find('path', ['for' => $id])
+        $path = $this->find('path', for: $id)
             ->disableHydration()
             ->all()
             ->toArray();
@@ -687,9 +685,7 @@ class ContainersTable extends Table {
      */
     public function getChildren($id, $threaded = false) {
         try {
-            $query = $this->find('children', [
-                'for' => $id
-            ]);
+            $query = $this->find('children', for: $id);
 
             if ($threaded) {
                 $query->find('threaded');
@@ -850,7 +846,7 @@ class ContainersTable extends Table {
     public function getContainerWithAllChildren($containerId, $MY_RIGHTS = []) {
         $parentContainer = $this->getContainerById($containerId);
 
-        $query = $this->find('children', ['for' => $containerId]);
+        $query = $this->find('children', for: $containerId);
 
         $query->select([
             'Containers.id',
@@ -1725,6 +1721,85 @@ class ContainersTable extends Table {
             return [];
         }
         return $result->toArray();
+    }
+
+    /**
+     * @param int|array $ids
+     * @param array $options
+     * @param array $valide_types
+     * @return array
+     *
+     * ### Options
+     * - `delimiter`   The delimiter for the path (default /)
+     * - `order`       Order of the returned array asc|desc (default asc)
+     */
+    public function getContainersByIdsGroupByType($ids, $options = [], $valide_types = [CT_GLOBAL, CT_TENANT, CT_LOCATION, CT_NODE]): array {
+        $_options = [
+            'delimiter'    => '/',
+            'valide_types' => $valide_types,
+            'order'        => 'asc',
+        ];
+        $options = Hash::merge($_options, $options);
+
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+
+        $query = $this->find();
+        if (!empty($ids)) {
+            $query->where(['id IN ' => $ids]);
+        }
+
+        $query->disableHydration()
+            ->all()
+            ->toArray();
+
+        $containers = [
+            'tenants'   => [],
+            'locations' => [],
+            'nodes'     => []
+        ];
+        foreach ($query as $container) {
+            $containerTypeId = (int)$container['containertype_id'];
+            if (in_array($containerTypeId, $options['valide_types'], true)) {
+                $path = $this->treePath($container['id'], $options['delimiter']);
+
+                // Make sure the path starts with the delimiter
+                if (!empty($path) && !str_starts_with($path, $options['delimiter'])) {
+                    $path = $options['delimiter'] . $path;
+                }
+                switch ($containerTypeId) {
+                    case CT_TENANT:
+                        $containers['tenants'][] = [
+                            'key'   => $container['id'],
+                            'value' => $container['name'],
+                            'path'  => $path
+                        ];
+                        break;
+                    case CT_LOCATION:
+                        $containers['locations'][] = [
+                            'key'   => $container['id'],
+                            'value' => $container['name'],
+                            'path'  => $path
+                        ];
+                    case CT_NODE:
+                        $containers['nodes'][] = [
+                            'key'   => $container['id'],
+                            'value' => $container['name'],
+                            'path'  => $path
+                        ];
+                        break;
+
+                }
+            }
+        }
+        if (!empty($options['order']) && in_array($options['order'], ['asc', 'desc'], true)) {
+            $containers['tenants'] = Hash::sort($containers['tenants'], '{n}.value.path', $options['order']);
+            $containers['locations'] = Hash::sort($containers['locations'], '{n}.value.path', $options['order']);
+            $containers['nodes'] = Hash::sort($containers['nodes'], '{n}.value.path', $options['order']);
+        }
+
+        return $containers;
     }
 
 }

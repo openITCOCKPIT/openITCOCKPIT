@@ -46,6 +46,7 @@ use Cake\I18n\I18n;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
+use Cake\View\JsonView;
 use Exception;
 use itnovum\openITCOCKPIT\Core\DbBackend;
 use itnovum\openITCOCKPIT\Core\PerfdataBackend;
@@ -105,7 +106,6 @@ class AppController extends Controller {
     public function initialize(): void {
         parent::initialize();
 
-        $this->loadComponent('RequestHandler');
         $this->loadComponent('Flash');
 
         // Docs: https://book.cakephp.org/authentication/1/en/index.html
@@ -324,6 +324,7 @@ class AppController extends Controller {
             'services.listtocsv'      => 'services.listtocsv',
             'hostgroups.listtocsv'    => 'hostgroups.listtocsv',
             'servicegroups.listtocsv' => 'servicegroups.listtocsv',
+            'users.listtocsv'         => 'users.listtocsv',
             'statuspages.publicview'  => 'statuspages.publicview',
         ];
 
@@ -370,7 +371,9 @@ class AppController extends Controller {
                     // Users that are not logged in should be caught by the AppAuthenticationMiddleware
 
                     // Instead of rendering the default error message, we redirect the user to the Angular Frontend
-                    return $this->redirect('/a/');
+                    $this->redirect('/a/');
+                    $event->setResult(false);
+                    return;
                 }
             }
 
@@ -519,5 +522,9 @@ class AppController extends Controller {
         }
         $this->set('id', $entity->id);
         $this->viewBuilder()->setOption('serialize', ['id']);
+    }
+
+    public function viewClasses(): array {
+        return [JsonView::class];
     }
 }

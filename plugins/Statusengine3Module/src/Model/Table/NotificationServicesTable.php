@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
@@ -104,6 +104,7 @@ class NotificationServicesTable extends Table implements NotificationServicesTab
             'NotificationServices.service_description',
             'NotificationServices.start_time',
             'NotificationServices.state',
+            'NotificationServices.reason_type',
             'NotificationServices.output',
 
             'Hosts.id',
@@ -158,8 +159,8 @@ class NotificationServicesTable extends Table implements NotificationServicesTab
                 'NotificationServices.start_time >' => $ServiceNotificationConditions->getFrom(),
                 'NotificationServices.start_time <' => $ServiceNotificationConditions->getTo()
             ])
-            ->order($ServiceNotificationConditions->getOrder())
-            ->group([
+            ->orderBy($ServiceNotificationConditions->getOrder())
+            ->groupBy([
                 'NotificationServices.service_description',
                 'NotificationServices.start_time',
                 'NotificationServices.start_time_usec'

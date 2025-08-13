@@ -130,10 +130,8 @@ class CronjobsTable extends Table {
      * @return array
      */
     public function getCronjob($id = null) {
-        $query = $this->get($id, [
-            'contain' => [
-                'Cronschedules'
-            ]
+        $query = $this->get($id, contain: [
+            'Cronschedules'
         ]);
         if (!is_null($query)) {
             return $this->formatFirstResultAsCake2($query->toArray());

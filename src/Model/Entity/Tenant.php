@@ -20,8 +20,8 @@ use Cake\ORM\Entity;
  * @property string|null $street
  * @property int|null $zipcode
  * @property string|null $city
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Container $container
  */
@@ -36,7 +36,7 @@ class Tenant extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'container_id'    => true,
         'description'     => true,
         'is_active'       => true,

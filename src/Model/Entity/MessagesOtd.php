@@ -14,11 +14,11 @@ use Cake\ORM\Entity;
  * @property string|null $content
  * @property string $style
  * @property int $user_id
- * @property \Cake\I18n\FrozenDate $date
+ * @property \Cake\I18n\Date $date
  * @property int $expiration_duration
  * @property int $notify_users
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\User $user
  * @property \App\Model\Entity\Usergroup $usergroup
@@ -33,7 +33,7 @@ class MessagesOtd extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'title'               => true,
         'description'         => true,
         'content'             => true,

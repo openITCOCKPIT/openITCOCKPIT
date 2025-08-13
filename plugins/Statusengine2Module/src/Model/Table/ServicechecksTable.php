@@ -117,7 +117,7 @@ class ServicechecksTable extends Table implements ServicechecksTableInterface {
                 'Servicechecks.start_time >' => date('Y-m-d H:i:s', $ServicechecksConditions->getFrom()),
                 'Servicechecks.start_time <' => date('Y-m-d H:i:s', $ServicechecksConditions->getTo())
             ])
-            ->order($ServicechecksConditions->getOrder());
+            ->orderBy($ServicechecksConditions->getOrder());
 
         if ($ServicechecksConditions->hasConditions()) {
             $query->andWhere($ServicechecksConditions->getConditions());

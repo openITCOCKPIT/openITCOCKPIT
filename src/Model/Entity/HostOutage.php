@@ -28,7 +28,7 @@ class HostOutage extends Entity {
      *
      * @var array<string, bool>
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'end_time'     => true,
         'output'       => true,
         'is_hardstate' => true,

@@ -12,7 +12,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class AddModuleToConfigurationQueue extends AbstractMigration {
+class AddModuleToConfigurationQueue extends \Migrations\BaseMigration {
 
     public function up(): void {
         $this->table('configuration_queue')

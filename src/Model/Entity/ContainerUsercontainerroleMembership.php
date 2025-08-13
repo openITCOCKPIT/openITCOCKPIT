@@ -23,7 +23,7 @@ class ContainerUsercontainerroleMembership extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'usercontainerrole_id' => true,
         'container_id' => true,
         'permission_level' => true

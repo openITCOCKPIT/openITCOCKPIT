@@ -24,8 +24,8 @@ use Cake\ORM\Entity;
  * @property bool $group_by_host
  * @property string|null $font_size
  * @property bool $recursive
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Container $container
  */
@@ -39,7 +39,7 @@ class Automap extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'name'              => true,
         'container_id'      => true,
         'description'       => true,

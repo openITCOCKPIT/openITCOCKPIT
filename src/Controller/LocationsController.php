@@ -205,9 +205,7 @@ class LocationsController extends AppController {
 
             $ContainersTable->acquireLock();
 
-            $oldLocation = $LocationsTable->get($id, [
-                'contain' => ['Containers']
-            ]);
+            $oldLocation = $LocationsTable->get($id, contain: ['Containers']);
             $oldLocationForChangelog = $oldLocation->toArray();
             if (!$this->allowedByContainerId($oldLocation->get('container_id'))) {
                 $this->render403();

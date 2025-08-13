@@ -1,21 +1,26 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -40,11 +45,11 @@ class SslIdentifier extends AbstractIdentifier implements IdentifierInterface {
      * @param array $credentials Authentication credentials
      * @return \ArrayAccess|array|null
      */
-    public function identify(array $credentials) {
+    public function identify(array $credentials): \ArrayAccess|array|null {
         // Has the client send a valid SSL certificate?
         if (isset($_SERVER['SSL_VERIFIED']) && $_SERVER['SSL_VERIFIED'] === 'SUCCESS' && isset($_SERVER['SSL_CERT'])) {
             $certificate = openssl_x509_parse(urldecode($_SERVER['SSL_CERT']));
-            return $identity = $this->_findIdentity($certificate);
+            return $this->_findIdentity($certificate);
         }
 
         if (isset($_SERVER['SSL_VERIFIED']) && $_SERVER['SSL_VERIFIED'] !== 'NONE') {
@@ -63,7 +68,7 @@ class SslIdentifier extends AbstractIdentifier implements IdentifierInterface {
      * @param array $certificate The parsed SSL Client certificate.
      * @return \ArrayAccess|array|null
      */
-    protected function _findIdentity(array $certificate) {
+    protected function _findIdentity(array $certificate): \ArrayAccess|array|null {
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
 
@@ -75,7 +80,13 @@ class SslIdentifier extends AbstractIdentifier implements IdentifierInterface {
             //     'OU' => 'it-novum',
             //     'emailAddress' => 'Max.Mustermann@it-novum.com'
             // ],
-            return $UsersTable->getUserByEmailForLogin($certificate['subject']['emailAddress']);
+            $user = $UsersTable->getUserByEmailForLogin($certificate['subject']['emailAddress']);
+            if ($user) {
+                // Make all fields available as we need the user's password hash
+                $user->setHidden([], false);
+                return $user->toArray();
+            }
+            return null;
         }
 
         // Try to use CN (commonName) as email
@@ -91,7 +102,9 @@ class SslIdentifier extends AbstractIdentifier implements IdentifierInterface {
 
             $user = $UsersTable->getUserByEmailForLogin($certificate['subject']['CN']);
             if ($user !== null) {
-                return $user;
+                // Make all fields available as we need the user's password hash
+                $user->setHidden([], false);
+                return $user->toArray();
             }
 
             // Is this an "FHG" certificate?
@@ -137,7 +150,9 @@ class SslIdentifier extends AbstractIdentifier implements IdentifierInterface {
 
                         if ($user !== null) {
                             //We found a user by first and last name and email like
-                            return $user;
+                            // Make all fields available as we need the user's password hash
+                            $user->setHidden([], false);
+                            return $user->toArray();
                         }
                     }
                 }
@@ -151,7 +166,9 @@ class SslIdentifier extends AbstractIdentifier implements IdentifierInterface {
 
                     if ($user !== null) {
                         //We found a user by first and last name
-                        return $user;
+                        // Make all fields available as we need the user's password hash
+                        $user->setHidden([], false);
+                        return $user->toArray();
                     }
                 }
 
@@ -163,7 +180,13 @@ class SslIdentifier extends AbstractIdentifier implements IdentifierInterface {
 
                         $entity = $SystemsettingsTable->getSystemsettingByKey('FRONTEND.CERT.DEFAULT_USER_EMAIL');
                         if ($entity->get('value') !== '') {
-                            return $UsersTable->getUserByEmailForLogin($entity->get('value'));
+                            $user = $UsersTable->getUserByEmailForLogin($entity->get('value'));
+                            if ($user) {
+                                // Make all fields available as we need the user's password hash
+                                $user->setHidden([], false);
+                                return $user->toArray();
+                            }
+                            return null;
                         }
                     } catch (\Exception $e) {
                         return null;

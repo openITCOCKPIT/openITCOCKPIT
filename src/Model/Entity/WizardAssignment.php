@@ -25,7 +25,7 @@ class WizardAssignment extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid' => true,
         'type_id' => true,
         'servicetemplates' => true

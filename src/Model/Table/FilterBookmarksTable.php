@@ -114,7 +114,7 @@ class FilterBookmarksTable extends Table {
                 'FilterBookmarks.action'     => $action,
                 'FilterBookmarks.user_id'    => $userId
             ])
-        ->order([
+        ->orderBy([
             'FilterBookmarks.favorite' => 'asc',
             'FilterBookmarks.name'     => 'asc',
         ]);

@@ -162,8 +162,8 @@ class NotificationServicesLogTable extends Table implements NotificationServices
             ->where([
                 'NotificationServicesLog.start_time >' => $ServiceNotificationConditions->getFrom(),
             ])
-            ->order(['count' => 'DESC', 'start_time' => 'DESC'])
-            ->group([
+            ->orderBy(['count' => 'DESC', 'start_time' => 'DESC'])
+            ->groupBy([
                 'NotificationServicesLog.service_description',
             ]);
         $query->select([

@@ -36,8 +36,8 @@ use App\itnovum\openITCOCKPIT\Core\SystemHealthNotification;
 use App\itnovum\openITCOCKPIT\Supervisor\Supervisorctl;
 use App\Model\Table\SystemsettingsTable;
 use Cake\Cache\Cache;
+use Cake\Command\Command;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Plugin;
@@ -296,7 +296,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         if (!empty($cache) && !empty($cache['previousState']) && $cache['previousState'] !== $this->state) {
             $sendingMail = true;
         }
-        $io->out($sendingMail, 0);
+        $io->out($sendingMail ? 'true' : 'false', 0);
         return $sendingMail;
     }
 

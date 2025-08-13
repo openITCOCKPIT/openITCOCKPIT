@@ -38,8 +38,8 @@ use Cake\ORM\Entity;
  * @property int $container_id
  * @property int $user_id
  * @property int $pinned
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\DashboardTab $dashboard_tab
  * @property \App\Model\Entity\Container $container
@@ -57,7 +57,7 @@ class DashboardTabAllocation extends Entity {
      *
      * @var array<string, bool>
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'name'             => true,
         'dashboard_tab_id' => true,
         'container_id'     => true,

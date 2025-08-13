@@ -208,10 +208,8 @@ class WizardsController extends AppController {
                 return;
             }
 
-            $hostCustomVariables = $HostsTable->get($hostId, [
-                'contain' => [
-                    'Customvariables'
-                ]
+            $hostCustomVariables = $HostsTable->get($hostId, contain: [
+                'Customvariables'
             ])->getCustomvariablesForCfg();
 
             $username = '';

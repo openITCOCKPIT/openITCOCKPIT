@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
-class ChangeMaxLimitForJson extends AbstractMigration {
+class ChangeMaxLimitForJson extends \Migrations\BaseMigration {
     /**
      * Change Method.
      * Class ChangeMaxLimitForJson

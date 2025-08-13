@@ -50,7 +50,7 @@ use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Event\EventInterface;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\Mailer\Mailer;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -243,7 +243,7 @@ class UsersController extends AppController {
                 return;
             }
 
-            $this->RequestHandler->renderAs($this, 'json');
+            //$this->RequestHandler->renderAs($this, 'json');
             $this->response = $this->response->withStatus(400);
             $errors = $result->getErrors();
             $errors['Password'][] = __('Invalid username or password');
@@ -475,7 +475,7 @@ class UsersController extends AppController {
         $User = new \itnovum\openITCOCKPIT\Core\ValueObjects\User($this->getUser());
         $UserTime = $User->getUserTime();
         foreach ($user['User']['apikeys'] as $i => $apikey) {
-            if (isset($apikey['last_use']) && $apikey['last_use'] instanceof FrozenTime) {
+            if (isset($apikey['last_use']) && $apikey['last_use'] instanceof \Cake\I18n\DateTime) {
                 $user['User']['apikeys'][$i]['last_use'] = $UserTime->format($apikey['last_use']->getTimestamp());
             }
         }
@@ -601,12 +601,16 @@ class UsersController extends AppController {
                 }
             }
 
-            if ($user->is_oauth === true) {
-                $user->setAccess('is_oauth', false); //do not allow to change is_oauth
-                //oAuth users has no password
-                $data['password'] = '';
-                $data['confirm_password'] = '';
+            // If not LDAP
+            if (!$user->samaccountname) {
+                // ... and now becomes oAuth, remove password validation
+                if ($user->is_oauth === false && $data['is_oauth']) {
+                    // a user that becomes oAuth user, doesnt need a password
+                    $data['password'] = '';
+                    $data['confirm_password'] = '';
+                }
             }
+
             //prevent multiple hash of password
             if ($data['password'] === '' && $data['confirm_password'] === '') {
                 unset($data['password']);

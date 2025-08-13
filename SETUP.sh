@@ -367,7 +367,7 @@ chmod 400 /opt/openitc/etc/mod_gearman/secret.file
 
 echo "---------------------------------------------------------------"
 echo "Scan and import ACL objects. This will take a while..."
-oitc Acl.acl_extras aco_sync
+oitc acl.aco_sync
 
 
 oitc compress

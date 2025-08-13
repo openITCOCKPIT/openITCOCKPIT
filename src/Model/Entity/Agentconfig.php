@@ -20,8 +20,8 @@ use Cake\ORM\Entity;
  * @property bool $push_noticed
  * @property string config
  * @property PushAgent $push_agent
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Host $host
  */
@@ -35,7 +35,7 @@ class Agentconfig extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'port'               => true,
         'host_id'            => true,
         'use_https'          => true,

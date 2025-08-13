@@ -55,7 +55,7 @@ class GrafanaUserdashboardMetric extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'panel_id'                    => true,
         'metric'                      => true,
         'host_id'                     => true,

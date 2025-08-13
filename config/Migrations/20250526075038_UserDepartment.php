@@ -26,7 +26,16 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
-class UserDepartment extends AbstractMigration {
+/**
+ * Class UserDepartment
+ *
+ * Created:
+ * oitc migrations create UserDepartment
+ *
+ * Usage:
+ * openitcockpit-update
+ */
+class UserDepartment extends \Migrations\BaseMigration {
 
     /**
      * Whether the tables created in this migration
@@ -38,7 +47,7 @@ class UserDepartment extends AbstractMigration {
      *
      * @var bool
      */
-    public $autoId = false;
+    public bool $autoId = false;
 
     /**
      * Change Method.

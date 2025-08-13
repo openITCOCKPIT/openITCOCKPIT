@@ -52,7 +52,7 @@ class AcknowledgementHost extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'hostname'             => true,
         'state'                => true,
         'author_name'          => true,

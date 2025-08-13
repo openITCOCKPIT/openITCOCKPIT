@@ -16,7 +16,7 @@ use Cake\ORM\Entity;
  * @property string $data
  * @property string $name
  * @property int $module_flag
- * @property \Cake\I18n\FrozenTime $created
+ * @property \Cake\I18n\DateTime $created
  *
  * @property \App\Model\Entity\User $user
  */
@@ -30,7 +30,7 @@ class Changelog extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'model'         => true,
         'action'        => true,
         'object_id'     => true,

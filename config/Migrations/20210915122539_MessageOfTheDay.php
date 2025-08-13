@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
-class MessageOfTheDay extends AbstractMigration {
+class MessageOfTheDay extends \Migrations\BaseMigration {
     /**
      * Change Method.
      * Class MessageOfTheDay
@@ -20,7 +20,7 @@ class MessageOfTheDay extends AbstractMigration {
      * https://book.cakephp.org/phinx/0/en/migrations.html#the-change-method
      * @return void
      */
-    public $autoId = false;
+    public bool $autoId = false;
 
     public function change(): void {
         if (!$this->hasTable('messages_otd')) {

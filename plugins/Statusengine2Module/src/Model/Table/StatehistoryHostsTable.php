@@ -123,7 +123,7 @@ class StatehistoryHostsTable extends Table implements StatehistoryHostTableInter
                 'StatehistoryHosts.state_time >' => date('Y-m-d H:i:s', $StatehistoryHostConditions->getFrom()),
                 'StatehistoryHosts.state_time <' => date('Y-m-d H:i:s', $StatehistoryHostConditions->getTo())
             ])
-            ->order($StatehistoryHostConditions->getOrder());
+            ->orderBy($StatehistoryHostConditions->getOrder());
 
         if ($StatehistoryHostConditions->hasConditions()) {
             $query->andWhere($StatehistoryHostConditions->getConditions());
@@ -180,7 +180,7 @@ class StatehistoryHostsTable extends Table implements StatehistoryHostTableInter
                 'Objects.name1'                   => $StatehistoryHostConditions->getHostUuid(),
                 'StatehistoryHosts.state_time <=' => date('Y-m-d H:i:s', $StatehistoryHostConditions->getFrom())
             ])
-            ->order([
+            ->orderBy([
                 'StatehistoryHosts.state_time' => 'DESC'
             ])
             ->enableHydration($enableHydration)

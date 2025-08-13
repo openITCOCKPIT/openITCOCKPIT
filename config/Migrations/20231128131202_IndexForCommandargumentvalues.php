@@ -35,7 +35,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class IndexForCommandargumentvalues extends AbstractMigration {
+class IndexForCommandargumentvalues extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

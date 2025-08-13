@@ -1,21 +1,26 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -28,7 +33,6 @@ declare(strict_types=1);
 namespace MapModule\Model\Table;
 
 use Cake\Datasource\EntityInterface;
-use Cake\Datasource\RepositoryInterface;
 use Cake\ORM\Association\BelongsTo;
 use Cake\ORM\Behavior\TimestampBehavior;
 use Cake\ORM\RulesChecker;
@@ -107,51 +111,59 @@ class MapitemsTable extends Table {
         ]);
     }
 
-    public function bindCoreAssociations(RepositoryInterface $coreTable) {
+    public function bindCoreAssociations(Table $coreTable) {
         switch ($coreTable->getAlias()) {
             case 'Hosts':
-                $coreTable->hasMany('Mapitems', [
-                    'className'  => 'MapModule.Mapitems',
-                    'dependent'  => true,
-                    'foreignKey' => 'object_id',
-                    'joinType'   => 'INNER',
-                    'conditions' => [
-                        'type' => 'host'
-                    ]
-                ]);
+                if (!$coreTable->hasAssociation('Mapitems')) {
+                    $coreTable->hasMany('Mapitems', [
+                        'className'  => 'MapModule.Mapitems',
+                        'dependent'  => true,
+                        'foreignKey' => 'object_id',
+                        'joinType'   => 'INNER',
+                        'conditions' => [
+                            'type' => 'host'
+                        ]
+                    ]);
+                }
                 break;
             case 'Hostgroups':
-                $coreTable->hasMany('Mapitems', [
-                    'className'  => 'MapModule.Mapitems',
-                    'dependent'  => true,
-                    'foreignKey' => 'object_id',
-                    'joinType'   => 'INNER',
-                    'conditions' => [
-                        'type' => 'hostgroup'
-                    ]
-                ]);
+                if (!$coreTable->hasAssociation('Mapitems')) {
+                    $coreTable->hasMany('Mapitems', [
+                        'className'  => 'MapModule.Mapitems',
+                        'dependent'  => true,
+                        'foreignKey' => 'object_id',
+                        'joinType'   => 'INNER',
+                        'conditions' => [
+                            'type' => 'hostgroup'
+                        ]
+                    ]);
+                }
                 break;
             case 'Services':
-                $coreTable->hasMany('Mapitems', [
-                    'className'  => 'MapModule.Mapitems',
-                    'dependent'  => true,
-                    'foreignKey' => 'object_id',
-                    'joinType'   => 'INNER',
-                    'conditions' => [
-                        'type' => 'service'
-                    ]
-                ]);
+                if (!$coreTable->hasAssociation('Mapitems')) {
+                    $coreTable->hasMany('Mapitems', [
+                        'className'  => 'MapModule.Mapitems',
+                        'dependent'  => true,
+                        'foreignKey' => 'object_id',
+                        'joinType'   => 'INNER',
+                        'conditions' => [
+                            'type' => 'service'
+                        ]
+                    ]);
+                }
                 break;
             case 'Servicegroups':
-                $coreTable->hasMany('Mapitems', [
-                    'className'  => 'MapModule.Mapitems',
-                    'dependent'  => true,
-                    'foreignKey' => 'object_id',
-                    'joinType'   => 'INNER',
-                    'conditions' => [
-                        'type' => 'servicegroup'
-                    ]
-                ]);
+                if (!$coreTable->hasAssociation('Mapitems')) {
+                    $coreTable->hasMany('Mapitems', [
+                        'className'  => 'MapModule.Mapitems',
+                        'dependent'  => true,
+                        'foreignKey' => 'object_id',
+                        'joinType'   => 'INNER',
+                        'conditions' => [
+                            'type' => 'servicegroup'
+                        ]
+                    ]);
+                }
                 break;
         }
     }

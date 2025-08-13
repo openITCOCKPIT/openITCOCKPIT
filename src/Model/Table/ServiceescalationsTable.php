@@ -5,7 +5,7 @@ namespace App\Model\Table;
 use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -299,7 +299,7 @@ class ServiceescalationsTable extends Table {
                     },
                 ]
             ])
-            ->group('Serviceescalations.id')
+            ->groupBy('Serviceescalations.id')
             ->disableHydration();
         $indexFilter = $ServiceescalationsFilter->indexFilter();
         $containFilter = [
@@ -312,7 +312,7 @@ class ServiceescalationsTable extends Table {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
-            $where = new Comparison(
+            $where = new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))',
                 $indexFilter['Services.servicename LIKE'],
                 'string',
@@ -332,7 +332,7 @@ class ServiceescalationsTable extends Table {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
-            $where = new Comparison(
+            $where = new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(ServicesExcluded.name IS NULL, Servicetemplates.name, ServicesExcluded.name))',
                 $indexFilter['ServicesExcluded.servicename LIKE'],
                 'string',
@@ -386,7 +386,7 @@ class ServiceescalationsTable extends Table {
         $query->where($indexFilter);
 
 
-        $query->order($ServiceescalationsFilter->getOrderForPaginator('Serviceescalations.id', 'asc'));
+        $query->orderBy($ServiceescalationsFilter->getOrderForPaginator('Serviceescalations.id', 'asc'));
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $this->emptyArrayIfNull($query->toArray());
@@ -601,7 +601,7 @@ class ServiceescalationsTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'serviceescalation_id'
             ])
             ->disableHydration()
@@ -628,7 +628,7 @@ class ServiceescalationsTable extends Table {
         });
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Containers.name' => 'asc'
         ]);
 

@@ -12,7 +12,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class Agentconnector extends AbstractMigration {
+class Agentconnector extends \Migrations\BaseMigration {
 
     public function up(): void {
         if (!$this->hasTable('agentconnector')) {

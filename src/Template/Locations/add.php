@@ -22,7 +22,7 @@
 //	under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //	License agreement and license key will be shipped with the order
 //	confirmation.
-$timezones = \Cake\I18n\FrozenTime::listTimezones();
+$timezones = \Cake\I18n\DateTime::listTimezones();
 ?>
 <ol class="breadcrumb page-breadcrumb">
     <li class="breadcrumb-item">

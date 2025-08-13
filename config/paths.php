@@ -1,22 +1,105 @@
 <?php
-/**
- * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- *
- * Licensed under The MIT License
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link          https://cakephp.org CakePHP(tm) Project
- * @since         3.0.0
- * @license       MIT License (https://opensource.org/licenses/mit-license.php)
- */
+// Copyright (C) <2015-present>  <it-novum GmbH>
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 /*
  * Use the DS to separate the directories in other defines
  */
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
+}
+/**
+ * Gets an environment variable from available sources, and provides emulation
+ * for unsupported or inconsistent environment variables (i.e. DOCUMENT_ROOT on
+ * IIS, or SCRIPT_NAME in CGI mode). Also exposes some additional custom
+ * environment information.
+ *
+ * @param string $key Environment variable name.
+ * @param string|bool|null $default Specify a default value in case the environment variable is not defined.
+ * @return string|float|int|bool|null Environment variable setting.
+ * @link https://book.cakephp.org/5/en/core-libraries/global-constants-and-functions.html#env
+ *
+ * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
+ * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ * @link          https://cakephp.org CakePHP(tm) Project
+ * @since         3.0.0
+ * @license       https://opensource.org/licenses/mit-license.php MIT License
+ *
+ * We use this function as the CakePHP env() function is not available in this part of the bootstrap.
+ */
+function envBootstrap(string $key, string|float|int|bool|null $default = null): string|float|int|bool|null {
+    if ($key === 'HTTPS') {
+        if (isset($_SERVER['HTTPS'])) {
+            return !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+        }
+
+        return str_starts_with((string)envBootstrap('SCRIPT_URI'), 'https://');
+    }
+
+    if ($key === 'SCRIPT_NAME' && envBootstrap('CGI_MODE') && isset($_ENV['SCRIPT_URL'])) {
+        $key = 'SCRIPT_URL';
+    }
+
+    $val = $_SERVER[$key] ?? $_ENV[$key] ?? null;
+    assert($val === null || is_scalar($val));
+    if ($val == null && getenv($key) !== false) {
+        $val = (string)getenv($key);
+    }
+
+    if ($key === 'REMOTE_ADDR' && $val === envBootstrap('SERVER_ADDR')) {
+        $addr = envBootstrap('HTTP_PC_REMOTE_ADDR');
+        if ($addr !== null) {
+            $val = $addr;
+        }
+    }
+
+    if ($val !== null) {
+        return $val;
+    }
+
+    switch ($key) {
+        case 'DOCUMENT_ROOT':
+            $name = (string)envBootstrap('SCRIPT_NAME');
+            $filename = (string)envBootstrap('SCRIPT_FILENAME');
+            $offset = 0;
+            if (!str_ends_with($name, '.php')) {
+                $offset = 4;
+            }
+
+            return substr($filename, 0, -(strlen($name) + $offset));
+        case 'PHP_SELF':
+            return str_replace((string)envBootstrap('DOCUMENT_ROOT'), '', (string)envBootstrap('SCRIPT_FILENAME'));
+        case 'CGI_MODE':
+            return PHP_SAPI === 'cgi';
+    }
+
+    return $default;
 }
 
 /*
@@ -63,7 +146,7 @@ $isCli = PHP_SAPI === 'cli';
 
 // This var determins if openITCOCKPIT is running inside a workhorse container like mod_gearman
 // It yes, we use different path for logfiles and caching to avoid permission issues
-$isWorkhorseContainer = filter_var(env('IS_WORKHORSE_CONTAINER', false), FILTER_VALIDATE_BOOLEAN);
+$isWorkhorseContainer = filter_var(envBootstrap('IS_WORKHORSE_CONTAINER', false), FILTER_VALIDATE_BOOLEAN);
 
 /*
  * Path to the tests directory.

@@ -49,7 +49,7 @@ class ObjectEntity extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'instance_id'   => false,
         'objecttype_id' => false,
         'name1'         => false,

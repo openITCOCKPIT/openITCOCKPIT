@@ -1,14 +1,14 @@
 {
-    "name": "your-name-here/puppeteer-pdf",
+    "name": "openitcockpit/puppeteer-pdf",
     "description": "PuppeteerPdf plugin for CakePHP",
     "type": "cakephp-plugin",
     "license": "MIT license",
     "require": {
-        "php": ">=7.2",
-        "cakephp/cakephp": "^4.0"
+        "php": ">=8.1",
+        "cakephp/cakephp": "^5.2"
     },
     "require-dev": {
-        "phpunit/phpunit": "^8.5 || ^9.3"
+        "phpunit/phpunit": "^10.5.5 || ^11.1.3 || ^12.1"
     },
     "autoload": {
         "psr-4": {

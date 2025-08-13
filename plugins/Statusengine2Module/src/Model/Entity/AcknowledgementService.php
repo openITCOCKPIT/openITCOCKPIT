@@ -32,7 +32,7 @@ use Cake\ORM\Entity;
  *
  * @property int $acknowledgement_id
  * @property int $instance_id
- * @property \Cake\I18n\FrozenTime $entry_time
+ * @property \Cake\I18n\DateTime $entry_time
  * @property int $entry_time_usec
  * @property int $acknowledgement_type
  * @property int $object_id
@@ -55,7 +55,7 @@ class AcknowledgementService extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'instance_id'          => true,
         'entry_time'           => true,
         'entry_time_usec'      => true,

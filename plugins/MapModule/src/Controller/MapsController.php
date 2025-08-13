@@ -301,16 +301,14 @@ class MapsController extends AppController {
                     //Create/clone map
                     $sourceMapId = $mapData['Source']['id'];
                     if (!$Cache->has($sourceMapId)) {
-                        $sourceMapEntity = $MapsTable->get($sourceMapId, [
-                            'contain' => [
-                                'Containers',
-                                'Mapgadgets',
-                                'Mapicons',
-                                'Mapitems',
-                                'Maplines',
-                                'Maptexts',
-                                'Mapsummaryitems'
-                            ]
+                        $sourceMapEntity = $MapsTable->get($sourceMapId, contain: [
+                            'Containers',
+                            'Mapgadgets',
+                            'Mapicons',
+                            'Mapitems',
+                            'Maplines',
+                            'Maptexts',
+                            'Mapsummaryitems'
                         ]);
 
                         $sourceMap = $sourceMapEntity->toArray();
@@ -346,10 +344,8 @@ class MapsController extends AppController {
                     //Update existing map
                     //This happens, if a user copy multiple maps, and one run into an validation error
                     //All maps without validation errors got already saved to the database
-                    $newMapEntity = $MapsTable->get($mapData['Map']['id'], [
-                        'contain' => [
-                            'Containers'
-                        ]
+                    $newMapEntity = $MapsTable->get($mapData['Map']['id'], contain: [
+                        'Containers'
                     ]);
                     $mapData['Map']['containers']['_ids'] = $newMapEntity->getContainerIds();
                     if (isset($mapData['Map']['refresh_interval'])) {

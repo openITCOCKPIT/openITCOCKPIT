@@ -23,7 +23,7 @@ class Usercontainerrole extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'name'                             => true,
         'usercontainerroles_to_containers' => true,
         'users_to_usercontainerroles'      => true,

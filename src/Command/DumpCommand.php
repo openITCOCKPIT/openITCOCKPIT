@@ -40,7 +40,7 @@ use App\Model\Table\SystemsettingsTable;
 use App\Model\Table\TimeperiodsTable;
 use App\Model\Table\UsergroupsTable;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
+use Cake\Command\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Error\Debugger;

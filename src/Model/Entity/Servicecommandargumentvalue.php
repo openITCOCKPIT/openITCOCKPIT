@@ -11,8 +11,8 @@ use Cake\ORM\Entity;
  * @property int $commandargument_id
  * @property int $service_id
  * @property string $value
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Commandargument $commandargument
  * @property \App\Model\Entity\Service $service
@@ -28,7 +28,7 @@ class Servicecommandargumentvalue extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'commandargument_id' => true,
         'service_id'         => true,
         'value'              => true,

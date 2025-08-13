@@ -11,7 +11,7 @@ use Cake\ORM\Entity;
  * @property int $calendar_id
  * @property string $name
  * @property int $default_holiday
- * @property \Cake\I18n\FrozenDate $date
+ * @property \Cake\I18n\Date $date
  *
  * @property \App\Model\Entity\Calendar $calendar
  */
@@ -25,7 +25,7 @@ class CalendarHoliday extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'calendar_id'     => true,
         'name'            => true,
         'default_holiday' => true,

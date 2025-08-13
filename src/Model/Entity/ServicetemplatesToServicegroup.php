@@ -26,7 +26,7 @@ class ServicetemplatesToServicegroup extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'servicetemplate_id' => true,
         'servicegroup_id' => true,
         'servicetemplate' => true,

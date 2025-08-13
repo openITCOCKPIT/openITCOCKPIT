@@ -35,7 +35,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class HostGroupAutomaps extends AbstractMigration {
+class HostGroupAutomaps extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

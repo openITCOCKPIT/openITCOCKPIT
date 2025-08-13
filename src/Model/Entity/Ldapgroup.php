@@ -26,7 +26,7 @@ class Ldapgroup extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'cn' => true,
         'dn' => true,
         'description' => true,

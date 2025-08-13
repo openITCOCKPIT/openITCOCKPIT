@@ -35,9 +35,9 @@ use Cake\ORM\Entity;
  * @property int $contactnotificationmethod_id
  * @property int $instance_id
  * @property int $contactnotification_id
- * @property \Cake\I18n\FrozenTime $start_time
+ * @property \Cake\I18n\DateTime $start_time
  * @property int $start_time_usec
- * @property \Cake\I18n\FrozenTime $end_time
+ * @property \Cake\I18n\DateTime $end_time
  * @property int $end_time_usec
  * @property int $command_object_id
  * @property string|null $command_args
@@ -57,7 +57,7 @@ class Contactnotificationmethod extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'instance_id'               => true,
         'contactnotification_id'    => true,
         'start_time_usec'           => true,

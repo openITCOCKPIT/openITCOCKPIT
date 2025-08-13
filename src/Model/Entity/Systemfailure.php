@@ -8,12 +8,12 @@ use Cake\ORM\Entity;
  * Systemfailure Entity
  *
  * @property int $id
- * @property \Cake\I18n\FrozenTime $start_time
- * @property \Cake\I18n\FrozenTime $end_time
+ * @property \Cake\I18n\DateTime $start_time
+ * @property \Cake\I18n\DateTime $end_time
  * @property string $comment
  * @property int|null $user_id
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\User $user
  */
@@ -27,7 +27,7 @@ class Systemfailure extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'start_time' => true,
         'end_time'   => true,
         'comment'    => true,

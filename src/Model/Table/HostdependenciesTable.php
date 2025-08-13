@@ -234,7 +234,7 @@ class HostdependenciesTable extends Table {
                     },
                 ]
             ])
-            ->group('Hostdependencies.id')
+            ->groupBy('Hostdependencies.id')
             ->disableHydration();
         $indexFilter = $HostdependenciesFilter->indexFilter();
         $containFilter = [
@@ -296,7 +296,7 @@ class HostdependenciesTable extends Table {
             $indexFilter['Hostdependencies.container_id IN'] = $MY_RIGHTS;
         }
         $query->where($indexFilter);
-        $query->order($HostdependenciesFilter->getOrderForPaginator('Hostdependencies.id', 'asc'));
+        $query->orderBy($HostdependenciesFilter->getOrderForPaginator('Hostdependencies.id', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query

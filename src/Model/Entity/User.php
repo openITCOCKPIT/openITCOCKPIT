@@ -52,8 +52,8 @@ use Cake\ORM\Entity;
  * @property int $paginatorlength
  * @property int $recursive_browser
  * @property bool $is_oauth
- * @property \Cake\I18n\FrozenTime|null $created
- * @property \Cake\I18n\FrozenTime|null $modified
+ * @property \Cake\I18n\DateTime|null $created
+ * @property \Cake\I18n\DateTime|null $modified
  * @property \Cake\I18n\FrozenTime|null last_login
  *
  * @property \App\Model\Entity\Usergroup $usergroup
@@ -78,7 +78,7 @@ class User extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'usergroup_id'            => true,
         'email'                   => true,
         'password'                => true,
@@ -123,7 +123,7 @@ class User extends Entity {
      *
      * @var array
      */
-    protected $_hidden = [
+    protected array $_hidden = [
         'password'
     ];
 

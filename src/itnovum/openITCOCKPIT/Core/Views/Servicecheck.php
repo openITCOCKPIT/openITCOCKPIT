@@ -1,30 +1,30 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
 // 1.
-//  This program is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // 2.
-//  If you purchased an openITCOCKPIT Enterprise Edition you can use this file
-//  under the terms of the openITCOCKPIT Enterprise Edition license agreement.
-//  License agreement and license key will be shipped with the order
-//  confirmation.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 namespace itnovum\openITCOCKPIT\Core\Views;
 
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 
 class Servicecheck {
 
@@ -203,10 +203,10 @@ class Servicecheck {
      * @return int|string
      */
     public function getEndTime() {
-        if(!is_numeric($this->end_time)){
-            if($this->end_time instanceof FrozenTime){
+        if (!is_numeric($this->end_time)) {
+            if ($this->end_time instanceof \Cake\I18n\DateTime) {
                 $this->end_time = $this->end_time->timestamp;
-            }else{
+            } else {
                 $this->end_time = strtotime($this->end_time);
             }
         }
@@ -260,10 +260,10 @@ class Servicecheck {
      * @return int|string
      */
     public function getStartTime() {
-        if(!is_numeric($this->start_time)){
-            if($this->start_time instanceof FrozenTime){
+        if (!is_numeric($this->start_time)) {
+            if ($this->start_time instanceof \Cake\I18n\DateTime) {
                 $this->start_time = $this->start_time->timestamp;
-            }else{
+            } else {
                 $this->start_time = strtotime($this->start_time);
             }
         }

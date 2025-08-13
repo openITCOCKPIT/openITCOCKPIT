@@ -39,7 +39,6 @@ use Authentication\PasswordHasher\DefaultPasswordHasher;
 use Cake\Database\Query;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\Event;
-use Cake\I18n\FrozenTime;
 use Cake\Log\Log;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -373,6 +372,16 @@ class UsersTable extends Table {
             'errorField' => 'password',
             'message'    => __('The new password can not be the same as the old password is.'),
         ]);
+        // If oAuth has been disabled, require new password for non-LDAP Users
+        $rules->add(function (User $entity, $options) {
+            if (!$entity->get('samaccountname') && ($entity->isDirty('is_oauth') && $entity->get('is_oauth') === false)) {
+                return $entity->isDirty('password');
+            }
+            return true;
+        }, 'disabledOauthRequiresPassword', [
+            'errorField' => 'password',
+            'message'    => __('If you disable oAuth for a user, you must reset the user\'s password'),
+        ]);
 
         return $rules;
     }
@@ -388,7 +397,7 @@ class UsersTable extends Table {
             $Hasher = $this->getDefaultPasswordHasher();
             $entity->password = $Hasher->hash($entity->password);
         }
-        return true;
+        $event->setResult(true);
     }
 
     /**
@@ -411,7 +420,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -429,7 +438,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -490,13 +499,13 @@ class UsersTable extends Table {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $UsersFilter->getOrderForPaginator('full_name', 'asc'),
                 ['Users.id' => 'asc']
             )
         );
-        $query->group([
+        $query->groupBy([
             'Users.id'
         ]);
 
@@ -802,7 +811,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -821,7 +830,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -871,11 +880,11 @@ class UsersTable extends Table {
             ->where([
                 'Users.id IN' => $userIds
             ])
-            ->order([
+            ->orderBy([
                 'full_name' => 'asc',
                 'Users.id'  => 'asc'
             ])
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration()
@@ -1190,7 +1199,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -1209,7 +1218,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -1231,7 +1240,7 @@ class UsersTable extends Table {
             ->where([
                 'Users.id IN' => $userIds
             ])
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->contain([
@@ -1392,7 +1401,7 @@ class UsersTable extends Table {
                     'Usergroups.id IN ' => $usergroupsIds
                 ]);
         }
-        $query->group([
+        $query->groupBy([
             'Users.id'
         ])
             ->disableAutoFields()
@@ -1417,7 +1426,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -1435,7 +1444,7 @@ class UsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -1482,7 +1491,7 @@ class UsersTable extends Table {
             ]);
         }
 
-        $query->group([
+        $query->groupBy([
             'Users.id'
         ]);
 
@@ -1588,7 +1597,7 @@ class UsersTable extends Table {
 
         if (!empty($userIdQuery)) {
             $userToUpdate = $this->get($userIdQuery->id);
-            $userToUpdate->set('last_login', FrozenTime::now());
+            $userToUpdate->set('last_login', \Cake\I18n\DateTime::now());
             if (!$this->save($userToUpdate)) {
                 Log::error(sprintf(
                     'UserTable: Could not save user [%s] %s',
@@ -1651,7 +1660,7 @@ class UsersTable extends Table {
                 ]
             );
         }
-        $query->group(['DashboardTabs.id'])
+        $query->groupBy(['DashboardTabs.id'])
             ->disableHydration()
             ->all();
         $result = $this->emptyArrayIfNull($query->toArray());

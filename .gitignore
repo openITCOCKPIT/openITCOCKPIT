@@ -69,6 +69,7 @@ webroot/img/logo_small_custom.png
 webroot/img/logos/logo_custom.png
 webroot/img/logos/logo_custom_header.png
 webroot/img/logos/custom_login_background.png
+webroot/img/logos/custom_status_page_header.png
 
 # npm modules #
 #######################
@@ -130,3 +131,6 @@ plugins/MSTeamsModule
 plugins/IsarFlowModule
 plugins/ScmModule
 plugins/JiraModule
+
+# NFS mounts
+.nfs.*

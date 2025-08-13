@@ -66,8 +66,8 @@ class SslAuthenticator extends AbstractAuthenticator {
             /** @var EventlogsTable $EventlogsTable */
             $EventlogsTable = TableRegistry::getTableLocator()->get('Eventlogs');
 
-            $UsersTable->saveLastLoginDate($user->get('email'));
-            $userFromDb = $UsersTable->getUserByEmailForLoginLog($user->get('email'));
+            $UsersTable->saveLastLoginDate($user['email']);
+            $userFromDb = $UsersTable->getUserByEmailForLoginLog($user['email']);
             if (!empty($userFromDb)) {
 
                 $containerIds = Hash::extract($userFromDb, 'containers.{n}.id');

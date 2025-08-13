@@ -147,6 +147,7 @@ class AngularController extends AppController {
         $timezone = [
             'user_timezone'              => $userTimezone,
             'user_time_to_server_offset' => $this->get_timezone_offset($ServerTimeZone->getName(), $userTimezone),
+            'user_time_to_utc_offset'    => $this->get_timezone_offset('UTC', $userTimezone),
             'user_offset'                => $UserTime->getOffset(),
             'server_time_utc'            => time(),
             'server_time'                => date('F d, Y H:i:s'),

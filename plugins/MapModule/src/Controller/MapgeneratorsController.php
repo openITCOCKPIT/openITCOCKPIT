@@ -167,11 +167,9 @@ class MapgeneratorsController extends AppController {
             throw new NotFoundException(__('Invalid Map generator'));
         }
 
-        $mapgenerator = $MapgeneratorsTable->get($id, [
-            'contain' => [
-                'Containers',
-                'MapgeneratorLevels'
-            ]
+        $mapgenerator = $MapgeneratorsTable->get($id, contain: [
+            'Containers',
+            'MapgeneratorLevels'
         ]);
 
         $containerIds = Hash::extract($mapgenerator, 'containers.{n}.id');
@@ -238,11 +236,9 @@ class MapgeneratorsController extends AppController {
             throw new NotFoundException(__('Invalid Map generator'));
         }
 
-        $mapgenerator = $MapgeneratorsTable->get($id, [
-            'contain' => [
-                'Maps',
-                'Containers'
-            ]
+        $mapgenerator = $MapgeneratorsTable->get($id, contain: [
+            'Maps',
+            'Containers'
         ]);
         $containerIdsToCheck = Hash::extract($mapgenerator, 'containers.{n}.id');
         if (!$this->allowedByContainerId($containerIdsToCheck)) {
@@ -274,12 +270,10 @@ class MapgeneratorsController extends AppController {
             throw new NotFoundException(__('Invalid Map generator'));
         }
 
-        $mapgenerator = $MapgeneratorsTable->get($id, [
-            'contain' => [
-                'Containers',
-                'Maps',
-                'MapgeneratorLevels'
-            ]
+        $mapgenerator = $MapgeneratorsTable->get($id, contain: [
+            'Containers',
+            'Maps',
+            'MapgeneratorLevels'
         ]);
 
         if ($this->request->is('get')) {
@@ -321,7 +315,7 @@ class MapgeneratorsController extends AppController {
 
             switch ($type) {
                 //generate by host name splitting
-                case 2:
+                case Mapgenerator::TYPE_GENERATE_BY_HOSTNAME_SPLITTING:
                     $mapgeneratorLevels = $mapgenerator['mapgenerator_levels'];
 
                     if (empty($mapgeneratorLevels) || count($mapgeneratorLevels) < 2) {

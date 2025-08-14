@@ -3686,10 +3686,10 @@ class HostsTable extends Table {
                     ]
                 ],
                 'not_handled'      => [
-                    0         => 0,
-                    1         => 0,
-                    2         => 0,
-                    'hostIds' => [
+                    0              => 0,
+                    1              => 0,
+                    2              => 0,
+                    'hostIds'      => [
                         0 => [],
                         1 => [],
                         2 => []
@@ -5494,14 +5494,14 @@ class HostsTable extends Table {
                     /** @var $ContainersTable ContainersTable */
                     $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
-                    $container = $ContainersTable->getContainerByName($part, $MY_RIGHTS);
-                    if (empty($container) || !in_array($container['id'], $containers)) {
-                        // No container found for this level, skip this host
+                    $containersByName = $ContainersTable->getContainersByName($part, $MY_RIGHTS, $containers);
+                    if (empty($containersByName) || count($containersByName) > 1) {
+                        // No container found or to many found for this level, skip this host
                         $skipHost = true;
                         break;
                     }
 
-                    $containerIdForNewMap = $container['id'];
+                    $containerIdForNewMap = $containersByName[0]['id'];
 
                 }
 
@@ -5526,12 +5526,14 @@ class HostsTable extends Table {
                 ]);
             }
             $realHost = $query->contain('HostsToContainersSharing')
-                ->first();
+                ->all();
 
-            if (empty($realHost)) {
-                // No real host found, skip this host
+            // Skip host if more than one result is returned or no host is found
+            if (empty($realHost) || count($realHost) > 1) {
                 continue;
             }
+
+            $realHost = $realHost->first();
 
             // remove hostname from the parts
             array_pop($hostNameParts);

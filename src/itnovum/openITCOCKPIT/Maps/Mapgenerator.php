@@ -32,6 +32,9 @@ use MapModule\Model\Table\MapsummaryitemsTable;
 
 class Mapgenerator {
 
+    public const TYPE_GENERATE_BY_CONTAINER_STRUCTURE = 1;
+    public const TYPE_GENERATE_BY_HOSTNAME_SPLITTING = 2;
+
     /**
      * @var array
      */
@@ -88,7 +91,7 @@ class Mapgenerator {
 
         foreach ($this->hostsAndData as $hostsAndDataKey => $hostAndData) {
 
-            if ($this->type === 1) {
+            if ($this->type === self::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
                 // container for map is the highest in the list (first container in the list)
                 $containerIdForNewMap = $hostAndData['containerHierarchy'][0]['id'];
 
@@ -97,7 +100,7 @@ class Mapgenerator {
                     return $generatedMapsAndItemsByHost;
                 }
 
-            } else if ($this->type === 2) {
+            } else if ($this->type === self::TYPE_GENERATE_BY_HOSTNAME_SPLITTING) {
 
                 $this->generateByHostname($hostAndData);
 
@@ -317,16 +320,14 @@ class Mapgenerator {
         // load map with items from cache or database
         if (!isset($this->cachedMapsWithItems[$mapToAddItems["id"]])) {
             //get all items of the map to add the new item
-            $this->cachedMapsWithItems[$mapToAddItems["id"]] = $MapsTable->get($mapToAddItems["id"], [
-                'contain' => [
-                    'Containers',
-                    'Mapgadgets',
-                    'Mapicons',
-                    'Mapitems',
-                    'Maplines',
-                    'Maptexts',
-                    'Mapsummaryitems'
-                ]
+            $this->cachedMapsWithItems[$mapToAddItems["id"]] = $MapsTable->get($mapToAddItems["id"], contain: [
+                'Containers',
+                'Mapgadgets',
+                'Mapicons',
+                'Mapitems',
+                'Maplines',
+                'Maptexts',
+                'Mapsummaryitems'
             ])->toArray();
         }
         $mapToAddItemsWithItems = $this->cachedMapsWithItems[$mapToAddItems["id"]];

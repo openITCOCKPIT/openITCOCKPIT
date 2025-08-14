@@ -264,8 +264,10 @@ class MapsTable extends Table {
         if (!is_array($MY_RIGHTS)) {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
+
+        $where = $MapFilter->indexFilter();
+
         $query = $this->find('all')
-            ->where($MapFilter->indexFilter())
             ->distinct('Maps.id')
             ->contain(['Containers'])
             ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
@@ -273,8 +275,26 @@ class MapsTable extends Table {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
                 return $query;
-            })
-            ->orderBy($MapFilter->getOrderForPaginator('Maps.name', 'asc'));
+            });
+
+        if (isset($where['is_auto_generated'])) {
+            if ($where['is_auto_generated'] === 1) {
+                $query->leftJoin(
+                    ['MapgeneratorsToMaps' => 'mapgenerators_to_maps'],
+                    ['MapgeneratorsToMaps.map_id = Maps.id']
+                )->where(['MapgeneratorsToMaps.mapgenerator_id IS NOT NULL']);
+            } else if ($where['is_auto_generated'] === 0) {
+                $query->leftJoin(
+                    ['MapgeneratorsToMaps' => 'mapgenerators_to_maps'],
+                    ['MapgeneratorsToMaps.map_id = Maps.id']
+                )->where(['MapgeneratorsToMaps.mapgenerator_id IS NULL']);
+            }
+            unset($where['is_auto_generated']);
+        }
+
+        $query->where($where);
+
+        $query->orderBy($MapFilter->getOrderForPaginator('Maps.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query

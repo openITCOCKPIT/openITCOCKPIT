@@ -1697,7 +1697,7 @@ class ContainersTable extends Table {
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getContainerByName($name, $MY_RIGHTS = []) {
+    public function getContainersByName($name, $MY_RIGHTS = [], $containers = []): array {
         $query = $this->find()
             ->select([
                 'Containers.id',
@@ -1716,7 +1716,15 @@ class ContainersTable extends Table {
                 'Containers.id IN' => $MY_RIGHTS
             ]);
         }
-        $result = $query->first();
+
+        // if containers are specified, filter by them
+        if (!empty($containers)) {
+            $query->andWhere([
+                'Containers.id IN' => $containers
+            ]);
+        }
+
+        $result = $query->all();
         if (empty($result)) {
             return [];
         }

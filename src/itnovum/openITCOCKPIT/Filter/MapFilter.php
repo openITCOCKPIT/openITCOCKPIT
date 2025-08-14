@@ -40,7 +40,7 @@ class MapFilter extends Filter {
                 'Maps.id',
             ],
             'bool'   => [
-                'is_auto_generated'
+                'Maps.auto_generated'
             ],
         ];
 

@@ -152,7 +152,7 @@ class LdapgroupsTable extends Table {
         if (!empty($where)) {
             $query->where($where);
         }
-        $query->order([
+        $query->orderBy([
             'Ldapgroups.cn' => 'asc'
         ]);
         $query->limit(ITN_AJAX_LIMIT);
@@ -176,7 +176,7 @@ class LdapgroupsTable extends Table {
             if (!empty($where)) {
                 $query->where($where);
             }
-            $query->order([
+            $query->orderBy([
                 'Ldapgroups.cn' => 'asc'
             ]);
 

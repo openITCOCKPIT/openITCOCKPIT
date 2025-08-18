@@ -13,7 +13,7 @@ use Migrations\AbstractMigration;
  * openitcockpit-update
  *
  */
-class MapToSatellite extends AbstractMigration {
+class MapToSatellite extends \Migrations\BaseMigration {
     /**
      * Whether the tables created in this migration
      * should auto-create an `id` field or not
@@ -24,7 +24,7 @@ class MapToSatellite extends AbstractMigration {
      *
      * @var bool
      */
-    public $autoId = false;
+    public bool $autoId = false;
 
 
     /**

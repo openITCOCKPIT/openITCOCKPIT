@@ -105,10 +105,8 @@ class MacrosTable extends Table {
      * @return array
      */
     public function getAvailableMacroNames() {
-        $macros = $this->find('all', [
-            'fields' => [
-                'Macros.name'
-            ]
+        $macros = $this->find('all', fields: [
+            'Macros.name'
         ])->disableHydration()->toArray();
 
         $usedMacoNames = Hash::extract($macros, '{n}.name');

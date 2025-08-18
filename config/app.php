@@ -1,4 +1,26 @@
 <?php
+// Copyright (C) <2015-present>  <it-novum GmbH>
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 $timezone = date_default_timezone_get();
 if (empty($timezone)) {
@@ -15,12 +37,12 @@ return [
      * Development Mode:
      * true: Errors and warnings shown.
      */
-    'debug'    => filter_var(env('OITC_DEBUG', false), FILTER_VALIDATE_BOOLEAN),
+    'debug'     => filter_var(env('OITC_DEBUG', false), FILTER_VALIDATE_BOOLEAN),
 
     /**
      * If set to true, openITCOCKPIT is running inside a container like Docker
      */
-    'container'    => filter_var(env('IS_CONTAINER', false), FILTER_VALIDATE_BOOLEAN),
+    'container' => filter_var(env('IS_CONTAINER', false), FILTER_VALIDATE_BOOLEAN),
 
     /**
      * Configure basic information about the application.
@@ -50,7 +72,7 @@ return [
      *   `plugins`, `templates`, `locales` subkeys, which allow the definition of
      *   paths for plugins, view templates and locale files respectively.
      */
-    'App'      => [
+    'App'       => [
         'namespace'       => 'App',
         'encoding'        => 'UTF-8',
         'defaultLocale'   => 'en_US',
@@ -78,7 +100,7 @@ return [
      *   The salt value is also used as the encryption key.
      *   You should treat it as extremely sensitive data.
      */
-    'Security' => [
+    'Security'  => [
         'salt' => env('OITC_SECURITY_SALT', 'cf4515a2c1833f4aed69591f81598da0124cbd460449b2812495a64d8d70aadc')
     ],
 
@@ -90,7 +112,7 @@ return [
      * Set to true to apply timestamps when debug is true. Set to 'force' to always
      * enable timestamping regardless of debug value.
      */
-    'Asset'    => [
+    'Asset'     => [
         //'timestamp' => true,
         // 'cacheTime' => '+1 year'
     ],
@@ -98,7 +120,7 @@ return [
     /**
      * Configure the cache adapters.
      */
-    'Cache'    => [
+    'Cache'     => [
         'default' => [
             'className' => \Cake\Cache\Engine\FileEngine::class,
             'path'      => CACHE,
@@ -114,7 +136,7 @@ return [
             'port'      => filter_var(env('OITC_REDIS_PORT', 6379), FILTER_VALIDATE_INT)
         ],
 
-        'permissions'   => [
+        'permissions' => [
             'className' => \Cake\Cache\Engine\RedisEngine::class,
             'serialize' => true,
             'prefix'    => 'permissions_',
@@ -123,7 +145,7 @@ return [
             'port'      => filter_var(env('OITC_REDIS_PORT', 6379), FILTER_VALIDATE_INT)
         ],
 
-        'long_time_cache'   => [
+        'long_time_cache'     => [
             'className' => \Cake\Cache\Engine\RedisEngine::class,
             'serialize' => true,
             'prefix'    => 'ltc_',
@@ -138,9 +160,9 @@ return [
          * Duration will be set to '+2 minutes' in bootstrap.php when debug = true
          * If you set 'className' => 'Null' core cache will be disabled.
          */
-        '_cake_core_'   => [
+        '_cake_translations_' => [
             'className' => \Cake\Cache\Engine\FileEngine::class,
-            'prefix'    => 'myapp_cake_core_',
+            'prefix'    => 'myapp_cake_translations_',
             'path'      => CACHE . 'persistent/',
             'serialize' => true,
             'duration'  => '+1 years',
@@ -153,7 +175,7 @@ return [
          * in connections.
          * Duration will be set to '+2 minutes' in bootstrap.php when debug = true
          */
-        '_cake_model_'  => [
+        '_cake_model_'        => [
             'className' => \Cake\Cache\Engine\FileEngine::class,
             'prefix'    => 'myapp_cake_model_',
             'path'      => CACHE . 'models/',
@@ -167,7 +189,7 @@ return [
          * first time the routes are processed via `config/routes.php`.
          * Duration will be set to '+2 seconds' in bootstrap.php when debug = true
          */
-        '_cake_routes_' => [
+        '_cake_routes_'       => [
             'className' => \Cake\Cache\Engine\FileEngine::class,
             'prefix'    => 'myapp_cake_routes_',
             'path'      => CACHE,
@@ -177,7 +199,8 @@ return [
         ],
     ],
 
-    /**
+
+    /*
      * Configure the Error and Exception handlers used by your application.
      *
      * By default errors are displayed using Debugger, when debug is true and logged
@@ -191,40 +214,48 @@ return [
      * Options:
      *
      * - `errorLevel` - int - The level of errors you are interested in capturing.
-     * - `trace` - boolean - Whether or not backtraces should be included in
+     * - `trace` - boolean - Whether backtraces should be included in
      *   logged errors/exceptions.
-     * - `log` - boolean - Whether or not you want exceptions logged.
-     * - `exceptionRenderer` - string - The class responsible for rendering
-     *   uncaught exceptions. If you choose a custom class you should place
-     *   the file for that class in src/Error. This class needs to implement a
-     *   render method.
+     * - `log` - boolean - Whether you want exceptions logged.
+     * - `exceptionRenderer` - string - The class responsible for rendering uncaught exceptions.
+     *   The chosen class will be used for both CLI and web environments. If you want different
+     *   classes used in CLI and web environments you'll need to write that conditional logic as well.
+     *   The conventional location for custom renderers is in `src/Error`. Your exception renderer needs to
+     *   implement the `render()` method and return either a string or Http\Response.
+     *   `errorRenderer` - string - The class responsible for rendering PHP errors. The selected
+     *   class will be used for both web and CLI contexts. If you want different classes for each environment
+     *   you'll need to write that conditional logic as well. Error renderers need to
+     *   to implement the `Cake\Error\ErrorRendererInterface`.
      * - `skipLog` - array - List of exceptions to skip for logging. Exceptions that
      *   extend one of the listed exceptions will also be skipped for logging.
      *   E.g.:
      *   `'skipLog' => ['Cake\Http\Exception\NotFoundException', 'Cake\Http\Exception\UnauthorizedException']`
-     * - `extraFatalErrorMemory` - int - The number of megabytes to increase
-     *   the memory limit by when a fatal error is encountered. This allows
+     * - `extraFatalErrorMemory` - int - The number of megabytes to increase the memory limit by
+     *   when a fatal error is encountered. This allows
      *   breathing room to complete logging or error handling.
+     * - `ignoredDeprecationPaths` - array - A list of glob-compatible file paths that deprecations
+     *   should be ignored in. Use this to ignore deprecations for plugins or parts of
+     *   your application that still emit deprecations.
      */
-    'Error'    => [
-        'errorLevel'        => E_ALL,
-        'exceptionRenderer' => \Cake\Error\Renderer\WebExceptionRenderer::class,
-        'skipLog'           => [],
-        'log'               => true,
-        'trace'             => true,
+    'Error'     => [
+        'errorLevel'              => E_ALL,
+        'skipLog'                 => [],
+        'log'                     => true,
+        'trace'                   => true,
+        'ignoredDeprecationPaths' => [],
     ],
 
 
     /**
      * Configures logging options
      */
-    'Log'      => [
+    'Log'       => [
         'debug'   => [
             'className' => \Cake\Log\Engine\FileLog::class,
             'path'      => LOGS,
             'file'      => 'debug',
             'url'       => env('LOG_DEBUG_URL', null),
-            'scopes'    => false,
+            'scopes'    => null,
             'levels'    => ['notice', 'info', 'debug'],
         ],
         'error'   => [
@@ -232,7 +263,7 @@ return [
             'path'      => LOGS,
             'file'      => 'error',
             'url'       => env('LOG_ERROR_URL', null),
-            'scopes'    => false,
+            'scopes'    => null,
             'levels'    => ['warning', 'error', 'critical', 'alert', 'emergency'],
         ],
         // To enable this dedicated query log, you need set your datasource's log flag to true
@@ -284,7 +315,7 @@ return [
      *
      * To use database sessions, load the SQL file located at config/schema/sessions.sql
      */
-    'Session'  => [
+    'Session'   => [
         'defaults' => env('OITC_SESSION_DEFAULTS', 'php'),
     ],
 ];

@@ -360,11 +360,11 @@ class SystemdowntimesTable extends Table {
             $query->andWhere($SystemdowntimesConditions->getConditions());
         }
 
-        $query->group([
+        $query->groupBy([
             'Systemdowntimes.id'
         ]);
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $SystemdowntimesConditions->getOrder(),
                 ['Systemdowntimes.id' => 'asc']
@@ -460,10 +460,10 @@ class SystemdowntimesTable extends Table {
             $query->having($having);
         }
 
-        $query->group([
+        $query->groupBy([
             'Systemdowntimes.id'
         ])
-            ->order(
+            ->orderBy(
                 array_merge(
                     $SystemdowntimesConditions->getOrder(),
                     ['Systemdowntimes.id' => 'asc']
@@ -545,10 +545,10 @@ class SystemdowntimesTable extends Table {
             $query->andWhere($SystemdowntimesConditions->getConditions());
         }
 
-        $query->group([
+        $query->groupBy([
             'Systemdowntimes.id'
         ])
-            ->order(
+            ->orderBy(
                 array_merge(
                     $SystemdowntimesConditions->getOrder(),
                     ['Systemdowntimes.id' => 'asc']
@@ -617,10 +617,10 @@ class SystemdowntimesTable extends Table {
             $query->andWhere($SystemdowntimesConditions->getConditions());
         }
 
-        $query->group([
+        $query->groupBy([
             'Systemdowntimes.id'
         ])
-            ->order(
+            ->orderBy(
                 array_merge(
                     $SystemdowntimesConditions->getOrder(),
                     ['Systemdowntimes.id' => 'asc']

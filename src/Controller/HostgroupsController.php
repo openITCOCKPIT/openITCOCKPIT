@@ -137,10 +137,8 @@ class HostgroupsController extends AppController {
             throw new NotFoundException(__('Invalid Hostgroup'));
         }
 
-        $hostgroup = $HostgroupsTable->get($id, [
-            'contain' => [
-                'Containers'
-            ]
+        $hostgroup = $HostgroupsTable->get($id, contain: [
+            'Containers'
         ]);
 
         if (!$this->allowedByContainerId($hostgroup->get('container')->get('parent_id'))) {
@@ -246,10 +244,8 @@ class HostgroupsController extends AppController {
 
             $ContainersTable->acquireLock();
 
-            $hostgroupEntity = $HostgroupsTable->get($id, [
-                'contain' => [
-                    'Containers'
-                ]
+            $hostgroupEntity = $HostgroupsTable->get($id, contain: [
+                'Containers'
             ]);
 
             $hostgroupEntity->setAccess('uuid', false);
@@ -303,10 +299,8 @@ class HostgroupsController extends AppController {
         $ContainersTable->acquireLock();
 
         $hostgroup = $HostgroupsTable->getHostgroupById($id);
-        $container = $ContainersTable->get($hostgroup->get('container')->get('id'), [
-            'contain' => [
-                'Hostgroups'
-            ]
+        $container = $ContainersTable->get($hostgroup->get('container')->get('id'), contain: [
+            'Hostgroups'
         ]);
 
         if (!$this->allowedByContainerId($hostgroup->get('container')->get('parent_id'))) {
@@ -929,10 +923,8 @@ class HostgroupsController extends AppController {
                     //Update existing hostgroup
                     //This happens, if a user copy multiple hostgroups, and one run into an validation error
                     //All hostgroups without validation errors got already saved to the database
-                    $newHostgroupEntity = $HostgroupsTable->get($hostgroupData['Hostgroup']['id'], [
-                        'contain' => [
-                            'Containers'
-                        ]
+                    $newHostgroupEntity = $HostgroupsTable->get($hostgroupData['Hostgroup']['id'], contain: [
+                        'Containers'
                     ]);
                     $newHostgroupEntity->setAccess('*', false);
                     $newHostgroupEntity->container->setAccess('*', false);

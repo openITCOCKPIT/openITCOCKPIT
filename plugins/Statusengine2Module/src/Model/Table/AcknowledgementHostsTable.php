@@ -127,7 +127,7 @@ class AcknowledgementHostsTable extends Table implements AcknowledgementHostsTab
             ->contain([
                 'Objects'
             ])
-            ->order([
+            ->orderBy([
                 'entry_time' => 'DESC',
             ])
             ->first();
@@ -151,7 +151,7 @@ class AcknowledgementHostsTable extends Table implements AcknowledgementHostsTab
                 'entry_time >'          => date('Y-m-d H:i:s', $AcknowledgedHostConditions->getFrom()),
                 'entry_time <'          => date('Y-m-d H:i:s', $AcknowledgedHostConditions->getTo())
             ])
-            ->order($AcknowledgedHostConditions->getOrder());
+            ->orderBy($AcknowledgedHostConditions->getOrder());
 
         if ($AcknowledgedHostConditions->hasConditions()) {
             $query->andWhere($AcknowledgedHostConditions->getConditions());

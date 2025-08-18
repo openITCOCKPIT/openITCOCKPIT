@@ -22,8 +22,8 @@ use Cake\ORM\Entity;
  * @property Servicegroup $servicegroups
  * @property Contact $contacts
  * @property Contactgroup $contactgroups
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Container $container
  * @property \App\Model\Entity\TimeperiodTimerange[] $timeperiod_timeranges
@@ -39,7 +39,7 @@ class Serviceescalation extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'                  => true,
         'container_id'          => true,
         'timeperiod_id'         => true,

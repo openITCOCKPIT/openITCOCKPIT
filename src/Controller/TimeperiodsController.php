@@ -142,9 +142,7 @@ class TimeperiodsController extends AppController {
         if (!$TimeperiodsTable->existsById($id)) {
             throw new NotFoundException(__('Invalid timeperiod'));
         }
-        $timeperiod = $TimeperiodsTable->get($id, [
-            'contain' => 'TimeperiodTimeranges'
-        ]);
+        $timeperiod = $TimeperiodsTable->get($id, contain: 'TimeperiodTimeranges');
         $timeperiod = $timeperiod->toArray();
 
 
@@ -365,10 +363,8 @@ class TimeperiodsController extends AppController {
                     //Create/clone timeperiod
                     $sourceTimeperiodId = $timeperiodData['Source']['id'];
                     if (!$Cache->has($sourceTimeperiodId)) {
-                        $sourceTimeperiod = $TimeperiodsTable->get($sourceTimeperiodId, [
-                            'contain' => [
-                                'TimeperiodTimeranges'
-                            ]
+                        $sourceTimeperiod = $TimeperiodsTable->get($sourceTimeperiodId, contain: [
+                            'TimeperiodTimeranges'
                         ])->toArray();
                         foreach ($sourceTimeperiod['timeperiod_timeranges'] as $i => $timerange) {
                             unset($sourceTimeperiod['timeperiod_timeranges'][$i]['id']);

@@ -49,8 +49,8 @@ use SLAModule\Model\Entity\Sla;
  * @property string $tags
  * @property int $container_id
  * @property string|null $host_url
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Command $eventhandler_command
  * @property \App\Model\Entity\Container $container
@@ -74,7 +74,7 @@ class Hosttemplate extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'                              => true,
         'name'                              => true,
         'description'                       => true,

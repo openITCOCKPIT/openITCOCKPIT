@@ -51,7 +51,7 @@ use Cake\Core\Plugin;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -233,7 +233,7 @@ class DashboardsController extends AppController {
                     ->first();
 
                 if ($tab) {
-                    $tab->set('modified', new FrozenTime());
+                    $tab->set('modified', new \Cake\I18n\DateTime());
                     $DashboardTabsTable->save($tab);
                 }
 
@@ -656,7 +656,7 @@ class DashboardsController extends AppController {
 
         $updateAvailable = false;
         if ($sourceTab !== null && $tab !== null) {
-            /** @var FrozenTime $modified */
+            /** @var \Cake\I18n\DateTime $modified */
             $modified = $sourceTab->get('modified');
             $modified = $modified->getTimestamp();
 
@@ -765,7 +765,7 @@ class DashboardsController extends AppController {
             ];
         }
 
-        $FrozenTime = new FrozenTime();
+        $FrozenTime = new \Cake\I18n\DateTime();
         $tabToUpdate = $DashboardTabsTable->patchEntity($tabToUpdate, [
             'last_update' => $FrozenTime->getTimestamp(),
             'locked'      => (bool)$sourceTabWithWidgets->get('locked'),
@@ -2347,7 +2347,9 @@ class DashboardsController extends AppController {
             }
 
             $hoststatusSummary = [];
+            $hoststatusCountPercentage = [];
             $servicestatusSummary = [];
+            $servicestatusCountPercentage = [];
             switch ($type) {
                 case 'hosts':
                     $hoststatus = [];
@@ -2368,6 +2370,18 @@ class DashboardsController extends AppController {
                     }
                     $hoststatusSummary = $HostsTable->getHostStateSummary($hoststatus, true);
 
+                    if (!empty($hoststatusSummary) && isset($hoststatusSummary['state'])) {
+                        foreach ($hoststatusSummary['state'] as $stateId => $count) {
+                            if (is_numeric($stateId)) {
+                                if ($hoststatusSummary['total'] > 0) {
+                                    $hoststatusCountPercentage[$stateId] = round($count / $hoststatusSummary['total'] * 100, 2);
+                                } else {
+                                    $hoststatusCountPercentage[$stateId] = 0;
+                                }
+                            }
+                        }
+                    }
+
                     break;
                 case 'services':
                     $servicestatus = [];
@@ -2387,8 +2401,20 @@ class DashboardsController extends AppController {
                         $servicestatus = $ServicesTable->getServicesWithStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
                     }
                     $servicestatusSummary = $ServicesTable->getServiceStateSummary($servicestatus, true);
-                    break;
 
+                    if (!empty($servicestatusSummary) && isset($servicestatusSummary['state'])) {
+                        foreach ($servicestatusSummary['state'] as $stateId => $count) {
+                            if (is_numeric($stateId)) {
+                                if ($servicestatusSummary['total'] > 0) {
+                                    $servicestatusCountPercentage[$stateId] = round($count / $servicestatusSummary['total'] * 100, 2);
+                                } else {
+                                    $servicestatusCountPercentage[$stateId] = 0;
+                                }
+                            }
+                        }
+                    }
+
+                    break;
             }
 
             $hostgroupIds = [];
@@ -2409,9 +2435,17 @@ class DashboardsController extends AppController {
 
             $this->set('config', $config);
             $this->set('hoststatusSummary', $hoststatusSummary);
+            $this->set('hoststatusCountPercentage', $hoststatusCountPercentage);
             $this->set('servicestatusSummary', $servicestatusSummary);
+            $this->set('servicestatusCountPercentage', $servicestatusCountPercentage);
 
-            $this->viewBuilder()->setOption('serialize', ['config', 'hoststatusSummary', 'servicestatusSummary']);
+            $this->viewBuilder()->setOption('serialize', [
+                'config',
+                'hoststatusSummary',
+                'hoststatusCountPercentage',
+                'servicestatusSummary',
+                'servicestatusCountPercentage'
+            ]);
             return;
         }
 

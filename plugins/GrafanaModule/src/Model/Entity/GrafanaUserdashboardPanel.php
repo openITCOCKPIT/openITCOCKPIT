@@ -53,7 +53,7 @@ class GrafanaUserdashboardPanel extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'userdashboard_id'              => true,
         'row'                           => true,
         'unit'                          => true,

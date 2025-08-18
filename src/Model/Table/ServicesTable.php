@@ -32,7 +32,7 @@ use App\Model\Entity\Service;
 use App\Model\Entity\Servicedependency;
 use App\Model\Entity\Serviceescalation;
 use Cake\Core\Plugin;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\ORM\Query;
@@ -566,7 +566,7 @@ class ServicesTable extends Table {
                 }
             ])
             ->where($where)
-            ->group([
+            ->groupBy([
                 'Services.id'
             ])
             ->disableHydration();
@@ -618,7 +618,7 @@ class ServicesTable extends Table {
         $query = $this->find();
 
         if (isset($where['servicename rlike'])) {
-            $query->where(new Comparison(
+            $query->where(new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))',
                 $where['servicename rlike'],
                 'string',
@@ -648,7 +648,7 @@ class ServicesTable extends Table {
         if (!empty($having)) {
             $query->having($having);
         }
-        $query->order([
+        $query->orderBy([
             'servicename' => 'asc'
         ])
             ->limit(ITN_AJAX_LIMIT)
@@ -683,7 +683,7 @@ class ServicesTable extends Table {
                 ->where([
                     'Services.id IN' => $selected
                 ])
-                ->order([
+                ->orderBy([
                     'servicename' => 'asc'
                 ])
                 ->disableHydration()
@@ -747,7 +747,7 @@ class ServicesTable extends Table {
         $query = $this->find();
 
         if (isset($where['servicename rlike'])) {
-            $query->where(new Comparison(
+            $query->where(new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))',
                 $where['servicename rlike'],
                 'string',
@@ -777,7 +777,7 @@ class ServicesTable extends Table {
             ->where(
                 $where
             )
-            ->order([
+            ->orderBy([
                 'servicename' => 'asc'
             ])
             ->limit(ITN_AJAX_LIMIT);
@@ -818,7 +818,7 @@ class ServicesTable extends Table {
                 ->where([
                     'Services.id IN' => $selected
                 ])
-                ->order([
+                ->orderBy([
                     'servicename' => 'asc'
                 ])
                 ->disableHydration()
@@ -1443,7 +1443,7 @@ class ServicesTable extends Table {
 
         $query
             ->where($where)
-            ->order(['Services.id' => 'asc'])
+            ->orderBy(['Services.id' => 'asc'])
             ->disableHydration()
             ->all();
         $query = $query->toArray();
@@ -1632,10 +1632,9 @@ class ServicesTable extends Table {
     }
 
     public function getServiceUuidsOfHostByHostId($hostId) {
-        $query = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'uuid'
-        ])
+        $query = $this->find('list',
+            keyField: 'id',
+            valueField: 'uuid')
             ->where([
                 'Services.host_id' => $hostId
             ])
@@ -1696,7 +1695,7 @@ class ServicesTable extends Table {
             })->innerJoinWith('Servicetemplates');
 
         if (isset($where['servicename rlike'])) {
-            $query->where(new Comparison(
+            $query->where(new ComparisonExpression(
                 'IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)',
                 $where['servicename rlike'],
                 'string',
@@ -1710,13 +1709,13 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -1805,12 +1804,12 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -1893,7 +1892,7 @@ class ServicesTable extends Table {
             ->whereNull('Servicestatus.service_description');
 
         if (isset($where['servicename rlike'])) {
-            $query->where(new Comparison(
+            $query->where(new ComparisonExpression(
                 'IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)',
                 $where['servicename rlike'],
                 'string',
@@ -1907,13 +1906,13 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -2034,7 +2033,7 @@ class ServicesTable extends Table {
             ]);
 
         if (isset($where['keywords rlike'])) {
-            $query->where(new Comparison(
+            $query->where(new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $where['keywords rlike'],
                 'string',
@@ -2044,7 +2043,7 @@ class ServicesTable extends Table {
         }
 
         if (isset($where['not_keywords not rlike'])) {
-            $query->andWhere(new Comparison(
+            $query->andWhere(new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $where['not_keywords not rlike'],
                 'string',
@@ -2054,7 +2053,7 @@ class ServicesTable extends Table {
         }
 
         if (isset($where['servicepriority IN'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.priority IS NULL), Servicetemplates.priority, Services.priority)',
                 $where['servicepriority IN'],
                 'integer[]',
@@ -2064,7 +2063,7 @@ class ServicesTable extends Table {
         }
 
         if (isset($where['servicedescription LIKE'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.description IS NULL), Servicetemplates.description, Services.description)',
                 $where['servicedescription LIKE'],
                 'string',
@@ -2096,13 +2095,13 @@ class ServicesTable extends Table {
 
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -2221,7 +2220,7 @@ class ServicesTable extends Table {
             ]);
 
         if (isset($where['servicename rlike'])) {
-            $query->where(new Comparison(
+            $query->where(new ComparisonExpression(
                 'IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)',
                 $where['servicename rlike'],
                 'string',
@@ -2235,7 +2234,7 @@ class ServicesTable extends Table {
                 $compareValue = explode(',', $compareValue);
             }
             $compareValue = sprintf('.*(%s).*', implode('|', $compareValue));
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $compareValue,
                 'string',
@@ -2250,7 +2249,7 @@ class ServicesTable extends Table {
                 $compareValue = explode(',', $compareValue);
             }
             $compareValue = sprintf('.*(%s).*', implode('|', $compareValue));
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $compareValue,
                 'string',
@@ -2265,7 +2264,7 @@ class ServicesTable extends Table {
                 $compareValue = explode(',', $compareValue);
             }
             $compareValue = sprintf('.*(%s).*', implode('|', $compareValue));
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $compareValue,
                 'string',
@@ -2280,7 +2279,7 @@ class ServicesTable extends Table {
                 $compareValue = explode(',', $compareValue);
             }
             $compareValue = sprintf('.*(%s).*', implode('|', $compareValue));
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $compareValue,
                 'string',
@@ -2290,7 +2289,7 @@ class ServicesTable extends Table {
         }
 
         if (isset($where['servicepriority IN'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.priority IS NULL), Servicetemplates.priority, Services.priority)',
                 $where['servicepriority IN'],
                 'integer[]',
@@ -2300,7 +2299,7 @@ class ServicesTable extends Table {
         }
 
         if (isset($where['servicedescription LIKE'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.description IS NULL), Servicetemplates.description, Services.description)',
                 $where['servicedescription LIKE'],
                 'string',
@@ -2315,13 +2314,13 @@ class ServicesTable extends Table {
 
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -2481,12 +2480,12 @@ class ServicesTable extends Table {
                 ]
             ])
             ->enableHydration($enableHydration)
-            ->order([
+            ->orderBy([
                 'Hosts.name'  => 'asc',
                 'servicename' => 'asc',
                 'Services.id' => 'asc'
             ])
-            ->group(['Services.id'])
+            ->groupBy(['Services.id'])
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());
@@ -2510,7 +2509,7 @@ class ServicesTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'service_id'
             ])
             ->disableHydration()
@@ -2562,11 +2561,11 @@ class ServicesTable extends Table {
 
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'servicename' => 'asc',
             'Services.id' => 'asc'
         ]);
-        $query->group([
+        $query->groupBy([
             'Services.id'
         ]);
 
@@ -2667,7 +2666,7 @@ class ServicesTable extends Table {
             ]);
 
         if (isset($where['keywords rlike'])) {
-            $query->where(new Comparison(
+            $query->where(new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $where['keywords rlike'],
                 'string',
@@ -2677,7 +2676,7 @@ class ServicesTable extends Table {
         }
 
         if (isset($where['not_keywords not rlike'])) {
-            $query->andWhere(new Comparison(
+            $query->andWhere(new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $where['not_keywords not rlike'],
                 'string',
@@ -2720,13 +2719,13 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -2834,7 +2833,7 @@ class ServicesTable extends Table {
             ]);
 
         if (isset($where['keywords rlike'])) {
-            $query->where(new Comparison(
+            $query->where(new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $where['keywords rlike'],
                 'string',
@@ -2844,7 +2843,7 @@ class ServicesTable extends Table {
         }
 
         if (isset($where['not_keywords not rlike'])) {
-            $query->andWhere(new Comparison(
+            $query->andWhere(new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $where['not_keywords not rlike'],
                 'string',
@@ -2888,13 +2887,13 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Services.id']);
+        $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ServiceConditions->getOrder(),
                 ['Services.id' => 'asc']
@@ -3203,13 +3202,13 @@ class ServicesTable extends Table {
         }
 
         if ($type === 'all') {
-            $query->order([
+            $query->orderBy([
                 'servicename' => 'asc',
                 'Services.id' => 'asc'
             ]);
         }
 
-        $query->group([
+        $query->groupBy([
             'Services.id'
         ]);
 
@@ -3323,14 +3322,14 @@ class ServicesTable extends Table {
             $query->where(['Hosts.id IN' => $hostIdsFromServiceCondition]);
         }
         if ($type === 'all') {
-            $query->order([
+            $query->orderBy([
                 'Hosts.name'  => 'asc',
                 'servicename' => 'asc',
                 'Services.id' => 'asc'
             ]);
         }
 
-        $query->group([
+        $query->groupBy([
             'Services.id'
         ]);
 
@@ -3388,7 +3387,7 @@ class ServicesTable extends Table {
                     'HostsToContainersSharing.id IN ' => $MY_RIGHTS
                 ]);
             })
-            ->group([
+            ->groupBy([
                 'Servicestatus.current_state',
             ])
             ->disableHydration();
@@ -3464,7 +3463,7 @@ class ServicesTable extends Table {
                 ]);
             });
         }
-        $query->group([
+        $query->groupBy([
             'Servicestatus.current_state',
         ])
             ->disableHydration();
@@ -3614,12 +3613,12 @@ class ServicesTable extends Table {
                 'servicegroup_ids IS NOT NULL',
                 'count > 0'
             ]);
-            $query->group('Services.id');
+            $query->groupBy('Services.id');
         }
         if (!empty($conditions['Host']['name'])) {
             if (isset($conditions['Host']['name_regex']) && $conditions['Host']['name_regex'] === true || $conditions['Host']['name_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Host']['name'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.name',
                         $conditions['Host']['name'],
                         'string',
@@ -3628,7 +3627,7 @@ class ServicesTable extends Table {
                 }
             } else {
                 // Use LIKE
-                $where[] = new Comparison(
+                $where[] = new ComparisonExpression(
                     'Hosts.name',
                     sprintf('%%%s%%', $conditions['Host']['name']),
                     'string',
@@ -3640,7 +3639,7 @@ class ServicesTable extends Table {
         if (!empty($conditions['Service']['servicename'])) {
             if (isset($conditions['Service']['servicename_regex']) && $conditions['Service']['servicename_regex'] === true || $conditions['Service']['servicename_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Service']['servicename'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)',
                         $conditions['Service']['servicename'],
                         'string',
@@ -3648,7 +3647,7 @@ class ServicesTable extends Table {
                     );
                 }
             } else {
-                $where[] = new Comparison(
+                $where[] = new ComparisonExpression(
                     'IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)',
                     sprintf('%%%s%%', $conditions['Service']['servicename']),
                     'string',
@@ -3658,7 +3657,7 @@ class ServicesTable extends Table {
         }
 
         if (!empty($conditions['Host']['keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $conditions['Host']['keywords'],
                 'string',
@@ -3667,7 +3666,7 @@ class ServicesTable extends Table {
         }
 
         if (!empty($conditions['Host']['not_keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
                 $conditions['Host']['not_keywords'],
                 'string',
@@ -3675,7 +3674,7 @@ class ServicesTable extends Table {
             );
         }
         if (!empty($conditions['Service']['keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $conditions['Service']['keywords'],
                 'string',
@@ -3684,7 +3683,7 @@ class ServicesTable extends Table {
         }
 
         if (!empty($conditions['Service']['not_keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $conditions['Service']['not_keywords'],
                 'string',
@@ -3705,7 +3704,7 @@ class ServicesTable extends Table {
             ]);
         }
         $query->andWhere($where)
-            ->group(['Services.id'])
+            ->groupBy(['Services.id'])
             ->disableHydration();
         $result = $query->all();
 
@@ -3934,7 +3933,7 @@ class ServicesTable extends Table {
                 'HostsToContainers.container_id IN' => $MY_RIGHTS
             ]);
         }
-        $query->group([
+        $query->groupBy([
             'Services.id'
         ]);
         $query->enableHydration($enableHydration);
@@ -3983,11 +3982,11 @@ class ServicesTable extends Table {
 
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'servicename' => 'asc',
             'Services.id' => 'asc'
         ]);
-        $query->group([
+        $query->groupBy([
             'Services.id'
         ]);
 
@@ -4073,7 +4072,7 @@ class ServicesTable extends Table {
                 'Services.host_id'      => $host_id,
                 'Services.service_type' => MK_SERVICE
             ])
-            ->order(['Services.id' => 'asc'])
+            ->orderBy(['Services.id' => 'asc'])
             ->disableHydration()
             ->all();
         if (empty($query) || $query === null) {
@@ -4135,10 +4134,9 @@ class ServicesTable extends Table {
             return [];
         }
 
-        $query = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'uuid'
-        ])
+        $query = $this->find('list',
+            keyField: 'id',
+            valueField: 'uuid')
             ->where([
                 'Services.id IN' => $serviceIds
             ])
@@ -4479,11 +4477,9 @@ class ServicesTable extends Table {
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
         foreach ($recordsToDelete as $servicegroupId => $serviceIdsToDelete) {
-            $servicegroupEntity = $ServicegroupsTable->get($servicegroupId, [
-                'contain' => [
-                    'Containers',
-                    'Services'
-                ]
+            $servicegroupEntity = $ServicegroupsTable->get($servicegroupId, contain: [
+                'Containers',
+                'Services'
             ]);
             $servicegroupServiceIds = Hash::extract($servicegroupEntity->get('services'), '{n}.id');
             $newServiceIds = array_diff(
@@ -4692,37 +4688,38 @@ class ServicesTable extends Table {
      * @param bool $extended show details ('acknowledged', 'in downtime', ...
      * @return array
      */
-    public function getServiceStateSummary($servicestatus, $extended = true) {
+    public function getServiceStateSummary($servicestatus, bool $extended = true): array {
         $serviceStateSummary = [
-            'state'        => [
+            'state'            => [
                 0 => 0,
                 1 => 0,
                 2 => 0,
                 3 => 0
             ],
-            'acknowledged' => [
+            'acknowledged'     => [
                 0 => 0,
                 1 => 0,
                 2 => 0,
                 3 => 0
             ],
-            'in_downtime'  => [
+            'in_downtime'      => [
                 0 => 0,
                 1 => 0,
                 2 => 0,
                 3 => 0
             ],
-            'not_handled'  => [
+            'not_handled'      => [
                 0 => 0,
                 1 => 0,
                 2 => 0,
                 3 => 0
             ],
-            'total'        => 0
+            'total'            => 0,
+            'cumulative_state' => -1 // not monitored
         ];
         if ($extended === true) {
             $serviceStateSummary = [
-                'state'        => [
+                'state'            => [
                     0            => 0,
                     1            => 0,
                     2            => 0,
@@ -4734,7 +4731,7 @@ class ServicesTable extends Table {
                         3 => []
                     ]
                 ],
-                'acknowledged' => [
+                'acknowledged'     => [
                     0            => 0,
                     1            => 0,
                     2            => 0,
@@ -4746,7 +4743,7 @@ class ServicesTable extends Table {
                         3 => []
                     ]
                 ],
-                'in_downtime'  => [
+                'in_downtime'      => [
                     0            => 0,
                     1            => 0,
                     2            => 0,
@@ -4758,19 +4755,20 @@ class ServicesTable extends Table {
                         3 => []
                     ]
                 ],
-                'not_handled'  => [
-                    0            => 0,
-                    1            => 0,
-                    2            => 0,
-                    3            => 0,
-                    'serviceIds' => [
+                'not_handled'      => [
+                    0                 => 0,
+                    1                 => 0,
+                    2                 => 0,
+                    3                 => 0,
+                    'serviceIds'      => [
                         0 => [],
                         1 => [],
                         2 => [],
                         3 => []
-                    ]
+                    ],
+                    'totalServiceIds' => []
                 ],
-                'passive'      => [
+                'passive'          => [
                     0            => 0,
                     1            => 0,
                     2            => 0,
@@ -4782,7 +4780,8 @@ class ServicesTable extends Table {
                         2 => []
                     ]
                 ],
-                'total'        => 0
+                'total'            => 0,
+                'cumulative_state' => -1 // not monitored
             ];
         }
         if (empty($servicestatus)) {
@@ -4803,6 +4802,7 @@ class ServicesTable extends Table {
                     } else if ($service['Servicestatus']['problem_has_been_acknowledged'] == 0 && $service['Servicestatus']['scheduled_downtime_depth'] == 0) {
                         $serviceStateSummary['not_handled'][$service['Servicestatus']['current_state']]++;
                         $serviceStateSummary['not_handled']['serviceIds'][$service['Servicestatus']['current_state']][] = $service['id'];
+                        $serviceStateSummary['not_handled']['totalServiceIds'][] = $service['id'];
                     }
                 }
                 if ($service['Servicestatus']['scheduled_downtime_depth'] > 0) {
@@ -4824,6 +4824,9 @@ class ServicesTable extends Table {
                 if ($service['Servicestatus']['scheduled_downtime_depth'] > 0) {
                     $serviceStateSummary['in_downtime'][$service['Servicestatus']['current_state']]++;
                 }
+            }
+            if ($serviceStateSummary['cumulative_state'] < $service['Servicestatus']['current_state']) {
+                $serviceStateSummary['cumulative_state'] = $service['Servicestatus']['current_state'];
             }
             $serviceStateSummary['total']++;
         }
@@ -4910,11 +4913,11 @@ class ServicesTable extends Table {
                 'servicegroup_ids IS NOT NULL',
                 'count > 0'
             ]);
-            $query->group('Services.id');
+            $query->groupBy('Services.id');
         }
 
         if (isset($where['Services.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $where['Services.keywords rlike'],
                 'string',
@@ -4924,7 +4927,7 @@ class ServicesTable extends Table {
         }
 
         if (isset($where['Services.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $where['Services.not_keywords not rlike'],
                 'string',
@@ -5036,7 +5039,7 @@ class ServicesTable extends Table {
         }
 
         if (isset($conditions['Services.keywords rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $where['Services.keywords rlike'],
                 'string',
@@ -5046,7 +5049,7 @@ class ServicesTable extends Table {
         }
 
         if (isset($conditions['Services.not_keywords not rlike'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $where['Services.not_keywords not rlike'],
                 'string',
@@ -5056,7 +5059,7 @@ class ServicesTable extends Table {
         }
 
         if (!empty($conditions['Service']['keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $conditions['Service']['keywords'],
                 'string',
@@ -5065,7 +5068,7 @@ class ServicesTable extends Table {
         }
 
         if (!empty($conditions['Service']['not_keywords'])) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $conditions['Service']['not_keywords'],
                 'string',
@@ -5076,7 +5079,7 @@ class ServicesTable extends Table {
         if (!empty($conditions['Host']['name'])) {
             if (isset($conditions['Host']['name_regex']) && $conditions['Host']['name_regex'] === true || $conditions['Host']['name_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Host']['name'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.name',
                         $conditions['Host']['name'],
                         'string',
@@ -5092,7 +5095,7 @@ class ServicesTable extends Table {
             if (isset($conditions['Service']['servicename_regex']) && $conditions['Service']['servicename_regex'] === true || $conditions['Service']['servicename_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Service']['servicename'])) {
                     $query->having([
-                        new Comparison(
+                        new ComparisonExpression(
                             'servicename',
                             $conditions['Service']['servicename'],
                             'string',
@@ -5108,7 +5111,7 @@ class ServicesTable extends Table {
         }
 
         $query->andWhere($where);
-        $query->group('Services.id');
+        $query->groupBy('Services.id');
 
         $query->disableHydration();
         $result = $query->all();
@@ -5231,7 +5234,7 @@ class ServicesTable extends Table {
             'Services.disabled IN' => [0]
         ];
         if (!empty($where['servicename LIKE'])) {
-            $_where[] = new Comparison(
+            $_where[] = new ComparisonExpression(
                 'IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)',
                 sprintf('%%%s%%', $where['servicename LIKE']),
                 'string',
@@ -5270,8 +5273,8 @@ class ServicesTable extends Table {
         $query->where($where);
 
         $query->disableHydration();
-        $query->group(['Services.id']);
-        $query->order([
+        $query->groupBy(['Services.id']);
+        $query->orderBy([
             'servicename' => 'asc',
             'Services.id' => 'asc'
         ]);
@@ -5347,7 +5350,7 @@ class ServicesTable extends Table {
         if (!empty($having)) {
             $query->having($having);
         }
-        $query->order([
+        $query->orderBy([
             'servicename' => 'asc'
         ])
             ->limit(ITN_AJAX_LIMIT)
@@ -5380,7 +5383,7 @@ class ServicesTable extends Table {
                 ->where([
                     'Services.id IN' => $selected
                 ])
-                ->order([
+                ->orderBy([
                     'servicename' => 'asc'
                 ])
                 ->disableHydration()
@@ -5452,7 +5455,7 @@ class ServicesTable extends Table {
         if (!empty($conditions['filter[Hosts.name]'])) {
             if (isset($conditions['filter[Hosts.name_regex]']) && $conditions['filter[Hosts.name_regex]'] === true || $conditions['filter[Hosts.name_regex]'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['filter[Hosts.name]'])) {
-                    $where[] = new Comparison(
+                    $where[] = new ComparisonExpression(
                         'Hosts.name',
                         $conditions['filter[Hosts.name]'],
                         'string',
@@ -5468,7 +5471,7 @@ class ServicesTable extends Table {
             if (isset($conditions['filter[servicename_regex]']) && $conditions['filter[servicename_regex]'] === true || $conditions['filter[servicename_regex]'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['filter[servicename]'])) {
                     $query->having([
-                        new Comparison(
+                        new ComparisonExpression(
                             'servicename',
                             $conditions['filter[servicename]'],
                             'string',
@@ -5500,7 +5503,7 @@ class ServicesTable extends Table {
                 $compareValue = explode(',', $compareValue);
             }
             $compareValue = sprintf('.*(%s).*', implode('|', $compareValue));
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 //implode(',',$conditions['filter[Services.keywords][]']),
                 $compareValue,
@@ -5515,7 +5518,7 @@ class ServicesTable extends Table {
                 $compareValue = explode(',', $compareValue);
             }
             $compareValue = sprintf('.*(%s).*', implode('|', $compareValue));
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
                 $compareValue,
                 'string',
@@ -5523,7 +5526,7 @@ class ServicesTable extends Table {
             );
         }
         $query->andWhere($where);
-        $query->group('Services.id');
+        $query->groupBy('Services.id');
 
         $query->disableHydration();
         $result = $query->all();
@@ -5560,7 +5563,7 @@ class ServicesTable extends Table {
                 'Services.disabled' => 0,
                 $query->newExpr('IF(Services.sla_relevant IS NULL, Servicetemplates.sla_relevant, Services.sla_relevant) = 1')
             ])
-            ->order([
+            ->orderBy([
                 'servicename',
                 'Services.id'
             ])
@@ -5575,10 +5578,9 @@ class ServicesTable extends Table {
      */
     public function getActiveAndSlaRelavantServicesIdsByHostIdAsList($id) {
         //$list = $this->MODEL->find('list', ['keyField' => 'id', 'valueField' => ('user_type')])->toArray();
-        $query = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'id'
-        ]);
+        $query = $this->find('list',
+            keyField: 'id',
+            valueField: 'id');
         $query->select([
             'Services.id',
             'is_sla_relevant' => $query->newExpr('IF(Services.sla_relevant IS NULL, Servicetemplates.sla_relevant, Services.sla_relevant)')
@@ -5631,7 +5633,7 @@ class ServicesTable extends Table {
                 'Servicestatus.service_description = Services.uuid'
             ]);
         if (isset($where['servicename LIKE'])) {
-            $query->where(new Comparison(
+            $query->where(new ComparisonExpression(
                 'IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)',
                 $where['servicename LIKE'],
                 'string',
@@ -5646,7 +5648,7 @@ class ServicesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->group(['Servicestatus.current_state']);
+        $query->groupBy(['Servicestatus.current_state']);
         return $this->emptyArrayIfNull($query->toArray());
     }
 }

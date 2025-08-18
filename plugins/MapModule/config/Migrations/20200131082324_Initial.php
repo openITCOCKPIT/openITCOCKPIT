@@ -13,7 +13,7 @@ use Migrations\AbstractMigration;
  * oitc4 migrations migrate -p MapModule
  *
  */
-class Initial extends AbstractMigration {
+class Initial extends \Migrations\BaseMigration {
     /**
      * Whether the tables created in this migration
      * should auto-create an `id` field or not
@@ -24,7 +24,7 @@ class Initial extends AbstractMigration {
      *
      * @var bool
      */
-    public $autoId = false;
+    public bool $autoId = false;
 
     /**
      * Up Method.

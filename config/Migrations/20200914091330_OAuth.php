@@ -36,7 +36,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class OAuth extends AbstractMigration {
+class OAuth extends \Migrations\BaseMigration {
 
     /**
      * Change Method.

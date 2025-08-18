@@ -11,8 +11,8 @@ use Cake\ORM\Entity;
  * @property string $uuid
  * @property int $container_id
  * @property string|null $description
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Container $container
  * @property \App\Model\Entity\Servicetemplate[] $servicetemplates
@@ -27,7 +27,7 @@ class Servicetemplategroup extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'uuid'             => true,
         'container_id'     => true,
         'description'      => true,

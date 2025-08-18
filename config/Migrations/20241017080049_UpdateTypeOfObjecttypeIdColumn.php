@@ -12,7 +12,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class UpdateTypeOfObjecttypeIdColumn extends AbstractMigration {
+class UpdateTypeOfObjecttypeIdColumn extends \Migrations\BaseMigration {
     public function up(): void {
         $this->table('changelogs')
             ->changeColumn('objecttype_id', 'biginteger', [

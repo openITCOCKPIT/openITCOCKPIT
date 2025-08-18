@@ -169,13 +169,13 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
             ->bind(':end1', $endTimestamp, 'integer')
             ->bind(':start2', $startTimestamp, 'integer')
             ->bind(':end2', $endTimestamp, 'integer');
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $DowntimeServiceConditions->getOrder(),
                 ['DowntimeServices.internal_downtime_id' => 'asc']
             )
         )
-            ->group('DowntimeServices.internal_downtime_id');
+            ->groupBy('DowntimeServices.internal_downtime_id');
 
 
         if ($DowntimeServiceConditions->hasContainerIds()) {
@@ -312,13 +312,13 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
                 ['HostsToContainers' => 'hosts_to_containers'],
                 ['HostsToContainers.host_id = Hosts.id']
             )
-            ->order(
+            ->orderBy(
                 array_merge(
                     $DowntimeServiceConditions->getOrder(),
                     ['DowntimeServices.internal_downtime_id' => 'asc']
                 )
             )
-            ->group('DowntimeServices.internal_downtime_id');
+            ->groupBy('DowntimeServices.internal_downtime_id');
 
 
         if ($DowntimeServiceConditions->hasContainerIds()) {
@@ -406,7 +406,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
                 ['Services' => 'services'],
                 ['Services.uuid = DowntimeServices.service_description']
             )
-            ->order([
+            ->orderBy([
                 'DowntimeServices.entry_time' => 'DESC'
             ])
             ->where([
@@ -503,7 +503,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
             'DowntimeServices.internal_downtime_id',
             'DowntimeServices.was_cancelled',
         ])
-            ->order([
+            ->orderBy([
                 'DowntimeServices.entry_time' => 'DESC'
             ])
             ->where([
@@ -564,7 +564,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
                 'DowntimeServices.was_cancelled'          => 0,
                 'DowntimeServices.service_description IN' => $uuids
             ])
-            ->order([
+            ->orderBy([
                 'DowntimeServices.scheduled_start_time' => 'DESC'
             ]);
 

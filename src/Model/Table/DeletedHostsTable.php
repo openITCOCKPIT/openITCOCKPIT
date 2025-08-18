@@ -95,7 +95,7 @@ class DeletedHostsTable extends Table {
         $query = $this->find('all')
             ->where($HostFilter->deletedFilter())
             ->disableHydration()
-            ->order($HostFilter->getOrderForPaginator('DeletedHosts.created', 'desc'));
+            ->orderBy($HostFilter->getOrderForPaginator('DeletedHosts.created', 'desc'));
 
 
         if ($PaginateOMat === null) {

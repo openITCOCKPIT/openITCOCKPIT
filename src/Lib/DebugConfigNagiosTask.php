@@ -28,7 +28,7 @@ use App\Model\Table\HosttemplatesTable;
 use Cake\Console\ConsoleInput;
 use Cake\Console\ConsoleIo;
 use Cake\Core\Configure;
-use Cake\Filesystem\Folder;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;

@@ -161,7 +161,7 @@ class ServicetemplategroupsTable extends Table {
         }
 
         $query->where($where);
-        $query->order($ServicetemplategroupsFilter->getOrderForPaginator('Containers.name', 'asc'));
+        $query->orderBy($ServicetemplategroupsFilter->getOrderForPaginator('Containers.name', 'asc'));
 
 
         if ($PaginateOMat === null) {
@@ -309,7 +309,7 @@ class ServicetemplategroupsTable extends Table {
             ->where(
                 $where
             )
-            ->order([
+            ->orderBy([
                 'Containers.name' => 'asc'
             ])
             ->limit(ITN_AJAX_LIMIT)
@@ -335,7 +335,7 @@ class ServicetemplategroupsTable extends Table {
                 ->where([
                     'Servicetemplategroups.id IN' => $selected
                 ])
-                ->order([
+                ->orderBy([
                     'Containers.name' => 'asc'
                 ])
                 ->limit(ITN_AJAX_LIMIT)
@@ -378,7 +378,7 @@ class ServicetemplategroupsTable extends Table {
                             'Servicetemplates.name',
                             'Servicetemplates.description'
                         ])
-                        ->order([
+                        ->orderBy([
                             'Servicetemplates.name' => 'ASC'
                         ]);
                     if (!empty($containerIds)) {
@@ -510,7 +510,7 @@ class ServicetemplategroupsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->order([
+        $query->orderBy([
             'Containers.name' => 'asc'
         ]);
 
@@ -734,7 +734,7 @@ class ServicetemplategroupsTable extends Table {
             ->where([
                 'Containers.parent_id IN ' => $containerIds
             ])
-            ->order([
+            ->orderBy([
                 'Containers.name' => 'asc'
             ])
             ->disableHydration()
@@ -760,7 +760,7 @@ class ServicetemplategroupsTable extends Table {
             ->contain([
                 'Containers'
             ])
-            ->order(['Servicetemplategroups.id' => 'asc']);
+            ->orderBy(['Servicetemplategroups.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere([

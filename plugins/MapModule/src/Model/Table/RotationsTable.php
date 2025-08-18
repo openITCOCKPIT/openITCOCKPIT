@@ -183,8 +183,8 @@ class RotationsTable extends Table {
             $query->limit($limit);
         }
 
-        $queryResult = $query->order($orderForPaginator)
-            ->group(['Rotations.id'])
+        $queryResult = $query->orderBy($orderForPaginator)
+            ->groupBy(['Rotations.id'])
             ->enableAutoFields(true)
             ->all();
 
@@ -235,7 +235,7 @@ class RotationsTable extends Table {
                 });
                 return $q;
             })
-            ->group([
+            ->groupBy([
                 'Rotations.id'
             ])
             ->enableHydration(false)

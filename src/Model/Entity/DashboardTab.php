@@ -18,8 +18,8 @@ use Cake\ORM\Entity;
  * @property int|null $check_for_updates
  * @property int|null $last_update
  * @property bool $locked
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  * @property int|null $flags
  * @property  int|null $container_id
  * @property  int[]|null $usergroups
@@ -49,7 +49,7 @@ class DashboardTab extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'user_id'           => true,
         'position'          => true,
         'name'              => true,

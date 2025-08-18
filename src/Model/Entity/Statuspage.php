@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
@@ -26,23 +26,25 @@ declare(strict_types=1);
 
 namespace App\Model\Entity;
 
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\ORM\Entity;
 
 /**
  * Statuspage Entity
  *
  * @property int $id
+ * @property string $uuid
  * @property string $name
  * @property string|null $description
  * @property string|null $public_title
+ * @property string|null $public_identifier
  * @property bool $public
  * @property bool $show_downtimes
  * @property bool $show_downtime_comments
  * @property bool $show_acknowledgements
  * @property bool $show_acknowledgement_comments
- * @property FrozenTime $created
- * @property FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\StatuspagesToContainer[] $statuspages_to_containers
  * @property \App\Model\Entity\StatuspagesToHostgroup[] $statuspages_to_hostgroups
@@ -60,11 +62,13 @@ class Statuspage extends Entity {
      *
      * @var array<string, bool>
      */
-    protected $_accessible = [
+    protected array $_accessible = [
+        'uuid'                          => true,
         'container_id'                  => true,
         'name'                          => true,
         'description'                   => true,
         'public_title'                  => true,
+        'public_identifier'             => true,
         'public'                        => true,
         'show_downtimes'                => true,
         'show_downtime_comments'        => true,

@@ -642,6 +642,18 @@ class Menu {
                     true,
                     '/locations/index'
                 ))
+                ->addLink(new MenuLink(
+                    __('Organizational charts'),
+                    'OrganizationalCharts',
+                    'organizationalcharts',
+                    'index',
+                    '',
+                    ['fas', 'sitemap'],
+                    [],
+                    5,
+                    true,
+                    '/organizationalcharts/index'
+                ))
             )
             ->addCategory((new MenuCategory(
                 'system_tools_category',

@@ -276,7 +276,7 @@ class InstantreportsTable extends Table {
                 'Instantreports.send_email',
                 'Instantreports.send_interval'
             ])
-            ->group('Instantreports.id')
+            ->groupBy('Instantreports.id')
             ->disableHydration();
 
         $indexFilter = $InstantreportFilter->indexFilter();
@@ -287,7 +287,7 @@ class InstantreportsTable extends Table {
         }
 
         $query->where($indexFilter);
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $InstantreportFilter->getOrderForPaginator('Instantreports.name', 'asc'),
                 ['Instantreports.id' => 'asc']
@@ -909,7 +909,7 @@ class InstantreportsTable extends Table {
                 'Instantreports.container_id IN' => $MY_RIGHTS
             ]);
         }
-        $query->order('Instantreports.name', 'asc');
+        $query->orderBy('Instantreports.name', 'asc');
         $query->enableHydration($enableHydration);
 
         $result = $query->all();
@@ -1045,7 +1045,7 @@ class InstantreportsTable extends Table {
                 'Instantreports.container_id',
                 'Instantreports.name',
             ])
-            ->group('Instantreports.id')
+            ->groupBy('Instantreports.id')
             ->disableHydration();
 
         $where = [];
@@ -1054,7 +1054,7 @@ class InstantreportsTable extends Table {
         }
 
         $query->where($where);
-        $query->order([
+        $query->orderBy([
             'Instantreports.name' => 'asc'
         ]);
 

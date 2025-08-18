@@ -29,11 +29,10 @@ namespace App\Command;
 
 use App\itnovum\openITCOCKPIT\Monitoring\Naemon\ExternalCommands;
 use App\Model\Table\SystemsettingsTable;
+use Cake\Command\Command;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
-use Cake\Core\Configure;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Ddeboer\Imap\Server;

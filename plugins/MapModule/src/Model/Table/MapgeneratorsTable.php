@@ -301,8 +301,8 @@ class MapgeneratorsTable extends Table {
             $query->limit($limit);
         }
 
-        $queryResult = $query->order($orderForPaginator)
-            ->group(['Mapgenerators.id'])
+        $queryResult = $query->orderBy($orderForPaginator)
+            ->groupBy(['Mapgenerators.id'])
             ->enableAutoFields(true)
             ->all();
 

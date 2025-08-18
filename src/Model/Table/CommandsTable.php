@@ -134,7 +134,7 @@ class CommandsTable extends Table {
     public function getCommandsIndex(CommandsFilter $CommandsFilter, $PaginateOMat = null) {
         $query = $this->find('all')->disableHydration();
         $query->where($CommandsFilter->indexFilter());
-        $query->order($CommandsFilter->getOrderForPaginator('Commands.name', 'asc'));
+        $query->orderBy($CommandsFilter->getOrderForPaginator('Commands.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -240,7 +240,7 @@ class CommandsTable extends Table {
                 'Commands.description'
             ])
             ->where(['Commands.id IN' => $ids])
-            ->order(['Commands.id' => 'asc'])
+            ->orderBy(['Commands.id' => 'asc'])
             ->disableHydration()
             ->all();
 
@@ -363,12 +363,11 @@ class CommandsTable extends Table {
     }
 
     public function getAllCommandsAsList() {
-        $result = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'name'
-        ])
+        $result = $this->find('list',
+        keyField: 'id',
+        valueField: 'name')
             ->disableHydration()
-            ->order(['Commands.name' => 'asc'])
+            ->orderBy(['Commands.name' => 'asc'])
             ->all();
 
 
@@ -379,10 +378,9 @@ class CommandsTable extends Table {
      * @return array
      */
     public function getAllCommandsUuidsAsList() {
-        $query = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'uuid'
-        ])
+        $query = $this->find('list',
+        keyField: 'id',
+        valueField: 'uuid')
             ->disableHydration();
         return $query->toArray();
     }
@@ -505,10 +503,8 @@ class CommandsTable extends Table {
     }
 
     public function getSourceCommandForCopy($sourceCommandId) {
-        $sourceCommand = $this->get($sourceCommandId, [
-            'contain' => [
-                'Commandarguments'
-            ]
+        $sourceCommand = $this->get($sourceCommandId, contain: [
+            'Commandarguments'
         ])->toArray();
 
         //Remove all source ids so the new copied command will not use the original command arguments...

@@ -101,16 +101,14 @@ class MapeditorsController extends AppController {
         if (!$MapsTable->existsById($id)) {
             throw new NotFoundException();
         }
-        $map = $MapsTable->get($id, [
-            'contain' => [
-                'Containers',
-                'Mapgadgets',
-                'Mapicons',
-                'Mapitems',
-                'Maplines',
-                'Maptexts',
-                'Mapsummaryitems'
-            ]
+        $map = $MapsTable->get($id, contain: [
+            'Containers',
+            'Mapgadgets',
+            'Mapicons',
+            'Mapitems',
+            'Maplines',
+            'Maptexts',
+            'Mapsummaryitems'
         ])->toArray();
         $containerIdsToCheck = Hash::extract($map, 'containers.{n}.id');
         if (!$this->allowedByContainerId($containerIdsToCheck, false)) {
@@ -1224,16 +1222,14 @@ class MapeditorsController extends AppController {
         if (!$MapsTable->existsById($id)) {
             throw new NotFoundException();
         }
-        $map = $MapsTable->get($id, [
-            'contain' => [
-                'Containers',
-                'Mapgadgets',
-                'Mapicons',
-                'Mapitems',
-                'Maplines',
-                'Maptexts',
-                'Mapsummaryitems'
-            ]
+        $map = $MapsTable->get($id, contain: [
+            'Containers',
+            'Mapgadgets',
+            'Mapicons',
+            'Mapitems',
+            'Maplines',
+            'Maptexts',
+            'Mapsummaryitems'
         ])->toArray();
         $MapForAngular = new MapForAngular($map);
         $map = $MapForAngular->toArray();
@@ -1844,16 +1840,14 @@ class MapeditorsController extends AppController {
 
         //Save new possition after drag and drop
         if ($this->request->getData('action') === 'dragstop') {
-            $map = $MapsTable->get($id, [
-                'contain' => [
-                    'Containers',
-                    'Mapgadgets',
-                    'Mapicons',
-                    'Mapitems',
-                    'Maplines',
-                    'Maptexts',
-                    'Mapsummaryitems'
-                ]
+            $map = $MapsTable->get($id, contain: [
+                'Containers',
+                'Mapgadgets',
+                'Mapicons',
+                'Mapitems',
+                'Maplines',
+                'Maptexts',
+                'Mapsummaryitems'
             ]);
 
             $map->background_x = (int)$this->request->getData('Map.background_x');
@@ -1878,16 +1872,14 @@ class MapeditorsController extends AppController {
 
         //Save new background size
         if ($this->request->getData('action') === 'resizestop') {
-            $map = $MapsTable->get($id, [
-                'contain' => [
-                    'Containers',
-                    'Mapgadgets',
-                    'Mapicons',
-                    'Mapitems',
-                    'Maplines',
-                    'Maptexts',
-                    'Mapsummaryitems'
-                ]
+            $map = $MapsTable->get($id, contain: [
+                'Containers',
+                'Mapgadgets',
+                'Mapicons',
+                'Mapitems',
+                'Maplines',
+                'Maptexts',
+                'Mapsummaryitems'
             ]);
 
             $map->background_size_x = (int)$this->request->getData('Map.background_size_x');
@@ -1910,16 +1902,14 @@ class MapeditorsController extends AppController {
             return;
         }
 
-        $map = $MapsTable->get($id, [
-            'contain' => [
-                'Containers',
-                'Mapgadgets',
-                'Mapicons',
-                'Mapitems',
-                'Maplines',
-                'Maptexts',
-                'Mapsummaryitems'
-            ]
+        $map = $MapsTable->get($id, contain: [
+            'Containers',
+            'Mapgadgets',
+            'Mapicons',
+            'Mapitems',
+            'Maplines',
+            'Maptexts',
+            'Mapsummaryitems'
         ]);
 
         $map->background = $this->request->getData('Map.background');
@@ -1954,16 +1944,14 @@ class MapeditorsController extends AppController {
         if (!$MapsTable->existsById($id)) {
             throw new NotFoundException();
         }
-        $map = $MapsTable->get($id, [
-            'contain' => [
-                'Containers',
-                'Mapgadgets',
-                'Mapicons',
-                'Mapitems',
-                'Maplines',
-                'Maptexts',
-                'Mapsummaryitems'
-            ]
+        $map = $MapsTable->get($id, contain: [
+            'Containers',
+            'Mapgadgets',
+            'Mapicons',
+            'Mapitems',
+            'Maplines',
+            'Maptexts',
+            'Mapsummaryitems'
         ]);
 
         $map->background = null;
@@ -2109,11 +2097,8 @@ class MapeditorsController extends AppController {
         if (!$MapsTable->existsById($id)) {
             throw new NotFoundException();
         }
-        $map = $MapsTable->get($id, [
-            //'recursive'  => -1,
-            'contain' => [
-                'Containers'
-            ]
+        $map = $MapsTable->get($id, contain: [
+            'Containers'
         ])->toArray();
 
         $containerIdsToCheck = Hash::extract($map, 'containers.{n}.id');

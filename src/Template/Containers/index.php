@@ -24,7 +24,7 @@
 //	confirmation.
 use Cake\Core\Plugin;
 
-$timezones = \Cake\I18n\FrozenTime::listTimezones();
+$timezones = \Cake\I18n\DateTime::listTimezones();
 ?>
 <ol class="breadcrumb page-breadcrumb">
     <li class="breadcrumb-item">

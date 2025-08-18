@@ -54,7 +54,7 @@ class NotificationHostsLog extends Entity {
      *
      * @var array<string, bool>
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'hostname'                => true,
         'end_time'                => true,
         'state'                   => true,

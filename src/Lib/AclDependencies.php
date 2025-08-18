@@ -711,6 +711,15 @@ class AclDependencies {
         $this
             ->dependency('SystemHealthUsers', 'add', 'SystemHealthUsers', 'loadUsers');
 
+        $this
+            ->dependency('OrganizationalCharts', 'add', 'OrganizationalCharts', 'loadContainers')
+            ->dependency('OrganizationalCharts', 'edit', 'OrganizationalCharts', 'loadContainers')
+            ->dependency('OrganizationalCharts', 'add', 'OrganizationalChartNodes', 'loadUsers')
+            ->dependency('OrganizationalCharts', 'edit', 'OrganizationalChartNodes', 'loadUsers')
+            ->dependency('OrganizationalCharts', 'view', 'OrganizationalCharts', 'loadOrganizationalChartsByContainerId')
+            ->dependency('OrganizationalCharts', 'view', 'OrganizationalCharts', 'loadOrganizationalChartById');
+
+
         //Load Plugin ALC Dependencies
         foreach (PluginManager::getAvailablePlugins() as $pluginName) {
             $className = sprintf('\%s\Lib\AclDependencies', $pluginName);

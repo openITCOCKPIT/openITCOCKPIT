@@ -12,7 +12,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class UpdateAgentshostscache extends AbstractMigration {
+class UpdateAgentshostscache extends \Migrations\BaseMigration {
 
     public function up(): void {
         $this->table('agenthostscache')

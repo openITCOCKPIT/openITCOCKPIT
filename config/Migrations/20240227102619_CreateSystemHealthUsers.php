@@ -36,7 +36,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class CreateSystemHealthUsers extends AbstractMigration {
+class CreateSystemHealthUsers extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

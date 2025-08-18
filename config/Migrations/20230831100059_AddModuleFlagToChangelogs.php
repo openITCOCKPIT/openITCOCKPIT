@@ -17,7 +17,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class AddModuleFlagToChangelogs extends AbstractMigration {
+class AddModuleFlagToChangelogs extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

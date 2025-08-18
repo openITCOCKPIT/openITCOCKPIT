@@ -39,6 +39,9 @@ class MapFilter extends Filter {
             'equals' => [
                 'Maps.id',
             ],
+            'bool'   => [
+                'Maps.auto_generated'
+            ],
         ];
 
         return $this->getConditionsByFilters($filters);

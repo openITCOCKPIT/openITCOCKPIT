@@ -10,8 +10,8 @@ use Cake\ORM\Entity;
  * @property string $config_file
  * @property string $key
  * @property string $value
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  */
 class ConfigurationFile extends Entity
 {
@@ -24,7 +24,7 @@ class ConfigurationFile extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'config_file' => true,
         'key' => true,
         'value' => true,

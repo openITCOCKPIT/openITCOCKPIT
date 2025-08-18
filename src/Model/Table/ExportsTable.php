@@ -78,7 +78,7 @@ class ExportsTable extends Table {
      */
     public function getCurrentExportState() {
         return $this->find()
-            ->order(['id' => 'asc'])
+            ->orderBy(['id' => 'asc'])
             ->all();
     }
 }

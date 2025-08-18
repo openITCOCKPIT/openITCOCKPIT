@@ -12,9 +12,8 @@ use Cake\ORM\Entity;
  * @property int|null $notify_on_warning
  * @property int|null $notify_on_critical
  * @property int|null $notify_on_recovery
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
- *
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  */
 class SystemHealthUser extends Entity {
 
@@ -27,7 +26,7 @@ class SystemHealthUser extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'user_id'            => true,
         'notify_on_recovery' => true,
         'notify_on_warning'  => true,

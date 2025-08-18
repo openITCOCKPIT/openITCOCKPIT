@@ -49,7 +49,6 @@ use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\DateTime;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use DistributeModule\Model\Table\SatellitesTable;
@@ -349,10 +348,8 @@ class AgentconnectorController extends AppController {
             throw new NotFoundException(__('Satellite Push Agent config not found'));
         }
 
-        $satellitePushAgent = $SatellitePushAgentsTable->get($id, [
-            'contain' => [
-                'Agentconfigs'
-            ]
+        $satellitePushAgent = $SatellitePushAgentsTable->get($id, contain: [
+            'Agentconfigs'
         ]);
 
         if (!empty($satellitePushAgent->get('agentconfig'))) {

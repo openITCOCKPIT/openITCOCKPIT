@@ -819,10 +819,10 @@ class ServicetemplatesTable extends Table {
      * @param array $MY_RIGHTS
      * @return array|\Cake\Datasource\EntityInterface|null
      */
-    public function getServicetemplateFoWizardDeployInterfaces($MY_RIGHTS = []) {
+    public function getServicetemplateForWizardByUuid($uuid, $MY_RIGHTS = []) {
         $query = $this->find()
             ->where([
-                'Servicetemplates.uuid' => 'de5e3045-3011-45d8-8ac6-bc5fbb3d396d'
+                'Servicetemplates.uuid' => $uuid
             ])
             ->contain([
                 'Servicetemplatecommandargumentvalues' => [
@@ -1979,63 +1979,5 @@ class ServicetemplatesTable extends Table {
             $servicetemplate['customvariables'] = Hash::remove($servicetemplate['customvariables'], '{n}.object_id');
         }
         return $servicetemplate;
-    }
-
-    /**
-     * @param array $MY_RIGHTS
-     * @return array|\Cake\Datasource\EntityInterface|null
-     */
-    public function getDatastoreServicetemplateForWizardDeploy($MY_RIGHTS = []) {
-        $query = $this->find()
-            ->where([
-                'Servicetemplates.uuid' => '3fadc046-9e2c-4056-bebe-e9f40416f474'
-            ])
-            ->contain([
-                'Servicetemplatecommandargumentvalues' => [
-                    'Commandarguments'
-                ],
-                'CheckCommand'                         => [
-                    'Commandarguments'
-                ]
-            ]);
-        if (!empty($MY_RIGHTS)) {
-            $query->where([
-                'Servicetemplates.container_id IN' => $MY_RIGHTS
-            ]);
-        }
-        $query->disableHydration();
-        if (!is_null($query)) {
-            return $query->first();
-        }
-        return [];
-    }
-
-    /**
-     * @param array $MY_RIGHTS
-     * @return array|\Cake\Datasource\EntityInterface|null
-     */
-    public function getSnapshotServicetemplateForWizardDeploy($MY_RIGHTS = []) {
-        $query = $this->find()
-            ->where([
-                'Servicetemplates.uuid' => 'fd6e117c-856b-4e99-bbd1-f1d757302954'
-            ])
-            ->contain([
-                'Servicetemplatecommandargumentvalues' => [
-                    'Commandarguments'
-                ],
-                'CheckCommand'                         => [
-                    'Commandarguments'
-                ]
-            ]);
-        if (!empty($MY_RIGHTS)) {
-            $query->where([
-                'Servicetemplates.container_id IN' => $MY_RIGHTS
-            ]);
-        }
-        $query->disableHydration();
-        if (!is_null($query)) {
-            return $query->first();
-        }
-        return [];
     }
 }

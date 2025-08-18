@@ -50,6 +50,7 @@ use Cake\View\JsonView;
 use Exception;
 use itnovum\openITCOCKPIT\Core\DbBackend;
 use itnovum\openITCOCKPIT\Core\PerfdataBackend;
+use PuppeteerPdf\View\PdfView;
 
 /**
  * Class AppController
@@ -525,6 +526,6 @@ class AppController extends Controller {
     }
 
     public function viewClasses(): array {
-        return [JsonView::class];
+        return [JsonView::class, PdfView::class];
     }
 }

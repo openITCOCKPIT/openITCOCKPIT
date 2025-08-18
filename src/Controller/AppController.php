@@ -526,6 +526,11 @@ class AppController extends Controller {
     }
 
     public function viewClasses(): array {
+        if ($this->request->getParam('_ext') === 'html') {
+            // CakePHP 5 workaround so that /foo/bar.html renders the same as /foo/bar
+            return [];
+        }
+
         return [JsonView::class, PdfView::class];
     }
 }

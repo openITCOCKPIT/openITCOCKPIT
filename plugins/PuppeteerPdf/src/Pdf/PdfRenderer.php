@@ -1,4 +1,27 @@
 <?php
+// Copyright (C) <2015-present>  <it-novum GmbH>
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
+
 //
 // This code is based on the work of FriendsOfCake / CakePdf
 // Many thanks!
@@ -24,63 +47,63 @@ class PdfRenderer {
      *
      * @var string
      */
-    protected $_layout = 'default';
+    protected string $_layout = 'default';
 
     /**
      * Path to the layout - defaults to 'pdf'
      *
      * @var string
      */
-    protected $_layoutPath = 'pdf';
+    protected string $_layoutPath = 'pdf';
 
     /**
      * Template for the view
      *
      * @var string|null
      */
-    protected $_template;
+    protected ?string $_template;
 
     /**
      * Path to the template - defaults to 'Pdf'
      *
      * @var string
      */
-    protected $_templatePath = 'Pdf';
+    protected string $_templatePath = 'Pdf';
 
     /**
      * View for render
      *
      * @var string
      */
-    protected $_viewRender = 'View';
+    protected string $_viewRender = 'View';
 
     /**
      * Vars to sent to render
      *
      * @var array
      */
-    protected $_viewVars = [];
+    protected array $_viewVars = [];
 
     /**
      * Theme for the View
      *
      * @var string|null
      */
-    protected $_theme = null;
+    protected ?string $_theme = null;
 
     /**
      * Helpers to be used in the render
      *
      * @var array
      */
-    protected $_helpers = ['Html'];
+    protected array $_helpers = ['Html'];
 
     /**
      * Html to be rendered
      *
      * @var string
      */
-    protected $_html;
+    protected string $_html;
 
     /**
      * Constructor
@@ -187,7 +210,7 @@ class PdfRenderer {
      * @param mixed $layout Layout name or null to not use
      * @return mixed
      */
-    public function template($template = false, $layout = null) {
+    public function template($template = false, $layout = null): mixed {
         if ($template === false) {
             return [
                 'template' => $this->_template,

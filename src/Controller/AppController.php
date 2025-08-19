@@ -50,6 +50,7 @@ use Cake\View\JsonView;
 use Exception;
 use itnovum\openITCOCKPIT\Core\DbBackend;
 use itnovum\openITCOCKPIT\Core\PerfdataBackend;
+use PuppeteerPdf\View\PdfView;
 
 /**
  * Class AppController
@@ -525,6 +526,11 @@ class AppController extends Controller {
     }
 
     public function viewClasses(): array {
-        return [JsonView::class];
+        if ($this->request->getParam('_ext') === 'html') {
+            // CakePHP 5 workaround so that /foo/bar.html renders the same as /foo/bar
+            return [];
+        }
+
+        return [JsonView::class, PdfView::class];
     }
 }

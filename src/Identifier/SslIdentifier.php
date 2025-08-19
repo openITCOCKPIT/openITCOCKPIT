@@ -45,7 +45,7 @@ class SslIdentifier extends AbstractIdentifier implements IdentifierInterface {
      * @param array $credentials Authentication credentials
      * @return \ArrayAccess|array|null
      */
-    public function identify(array $credentials) {
+    public function identify(array $credentials): \ArrayAccess|array|null {
         // Has the client send a valid SSL certificate?
         if (isset($_SERVER['SSL_VERIFIED']) && $_SERVER['SSL_VERIFIED'] === 'SUCCESS' && isset($_SERVER['SSL_CERT'])) {
             $certificate = openssl_x509_parse(urldecode($_SERVER['SSL_CERT']));

@@ -26,8 +26,10 @@ namespace App;
 
 use App\Authenticator\ApikeyAuthenticator;
 use App\Authenticator\oAuthAuthenticator;
+use App\Authenticator\SslAuthenticator;
 use App\Identifier\ApikeyIdentifier;
 use App\Identifier\LdapIdentifier;
+use App\Identifier\oAuthIdentifier;
 use App\Identifier\PasswordIdentifier;
 use App\Identifier\SslIdentifier;
 use App\Identity\AppIdentity;
@@ -172,7 +174,8 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
                     'Authentication.Ssl' => [
                         'className' => SslIdentifier::class
                     ]
-                ]
+                ],
+                'className'  => SslAuthenticator::class
             ]);
         }
 
@@ -181,9 +184,10 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             $service->loadAuthenticator('Authentication.oAuth', [
                 'identifier' => [
                     'Authentication.oAuth' => [
-                        'className' => oAuthAuthenticator::class
+                        'className' => oAuthIdentifier::class
                     ]
-                ]
+                ],
+                'className'  => oAuthAuthenticator::class
             ]);
         }
 

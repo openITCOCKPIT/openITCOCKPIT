@@ -900,6 +900,7 @@ class HostgroupsController extends AppController {
                     $newHostgroupData = [
                         'description'   => $hostgroupData['Hostgroup']['description'],
                         'hostgroup_url' => $sourceHostgroup['hostgroup_url'],
+                        'tags'          => $sourceHostgroup['tags'],
                         'uuid'          => UUID::v4(),
                         'container'     => [
                             'name'             => $hostgroupData['Hostgroup']['container']['name'],

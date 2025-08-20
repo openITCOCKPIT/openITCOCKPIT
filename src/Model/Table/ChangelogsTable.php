@@ -266,7 +266,7 @@ class ChangelogsTable extends Table {
                 'Contact'                => '{n}.{(id|name)}',
             ],
             'hostgroup'            => [
-                'Hostgroup'           => '{(description|hostgroup_url)}',
+                'Hostgroup'           => '{(description|hostgroup_url|tags)}',
                 'Hostgroup.container' => '{(name)}',
                 'Host'                => '{n}.{(id|name)}',
                 'Hosttemplate'        => '{n}.{(id|name)}',

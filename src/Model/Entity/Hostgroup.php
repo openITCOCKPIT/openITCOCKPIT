@@ -12,8 +12,9 @@ use Cake\ORM\Entity;
  * @property int $container_id
  * @property string $description
  * @property string|null $hostgroup_url
+ * @property string $tags
  *
- * @property \App\Model\Entity\Container $container
+ * @property Container $container
  */
 class Hostgroup extends Entity {
 
@@ -31,6 +32,7 @@ class Hostgroup extends Entity {
         'container_id'  => true,
         'description'   => true,
         'hostgroup_url' => true,
+        'tags'          => true,
         'container'     => true,
         'hosts'         => true,
         'hosttemplates' => true

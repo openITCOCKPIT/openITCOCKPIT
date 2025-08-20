@@ -6,6 +6,7 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Lib\Traits\PluginManagerTableTrait;
 use App\Model\Entity\Changelog;
 use App\Model\Entity\Servicegroup;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -292,7 +293,28 @@ class ServicegroupsTable extends Table {
     public function getServicegroupsIndex(ServicegroupFilter $ServicegroupFilter, $PaginateOMat = null, $MY_RIGHTS = []) {
         $query = $this->find('all');
         $query->contain(['Containers']);
-        $query->where($ServicegroupFilter->indexFilter());
+
+        $where = $ServicegroupFilter->indexFilter();
+
+        if (isset($where['Servicegroups.keywords rlike'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Servicegroups.tags IS NOT NULL), Servicegroups.tags, "")',
+                $where['Servicegroups.keywords rlike'],
+                'string',
+                'RLIKE'
+            );
+            unset($where['Servicegroups.keywords rlike']);
+        }
+
+        if (isset($where['Servicegroups.not_keywords not rlike'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Servicegroups.tags IS NOT NULL), Servicegroups.tags, "")',
+                $where['Servicegroups.not_keywords not rlike'],
+                'string',
+                'NOT RLIKE'
+            );
+            unset($where['Servicegroups.not_keywords not rlike']);
+        }
 
         $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
             if (!empty($MY_RIGHTS)) {
@@ -300,6 +322,8 @@ class ServicegroupsTable extends Table {
             }
             return $q;
         });
+
+        $query->where($where);
 
 
         $query->disableHydration();

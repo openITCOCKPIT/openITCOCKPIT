@@ -762,6 +762,7 @@ class ServicegroupsController extends AppController {
                     $newServicegroupData = [
                         'description'      => $servicegroupData['Servicegroup']['description'],
                         'servicegroup_url' => $sourceServicegroup['servicegroup_url'],
+                        'tags'             => $sourceServicegroup['tags'],
                         'uuid'             => UUID::v4(),
                         'container'        => [
                             'name'             => $servicegroupData['Servicegroup']['container']['name'],

@@ -42,15 +42,13 @@ use App\Model\Table\AgentconfigsTable;
 use App\Model\Table\ChangelogsTable;
 use App\Model\Table\ExportsTable;
 use App\Model\Table\SystemsettingsTable;
-use Cake\Console\Arguments;
 use Cake\Command\Command;
+use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\Exception\RecordNotFoundException;
-use itnovum\openITCOCKPIT\CakePHP\Folder;
-use Cake\I18n\FrozenDate;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use CheckmkModule\Command\CheckmkNagiosExportCommand;
@@ -61,6 +59,7 @@ use DistributeModule\Model\Entity\Satellite;
 use DistributeModule\Model\Entity\SatelliteTask;
 use DistributeModule\Model\Table\SatelliteTasksTable;
 use ImportModule\Model\Table\SatellitePushAgentsTable;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 use itnovum\openITCOCKPIT\Core\MonitoringEngine\NagiosConfigDefaults;
 use itnovum\openITCOCKPIT\Core\MonitoringEngine\NagiosConfigGenerator;
 use itnovum\openITCOCKPIT\Core\System\Health\LsbRelease;
@@ -1078,7 +1077,7 @@ class GearmanWorkerCommand extends Command {
                 } catch (\RuntimeException $e) {
                     $return = [
                         'success'   => false,
-                        'error'     => 'ProcessFailedException',
+                        'error'     => $e->getMessage(),
                         'exception' => 'ProcessFailedException'
                     ];
                 }

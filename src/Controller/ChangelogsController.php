@@ -110,7 +110,7 @@ class ChangelogsController extends AppController {
             $all_changes[$index]['time'] = $UserTime->format($changeTimestamp);
             $isToday = ($changeTimestamp > $todayMidnight);
             if ($isToday) {
-                $all_changes[$index]['time'] = date('H:i:s', $changeTimestamp);
+                $all_changes[$index]['time'] = $UserTime->customFormat('H:i:s', $changeTimestamp);
             }
 
             $dataUnserialized = unserialize($change['data']);

@@ -279,7 +279,8 @@ class GraphiteLoader {
         $options = $this->getBaseRequestOptions();
 
         $options['target'] = sprintf(
-            'scale(nonNegativeDerivative(keepLastValue(%s.%s)), 0.125)',
+        //'scale(nonNegativeDerivative(keepLastValue(%s.%s)), 0.125)',
+            'nonNegativeDerivative(keepLastValue(%s.%s))',
             $this->GraphiteConfig->getGraphitePrefix(),
             $GraphiteMetric->getMetricPath()
         );

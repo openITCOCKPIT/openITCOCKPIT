@@ -56,7 +56,7 @@ class PerfdataParser {
      * @param string $perfdataString string with monitoring performance data
      */
     public function __construct($perfdataString) {
-        $this->perfdataString = $perfdataString;
+        $this->perfdataString = $perfdataString??'';
     }
 
     /**

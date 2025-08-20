@@ -202,9 +202,12 @@ class NagiosNotificationCommand extends Command {
         $this->systemAddress = $_systemsettings['SYSTEM']['SYSTEM.ADDRESS'];
         $this->ticketsystemUrl = $_systemsettings['TICKET_SYSTEM']['TICKET_SYSTEM.URL'];
 
-        //if (!empty($_systemsettings['MONITORING']['MONITORING.ACK_RECEIVER_ADDRESS'])) {
-        //    $this->replyTo = $_systemsettings['MONITORING']['MONITORING.ACK_RECEIVER_ADDRESS'];
-        //}
+        // ITC-2801 We keep this for legacy reasons
+        // Event if the Acknowledgement via E-Mail has been removed, some Customers are may use a self written solution on Python or similar
+        // and may rely on this "replyTo" address
+        if (!empty($_systemsettings['MONITORING']['MONITORING.ACK_RECEIVER_ADDRESS'])) {
+            $this->replyTo = $_systemsettings['MONITORING']['MONITORING.ACK_RECEIVER_ADDRESS'];
+        }
 
         if ($this->type === 'host') {
             $this->sendHostNotification($Host, $args);

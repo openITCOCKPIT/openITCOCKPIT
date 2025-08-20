@@ -202,6 +202,9 @@ done
 
 mysql --defaults-extra-file=${INIFILE} -e "ALTER DATABASE ${dbc_dbname} CHARACTER SET utf8mb4 COLLATE ${MYSQL_COLLATIONS};"
 
+echo "Delete AcknowledgePerMail Cronjob if exists"
+mysql --defaults-extra-file=${INIFILE} -e "DELETE FROM cronjobs WHERE task='AcknowledgePerMail' AND plugin='Core';"
+
 echo "Running openITCOCKPIT Core database migration"
 oitc migrations migrate
 

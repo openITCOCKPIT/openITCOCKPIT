@@ -46,6 +46,7 @@ use Cake\Cache\Cache;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\ServerRequest;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
@@ -605,7 +606,7 @@ class ServicegroupsController extends AppController {
         foreach ($servicegroups as $servicegroup) {
             $serviceIds = $ServicegroupsTable->getServiceIdsByServicegroupId($servicegroup['id']);
 
-            $ServiceFilter = new ServiceFilter($this->request);
+            $ServiceFilter = new ServiceFilter(new ServerRequest());
             $ServiceConditions = new ServiceConditions($ServiceFilter->indexFilter());
 
             $ServiceConditions->setIncludeDisabled(false);

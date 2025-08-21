@@ -25,6 +25,7 @@
 namespace itnovum\openITCOCKPIT\Core\Views;
 
 
+use Cake\Log\Log;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 
 class UserTime {

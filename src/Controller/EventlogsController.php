@@ -49,7 +49,10 @@ class EventlogsController extends AppController {
         /** @var EventlogsTable $EventlogsTable */
         $EventlogsTable = TableRegistry::getTableLocator()->get('Eventlogs');
 
-        $EventlogsFilter = new EventlogsFilter($this->request);
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
+        $EventlogsFilter = new EventlogsFilter($this->request, $UserTime);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $EventlogsFilter->getPage());
         $MY_RIGHTS = $this->MY_RIGHTS;
         if ($this->hasRootPrivileges === true) {
@@ -62,9 +65,6 @@ class EventlogsController extends AppController {
         if (!empty($logTypes)) {
             $all_events = $EventlogsTable->getEventlogIndex($EventlogsFilter, $logTypes, $PaginateOMat, $MY_RIGHTS, false);
         }
-
-        $User = new User($this->getUser());
-        $UserTime = $User->getUserTime();
 
         foreach ($all_events as $index => $event) {
             $changeTimestamp = $event['created']->getTimestamp();

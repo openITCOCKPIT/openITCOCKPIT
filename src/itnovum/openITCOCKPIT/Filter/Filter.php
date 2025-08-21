@@ -38,7 +38,7 @@ abstract class Filter {
     /**
      * @var UserTime|null
      */
-    protected ?UserTime $UserTime;
+    protected ?UserTime $UserTime = null;
 
     public function __construct(ServerRequest $Request, ?UserTime $UserTime = null) {
         $this->Request = $Request;
@@ -429,5 +429,31 @@ abstract class Filter {
             return $timeStamp;
         }
         return $this->UserTime->toServerTime($timeStamp);
+    }
+
+    /**
+     * @return int
+     */
+    public function getFrom() {
+        if ($this->queryHasField('from')) {
+            $value = strtotime($this->getQueryFieldValue('from'));
+            if ($value) {
+                return $this->toServerTime($value);
+            }
+        }
+        return time();
+    }
+
+    /**
+     * @return int
+     */
+    public function getTo() {
+        if ($this->queryHasField('to')) {
+            $value = strtotime($this->getQueryFieldValue('to'));
+            if ($value) {
+                return $this->toServerTime($value);
+            }
+        }
+        return time();
     }
 }

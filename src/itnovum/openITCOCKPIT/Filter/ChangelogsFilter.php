@@ -47,7 +47,7 @@ class ChangelogsFilter extends Filter {
     }
 
     /**
-     * @return false|float|int
+     * @return int
      */
     public function getFrom() {
         if ($this->queryHasField('from')) {
@@ -60,7 +60,7 @@ class ChangelogsFilter extends Filter {
     }
 
     /**
-     * @return false|float|int
+     * @return int
      */
     public function getTo() {
         if ($this->queryHasField('to')) {

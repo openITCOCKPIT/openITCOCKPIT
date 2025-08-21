@@ -87,8 +87,8 @@ class StatehistoriesController extends AppController {
         $Conditions->setOrder($AngularStatehistoryControllerRequest->getOrderForPaginator('StatehistoryHosts.state_time', 'desc'));
         $Conditions->setStates($AngularStatehistoryControllerRequest->getHostStates());
         $Conditions->setStateTypes($AngularStatehistoryControllerRequest->getHostStateTypes());
-        $Conditions->setFrom($AngularStatehistoryControllerRequest->getFrom());
-        $Conditions->setTo($AngularStatehistoryControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($AngularStatehistoryControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($AngularStatehistoryControllerRequest->getTo()));
         $Conditions->setHostUuid($host->get('uuid'));
         $Conditions->setConditions($AngularStatehistoryControllerRequest->getHostFilters());
 
@@ -158,8 +158,8 @@ class StatehistoriesController extends AppController {
         $Conditions->setOrder($AngularStatehistoryControllerRequest->getOrderForPaginator('StatehistoryServices.state_time', 'desc'));
         $Conditions->setStates($AngularStatehistoryControllerRequest->getServiceStates());
         $Conditions->setStateTypes($AngularStatehistoryControllerRequest->getServiceStateTypes());
-        $Conditions->setFrom($AngularStatehistoryControllerRequest->getFrom());
-        $Conditions->setTo($AngularStatehistoryControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($AngularStatehistoryControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($AngularStatehistoryControllerRequest->getTo()));
         $Conditions->setConditions($AngularStatehistoryControllerRequest->getServiceFilters());
         $Conditions->setServiceUuid($service->get('uuid'));
 

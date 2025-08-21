@@ -2330,7 +2330,7 @@ class DashboardsController extends AppController {
 
             $conditions = $config;
             // Migrate keyword / tags from JSON string to SQL RLIKE query string
-            foreach (['Host', 'Service'] as $tableName) {
+            foreach (['Host', 'Service', 'Hostgroup', 'Servicegroup'] as $tableName) {
                 foreach (['keywords', 'not_keywords'] as $field) {
                     if (empty($conditions[$tableName][$field])) {
                         $conditions[$tableName][$field] = [];

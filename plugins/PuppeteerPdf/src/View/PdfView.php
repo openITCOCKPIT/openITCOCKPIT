@@ -64,6 +64,7 @@ class PdfView extends View {
     protected array $_defaultConfig = [
         'pdfConfig' => [],
     ];
+    private PdfRenderer $_renderer;
 
     /**
      * Constructor

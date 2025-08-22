@@ -4822,6 +4822,8 @@ class HostsTable extends Table {
         $query->contain([
             'HostsToContainersSharing'
         ]);
+
+        $hostgroups = $this->fetchTable('Hostgroups');
         if (!empty($conditions['Hostgroup']['_ids'])) {
             $hostgroupIds = explode(',', $conditions['Hostgroup']['_ids']);
             $query->select([
@@ -4829,13 +4831,20 @@ class HostsTable extends Table {
                     'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
                     GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
                     GROUP_CONCAT(HostToHostgroups.hostgroup_id))'),
+                /*
                 'count'         => $query->newExpr(
                     'SELECT COUNT(hostgroups.id)
                                 FROM hostgroups
                                 WHERE FIND_IN_SET (hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
                                 GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
                                 GROUP_CONCAT(HostToHostgroups.hostgroup_id)))
-                                AND hostgroups.id IN (' . implode(', ', $hostgroupIds) . ')')
+                                AND hostgroups.id IN (' . implode(', ', $hostgroupIds) . ')'),
+                */
+                'count' => $hostgroups->find()->select(['count' => $query->func()->count('Hostgroups.id')])
+                    ->where($query->newExpr('FIND_IN_SET (Hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+                                GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
+                                GROUP_CONCAT(HostToHostgroups.hostgroup_id)))'))
+                    ->andWhere(['Hostgroups.id IN' => $hostgroupIds])
             ]);
             $query->join([
                 'hosts_to_hostgroups'         => [
@@ -4855,6 +4864,7 @@ class HostsTable extends Table {
                 'hostgroup_ids IS NOT NULL',
                 'count > 0'
             ]);
+            //dd($query);
         }
 
         $where = [];

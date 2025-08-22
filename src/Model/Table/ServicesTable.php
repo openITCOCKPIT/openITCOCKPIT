@@ -4988,9 +4988,13 @@ class ServicesTable extends Table {
                     'type'       => 'INNER',
                     'alias'      => 'Servicetemplates',
                     'conditions' => 'Servicetemplates.id = Services.servicetemplate_id',
+                ],
+                'hosts'            => [
+                    'table'      => 'hosts',
+                    'type'       => 'INNER',
+                    'alias'      => 'Hosts',
+                    'conditions' => 'Hosts.id = Services.host_id',
                 ]
-            ])->contain([
-                'Hosts'
             ]);
         if (!empty($MY_RIGHTS)) {
             $query->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($MY_RIGHTS) {
@@ -5002,6 +5006,84 @@ class ServicesTable extends Table {
                 return $q;
             });
         }
+
+        if (!empty($conditions['Hostgroup'])) {
+            $query->join([
+                    'hosttemplates' => [
+                        'table'      => 'hosttemplates',
+                        'type'       => 'INNER',
+                        'alias'      => 'Hosttemplates',
+                        'conditions' => 'Hosttemplates.id = Hosts.hosttemplate_id',
+                    ]
+                ]
+            );
+            $hostgroups = $this->fetchTable('Hostgroups');
+            $hostgroupIds = [];
+            if (!empty($conditions['Hostgroup']['_ids'])) {
+                $hostgroupIds = explode(',', $conditions['Hostgroup']['_ids']);
+            }
+            $whereForCount = [
+                $query->newExpr('FIND_IN_SET (Hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+                                GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
+                                GROUP_CONCAT(HostToHostgroups.hostgroup_id)))')
+            ];
+
+            if (!empty($hostgroupIds)) {
+                $whereForCount[] = ['Hostgroups.id IN' => $hostgroupIds];
+            }
+
+            if (!empty($conditions['Hostgroup']['keywords'])) {
+                $whereForCount[] = new ComparisonExpression(
+                    'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                    $conditions['Hostgroup']['keywords'],
+                    'string',
+                    'RLIKE'
+
+                );
+            }
+
+            if (!empty($conditions['Hostgroup']['not_keywords'])) {
+                $whereForCount[] = new ComparisonExpression(
+                    'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                    $conditions['Hostgroup']['not_keywords'],
+                    'string',
+                    'NOT RLIKE'
+                );
+            }
+
+            if (!empty($whereForCount)) {
+                $query->select([
+                    'hostgroup_ids' => $query->newExpr(
+                        'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+                    GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
+                    GROUP_CONCAT(HostToHostgroups.hostgroup_id))'),
+                    'host_count'    => $hostgroups->find()->select([$query->func()->count('Hostgroups.id')])
+                        ->where($whereForCount)
+                ]);
+
+            }
+
+            $query->join([
+                'hosts_to_hostgroups'         => [
+                    'table'      => 'hosts_to_hostgroups',
+                    'type'       => 'LEFT',
+                    'alias'      => 'HostToHostgroups',
+                    'conditions' => 'HostToHostgroups.host_id = Hosts.id',
+                ],
+                'hosttemplates_to_hostgroups' => [
+                    'table'      => 'hosttemplates_to_hostgroups',
+                    'type'       => 'LEFT',
+                    'alias'      => 'HosttemplatesToHostgroups',
+                    'conditions' => 'HosttemplatesToHostgroups.hosttemplate_id = Hosttemplates.id',
+                ]
+            ]);
+            $query->having([
+                'hostgroup_ids IS NOT NULL',
+                'host_count > 0'
+            ]);
+        }
+
+
         if (!empty($conditions['Servicegroup'])) {
             $servicegroups = $this->fetchTable('Servicegroups');
             $servicegroupIds = [];
@@ -5042,7 +5124,7 @@ class ServicesTable extends Table {
                         'IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
                     GROUP_CONCAT(ServicetemplatesToServicegroups.servicegroup_id),
                     GROUP_CONCAT(ServiceToServicegroups.servicegroup_id))'),
-                    'count'            => $servicegroups->find()->select([$query->func()->count('Servicegroups.id')])
+                    'service_count'    => $servicegroups->find()->select([$query->func()->count('Servicegroups.id')])
                         ->where($whereForCount)
                 ]);
 
@@ -5063,7 +5145,7 @@ class ServicesTable extends Table {
             ]);
             $query->having([
                 'servicegroup_ids IS NOT NULL',
-                'count > 0'
+                'service_count > 0'
             ]);
         }
 

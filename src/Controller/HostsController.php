@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -1167,7 +1168,7 @@ class HostsController extends AppController {
                                 if (!empty($contactsFromHost)) {
                                     foreach ($contactsFromHost as $contactId) {
                                         if (!$ContactCache->has($contactId)) {
-                                            $ContactCache->set($contactId, $ContactsTable->get($contactId, contain: 'Containers')->toArray());
+                                            $ContactCache->set($contactId, $ContactsTable->get($contactId, contain: ['Containers'])->toArray());
 
                                         }
                                         $contact = $ContactCache->get($contactId);
@@ -1247,7 +1248,7 @@ class HostsController extends AppController {
                                 if (!empty($contactgroupsFromHost)) {
                                     foreach ($contactgroupsFromHost as $contactgroupId) {
                                         if (!$ContactgroupCache->has($contactgroupId)) {
-                                            $ContactgroupCache->set($contactgroupId, $ContactgroupsTable->get($contactgroupId, contain: 'Containers')->toArray());
+                                            $ContactgroupCache->set($contactgroupId, $ContactgroupsTable->get($contactgroupId, contain: ['Containers'])->toArray());
 
                                         }
                                         $contactgroup = $ContactgroupCache->get($contactgroupId);

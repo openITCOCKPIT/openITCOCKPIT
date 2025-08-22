@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -43,7 +44,7 @@ use itnovum\openITCOCKPIT\Filter\GenericFilter;
  * @method \App\Model\Entity\OrganizationalChart newEmptyEntity()
  * @method \App\Model\Entity\OrganizationalChart newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\OrganizationalChart[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\OrganizationalChart get($primaryKey, $options = [])
+ * @method \App\Model\Entity\OrganizationalChart get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\OrganizationalChart findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\OrganizationalChart patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\OrganizationalChart[] patchEntities(iterable $entities, array $data, array $options = [])

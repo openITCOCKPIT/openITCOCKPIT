@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -45,14 +46,14 @@ use itnovum\openITCOCKPIT\Filter\ServicedependenciesFilter;
  * @property \App\Model\Table\ServicedependenciesTable|\Cake\ORM\Association\HasMany $Services
  * @property \App\Model\Table\ServicedependenciesTable|\Cake\ORM\Association\HasMany $Servicegroups
  *
- * @method \App\Model\Entity\Servicedependency get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Servicedependency get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Servicedependency newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Servicedependency[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Servicedependency|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicedependency|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicedependency patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Servicedependency[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Servicedependency findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Servicedependency findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

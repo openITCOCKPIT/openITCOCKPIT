@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -117,30 +118,30 @@ class Systemsetting extends Importer {
                 'created'  => '2020-01-29 09:28:17',
                 'modified' => '2020-01-29 09:28:17'
             ],
-            (int)8   => [
-                'key'      => 'MONITORING.ACK_RECEIVER_SERVER',
-                'value'    => 'imap.gmail.com:993/imap/ssl',
-                'info'     => 'Email server to connect. Must be provided in following format: server.com:port/imap[/ssl]',
-                'section'  => 'MONITORING',
-                'created'  => '2020-01-29 09:28:17',
-                'modified' => '2020-01-29 09:28:17'
-            ],
-            (int)9   => [
-                'key'      => 'MONITORING.ACK_RECEIVER_ADDRESS',
-                'value'    => 'my_email@gmail.com',
-                'info'     => 'Username for sender notification mail',
-                'section'  => 'MONITORING',
-                'created'  => '2020-01-29 09:28:17',
-                'modified' => '2020-01-29 09:28:17'
-            ],
-            (int)10  => [
-                'key'      => 'MONITORING.ACK_RECEIVER_PASSWORD',
-                'value'    => 'my_password',
-                'info'     => 'Password for sender notification mail',
-                'section'  => 'MONITORING',
-                'created'  => '2020-01-29 09:28:17',
-                'modified' => '2020-01-29 09:28:17'
-            ],
+            //(int)8   => [
+            //    'key'      => 'MONITORING.ACK_RECEIVER_SERVER',
+            //    'value'    => 'imap.gmail.com:993/imap/ssl',
+            //    'info'     => 'Email server to connect. Must be provided in following format: server.com:port/imap[/ssl]',
+            //    'section'  => 'MONITORING',
+            //    'created'  => '2020-01-29 09:28:17',
+            //    'modified' => '2020-01-29 09:28:17'
+            //],
+            //(int)9   => [
+            //    'key'      => 'MONITORING.ACK_RECEIVER_ADDRESS',
+            //    'value'    => 'my_email@gmail.com',
+            //    'info'     => 'Username for sender notification mail',
+            //    'section'  => 'MONITORING',
+            //    'created'  => '2020-01-29 09:28:17',
+            //    'modified' => '2020-01-29 09:28:17'
+            //],
+            //(int)10  => [
+            //    'key'      => 'MONITORING.ACK_RECEIVER_PASSWORD',
+            //    'value'    => 'my_password',
+            //    'info'     => 'Password for sender notification mail',
+            //    'section'  => 'MONITORING',
+            //    'created'  => '2020-01-29 09:28:17',
+            //    'modified' => '2020-01-29 09:28:17'
+            //],
             (int)11  => [
                 'key'      => 'MONITORING.CMD',
                 'value'    => '/opt/openitc/nagios/var/rw/nagios.cmd',

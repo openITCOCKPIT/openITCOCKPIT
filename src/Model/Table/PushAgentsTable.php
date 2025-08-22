@@ -274,7 +274,7 @@ class PushAgentsTable extends Table {
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getPushAgents(GenericFilter $GenericFilter, PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
+    public function getPushAgents(GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
         // Yes - this query is from hell!
 
         $query = $this->find();

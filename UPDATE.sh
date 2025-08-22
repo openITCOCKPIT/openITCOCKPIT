@@ -312,9 +312,6 @@ mysql --defaults-extra-file=${INIFILE} -e "UPDATE commands SET command_line = '\
 #Check and create missing cronjobs
 #oitc api --model Cronjob --action create_missing_cronjobs --data ""
 
-#Compress and minify javascript files
-oitc compress
-
 #Acc ALC dependencies config for itc core
 echo "---------------------------------------------------------------"
 echo "Scan for new user permissions. This will take a while..."

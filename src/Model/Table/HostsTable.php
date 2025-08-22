@@ -4824,28 +4824,52 @@ class HostsTable extends Table {
         ]);
 
         $hostgroups = $this->fetchTable('Hostgroups');
-        if (!empty($conditions['Hostgroup']['_ids'])) {
-            $hostgroupIds = explode(',', $conditions['Hostgroup']['_ids']);
-            $query->select([
-                'hostgroup_ids' => $query->newExpr(
-                    'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+        if (!empty($conditions['Hostgroup'])) {
+            $hostgroupIds = [];
+            if (!empty($conditions['Hostgroup']['_ids'])) {
+                $hostgroupIds = explode(',', $conditions['Hostgroup']['_ids']);
+            }
+            $whereForCount = [
+                $query->newExpr('FIND_IN_SET (Hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+                                GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
+                                GROUP_CONCAT(HostToHostgroups.hostgroup_id)))')
+            ];
+
+            if (!empty($hostgroupIds)) {
+                $whereForCount[] = ['Hostgroups.id IN' => $hostgroupIds];
+            }
+
+            if (!empty($conditions['Hostgroup']['keywords'])) {
+                $whereForCount[] = new ComparisonExpression(
+                    'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                    $conditions['Hostgroup']['keywords'],
+                    'string',
+                    'RLIKE'
+
+                );
+            }
+
+            if (!empty($conditions['Hostgroup']['not_keywords'])) {
+                $whereForCount[] = new ComparisonExpression(
+                    'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                    $conditions['Hostgroup']['not_keywords'],
+                    'string',
+                    'NOT RLIKE'
+                );
+            }
+
+            if (!empty($whereForCount)) {
+                $query->select([
+                    'hostgroup_ids' => $query->newExpr(
+                        'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
                     GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
                     GROUP_CONCAT(HostToHostgroups.hostgroup_id))'),
-                /*
-                'count'         => $query->newExpr(
-                    'SELECT COUNT(hostgroups.id)
-                                FROM hostgroups
-                                WHERE FIND_IN_SET (hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
-                                GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
-                                GROUP_CONCAT(HostToHostgroups.hostgroup_id)))
-                                AND hostgroups.id IN (' . implode(', ', $hostgroupIds) . ')'),
-                */
-                'count' => $hostgroups->find()->select(['count' => $query->func()->count('Hostgroups.id')])
-                    ->where($query->newExpr('FIND_IN_SET (Hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
-                                GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
-                                GROUP_CONCAT(HostToHostgroups.hostgroup_id)))'))
-                    ->andWhere(['Hostgroups.id IN' => $hostgroupIds])
-            ]);
+                    'count'         => $hostgroups->find()->select([$query->func()->count('Hostgroups.id')])
+                        ->where($whereForCount)
+                ]);
+
+            }
+
             $query->join([
                 'hosts_to_hostgroups'         => [
                     'table'      => 'hosts_to_hostgroups',
@@ -4864,7 +4888,6 @@ class HostsTable extends Table {
                 'hostgroup_ids IS NOT NULL',
                 'count > 0'
             ]);
-            //dd($query);
         }
 
         $where = [];

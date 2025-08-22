@@ -46,7 +46,6 @@ use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
 use ImportModule\Model\Table\ImportedHostsTable;
 use itnovum\openITCOCKPIT\Agent\AgentConfiguration;
-use itnovum\openITCOCKPIT\Core\FileDebugger;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
 
@@ -460,7 +459,7 @@ class PushAgentsTable extends Table {
                 ]
             ]);
         $query->disableHydration();
-        $query->orderBy('PushAgents.ipaddress', 'asc');
+        $query->orderBy(['PushAgents.ipaddress' => 'asc']);
 
         return $this->emptyArrayIfNull($query->toArray());
     }

@@ -2620,9 +2620,9 @@ class NagiosConfigGenerator {
             $servicegroupIds = [];
             $dependentServicegroupIds = [];
 
-            $services = $servicedependency->get('services', [
-                'contain' => 'Hosts'
-            ]);
+            $services = $servicedependency->get('services',
+                contain: ['Hosts']
+            );
 
             $servicegroupsForCfg = [];
             $dependentServicegroupsForCfg = [];

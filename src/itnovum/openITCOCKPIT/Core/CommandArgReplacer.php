@@ -55,7 +55,7 @@ class CommandArgReplacer {
             return $cmdStr;
         }
 
-        $mapping = $this->buildMapping('basic');
+        $mapping = $this->buildMapping();
 
         return str_replace($mapping['search'], $mapping['replace'], $cmdStr);
     }

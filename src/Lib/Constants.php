@@ -264,16 +264,5 @@ class Constants {
     public function defineAjaxLimit(): void {
         define('ITN_AJAX_LIMIT', 150);
     }
-
-    /**
-     * @param array $constants
-     * @deprecated Do not use because PhpStorm will not recognize constants defined in this way.
-     */
-    private function define($constants = []): void {
-        foreach ($constants as $constantName => $constantValue) {
-            if (!defined($constantName)) {
-                define($constantName, $constantValue);
-            }
-        }
-    }
+    
 }

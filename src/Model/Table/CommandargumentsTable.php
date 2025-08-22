@@ -18,14 +18,14 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\ServicetemplatecommandargumentvaluesTable|\Cake\ORM\Association\HasMany $Servicetemplatecommandargumentvalues
  * @property \App\Model\Table\ServicetemplateeventcommandargumentvaluesTable|\Cake\ORM\Association\HasMany $Servicetemplateeventcommandargumentvalues
  *
- * @method \App\Model\Entity\Commandargument get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Commandargument get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Commandargument newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Commandargument[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Commandargument|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Commandargument|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Commandargument patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Commandargument[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Commandargument findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Commandargument findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -39,7 +39,7 @@ class CommandargumentsTable extends Table {
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config) :void {
+    public function initialize(array $config): void {
         parent::initialize($config);
 
         $this->setTable('commandarguments');
@@ -81,7 +81,7 @@ class CommandargumentsTable extends Table {
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator) :Validator {
+    public function validationDefault(Validator $validator): Validator {
         $validator
             ->integer('id')
             ->allowEmptyString('id', null, 'create');
@@ -108,7 +108,7 @@ class CommandargumentsTable extends Table {
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules) :RulesChecker {
+    public function buildRules(RulesChecker $rules): RulesChecker {
         $rules->add($rules->existsIn(['command_id'], 'Commands'));
 
         return $rules;

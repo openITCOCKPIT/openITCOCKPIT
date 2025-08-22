@@ -56,14 +56,14 @@ use itnovum\openITCOCKPIT\Filter\ServicetemplateFilter;
  * @property \App\Model\Table\ServicetemplatecommandargumentvaluesTable|\Cake\ORM\Association\HasMany $Servicetemplatecommandargumentvalues
  * @property \App\Model\Table\ServicetemplateeventcommandargumentvaluesTable|\Cake\ORM\Association\HasMany $Servicetemplateeventcommandargumentvalues
  *
- * @method \App\Model\Entity\Servicetemplate get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Servicetemplate get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Servicetemplate newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Servicetemplate[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Servicetemplate|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicetemplate|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicetemplate patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Servicetemplate[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Servicetemplate findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Servicetemplate findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -887,8 +887,8 @@ class ServicetemplatesTable extends Table {
         $where = $ServicetemplateFilter->ajaxFilter();
         $where['Servicetemplates.container_id IN'] = $containerIds;
         $query = $this->find('list',
-        keyField: 'id',
-        valueField: 'template_name')
+            keyField: 'id',
+            valueField: 'template_name')
             ->where($where)
             ->orderBy([
                 'Servicetemplates.template_name' => 'asc'
@@ -904,8 +904,8 @@ class ServicetemplatesTable extends Table {
         $selectedServicetemplates = [];
         if (!empty($selected)) {
             $query = $this->find('list',
-            keyField: 'id',
-            valueField: 'template_name')
+                keyField: 'id',
+                valueField: 'template_name')
                 ->where([
                     'Servicetemplates.id IN'           => $selected,
                     'Servicetemplates.container_id IN' => $containerIds

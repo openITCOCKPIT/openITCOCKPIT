@@ -21,14 +21,14 @@ use itnovum\openITCOCKPIT\Filter\ContactgroupsFilter;
  * @property \App\Model\Table\ContainersTable|\Cake\ORM\Association\BelongsTo $Containers
  * @property \App\Model\Table\ContainersTable|\Cake\ORM\Association\BelongsToMany $Contacts
  *
- * @method \App\Model\Entity\Contactgroup get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Contactgroup get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Contactgroup newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Contactgroup[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Contactgroup|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Contactgroup|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Contactgroup patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Contactgroup[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Contactgroup findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Contactgroup findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class ContactgroupsTable extends Table {
 

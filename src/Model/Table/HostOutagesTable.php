@@ -16,7 +16,7 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\HostOutage newEmptyEntity()
  * @method \App\Model\Entity\HostOutage newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\HostOutage[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\HostOutage get($primaryKey, $options = [])
+ * @method \App\Model\Entity\HostOutage get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\HostOutage findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\HostOutage patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\HostOutage[] patchEntities(iterable $entities, array $data, array $options = [])

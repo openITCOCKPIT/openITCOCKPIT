@@ -14,14 +14,14 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\HostsTable&\Cake\ORM\Association\BelongsTo $Hosts
  * @property \App\Model\Table\HostgroupsTable&\Cake\ORM\Association\BelongsTo $Hostgroups
  *
- * @method \App\Model\Entity\HostsToHostgroup get($primaryKey, $options = [])
+ * @method \App\Model\Entity\HostsToHostgroup get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\HostsToHostgroup newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\HostsToHostgroup[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\HostsToHostgroup|false save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\HostsToHostgroup saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\HostsToHostgroup patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\HostsToHostgroup[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\HostsToHostgroup findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\HostsToHostgroup findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class HostsToHostgroupsTable extends Table {
     /**

@@ -17,14 +17,14 @@ use itnovum\openITCOCKPIT\Filter\AgentchecksFilter;
  *
  * @property \App\Model\Table\ServicetemplatesTable|\Cake\ORM\Association\BelongsTo $Servicetemplates
  *
- * @method \App\Model\Entity\Agentcheck get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Agentcheck get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Agentcheck newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Agentcheck[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Agentcheck|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Agentcheck saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Agentcheck patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Agentcheck[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Agentcheck findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Agentcheck findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

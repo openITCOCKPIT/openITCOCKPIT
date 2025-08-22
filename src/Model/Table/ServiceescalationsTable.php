@@ -22,14 +22,14 @@ use itnovum\openITCOCKPIT\Filter\ServiceescalationsFilter;
  * @property \App\Model\Table\ServiceescalationsTable|\Cake\ORM\Association\HasMany $Services
  * @property \App\Model\Table\ServiceescalationsTable|\Cake\ORM\Association\HasMany $Servicegroups
  *
- * @method \App\Model\Entity\Serviceescalation get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Serviceescalation get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Serviceescalation newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Serviceescalation[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Serviceescalation|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Serviceescalation|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Serviceescalation patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Serviceescalation[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Serviceescalation findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Serviceescalation findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

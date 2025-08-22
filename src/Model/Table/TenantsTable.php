@@ -19,14 +19,14 @@ use itnovum\openITCOCKPIT\Filter\TenantFilter;
  *
  * @property \App\Model\Table\ContainersTable|\Cake\ORM\Association\BelongsTo $Containers
  *
- * @method \App\Model\Entity\Tenant get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Tenant get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Tenant newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Tenant[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Tenant|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Tenant|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Tenant patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Tenant[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Tenant findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Tenant findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

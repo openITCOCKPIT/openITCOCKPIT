@@ -53,14 +53,14 @@ use itnovum\openITCOCKPIT\Filter\HosttemplateFilter;
  * @property \App\Model\Table\HostsTable|\Cake\ORM\Association\HasMany $Hosts
  * @property \App\Model\Table\HosttemplatecommandargumentvaluesTable|\Cake\ORM\Association\HasMany $Hosttemplatecommandargumentvalues
  *
- * @method \App\Model\Entity\Hosttemplate get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Hosttemplate get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Hosttemplate newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Hosttemplate[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Hosttemplate|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hosttemplate|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hosttemplate patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Hosttemplate[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Hosttemplate findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Hosttemplate findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

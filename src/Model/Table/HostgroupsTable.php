@@ -49,14 +49,14 @@ use itnovum\openITCOCKPIT\Filter\HostgroupFilter;
  * @property \App\Model\Table\HostsTable|\Cake\ORM\Association\BelongsToMany $Hosts
  * @property \App\Model\Table\HosttemplatesTable|\Cake\ORM\Association\BelongsToMany $Hosttemplates
  *
- * @method \App\Model\Entity\Hostgroup get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Hostgroup get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Hostgroup newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Hostgroup[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Hostgroup|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hostgroup|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hostgroup patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Hostgroup[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Hostgroup findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Hostgroup findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class HostgroupsTable extends Table {
 

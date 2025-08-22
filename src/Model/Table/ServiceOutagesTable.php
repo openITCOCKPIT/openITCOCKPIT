@@ -17,7 +17,7 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\ServiceOutage newEmptyEntity()
  * @method \App\Model\Entity\ServiceOutage newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\ServiceOutage[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\ServiceOutage get($primaryKey, $options = [])
+ * @method \App\Model\Entity\ServiceOutage get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\ServiceOutage findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\ServiceOutage patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\ServiceOutage[] patchEntities(iterable $entities, array $data, array $options = [])

@@ -23,14 +23,14 @@ use itnovum\openITCOCKPIT\Filter\ServicetemplategroupsFilter;
  * @property \App\Model\Table\ContainersTable|\Cake\ORM\Association\BelongsTo $Containers
  * @property \App\Model\Table\ServicetemplatesTable|\Cake\ORM\Association\HasMany $servicetemplates
  *
- * @method \App\Model\Entity\Servicetemplategroup get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Servicetemplategroup get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Servicetemplategroup newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Servicetemplategroup[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Servicetemplategroup|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicetemplategroup saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicetemplategroup patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Servicetemplategroup[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Servicetemplategroup findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Servicetemplategroup findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

@@ -24,14 +24,14 @@ use itnovum\openITCOCKPIT\Filter\ServicegroupFilter;
  * @property \App\Model\Table\ServicesTable|\Cake\ORM\Association\HasMany $Services
  * @property \App\Model\Table\ServicetemplatesTable|\Cake\ORM\Association\HasMany $Servicetemplates
  *
- * @method \App\Model\Entity\Servicegroup get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Servicegroup get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Servicegroup newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Servicegroup[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Servicegroup|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicegroup saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicegroup patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Servicegroup[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Servicegroup findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Servicegroup findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class ServicegroupsTable extends Table {
 

@@ -56,7 +56,7 @@ use itnovum\openITCOCKPIT\Filter\StatuspagesFilter;
  * @method \App\Model\Entity\Statuspage newEmptyEntity()
  * @method \App\Model\Entity\Statuspage newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Statuspage[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\Statuspage get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Statuspage get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Statuspage findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\Statuspage patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Statuspage[] patchEntities(iterable $entities, array $data, array $options = [])

@@ -14,14 +14,14 @@ use Model;
 /**
  * Systemsettings Model
  *
- * @method \App\Model\Entity\Systemsetting get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Systemsetting get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Systemsetting newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Systemsetting[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Systemsetting|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Systemsetting|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Systemsetting patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Systemsetting[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Systemsetting findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Systemsetting findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

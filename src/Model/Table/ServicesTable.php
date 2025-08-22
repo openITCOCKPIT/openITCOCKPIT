@@ -5002,22 +5002,51 @@ class ServicesTable extends Table {
                 return $q;
             });
         }
+        if (!empty($conditions['Servicegroup'])) {
+            $servicegroups = $this->fetchTable('Servicegroups');
+            $servicegroupIds = [];
+            if (!empty($conditions['Servicegroup']['_ids'])) {
+                $servicegroupIds = explode(',', $conditions['Servicegroup']['_ids']);
+            }
+            $whereForCount = [
+                $query->newExpr('FIND_IN_SET (Servicegroups.id,IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
+                                GROUP_CONCAT(ServicetemplatesToServicegroups.servicegroup_id),
+                                GROUP_CONCAT(ServiceToServicegroups.servicegroup_id)))')
+            ];
 
-        if (!empty($conditions['Servicegroup']['_ids'])) {
-            $servicegroupIds = explode(',', $conditions['Servicegroup']['_ids']);
-            $query->select([
-                'servicegroup_ids' => $query->newExpr(
-                    'IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
+            if (!empty($servicegroupIds)) {
+                $whereForCount[] = ['Servicegroups.id IN' => $servicegroupIds];
+            }
+
+            if (!empty($conditions['Servicegroup']['keywords'])) {
+                $whereForCount[] = new ComparisonExpression(
+                    'IF((Servicegroups.tags IS NOT NULL), Servicegroups.tags, "")',
+                    $conditions['Servicegroup']['keywords'],
+                    'string',
+                    'RLIKE'
+
+                );
+            }
+
+            if (!empty($conditions['Servicegroup']['not_keywords'])) {
+                $whereForCount[] = new ComparisonExpression(
+                    'IF((Servicegroups.tags IS NOT NULL), Servicegroups.tags, "")',
+                    $conditions['Servicegroups']['not_keywords'],
+                    'string',
+                    'NOT RLIKE'
+                );
+            }
+            if (!empty($whereForCount)) {
+                $query->select([
+                    'servicegroup_ids' => $query->newExpr(
+                        'IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
                     GROUP_CONCAT(ServicetemplatesToServicegroups.servicegroup_id),
                     GROUP_CONCAT(ServiceToServicegroups.servicegroup_id))'),
-                'count'            => $query->newExpr(
-                    'SELECT COUNT(servicegroups.id)
-                                FROM servicegroups
-                                WHERE FIND_IN_SET (servicegroups.id,IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
-                                GROUP_CONCAT(ServicetemplatesToServicegroups.servicegroup_id),
-                                GROUP_CONCAT(ServiceToServicegroups.servicegroup_id)))
-                                AND servicegroups.id IN (' . implode(', ', $servicegroupIds) . ')')
-            ]);
+                    'count'            => $servicegroups->find()->select([$query->func()->count('Servicegroups.id')])
+                        ->where($whereForCount)
+                ]);
+
+            }
             $query->join([
                 'services_to_servicegroups'         => [
                     'table'      => 'services_to_servicegroups',

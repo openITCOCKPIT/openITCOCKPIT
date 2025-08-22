@@ -4823,8 +4823,9 @@ class HostsTable extends Table {
             'HostsToContainersSharing'
         ]);
 
-        $hostgroups = $this->fetchTable('Hostgroups');
+
         if (!empty($conditions['Hostgroup'])) {
+            $hostgroups = $this->fetchTable('Hostgroups');
             $hostgroupIds = [];
             if (!empty($conditions['Hostgroup']['_ids'])) {
                 $hostgroupIds = explode(',', $conditions['Hostgroup']['_ids']);

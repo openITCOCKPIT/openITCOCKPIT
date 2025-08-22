@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Copyright (C) <2015-present>  <it-novum GmbH>
+# Copyright (C) 2015-2025  it-novum GmbH
+# Copyright (C) 2025-today Allgeier IT Services GmbH
 #
 # This file is dual licensed
 #
@@ -284,9 +285,6 @@ mysql --defaults-extra-file=${INIFILE} --batch --skip-column-names -e "SELECT TA
     echo "ALTER TABLE \`${TABLE_NAME}\` CONVERT TO CHARACTER SET utf8mb4; ✔"
     mysql --defaults-extra-file=${INIFILE} -e "ALTER TABLE \`${TABLE_NAME}\` CONVERT TO CHARACTER SET utf8mb4;"
 done
-
-#Compress and minify javascript files
-oitc compress
 
 #Acc ALC dependencies config for itc core
 echo "---------------------------------------------------------------"

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -325,7 +326,7 @@ class ServicedependenciesTable extends Table {
             if ($PaginateOMat->useScroll()) {
                 $result = $this->scrollCake4($query, $PaginateOMat->getHandler());
             } else {
-                $result = $this->paginateCake4($query, $PaginateOMat->getHandler(), false);
+                $result = $this->paginateCake4($query, $PaginateOMat->getHandler());
             }
         }
 

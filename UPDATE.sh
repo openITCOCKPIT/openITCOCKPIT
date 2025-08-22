@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Copyright (C) <2015-present>  <it-novum GmbH>
+# Copyright (C) 2015-2025  it-novum GmbH
+# Copyright (C) 2025-today Allgeier IT Services GmbH
 #
 # This file is dual licensed
 #
@@ -310,9 +311,6 @@ mysql --defaults-extra-file=${INIFILE} -e "UPDATE commands SET command_line = '\
 
 #Check and create missing cronjobs
 #oitc api --model Cronjob --action create_missing_cronjobs --data ""
-
-#Compress and minify javascript files
-oitc compress
 
 #Acc ALC dependencies config for itc core
 echo "---------------------------------------------------------------"

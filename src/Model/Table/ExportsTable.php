@@ -11,14 +11,14 @@ use Cake\Validation\Validator;
 /**
  * Exports Model
  *
- * @method \App\Model\Entity\Export get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Export get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Export newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Export[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Export|false save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Export saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Export patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Export[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Export findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Export findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

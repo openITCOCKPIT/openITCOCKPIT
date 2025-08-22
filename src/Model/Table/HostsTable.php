@@ -64,14 +64,14 @@ use itnovum\openITCOCKPIT\Filter\HostFilter;
  * @property \App\Model\Table\DeletedHostsTable|\Cake\ORM\Association\HasMany $DeletedHosts
  * @property \App\Model\Table\ServicesTable|\Cake\ORM\Association\HasMany $Services
  *
- * @method \App\Model\Entity\Host get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Host get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Host newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Host[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Host|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Host|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Host patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Host[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Host findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Host findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -3686,10 +3686,10 @@ class HostsTable extends Table {
                     ]
                 ],
                 'not_handled'      => [
-                    0         => 0,
-                    1         => 0,
-                    2         => 0,
-                    'hostIds' => [
+                    0              => 0,
+                    1              => 0,
+                    2              => 0,
+                    'hostIds'      => [
                         0 => [],
                         1 => [],
                         2 => []

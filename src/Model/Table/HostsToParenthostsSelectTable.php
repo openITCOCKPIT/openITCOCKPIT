@@ -17,7 +17,7 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\HostsToParenthostSelect.php newEmptyEntity()
  * @method \App\Model\Entity\HostsToParenthostSelect newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\HostsToParenthostSelect[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\HostsToParenthostSelect get($primaryKey, $options = [])
+ * @method \App\Model\Entity\HostsToParenthostSelect get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\HostsToParenthostSelect findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\HostsToParenthostSelect patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\HostsToParenthostSelect[] patchEntities(iterable $entities, array $data, array $options = [])
@@ -49,7 +49,7 @@ class HostsToParenthostsSelectTable extends Table {
         $this->belongsTo('Parenthosts', [
             'foreignKey' => 'parenthost_id',
             'joinType'   => 'INNER',
-            'className' => 'Hosts'
+            'className'  => 'Hosts'
         ]);
     }
 

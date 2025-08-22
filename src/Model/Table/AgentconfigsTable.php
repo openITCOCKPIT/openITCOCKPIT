@@ -17,14 +17,14 @@ use itnovum\openITCOCKPIT\Filter\GenericFilter;
  *
  * @property \App\Model\Table\HostsTable|\Cake\ORM\Association\BelongsTo $Hosts
  *
- * @method \App\Model\Entity\Agentconfig get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Agentconfig get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Agentconfig newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Agentconfig[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Agentconfig|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Agentconfig saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Agentconfig patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Agentconfig[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Agentconfig findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Agentconfig findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

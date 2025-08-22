@@ -81,14 +81,14 @@ use MapModule\Model\Table\MapsTable;
  * @property \App\Model\Table\TimeperiodsTable|\Cake\ORM\Association\HasMany $Timeperiods
  * @property \App\Model\Table\UsersToContainersTable|\Cake\ORM\Association\HasMany $UsersToContainers
  *
- * @method \App\Model\Entity\Container get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Container get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Container newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Container[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Container|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Container|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Container patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Container[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Container findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Container findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TreeBehavior
  */

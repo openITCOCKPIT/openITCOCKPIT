@@ -24,14 +24,14 @@ use itnovum\openITCOCKPIT\Filter\ContactsFilter;
  * @property \App\Model\Table\ContainersTable|\Cake\ORM\Association\HasMany $ContactsToContainers
  * @property \App\Model\Table\CommandsTable|\Cake\ORM\Association\HasMany $ContactsToHostcommands
  *
- * @method \App\Model\Entity\Contact get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Contact get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Contact newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Contact[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Contact|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Contact|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Contact patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Contact[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Contact findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Contact findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class ContactsTable extends Table {
 

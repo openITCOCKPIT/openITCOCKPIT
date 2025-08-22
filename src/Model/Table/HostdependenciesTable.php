@@ -44,14 +44,14 @@ use itnovum\openITCOCKPIT\Filter\HostdependenciesFilter;
  * @property \App\Model\Table\HostdependenciesTable|\Cake\ORM\Association\HasMany $Hosts
  * @property \App\Model\Table\HostdependenciesTable|\Cake\ORM\Association\HasMany $Hostgroups
  *
- * @method \App\Model\Entity\Hostdependency get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Hostdependency get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Hostdependency newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Hostdependency[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Hostdependency|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hostdependency|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hostdependency patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Hostdependency[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Hostdependency findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Hostdependency findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

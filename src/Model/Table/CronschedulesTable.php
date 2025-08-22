@@ -12,14 +12,14 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\CronjobsTable|\Cake\ORM\Association\BelongsTo $Cronjobs
  *
- * @method \App\Model\Entity\Cronschedule get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Cronschedule get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Cronschedule newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Cronschedule[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Cronschedule|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Cronschedule|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Cronschedule patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Cronschedule[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Cronschedule findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Cronschedule findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class CronschedulesTable extends Table {
 
@@ -86,7 +86,7 @@ class CronschedulesTable extends Table {
      * @param int $cronjobId
      * @return array|\Cake\Datasource\EntityInterface
      */
-    public function getSchedulByCronjobId(int $cronjobId){
+    public function getSchedulByCronjobId(int $cronjobId) {
         try {
             $query = $this->find()
                 ->where([
@@ -95,12 +95,12 @@ class CronschedulesTable extends Table {
                 ->firstOrFail();
 
             return $query;
-        }catch (RecordNotFoundException $e){
+        } catch (RecordNotFoundException $e) {
             // Database truncated or maybe this cronjob was never executed before?
             return $this->newEntity([
                 'cronjob_id' => $cronjobId,
                 'start_time' => '1970-01-01 01:00:00',
-                'end_time' => '1970-01-01 01:00:00'
+                'end_time'   => '1970-01-01 01:00:00'
             ]);
         }
     }

@@ -11,14 +11,14 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\ObjectsTable|\Cake\ORM\Association\BelongsTo $Objects
  *
- * @method \App\Model\Entity\Customvariable get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Customvariable get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Customvariable newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Customvariable[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Customvariable|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Customvariable|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Customvariable patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Customvariable[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Customvariable findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Customvariable findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -30,7 +30,7 @@ class CustomvariablesTable extends Table {
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config) :void {
+    public function initialize(array $config): void {
         parent::initialize($config);
 
         $this->setTable('customvariables');
@@ -46,7 +46,7 @@ class CustomvariablesTable extends Table {
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator) :Validator {
+    public function validationDefault(Validator $validator): Validator {
         $validator
             ->integer('id')
             ->allowEmptyString('id', null, 'create');
@@ -74,7 +74,7 @@ class CustomvariablesTable extends Table {
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules) :RulesChecker {
+    public function buildRules(RulesChecker $rules): RulesChecker {
 
         return $rules;
     }

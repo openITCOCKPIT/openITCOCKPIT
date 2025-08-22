@@ -18,7 +18,7 @@ use itnovum\openITCOCKPIT\Filter\GenericFilter;
  * @method \App\Model\Entity\MessagesOtd newEmptyEntity()
  * @method \App\Model\Entity\MessagesOtd newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\MessagesOtd[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\MessagesOtd get($primaryKey, $options = [])
+ * @method \App\Model\Entity\MessagesOtd get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\MessagesOtd findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\MessagesOtd patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\MessagesOtd[] patchEntities(iterable $entities, array $data, array $options = [])

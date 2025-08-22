@@ -12,14 +12,14 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\CalendarsTable|\Cake\ORM\Association\BelongsTo $Calendars
  *
- * @method \App\Model\Entity\CalendarHoliday get($primaryKey, $options = [])
+ * @method \App\Model\Entity\CalendarHoliday get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\CalendarHoliday newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\CalendarHoliday[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\CalendarHoliday|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\CalendarHoliday saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\CalendarHoliday patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\CalendarHoliday[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\CalendarHoliday findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\CalendarHoliday findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class CalendarHolidaysTable extends Table {
 

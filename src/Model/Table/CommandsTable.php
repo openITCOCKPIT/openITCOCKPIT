@@ -20,14 +20,14 @@ use itnovum\openITCOCKPIT\Filter\CommandsFilter;
  *
  * @property \App\Model\Table\CommandargumentsTable|\Cake\ORM\Association\HasMany $Commandarguments
  *
- * @method \App\Model\Entity\Command get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Command get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Command newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Command[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Command|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Command|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Command patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Command[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Command findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Command findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class CommandsTable extends Table {
 
@@ -364,8 +364,8 @@ class CommandsTable extends Table {
 
     public function getAllCommandsAsList() {
         $result = $this->find('list',
-        keyField: 'id',
-        valueField: 'name')
+            keyField: 'id',
+            valueField: 'name')
             ->disableHydration()
             ->orderBy(['Commands.name' => 'asc'])
             ->all();
@@ -379,8 +379,8 @@ class CommandsTable extends Table {
      */
     public function getAllCommandsUuidsAsList() {
         $query = $this->find('list',
-        keyField: 'id',
-        valueField: 'uuid')
+            keyField: 'id',
+            valueField: 'uuid')
             ->disableHydration();
         return $query->toArray();
     }

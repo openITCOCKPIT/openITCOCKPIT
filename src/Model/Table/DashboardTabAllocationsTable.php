@@ -49,7 +49,7 @@ use itnovum\openITCOCKPIT\Filter\DashboardTabAllocationsFilter;
  * @method \App\Model\Entity\DashboardTabAllocation newEmptyEntity()
  * @method \App\Model\Entity\DashboardTabAllocation newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\DashboardTabAllocation[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\DashboardTabAllocation get($primaryKey, $options = [])
+ * @method \App\Model\Entity\DashboardTabAllocation get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\DashboardTabAllocation findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\DashboardTabAllocation patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\DashboardTabAllocation[] patchEntities(iterable $entities, array $data, array $options = [])

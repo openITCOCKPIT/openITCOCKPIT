@@ -38,7 +38,7 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\OrganizationalChartConnection newEmptyEntity()
  * @method \App\Model\Entity\OrganizationalChartConnection newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\OrganizationalChartConnection[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\OrganizationalChartConnection get($primaryKey, $options = [])
+ * @method \App\Model\Entity\OrganizationalChartConnection get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\OrganizationalChartConnection findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\OrganizationalChartConnection patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\OrganizationalChartConnection[] patchEntities(iterable $entities, array $data, array $options = [])

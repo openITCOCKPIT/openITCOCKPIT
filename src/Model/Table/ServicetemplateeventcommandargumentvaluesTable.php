@@ -12,14 +12,14 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\CommandargumentsTable|\Cake\ORM\Association\BelongsTo $Commandarguments
  * @property \App\Model\Table\ServicetemplatesTable|\Cake\ORM\Association\BelongsTo $Servicetemplates
  *
- * @method \App\Model\Entity\Servicetemplateeventcommandargumentvalue get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Servicetemplateeventcommandargumentvalue get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Servicetemplateeventcommandargumentvalue newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Servicetemplateeventcommandargumentvalue[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Servicetemplateeventcommandargumentvalue|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicetemplateeventcommandargumentvalue saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicetemplateeventcommandargumentvalue patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Servicetemplateeventcommandargumentvalue[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Servicetemplateeventcommandargumentvalue findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Servicetemplateeventcommandargumentvalue findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -31,7 +31,7 @@ class ServicetemplateeventcommandargumentvaluesTable extends Table {
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config) :void {
+    public function initialize(array $config): void {
         parent::initialize($config);
 
         $this->setTable('servicetemplateeventcommandargumentvalues');
@@ -56,7 +56,7 @@ class ServicetemplateeventcommandargumentvaluesTable extends Table {
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator) :Validator {
+    public function validationDefault(Validator $validator): Validator {
         $validator
             ->integer('id')
             ->allowEmptyString('id', null, 'create');
@@ -76,7 +76,7 @@ class ServicetemplateeventcommandargumentvaluesTable extends Table {
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules) :RulesChecker {
+    public function buildRules(RulesChecker $rules): RulesChecker {
         $rules->add($rules->existsIn(['commandargument_id'], 'Commandarguments'));
         $rules->add($rules->existsIn(['servicetemplate_id'], 'Servicetemplates'));
 

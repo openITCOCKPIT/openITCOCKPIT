@@ -9,14 +9,14 @@ use Cake\Validation\Validator;
 /**
  * Proxies Model
  *
- * @method \App\Model\Entity\Proxy get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Proxy get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Proxy newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Proxy[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Proxy|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Proxy|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Proxy patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Proxy[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Proxy findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Proxy findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class ProxiesTable extends Table {
 
@@ -26,7 +26,7 @@ class ProxiesTable extends Table {
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config) :void {
+    public function initialize(array $config): void {
         parent::initialize($config);
 
         $this->setTable('proxies');
@@ -40,10 +40,10 @@ class ProxiesTable extends Table {
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator) :Validator {
+    public function validationDefault(Validator $validator): Validator {
         $validator
             ->integer('id')
-            ->allowEmptyString('id', null,  'create');
+            ->allowEmptyString('id', null, 'create');
 
         $validator
             ->scalar('ipaddress')

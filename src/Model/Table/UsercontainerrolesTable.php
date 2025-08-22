@@ -48,14 +48,14 @@ use itnovum\openITCOCKPIT\Filter\UsercontainerrolesFilter;
  * @property \App\Model\Table\UsercontainerrolesToContainersTable|\Cake\ORM\Association\HasMany $UsercontainerrolesToContainers
  * @property \App\Model\Table\UsersToUsercontainerrolesTable|\Cake\ORM\Association\HasMany $UsersToUsercontainerroles
  *
- * @method \App\Model\Entity\Usercontainerrole get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Usercontainerrole get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Usercontainerrole newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Usercontainerrole[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Usercontainerrole|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Usercontainerrole saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Usercontainerrole patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Usercontainerrole[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Usercontainerrole findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Usercontainerrole findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class UsercontainerrolesTable extends Table {
     use Cake2ResultTableTrait;
@@ -552,10 +552,10 @@ class UsercontainerrolesTable extends Table {
             $userRoleContainerIds = [$userRoleContainerIds];
         }
         return $this->find('list',
-        keyField: 'id',
-        valueField: function ($row) {
-            return Hash::extract($row['containers'], '{n}.id');
-        })->select([
+            keyField: 'id',
+            valueField: function ($row) {
+                return Hash::extract($row['containers'], '{n}.id');
+            })->select([
             'Usercontainerroles.id'
         ])->contain([
             'Containers' => function (\Cake\ORM\Query $q) {

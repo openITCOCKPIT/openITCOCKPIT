@@ -16,14 +16,14 @@ use Cake\Validation\Validator;
  * @property ArosTable&\Cake\ORM\Association\BelongsTo $Aros
  * @property AcosTable&\Cake\ORM\Association\BelongsTo $Acos
  *
- * @method \App\Model\Entity\ArosAco get($primaryKey, $options = [])
+ * @method \App\Model\Entity\ArosAco get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\ArosAco newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\ArosAco[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\ArosAco|false save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\ArosAco saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\ArosAco patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\ArosAco[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\ArosAco findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\ArosAco findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class ArosAcosTable extends Table {
     /**

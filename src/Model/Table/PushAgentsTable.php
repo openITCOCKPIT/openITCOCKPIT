@@ -52,7 +52,7 @@ use itnovum\openITCOCKPIT\Filter\GenericFilter;
  * @method \App\Model\Entity\PushAgent newEmptyEntity()
  * @method \App\Model\Entity\PushAgent newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\PushAgent[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\PushAgent get($primaryKey, $options = [])
+ * @method \App\Model\Entity\PushAgent get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\PushAgent findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\PushAgent patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\PushAgent[] patchEntities(iterable $entities, array $data, array $options = [])

@@ -14,14 +14,14 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\HosttemplatesTable&\Cake\ORM\Association\BelongsTo $Hosttemplates
  * @property \App\Model\Table\HostgroupsTable&\Cake\ORM\Association\BelongsTo $Hostgroups
  *
- * @method \App\Model\Entity\HosttemplatesToHostgroup get($primaryKey, $options = [])
+ * @method \App\Model\Entity\HosttemplatesToHostgroup get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\HosttemplatesToHostgroup newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\HosttemplatesToHostgroup[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\HosttemplatesToHostgroup|false save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\HosttemplatesToHostgroup saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\HosttemplatesToHostgroup patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\HosttemplatesToHostgroup[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\HosttemplatesToHostgroup findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\HosttemplatesToHostgroup findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class HosttemplatesToHostgroupsTable extends Table {
     /**

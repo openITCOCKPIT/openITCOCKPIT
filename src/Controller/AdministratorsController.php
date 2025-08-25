@@ -423,7 +423,7 @@ class AdministratorsController extends AppController {
      * @return void
      */
     public function php_info() {
-        $this->layout = 'blank';
+        $this->viewBuilder()->setLayout('default');
         //Only ship HTML template
     }
 }

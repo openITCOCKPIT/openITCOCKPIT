@@ -31,25 +31,38 @@ class Constants {
     /**
      * @var array
      */
-    private $containersWithProperties;
+    private array $containersWithProperties = [];
 
     public function __construct() {
-        $this->defineCommandConstants();
-
-        $this->defineRootContainer();
-        $this->defineContainerTypeIds();
-        $this->defineContainerPermissionTypes();
-
-        $this->defineObjects();
-        $this->defineHosttemplateTypes();
-        $this->defineHostTypes();
-        $this->defineServiceTypes();
-
-        $this->defineModules();
-
-        $this->defineAjaxLimit();
+        $this->defineAllConstants();
 
         $this->attachContainerpropertiesToContainers();
+    }
+
+    /**
+     * Define all constants used in openITCOCKPIT.
+     * But only once.
+     * @return void
+     */
+    private function defineAllConstants(): void {
+        if (!defined('OITC_INITIALIZED')) {
+            define('OITC_INITIALIZED', true);
+
+            $this->defineCommandConstants();
+
+            $this->defineRootContainer();
+            $this->defineContainerTypeIds();
+            $this->defineContainerPermissionTypes();
+
+            $this->defineObjects();
+            $this->defineHosttemplateTypes();
+            $this->defineHostTypes();
+            $this->defineServiceTypes();
+
+            $this->defineModules();
+
+            $this->defineAjaxLimit();
+        }
     }
 
     /**
@@ -63,7 +76,7 @@ class Constants {
      *
      * @return array                Array with container types that can handle the given object type.
      */
-    public function containerProperties($object = null, $exclude = []) {
+    public function containerProperties($object = null, $exclude = []): array {
         if (!empty($exclude)) {
             if (!is_array($exclude)) {
                 $exclude = [$exclude];
@@ -84,133 +97,130 @@ class Constants {
         return [];
     }
 
-    private function defineCommandConstants() {
-        $this->define([
-            'CHECK_COMMAND'        => 1,
-            'HOSTCHECK_COMMAND'    => 2,
-            'NOTIFICATION_COMMAND' => 3,
-            'EVENTHANDLER_COMMAND' => 4,
-        ]);
+    private function defineCommandConstants(): void {
+        define('CHECK_COMMAND', 1);
+        define('HOSTCHECK_COMMAND', 2);
+        define('NOTIFICATION_COMMAND', 3);
+        define('EVENTHANDLER_COMMAND', 4);
     }
 
-    private function defineRootContainer() {
-        if (!defined('ROOT_CONTAINER')) {
-            define('ROOT_CONTAINER', 1);
-        }
+    private function defineRootContainer(): void {
+        define('ROOT_CONTAINER', 1);
     }
 
-    private function defineContainerTypeIds() {
-        $this->define([
-            'CT_GLOBAL'               => 1,
-            'CT_TENANT'               => 2,
-            'CT_LOCATION'             => 3,
-            'CT_DEVICEGROUP'          => 4,
-            'CT_NODE'                 => 5,
-            'CT_CONTACTGROUP'         => 6,
-            'CT_HOSTGROUP'            => 7,
-            'CT_SERVICEGROUP'         => 8,
-            'CT_SERVICETEMPLATEGROUP' => 9,
-            'CT_RESOURCEGROUP'        => 10
-        ]);
+    private function defineContainerTypeIds(): void {
+        define('CT_GLOBAL', 1);
+        define('CT_TENANT', 2);
+        define('CT_LOCATION', 3);
+        define('CT_DEVICEGROUP', 4);
+        define('CT_NODE', 5);
+        define('CT_CONTACTGROUP', 6);
+        define('CT_HOSTGROUP', 7);
+        define('CT_SERVICEGROUP', 8);
+        define('CT_SERVICETEMPLATEGROUP', 9);
+        define('CT_RESOURCEGROUP', 10);
     }
 
-    private function defineContainerPermissionTypes() {
-        $this->define([
-            'READ_RIGHT'  => 1 << 0,
-            'WRITE_RIGHT' => 1 << 1,
-        ]);
+    private function defineContainerPermissionTypes(): void {
+        define('READ_RIGHT', 1 << 0);
+        define('WRITE_RIGHT', 1 << 1);
     }
 
-    private function defineObjects() {
-        $this->define([
-            'OBJECT_TENANT'                    => 1 << 0,
-            'OBJECT_USER'                      => 1 << 1,
-            'OBJECT_NODE'                      => 1 << 2,
-            'OBJECT_LOCATION'                  => 1 << 3,
-            'OBJECT_DEVICEGROUP'               => 1 << 4,
-            'OBJECT_CONTACT'                   => 1 << 5,
-            'OBJECT_CONTACTGROUP'              => 1 << 6,
-            'OBJECT_TIMEPERIOD'                => 1 << 7,
-            'OBJECT_HOST'                      => 1 << 8,
-            'OBJECT_HOSTTEMPLATE'              => 1 << 9,
-            'OBJECT_HOSTGROUP'                 => 1 << 10,
-            'OBJECT_SERVICE'                   => 1 << 11,
-            'OBJECT_SERVICETEMPLATE'           => 1 << 12,
-            'OBJECT_SERVICEGROUP'              => 1 << 13,
-            'OBJECT_COMMAND'                   => 1 << 14,
-            'OBJECT_SATELLITE'                 => 1 << 15,
-            'OBJECT_SERVICETEMPLATEGROUP'      => 1 << 16,
-            'OBJECT_HOSTESCALATION'            => 1 << 17,
-            'OBJECT_SERVICEESCALATION'         => 1 << 18,
-            'OBJECT_HOSTDEPENDENCY'            => 1 << 19,
-            'OBJECT_SERVICEDEPENDENCY'         => 1 << 20,
-            'OBJECT_EXPORT'                    => 1 << 21,  // Changelog only  ImportModule
-            'OBJECT_HOSTDEFAULT'               => 1 << 22,  // Changelog only ImportModule
-            'OBJECT_IMPORTER'                  => 1 << 23,  // Changelog only ImportModule
-            'OBJECT_IMPORTEDHOST'              => 1 << 24,  // Changelog only ImportModule
-            'OBJECT_EXTERNALSYSTEM'            => 1 << 25,  // Changelog only ImportModule
-            'OBJECT_EXTERNALMONITORING'        => 1 << 26,  // Changelog only ImportModule
-            'OBJECT_STARTIMPORTDATA'           => 1 << 27,  // Changelog only ImportModule
-            'OBJECT_SYNCHRONIZEWITHMONITORING' => 1 << 28,  // Changelog only ImportModule
-            'OBJECT_AGENTCHECK'                => 1 << 29,  // Changelog only ImportModule
-            'OBJECT_IMPORTEDHOSTGROUP'         => 1 << 30,  // Changelog only ImportModule
-            'OBJECT_RESOURCE'                  => 1 << 31,  // ScmModule
-            'OBJECT_RESOURCEGROUP'             => 1 << 32,  // ScmModule
-        ]);
+    private function defineObjects(): void {
+        define('OBJECT_TENANT', 1 << 0);
+        define('OBJECT_USER', 1 << 1);
+        define('OBJECT_NODE', 1 << 2);
+        define('OBJECT_LOCATION', 1 << 3);
+        define('OBJECT_DEVICEGROUP', 1 << 4);
+        define('OBJECT_CONTACT', 1 << 5);
+        define('OBJECT_CONTACTGROUP', 1 << 6);
+        define('OBJECT_TIMEPERIOD', 1 << 7);
+        define('OBJECT_HOST', 1 << 8);
+        define('OBJECT_HOSTTEMPLATE', 1 << 9);
+        define('OBJECT_HOSTGROUP', 1 << 10);
+        define('OBJECT_SERVICE', 1 << 11);
+        define('OBJECT_SERVICETEMPLATE', 1 << 12);
+        define('OBJECT_SERVICEGROUP', 1 << 13);
+        define('OBJECT_COMMAND', 1 << 14);
+        define('OBJECT_SATELLITE', 1 << 15);
+        define('OBJECT_SERVICETEMPLATEGROUP', 1 << 16);
+        define('OBJECT_HOSTESCALATION', 1 << 17);
+        define('OBJECT_SERVICEESCALATION', 1 << 18);
+        define('OBJECT_HOSTDEPENDENCY', 1 << 19);
+        define('OBJECT_SERVICEDEPENDENCY', 1 << 20);
+        define('OBJECT_EXPORT', 1 << 21);                    // Changelog only ImportModule
+        define('OBJECT_HOSTDEFAULT', 1 << 22);               // Changelog only ImportModule
+        define('OBJECT_IMPORTER', 1 << 23);                  // Changelog only ImportModule
+        define('OBJECT_IMPORTEDHOST', 1 << 24);              // Changelog only ImportModule
+        define('OBJECT_EXTERNALSYSTEM', 1 << 25);            // Changelog only ImportModule
+        define('OBJECT_EXTERNALMONITORING', 1 << 26);        // Changelog only ImportModule
+        define('OBJECT_STARTIMPORTDATA', 1 << 27);           // Changelog only ImportModule
+        define('OBJECT_SYNCHRONIZEWITHMONITORING', 1 << 28); // Changelog only ImportModule
+        define('OBJECT_AGENTCHECK', 1 << 29);                // Changelog only ImportModule
+        define('OBJECT_IMPORTEDHOSTGROUP', 1 << 30);         // Changelog only ImportModule
+        define('OBJECT_RESOURCE', 1 << 31);                  // ScmModule
+        define('OBJECT_RESOURCEGROUP', 1 << 32);             // ScmModule
     }
 
-    private function defineHosttemplateTypes() {
-        $this->define([
-            'GENERIC_HOSTTEMPLATE' => 1 << 0, //1
-            'EVK_HOSTTEMPLATE'     => 1 << 1, //2
-            'SLA_HOSTTEMPLATE'     => 1 << 2  //4
-        ]);
+    private function defineHosttemplateTypes(): void {
+        define('GENERIC_HOSTTEMPLATE', 1 << 0); //1
+        define('EVK_HOSTTEMPLATE', 1 << 1);     //2
+        define('SLA_HOSTTEMPLATE', 1 << 2);     //4
     }
 
-    private function defineHostTypes() {
-        $this->define([
-            'GENERIC_HOST' => 1 << 0, //1
-            'EVK_HOST'     => 1 << 1, //2
-            'SLA_HOST'     => 1 << 2  //4
-        ]);
+    private function defineHostTypes(): void {
+        define('GENERIC_HOST', 1 << 0); //1
+        define('EVK_HOST', 1 << 1);     //2
+        define('SLA_HOST', 1 << 2);     //4
     }
 
-    private function defineServiceTypes() {
-        $this->define($this->getServiceTypes());
+    private function defineServiceTypes(): void {
+        define('GENERIC_SERVICE', 1 << 0);    //1
+        define('EVK_SERVICE', 1 << 1);        //2
+        define('SLA_SERVICE', 1 << 2);        //4
+        define('MK_SERVICE', 1 << 3);         //8
+        define('OITC_AGENT_SERVICE', 1 << 4); //16
+        define('PROMETHEUS_SERVICE', 1 << 5); //32
+        define('EXTERNAL_SERVICE', 1 << 6);   //64
     }
 
-    private function defineModules() {
-        $this->define($this->getModuleConstants());
+    private function defineModules(): void {
+        define('CORE', 0 << 0);
+        define('AUTOREPORT_MODULE', 1 << 0);
+        define('EVENTCORRELATION_MODULE', 1 << 1);
+        define('IMPORT_MODULE', 1 << 2);
+        define('SLA_MODULE', 1 << 3);
+        define('SCM_MODULE', 1 << 4);
     }
 
 
     /**
      * @return array
      */
-    public function getServiceTypes() {
+    public function getServiceTypes(): array {
         return [
-            'GENERIC_SERVICE'    => 1 << 0, //1
-            'EVK_SERVICE'        => 1 << 1, //2
-            'SLA_SERVICE'        => 1 << 2, //4
-            'MK_SERVICE'         => 1 << 3, //8
-            'OITC_AGENT_SERVICE' => 1 << 4, //16
-            'PROMETHEUS_SERVICE' => 1 << 5, //32
-            'EXTERNAL_SERVICE'   => 1 << 6  //64
+            'GENERIC_SERVICE'    => GENERIC_SERVICE,
+            'EVK_SERVICE'        => EVK_SERVICE,
+            'SLA_SERVICE'        => SLA_SERVICE,
+            'MK_SERVICE'         => MK_SERVICE,
+            'OITC_AGENT_SERVICE' => OITC_AGENT_SERVICE,
+            'PROMETHEUS_SERVICE' => PROMETHEUS_SERVICE,
+            'EXTERNAL_SERVICE'   => EXTERNAL_SERVICE
         ];
     }
 
-    public function getModuleConstants() {
+    public function getModuleConstants(): array {
         return [
-            'CORE'                    => 0 << 0,
-            'AUTOREPORT_MODULE'       => 1 << 0,
-            'EVENTCORRELATION_MODULE' => 1 << 1,
-            'IMPORT_MODULE'           => 1 << 2,
-            'SLA_MODULE'              => 1 << 3,
-            'SCM_MODULE'              => 1 << 4
+            'CORE'                    => CORE,
+            'AUTOREPORT_MODULE'       => AUTOREPORT_MODULE,
+            'EVENTCORRELATION_MODULE' => EVENTCORRELATION_MODULE,
+            'IMPORT_MODULE'           => IMPORT_MODULE,
+            'SLA_MODULE'              => SLA_MODULE,
+            'SCM_MODULE'              => SCM_MODULE
         ];
     }
 
-    private function attachContainerpropertiesToContainers() {
+    private function attachContainerpropertiesToContainers(): void {
         $this->containersWithProperties = [
             "GLOBAL_CONTAINER"               => [
                 'properties'     => OBJECT_TENANT ^ OBJECT_USER ^ OBJECT_CONTACT ^ OBJECT_CONTACTGROUP ^ OBJECT_TIMEPERIOD ^ OBJECT_HOST ^ OBJECT_HOSTTEMPLATE ^ OBJECT_HOSTGROUP ^ OBJECT_SERVICE ^ OBJECT_SERVICETEMPLATE ^ OBJECT_SERVICEGROUP ^ OBJECT_SATELLITE ^ OBJECT_SERVICETEMPLATEGROUP ^ OBJECT_HOSTESCALATION ^ OBJECT_SERVICEESCALATION ^ OBJECT_HOSTDEPENDENCY ^ OBJECT_SERVICEDEPENDENCY ^ OBJECT_RESOURCEGROUP,
@@ -251,20 +261,8 @@ class Constants {
         ];
     }
 
-    public function defineAjaxLimit() {
-        $this->define([
-            'ITN_AJAX_LIMIT' => 150
-        ]);
+    public function defineAjaxLimit(): void {
+        define('ITN_AJAX_LIMIT', 150);
     }
-
-    /**
-     * @param array $constants
-     */
-    private function define($constants = []) {
-        foreach ($constants as $constantName => $constantValue) {
-            if (!defined($constantName)) {
-                define($constantName, $constantValue);
-            }
-        }
-    }
+    
 }

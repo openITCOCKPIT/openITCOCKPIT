@@ -91,7 +91,7 @@ class TenantsTable extends Table {
             ->allowEmptyString('id', null, 'create');
 
         $validator
-            ->integer('zipcode')
+            ->regex('zipcode', '/^[a-zA-Z0-9\-\s]*$/', __('Zip code contains illegal characters'))
             ->allowEmptyString('zipcode');
 
         $validator

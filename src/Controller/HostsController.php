@@ -1763,7 +1763,7 @@ class HostsController extends AppController {
                     $tmpHost = $HostsTable->newEmptyEntity();
                     $tmpHost->setNew(true);
                     if (!empty($hostDefaultValues)) {
-                        $tmpHost->set($hostDefaultValues);
+                        $tmpHost->patch($hostDefaultValues);
                     }
 
                     $tmpHost->set('uuid', UUID::v4());

@@ -1763,7 +1763,7 @@ class HostsController extends AppController {
                     $tmpHost = $HostsTable->newEmptyEntity();
                     $tmpHost->setNew(true);
                     if (!empty($hostDefaultValues)) {
-                        $tmpHost->set($hostDefaultValues);
+                        $tmpHost->patch($hostDefaultValues);
                     }
 
                     $tmpHost->set('uuid', UUID::v4());
@@ -1804,28 +1804,28 @@ class HostsController extends AppController {
                         ];
                     }
 
-                    $tmpHost->set([
+                    $tmpHost->patch([
                         'hosts_to_containers_sharing' => [
                             '_ids' => $containerIds
                         ]
                     ]);
-                    $tmpHost->set([
+                    $tmpHost->patch([
                         'hostgroups' => [
                             '_ids' => $hostgroupsIds
                         ]
                     ]);
 
-                    $tmpHost->set([
+                    $tmpHost->patch([
                         'parenthosts' => [
                             '_ids' => $parenthostsIds
                         ]
                     ]);
-                    $tmpHost->set([
+                    $tmpHost->patch([
                         'contacts' => [
                             '_ids' => $contactsIds
                         ]
                     ]);
-                    $tmpHost->set([
+                    $tmpHost->patch([
                         'contactgroups' => [
                             '_ids' => $contactgroupsIds
                         ]

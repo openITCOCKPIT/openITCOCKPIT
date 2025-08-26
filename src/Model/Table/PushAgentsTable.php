@@ -46,7 +46,6 @@ use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
 use ImportModule\Model\Table\ImportedHostsTable;
 use itnovum\openITCOCKPIT\Agent\AgentConfiguration;
-use itnovum\openITCOCKPIT\Core\FileDebugger;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
 
@@ -275,7 +274,7 @@ class PushAgentsTable extends Table {
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getPushAgents(GenericFilter $GenericFilter, PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
+    public function getPushAgents(GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
         // Yes - this query is from hell!
 
         $query = $this->find();
@@ -460,7 +459,7 @@ class PushAgentsTable extends Table {
                 ]
             ]);
         $query->disableHydration();
-        $query->orderBy('PushAgents.ipaddress', 'asc');
+        $query->orderBy(['PushAgents.ipaddress' => 'asc']);
 
         return $this->emptyArrayIfNull($query->toArray());
     }

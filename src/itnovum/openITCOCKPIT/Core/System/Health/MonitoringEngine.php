@@ -182,7 +182,7 @@ class MonitoringEngine {
             return false;
         }
         $monitoringEngine = strtolower($this->monitoringEngine);
-        if (preg_match('/naemon/', $monitoringEngine)) {
+        if (str_contains($monitoringEngine, 'naemon')) {
             return true;
         }
         return false;

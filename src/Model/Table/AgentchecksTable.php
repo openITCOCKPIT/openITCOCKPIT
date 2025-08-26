@@ -128,7 +128,7 @@ class AgentchecksTable extends Table {
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getAgentchecksIndex(AgentchecksFilter $AgentchecksFilter, PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
+    public function getAgentchecksIndex(AgentchecksFilter $AgentchecksFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
         $query = $this->find('all');
         $where = $AgentchecksFilter->indexFilter();
         if (!empty($MY_RIGHTS)) {

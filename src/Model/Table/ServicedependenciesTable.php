@@ -326,7 +326,7 @@ class ServicedependenciesTable extends Table {
             if ($PaginateOMat->useScroll()) {
                 $result = $this->scrollCake4($query, $PaginateOMat->getHandler());
             } else {
-                $result = $this->paginateCake4($query, $PaginateOMat->getHandler(), false);
+                $result = $this->paginateCake4($query, $PaginateOMat->getHandler());
             }
         }
 

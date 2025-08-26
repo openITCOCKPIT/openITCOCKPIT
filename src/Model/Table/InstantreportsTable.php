@@ -246,7 +246,7 @@ class InstantreportsTable extends Table {
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getInstantreportsIndex(InstantreportFilter $InstantreportFilter, PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
+    public function getInstantreportsIndex(InstantreportFilter $InstantreportFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
         $query = $this->find('all')
             ->contain([
                 'Timeperiods' => function (Query $q) {

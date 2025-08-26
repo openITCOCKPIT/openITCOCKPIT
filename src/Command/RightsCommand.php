@@ -105,7 +105,7 @@ class RightsCommand extends Command {
             $fs = new Filesystem();
             foreach ($dirs as $dir) {
                 if ($this->modulesOnly) {
-                    if (!preg_match('/modules/', $dir)) {
+                    if (!str_contains($dir, 'modules')) {
                         $io->info('Skipping ' . $dir);
                         continue;
                     }

@@ -137,7 +137,7 @@ class AfterExport extends ConfigGenerator implements ConfigInterface, ContainerC
         }
 
         $realFile = CONFIG . 'after_export.php';
-        return $this->saveConfigFile($configToExport, $realFile);
+        return $this->saveConfigFile($configToExport);
     }
 
     /**

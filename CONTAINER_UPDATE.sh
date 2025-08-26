@@ -286,9 +286,6 @@ mysql --defaults-extra-file=${INIFILE} --batch --skip-column-names -e "SELECT TA
     mysql --defaults-extra-file=${INIFILE} -e "ALTER TABLE \`${TABLE_NAME}\` CONVERT TO CHARACTER SET utf8mb4;"
 done
 
-#Compress and minify javascript files
-oitc compress
-
 #Acc ALC dependencies config for itc core
 echo "---------------------------------------------------------------"
 echo "Scan for new user permissions. This will take a while..."

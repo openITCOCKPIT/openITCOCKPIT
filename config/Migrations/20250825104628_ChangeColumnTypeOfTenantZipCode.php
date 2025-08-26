@@ -23,8 +23,34 @@
 //     License agreement and license key will be shipped with the order
 //     confirmation.
 
-/*
- * You can empty out this file, if you are certain that you match all requirements.
+declare(strict_types=1);
+
+use Migrations\BaseMigration;
+
+/**
+ * Class ChangeColumnTypeOfTenantZipCode
+ *
+ * Created:
+ * oitc migrations create ChangeColumnTypeOfTenantZipCode
+ *
+ * Usage:
+ * openitcockpit-update
  */
-
-
+class ChangeColumnTypeOfTenantZipCode extends BaseMigration {
+    /**
+     * Change Method.
+     *
+     * More information on this method is available here:
+     * https://book.cakephp.org/migrations/4/en/migrations.html#the-change-method
+     * @return void
+     */
+    public function change(): void {
+        $this->table('tenants')
+            ->changeColumn('zipcode', 'string', [
+                'default' => null,
+                'limit'   => 255,
+                'null'    => true,
+            ])
+            ->update();
+    }
+}

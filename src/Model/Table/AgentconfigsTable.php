@@ -207,7 +207,7 @@ class AgentconfigsTable extends Table {
             ->firstOrFail();
     }
 
-    public function getPullAgents(GenericFilter $GenericFilter, PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
+    public function getPullAgents(GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
         $query = $this->find()
             ->select([
                 'Agentconfigs.id',

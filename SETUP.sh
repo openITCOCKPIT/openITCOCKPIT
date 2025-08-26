@@ -370,9 +370,6 @@ echo "---------------------------------------------------------------"
 echo "Scan and import ACL objects. This will take a while..."
 oitc acl.aco_sync
 
-
-oitc compress
-
 oitc setup
 
 oitc nagios_export

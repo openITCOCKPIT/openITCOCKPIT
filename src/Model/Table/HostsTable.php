@@ -5457,7 +5457,6 @@ class HostsTable extends Table {
 
             $hostNameParts = [];
             $restofHostName = $host['name'];
-            $skipHost = false;
             $containerIdForNewMap = 0;
             $previousPartsAsString = ''; // to build unique names, which can be assigned to a map hierarchy
 
@@ -5492,23 +5491,31 @@ class HostsTable extends Table {
 
                 // find the container for the new map
                 if ($mapGeneratorLevel['is_container']) {
+
                     /** @var $ContainersTable ContainersTable */
                     $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
-                    $containersByName = $ContainersTable->getContainersByName($part, $MY_RIGHTS, $containers);
-                    if (empty($containersByName) || count($containersByName) > 1) {
-                        // No container found or to many found for this level, skip this host
-                        $skipHost = true;
-                        break;
+                    $containerStructureFromHost = $ContainersTable->getContainersForMapgeneratorByContainerStructure([$host], $MY_RIGHTS, $containers);
+                    if (empty($containerStructureFromHost)) {
+                        // No container found for this level, skip this host
+                        continue;
                     }
 
-                    $containerIdForNewMap = $containersByName[0]['id'];
+
+                    // container has to be the same as the tenant container of the host
+                    $tenantContainer = $containerStructureFromHost['containerHierarchy'][0];
+
+                    if ($tenantContainer['name'] === $part && in_array($tenantContainer['id'], $containers)) {
+                        // Found the container for the new map
+                        $containerIdForNewMap = $tenantContainer['id'];
+                        break;
+                    }
 
                 }
 
             }
 
-            if ($skipHost || count($hostNameParts) !== count($mapGeneratorLevels)) {
+            if ($containerIdForNewMap === 0 || count($hostNameParts) !== count($mapGeneratorLevels)) {
                 // Not enough parts for the defined levels, skip this host
                 continue;
             }
@@ -5524,7 +5531,10 @@ class HostsTable extends Table {
                 ]);
                 $query->where([
                     'HostsToContainersSharing.container_id IN' => $MY_RIGHTS
-                ]);
+                ])
+                    ->andWhere([
+                        'HostsToContainersSharing.container_id IN' => $containerIdForNewMap
+                    ]);
             }
             $realHost = $query->contain('HostsToContainersSharing')
                 ->all();

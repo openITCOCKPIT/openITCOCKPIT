@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -65,7 +66,7 @@ use itnovum\openITCOCKPIT\Core\MonitoringEngine\NagiosConfigGenerator;
 use itnovum\openITCOCKPIT\Core\System\Health\LsbRelease;
 use NWCModule\itnovum\openITCOCKPIT\SNMP\SNMPScanNwc;
 use Symfony\Component\Filesystem\Filesystem;
-use VMWareV2Module\itnovum\openITCOCKPIT\Datastore\DatastoreScan;
+use VMWAREModule\itnovum\openITCOCKPIT\Datastore\DatastoreScan;
 
 /**
  * GearmanWorker command.

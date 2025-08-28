@@ -306,6 +306,27 @@ class HostgroupsTable extends Table {
             ]);
 
         $where = $HostgroupFilter->indexFilter();
+
+        if (isset($where['Hostgroups.keywords rlike'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                $where['Hostgroups.keywords rlike'],
+                'string',
+                'RLIKE'
+            );
+            unset($where['Hostgroups.keywords rlike']);
+        }
+
+        if (isset($where['Hostgroups.not_keywords not rlike'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                $where['Hostgroups.not_keywords not rlike'],
+                'string',
+                'NOT RLIKE'
+            );
+            unset($where['Hostgroups.not_keywords not rlike']);
+        }
+
         if (!empty($MY_RIGHTS)) {
             $where['Containers.parent_id IN'] = $MY_RIGHTS;
         }

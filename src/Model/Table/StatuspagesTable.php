@@ -165,7 +165,7 @@ class StatuspagesTable extends Table {
             ->allowEmptyString('public_title');
 
         $validator
-            ->scalar('public_title')
+            ->scalar('public_identifier')
             ->maxLength('public_identifier', 255)
             ->allowEmptyString('public_identifier', null, true)
             ->add('public_identifier', 'unique', [

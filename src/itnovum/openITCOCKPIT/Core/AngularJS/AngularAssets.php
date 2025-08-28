@@ -28,6 +28,9 @@ namespace itnovum\openITCOCKPIT\Core\AngularJS;
 
 use itnovum\openITCOCKPIT\CakePHP\Folder;
 
+/**
+ * @deprecated This is obsolete because the AngularJS frontend got replaced by an Angular implementation
+ */
 class AngularAssets implements AngularAssetsInterface {
 
     /**

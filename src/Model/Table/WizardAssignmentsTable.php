@@ -379,7 +379,8 @@ class WizardAssignmentsTable extends Table {
                 'title'       => __('Dell iDrac'),
                 'description' => __('Used to check Dell iDrac devices.'),
                 'image'       => 'dell.png',
-                'category'    => ['linux', 'network']
+                'category'    => ['linux', 'network'],
+                'active'      => true
             ]
         ];
 

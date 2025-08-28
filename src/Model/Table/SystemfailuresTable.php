@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -39,14 +40,14 @@ use itnovum\openITCOCKPIT\Filter\SystemfailuresFilter;
  *
  * @property \App\Model\Table\UsersTable|\Cake\ORM\Association\BelongsTo $Users
  *
- * @method \App\Model\Entity\Systemfailure get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Systemfailure get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Systemfailure newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Systemfailure[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Systemfailure|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Systemfailure saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Systemfailure patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Systemfailure[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Systemfailure findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Systemfailure findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

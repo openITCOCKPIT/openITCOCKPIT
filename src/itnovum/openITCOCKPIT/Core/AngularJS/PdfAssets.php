@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -34,7 +35,7 @@ class PdfAssets {
         return [
             // Load CoreUI CSS
             '/css/coreui/coreui.css',
-            '/node_modules/@fortawesome/fontawesome-free/css/all.min.css',
+            '/css/@fortawesome/fontawesome-free/css/all.min.css',
 
             // Add custom openITCOCKPIT related CSS
             '/css/pdf/style.css',

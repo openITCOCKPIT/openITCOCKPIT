@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -100,7 +101,7 @@ class HostgroupsController extends AppController {
 
             $hostgroup['hasSLAHosts'] = false;
             if (Plugin::isLoaded('SLAModule')) {
-                $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroup->get('id'), $MY_RIGHTS);
+                $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroup->get('id'));
                 if (!empty($hostIds)) {
                     $hostgroup['hasSLAHosts'] = $HostsTable->hasSLAHosts($hostIds) > 0;
                 }
@@ -380,7 +381,7 @@ class HostgroupsController extends AppController {
             if ($this->hasRootPrivileges) {
                 $MY_RIGHTS = [];
             }
-            $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroup->get('id'), $MY_RIGHTS);
+            $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroup->get('id'));
             if (!empty($hostIds)) {
                 $hasSLAHosts = $HostsTable->hasSLAHosts($hostIds) > 0;
             }

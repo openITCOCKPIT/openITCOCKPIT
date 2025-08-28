@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -422,7 +423,7 @@ class AdministratorsController extends AppController {
      * @return void
      */
     public function php_info() {
-        $this->layout = 'blank';
+        $this->viewBuilder()->setLayout('default');
         //Only ship HTML template
     }
 }

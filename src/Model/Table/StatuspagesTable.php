@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -56,7 +57,7 @@ use itnovum\openITCOCKPIT\Filter\StatuspagesFilter;
  * @method \App\Model\Entity\Statuspage newEmptyEntity()
  * @method \App\Model\Entity\Statuspage newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Statuspage[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\Statuspage get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Statuspage get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Statuspage findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\Statuspage patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Statuspage[] patchEntities(iterable $entities, array $data, array $options = [])
@@ -164,7 +165,7 @@ class StatuspagesTable extends Table {
             ->allowEmptyString('public_title');
 
         $validator
-            ->scalar('public_title')
+            ->scalar('public_identifier')
             ->maxLength('public_identifier', 255)
             ->allowEmptyString('public_identifier', null, true)
             ->add('public_identifier', 'unique', [

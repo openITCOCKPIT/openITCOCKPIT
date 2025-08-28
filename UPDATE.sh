@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Copyright (C) <2015-present>  <it-novum GmbH>
+# Copyright (C) 2015-2025  it-novum GmbH
+# Copyright (C) 2025-today Allgeier IT Services GmbH
 #
 # This file is dual licensed
 #
@@ -196,6 +197,9 @@ done
 
 mysql --defaults-extra-file=${INIFILE} -e "ALTER DATABASE ${dbc_dbname} CHARACTER SET utf8mb4 COLLATE ${MYSQL_COLLATIONS};"
 
+echo "Delete AcknowledgePerMail Cronjob if exists"
+mysql --defaults-extra-file=${INIFILE} -e "DELETE FROM cronjobs WHERE task='AcknowledgePerMail' AND plugin='Core';"
+
 echo "Running openITCOCKPIT Core database migration"
 oitc migrations migrate
 
@@ -307,9 +311,6 @@ mysql --defaults-extra-file=${INIFILE} -e "UPDATE commands SET command_line = '\
 
 #Check and create missing cronjobs
 #oitc api --model Cronjob --action create_missing_cronjobs --data ""
-
-#Compress and minify javascript files
-oitc compress
 
 #Acc ALC dependencies config for itc core
 echo "---------------------------------------------------------------"

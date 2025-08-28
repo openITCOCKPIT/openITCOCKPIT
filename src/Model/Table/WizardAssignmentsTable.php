@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -43,7 +44,7 @@ use itnovum\openITCOCKPIT\Core\Wizards\ModuleWizardsInterface;
  * @method \App\Model\Entity\WizardAssignment newEmptyEntity()
  * @method \App\Model\Entity\WizardAssignment newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\WizardAssignment[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\WizardAssignment get($primaryKey, $options = [])
+ * @method \App\Model\Entity\WizardAssignment get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\WizardAssignment findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\WizardAssignment patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\WizardAssignment[] patchEntities(iterable $entities, array $data, array $options = [])

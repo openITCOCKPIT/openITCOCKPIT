@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -181,7 +182,7 @@ class MonitoringEngine {
             return false;
         }
         $monitoringEngine = strtolower($this->monitoringEngine);
-        if (preg_match('/naemon/', $monitoringEngine)) {
+        if (str_contains($monitoringEngine, 'naemon')) {
             return true;
         }
         return false;

@@ -1,4 +1,27 @@
 <?php
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 namespace App\Model\Table;
 
@@ -12,14 +35,14 @@ use itnovum\openITCOCKPIT\Core\PackagemanagerRequestBuilder;
 /**
  * Registers Model
  *
- * @method \App\Model\Entity\Register get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Register get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Register newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Register[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Register|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Register|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Register patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Register[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Register findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Register findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -33,7 +56,7 @@ class RegistersTable extends Table {
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config) :void {
+    public function initialize(array $config): void {
         parent::initialize($config);
 
         $this->setTable('registers');
@@ -49,7 +72,7 @@ class RegistersTable extends Table {
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator) :Validator {
+    public function validationDefault(Validator $validator): Validator {
         $validator
             ->integer('id')
             ->allowEmptyString('id', null, 'create');
@@ -86,10 +109,10 @@ class RegistersTable extends Table {
      * @return array|bool|null
      */
     public function checkLicenseKey($license) {
-        if(empty($license)){
+        if (empty($license)) {
             return [
                 'success' => false,
-                'error' => __('Please enter a license key'),
+                'error'   => __('Please enter a license key'),
                 'license' => null
             ];
         }
@@ -115,7 +138,7 @@ class RegistersTable extends Table {
                     if (!empty($response->license->License) && strtotime($response->license->License->expire) > time()) {
                         return [
                             'success' => true,
-                            'error' => null,
+                            'error'   => null,
                             'license' => $response->license->License
                         ];
                     }
@@ -123,17 +146,17 @@ class RegistersTable extends Table {
             }
         }
 
-        if($error === false){
+        if ($error === false) {
             return [
                 'success' => false,
-                'error' => __('Invalid license key'),
+                'error'   => __('Invalid license key'),
                 'license' => null
             ];
         }
 
         return [
             'success' => false,
-            'error' => $error,
+            'error'   => $error,
             'license' => null
         ];
     }

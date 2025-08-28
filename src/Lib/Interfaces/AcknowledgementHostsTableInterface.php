@@ -36,7 +36,7 @@ interface AcknowledgementHostsTableInterface {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getAcknowledgements(AcknowledgedHostConditions $AcknowledgedHostConditions, $PaginateOMat = null);
+    public function getAcknowledgements(AcknowledgedHostConditions $AcknowledgedHostConditions, ?PaginateOMat $PaginateOMat = null);
 
     /**
      * @param string $uuid

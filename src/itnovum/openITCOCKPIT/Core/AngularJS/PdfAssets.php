@@ -35,7 +35,7 @@ class PdfAssets {
         return [
             // Load CoreUI CSS
             '/css/coreui/coreui.css',
-            '/node_modules/@fortawesome/fontawesome-free/css/all.min.css',
+            '/css/@fortawesome/fontawesome-free/css/all.min.css',
 
             // Add custom openITCOCKPIT related CSS
             '/css/pdf/style.css',

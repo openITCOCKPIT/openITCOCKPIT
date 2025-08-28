@@ -45,6 +45,7 @@ use Cake\ORM\Entity;
  * @property string $lastname
  * @property string|null $position
  * @property string|null $company
+ * @property string|null $department
  * @property string|null $phone
  * @property string|null $timezone
  * @property string|null $i18n

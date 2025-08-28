@@ -27,15 +27,16 @@ namespace App\Lib\Interfaces;
 
 
 use itnovum\openITCOCKPIT\Core\DowntimeHostConditions;
+use itnovum\openITCOCKPIT\Database\PaginateOMat;
 
 interface DowntimehistoryHostsTableInterface {
 
     /**
      * @param DowntimeHostConditions $DowntimeHostConditions
-     * @param null $PaginateOMat
+     * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getDowntimes(DowntimeHostConditions $DowntimeHostConditions, $PaginateOMat = null);
+    public function getDowntimes(DowntimeHostConditions $DowntimeHostConditions, ?PaginateOMat $PaginateOMat = null);
 
     /**
      * @param int $internalDowntimeId

@@ -37,7 +37,7 @@ interface AcknowledgementServicesTableInterface {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getAcknowledgements(AcknowledgedServiceConditions $AcknowledgedServiceConditions, $PaginateOMat = null);
+    public function getAcknowledgements(AcknowledgedServiceConditions $AcknowledgedServiceConditions, ?PaginateOMat $PaginateOMat = null);
 
     /**
      * @param string $uuid

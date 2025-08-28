@@ -5007,7 +5007,9 @@ class ServicesTable extends Table {
                 return $q;
             });
         }
-
+        if (!empty($conditions['Hostgroup'])) {
+            $conditions['Hostgroup'] = Hash::filter($conditions['Hostgroup']);
+        }
         if (!empty($conditions['Hostgroup'])) {
             $query->join([
                     'hosttemplates' => [
@@ -5084,7 +5086,9 @@ class ServicesTable extends Table {
             ]);
         }
 
-
+        if (!empty($conditions['Servicegroup'])) {
+            $conditions['Servicegroup'] = Hash::filter($conditions['Servicegroup']);
+        }
         if (!empty($conditions['Servicegroup'])) {
             $servicegroups = $this->fetchTable('Servicegroups');
             $servicegroupIds = [];

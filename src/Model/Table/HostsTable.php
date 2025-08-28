@@ -4824,7 +4824,9 @@ class HostsTable extends Table {
             'HostsToContainersSharing'
         ]);
 
-
+        if (!empty($conditions['Hostgroup'])) {
+            $conditions['Hostgroup'] = Hash::filter($conditions['Hostgroup']);
+        }
         if (!empty($conditions['Hostgroup'])) {
             $hostgroups = $this->fetchTable('Hostgroups');
             $hostgroupIds = [];

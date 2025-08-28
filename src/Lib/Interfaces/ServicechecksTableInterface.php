@@ -36,5 +36,5 @@ interface ServicechecksTableInterface {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getServicechecks(ServicechecksConditions $ServicechecksConditions, $PaginateOMat = null);
+    public function getServicechecks(ServicechecksConditions $ServicechecksConditions, ?PaginateOMat $PaginateOMat = null);
 }

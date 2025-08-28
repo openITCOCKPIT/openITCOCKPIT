@@ -27,8 +27,6 @@ namespace App\Lib\Interfaces;
 
 
 use itnovum\openITCOCKPIT\Core\HostcheckConditions;
-use itnovum\openITCOCKPIT\Core\HoststatusConditions;
-use itnovum\openITCOCKPIT\Core\HoststatusFields;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 
 interface HostchecksTableInterface {
@@ -38,5 +36,5 @@ interface HostchecksTableInterface {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getHostchecks(HostcheckConditions $HostcheckConditions, $PaginateOMat = null);
+    public function getHostchecks(HostcheckConditions $HostcheckConditions, ?PaginateOMat $PaginateOMat = null);
 }

@@ -38,7 +38,7 @@ interface StatehistoryServiceTableInterface {
      * @param bool $enableHydration
      * @return array
      */
-    public function getStatehistoryIndex(StatehistoryServiceConditions $StatehistoryServiceConditions, $PaginateOMat = null, $enableHydration = true);
+    public function getStatehistoryIndex(StatehistoryServiceConditions $StatehistoryServiceConditions, ?PaginateOMat $PaginateOMat = null, $enableHydration = true);
 
     /**
      * @param StatehistoryServiceConditions $StatehistoryServiceConditions

@@ -391,6 +391,14 @@ class WizardAssignmentsTable extends Table {
                 'description' => __('These checks will allow you to monitor your HP server'),
                 'image'       => 'hp.svg',
                 'category'    => ['hardware'],
+              'active' => true
+            ],
+            'dell-idrac'             => [
+                'type_id'     => 'dell-idrac',
+                'title'       => __('Dell iDrac'),
+                'description' => __('Used to check Dell iDrac devices.'),
+                'image'       => 'dell.png',
+                'category'    => ['linux', 'network'],
                 'active'      => true
             ],
             'vmware-esx'             => [

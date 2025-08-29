@@ -37,7 +37,7 @@ interface ServicestatusTableInterface {
      * @param ServicestatusConditions|null $ServicestatusConditions
      * @return array
      */
-    public function byUuidMagic($uuid, ServicestatusFields $ServicestatusFields, $ServicestatusConditions = null);
+    public function byUuidMagic($uuid, ServicestatusFields $ServicestatusFields, ?ServicestatusConditions $ServicestatusConditions = null);
 
     /**
      * @param string $uuid
@@ -45,7 +45,7 @@ interface ServicestatusTableInterface {
      * @param ServicestatusConditions|null $ServicestatusConditions
      * @return array
      */
-    public function byUuid($uuid, ServicestatusFields $ServicestatusFields, $ServicestatusConditions = null);
+    public function byUuid($uuid, ServicestatusFields $ServicestatusFields, ?ServicestatusConditions $ServicestatusConditions = null);
 
     /**
      * @param array $uuids
@@ -53,5 +53,5 @@ interface ServicestatusTableInterface {
      * @param ServicestatusConditions|null $ServicestatusConditions
      * @return array
      */
-    public function byUuids($uuids, ServicestatusFields $ServicestatusFields, $ServicestatusConditions = null);
+    public function byUuids($uuids, ServicestatusFields $ServicestatusFields, ?ServicestatusConditions $ServicestatusConditions = null);
 }

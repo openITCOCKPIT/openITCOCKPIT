@@ -52,7 +52,6 @@ use Cake\Core\Plugin;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\DateTime;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -2331,7 +2330,7 @@ class DashboardsController extends AppController {
 
             $conditions = $config;
             // Migrate keyword / tags from JSON string to SQL RLIKE query string
-            foreach (['Host', 'Service'] as $tableName) {
+            foreach (['Host', 'Service', 'Hostgroup', 'Servicegroup'] as $tableName) {
                 foreach (['keywords', 'not_keywords'] as $field) {
                     if (empty($conditions[$tableName][$field])) {
                         $conditions[$tableName][$field] = [];

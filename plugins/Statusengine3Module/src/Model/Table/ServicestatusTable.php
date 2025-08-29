@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -31,8 +37,6 @@ use App\Lib\Exceptions\InvalidArgumentException;
 use App\Lib\Interfaces\ServicestatusTableInterface;
 use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\ORM\Query;
-use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Core\ServicestatusConditions;
@@ -98,13 +102,13 @@ class ServicestatusTable extends Table implements ServicestatusTableInterface {
      * @param null|ServicestatusConditions $ServicestatusConditions
      * @return array|bool
      */
-    public function byUuidMagic($uuid, ServicestatusFields $ServicestatusFields, $ServicestatusConditions = null) {
+    public function byUuidMagic($uuid, ServicestatusFields $ServicestatusFields, ?ServicestatusConditions $ServicestatusConditions = null) {
         if ($uuid === null || empty($uuid)) {
             return [];
         }
 
         $select = $ServicestatusFields->getFields();
-        if(!empty($select)) {
+        if (!empty($select)) {
             $select[] = 'Servicestatus.service_description';
         }
 
@@ -159,7 +163,7 @@ class ServicestatusTable extends Table implements ServicestatusTableInterface {
      * @param null|ServicestatusConditions $ServicestatusConditions
      * @return array|bool
      */
-    public function byUuid($uuid, ServicestatusFields $ServicestatusFields, $ServicestatusConditions = null) {
+    public function byUuid($uuid, ServicestatusFields $ServicestatusFields, ?ServicestatusConditions $ServicestatusConditions = null) {
         return $this->byUuidMagic($uuid, $ServicestatusFields, $ServicestatusConditions);
     }
 
@@ -170,7 +174,7 @@ class ServicestatusTable extends Table implements ServicestatusTableInterface {
      * @return array|bool
      * @throws InvalidArgumentException
      */
-    public function byUuids($uuids, ServicestatusFields $ServicestatusFields, $ServicestatusConditions = null) {
+    public function byUuids($uuids, ServicestatusFields $ServicestatusFields, ?ServicestatusConditions $ServicestatusConditions = null) {
         if (!is_array($uuids)) {
             throw new InvalidArgumentException('$uuids need to be an array!');
         }

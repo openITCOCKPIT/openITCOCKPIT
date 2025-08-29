@@ -5495,7 +5495,7 @@ class HostsTable extends Table {
                     /** @var $ContainersTable ContainersTable */
                     $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
-                    $containerStructureFromHost = $ContainersTable->getContainersForMapgeneratorByContainerStructure([$host], $MY_RIGHTS, $containers);
+                    $containerStructureFromHost = $ContainersTable->getContainersForMapgeneratorByContainerStructure([$host], $MY_RIGHTS, []);
                     if (empty($containerStructureFromHost)) {
                         // No container found for this level, skip this host
                         continue;
@@ -5503,12 +5503,11 @@ class HostsTable extends Table {
 
 
                     // container has to be the same as the tenant container of the host
-                    $tenantContainer = $containerStructureFromHost['containerHierarchy'][0];
+                    $tenantContainer = $containerStructureFromHost[0]['containerHierarchy'][0];
 
-                    if ($tenantContainer['name'] === $part && in_array($tenantContainer['id'], $containers)) {
+                    if ($tenantContainer['name'] === $part && (!empty($MY_RIGHTS) && in_array($tenantContainer['id'], $MY_RIGHTS))) {
                         // Found the container for the new map
                         $containerIdForNewMap = $tenantContainer['id'];
-                        break;
                     }
 
                 }

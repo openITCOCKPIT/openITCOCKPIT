@@ -33,7 +33,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Model\Entity\FilterBookmark;
 use App\Model\Table\FilterBookmarksTable;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\BadRequestException;
@@ -185,10 +184,6 @@ class FilterBookmarksController extends AppController {
         $this->set('success', false);
         $this->set('message', __('Error while deleting filter bookmark'));
         $this->viewBuilder()->setOption('serialize', ['success']);
-    }
-
-    public function directive() {
-        // Only ship HTML template
     }
 
 }

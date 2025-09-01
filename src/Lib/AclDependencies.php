@@ -73,81 +73,25 @@ class AclDependencies {
     public function __construct() {
         // Add actions that should always be allowed.
         $this
-            ->allow('Angular', 'index')
-            ->allow('Angular', 'paginator')
-            ->allow('Angular', 'scroll')
-            ->allow('Angular', 'mass_delete')
-            ->allow('Angular', 'mass_deactivate')
-            ->allow('Angular', 'confirm_delete')
-            ->allow('Angular', 'confirm_deactivate')
-            ->allow('Angular', 'mass_activate')
             ->allow('Angular', 'user_timezone')
             ->allow('Angular', 'version_check')
+            ->allow('Angular', 'message_of_the_day')
             ->allow('Angular', 'menustats')
             ->allow('Angular', 'statuscount')
             ->allow('Angular', 'menu')
-            ->allow('Angular', 'menuControl')
             ->allow('Angular', 'topSearch')
-            ->allow('Angular', 'sidebar')
             ->allow('Angular', 'websocket_configuration')
             ->allow('Angular', 'push_configuration')
-            ->allow('Angular', 'export')
-            ->allow('Angular', 'not_found')
-            ->allow('Angular', 'forbidden')
             ->allow('Angular', 'executing')
-            ->allow('Angular', 'acknowledge_service')
-            ->allow('Angular', 'downtime_service')
-            ->allow('Angular', 'reschedule_host')
-            ->allow('Angular', 'downtime_host')
-            ->allow('Angular', 'acknowledge_host')
-            ->allow('Angular', 'enable_host_notifications')
-            ->allow('Angular', 'disable_host_notifications')
-            ->allow('Angular', 'system_health')
             ->allow('Angular', 'getDowntimeData')
-            ->allow('Angular', 'mass_delete_host_downtimes')
-            ->allow('Angular', 'mass_delete_service_downtimes')
-            ->allow('Angular', 'submit_host_result')
-            ->allow('Angular', 'disable_host_flap_detection')
-            ->allow('Angular', 'enable_host_flap_detection')
-            ->allow('Angular', 'send_host_notification')
-            ->allow('Angular', 'submit_service_result')
-            ->allow('Angular', 'disable_service_flap_detection')
-            ->allow('Angular', 'enable_service_flap_detection')
-            ->allow('Angular', 'send_service_notification')
-            ->allow('Angular', 'enable_service_notifications')
-            ->allow('Angular', 'disable_service_notifications')
+            ->allow('Angular', 'system_health')
             ->allow('Angular', 'getPieChart')
             ->allow('Angular', 'getHalfPieChart')
-            ->allow('Angular', 'getCumulatedHostAndServiceStateIcon')
             ->allow('Angular', 'getHostAndServiceStateSummaryIcon')
-            ->allow('Angular', 'macros')
             ->allow('Angular', 'ldap_configuration')
-            ->allow('Angular', 'priority')
-            ->allow('Angular', 'intervalInput')
-            ->allow('Angular', 'intervalInputWithDiffer')
-            ->allow('Angular', 'humanTime')
-            ->allow('Angular', 'template_diff')
-            ->allow('Angular', 'template_diff_button')
             ->allow('Angular', 'queryhandler')
             ->allow('Angular', 'hostBrowserMenu')
             ->allow('Angular', 'serviceBrowserMenu')
-            ->allow('Angular', 'durationInput')
-            ->allow('Angular', 'calendar')
-            ->allow('Angular', 'reload_required')
-            ->allow('Angular', 'colorpicker')
-            ->allow('Angular', 'popover_graph')
-            ->allow('Angular', 'thresholds')
-            ->allow('Angular', 'mass_delete_acknowledgements')
-            ->allow('Angular', 'message_of_the_day')
-            ->allow('Angular', 'regexHelperTooltip')
-            ->allow('Angular', 'ackTooltip')
-            ->allow('Angular', 'downtimeTooltip')
-            ->allow('Angular', 'wizardFilter')
-            ->allow('Angular', 'wizardInterfaceFilter')
-            ->allow('Angular', 'columns_config_import')
-            ->allow('Angular', 'columns_config_export')
-            ->allow('Angular', 'autoRefresher')
-            ->allow('Angular', 'changeLogEntry')
             ->allow('Angular', 'getSatellites')
             ->allow('Angular', 'getSystemname')
             ->allow('Angular', 'getAppHeaderInfo');
@@ -157,7 +101,6 @@ class AclDependencies {
             ->allow('Agentconnector', 'submit_checkdata');
 
         $this
-            ->allow('Automaps', 'icon')
             ->allow('Automaps', 'loadContainers')
             ->allow('Automaps', 'automapWidget')
             ->allow('Automaps', 'loadAutomapsByString');
@@ -174,8 +117,7 @@ class AclDependencies {
             ->allow('Containers', 'loadSatellitesByContainerIds');
 
         $this
-            ->allow('Downtimes', 'validateDowntimeInputFromAngular')
-            ->allow('Downtimes', 'icon');
+            ->allow('Downtimes', 'validateDowntimeInputFromAngular');
 
         $this
             ->allow('Packetmanager', 'getPackets')
@@ -196,9 +138,6 @@ class AclDependencies {
             ->allow('Proxy', 'getSettings');
 
         $this
-            ->allow('Services', 'icon')
-            ->allow('Services', 'servicecumulatedstatusicon')
-            ->allow('Services', 'details')
             ->allow('Services', 'byUuid')
             ->allow('Services', 'loadServicesByStringCake4')
             ->allow('Services', 'loadServicesByContainerIdCake4')
@@ -210,7 +149,6 @@ class AclDependencies {
         $this
             ->allow('Dashboards', 'index')
             ->allow('Dashboards', 'getWidgetsForTab')
-            ->allow('Dashboards', 'dynamicDirective')
             ->allow('Dashboards', 'welcomeWidget')
             ->allow('Dashboards', 'saveGrid')
             ->allow('Dashboards', 'addWidgetToTab')
@@ -264,19 +202,14 @@ class AclDependencies {
             ->allow('FilterBookmarks', 'index')
             ->allow('FilterBookmarks', 'add')
             ->allow('FilterBookmarks', 'edit')
-            ->allow('FilterBookmarks', 'delete')
-            ->allow('FilterBookmarks', 'directive');
+            ->allow('FilterBookmarks', 'delete');
 
         $this
             ->allow('Hosts', 'view')
-            ->allow('Hosts', 'icon')
-            ->allow('Hosts', 'hostservicelist')
             ->allow('Hosts', 'loadParentHostsByString')
             ->allow('Hosts', 'hoststatus')
             ->allow('Hosts', 'byUuid');
 
-        $this
-            ->allow('Statistics', 'ask_anonymous_statistics');
 
         $this
             ->allow('Pages', 'index');
@@ -330,8 +263,6 @@ class AclDependencies {
         $this
             ->dependency('Commands', 'index', 'Commands', 'view');
 
-        $this
-            ->dependency('Changelogs', 'index', 'Changelogs', 'entity');
 
         $this->dependency('Eventlogs', 'index', 'Eventlogs', 'listToPdf')
             ->dependency('Eventlogs', 'index', 'Eventlogs', 'listToCsv');
@@ -379,10 +310,7 @@ class AclDependencies {
             ->dependency('DashboardAllocations', 'edit', 'Users', 'loadContainersForAngular');
 
         $this
-            ->dependency('Downtimereports', 'index', 'Downtimereports', 'createPdfReport')
-            ->dependency('Downtimereports', 'index', 'Downtimereports', 'hostsBarChart')
-            ->dependency('Downtimereports', 'index', 'Downtimereports', 'hostAvailabilityOverview')
-            ->dependency('Downtimereports', 'index', 'Downtimereports', 'serviceAvailabilityOverview');
+            ->dependency('Downtimereports', 'index', 'Downtimereports', 'createPdfReport');
 
 
         $this
@@ -415,12 +343,10 @@ class AclDependencies {
             ->dependency('Hostgroups', 'add', 'Hostgroups', 'loadHosts')
             ->dependency('Hostgroups', 'add', 'Hostgroups', 'loadHosttemplates')
             ->dependency('Hostgroups', 'add', 'Hostgroups', 'loadContainers')
-            ->dependency('Hostgroups', 'add', 'Hostgroups', 'addHostsToHostgroup')
             ->dependency('Hostgroups', 'add', 'Hostgroups', 'append')
             ->dependency('Hostgroups', 'edit', 'Hostgroups', 'loadHosts')
             ->dependency('Hostgroups', 'edit', 'Hostgroups', 'loadHosttemplates')
             ->dependency('Hostgroups', 'edit', 'Hostgroups', 'loadContainers')
-            ->dependency('Hostgroups', 'edit', 'Hostgroups', 'addHostsToHostgroup')
             ->dependency('Hostgroups', 'edit', 'Hostgroups', 'append')
             ->dependency('Hostgroups', 'extended', 'Hostgroups', 'loadHostgroupWithHostsById')
             ->dependency('Hostgroups', 'extended', 'Hostgroups', 'listToPdf')
@@ -472,9 +398,6 @@ class AclDependencies {
         $this
             ->dependency('Instantreports', 'index', 'Instantreports', 'createPdfReport')
             ->dependency('Instantreports', 'add', 'Instantreports', 'loadContainers')
-            ->dependency('Instantreports', 'generate', 'Instantreports', 'hostAvailabilityPieChart')
-            ->dependency('Instantreports', 'generate', 'Instantreports', 'serviceAvailabilityPieChart')
-            ->dependency('Instantreports', 'generate', 'Instantreports', 'serviceAvailabilityBarChart')
             ->dependency('Instantreports', 'generate', 'Instantreports', 'loadInstantreports');
 
 
@@ -522,13 +445,11 @@ class AclDependencies {
             ->dependency('Servicegroups', 'add', 'Servicegroups', 'loadServicesByStringForOptionGroup')
             ->dependency('Servicegroups', 'add', 'Servicegroups', 'loadServicetemplates')
             ->dependency('Servicegroups', 'add', 'Servicegroups', 'loadContainers')
-            ->dependency('Servicegroups', 'add', 'Servicegroups', 'addServicesToServicegroup')
             ->dependency('Servicegroups', 'add', 'Servicegroups', 'append')
             ->dependency('Servicegroups', 'edit', 'Servicegroups', 'loadServices')
             ->dependency('Servicegroups', 'edit', 'Servicegroups', 'loadServicesByStringForOptionGroup')
             ->dependency('Servicegroups', 'edit', 'Servicegroups', 'loadServicetemplates')
             ->dependency('Servicegroups', 'edit', 'Servicegroups', 'loadContainers')
-            ->dependency('Servicegroups', 'edit', 'Servicegroups', 'addServicesToServicegroup')
             ->dependency('Servicegroups', 'edit', 'Servicegroups', 'append')
             ->dependency('Servicegroups', 'delete', 'Servicegroups', 'mass_delete')
             ->dependency('Servicegroups', 'extended', 'Servicegroups', 'loadServicegroupWithServicesById');
@@ -574,7 +495,6 @@ class AclDependencies {
         $this
             ->dependency('Servicetemplates', 'index', 'Servicetemplates', 'view')
             ->dependency('Servicetemplates', 'index', 'Servicetemplates', 'loadServicetemplatesByContainerId')
-            ->dependency('Servicetemplates', 'index', 'Servicetemplates', 'addServicetemplatesToServicetemplategroup')
             ->dependency('Servicetemplates', 'add', 'Servicetemplates', 'loadContainers')
             ->dependency('Servicetemplates', 'add', 'Servicetemplates', 'loadCommands')
             ->dependency('Servicetemplates', 'add', 'Servicetemplates', 'loadCommandArguments')
@@ -597,7 +517,6 @@ class AclDependencies {
             ->dependency('Users', 'index', 'Users', 'loadUsersByContainerId')
             ->dependency('Users', 'index', 'Users', 'loadUsergroups')
             ->dependency('Users', 'index', 'Users', 'listToCsv')
-            ->dependency('Users', 'add', 'Users', 'addFromLdap')
             ->dependency('Users', 'add', 'Users', 'loadLdapUserByString')
             ->dependency('Users', 'add', 'Users', 'loadLdapUserDetails')
             ->dependency('Users', 'add', 'Users', 'loadUsergroups')
@@ -623,7 +542,6 @@ class AclDependencies {
 
         $this
             ->dependency('Administrators', 'debug', 'Administrators', 'testMail')
-            ->dependency('Administrators', 'debug', 'Administrators', 'querylog')
             ->dependency('Administrators', 'debug', 'Administrators', 'php_info');
 
 
@@ -686,7 +604,6 @@ class AclDependencies {
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'Statusengine3Cfg')
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'GraphiteWeb')
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'restorDefault')
-            ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'dynamicDirective')
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'NSTAMaster')
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'Gearman')
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'PhpFpmOitc');

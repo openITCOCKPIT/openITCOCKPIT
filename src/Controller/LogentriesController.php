@@ -39,7 +39,6 @@ use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Request\AngularRequest;
 use itnovum\openITCOCKPIT\Core\LogentryConditions;
-use itnovum\openITCOCKPIT\Core\ValueObjects\LogentryTypes;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Core\Views\Logentry;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -51,9 +50,7 @@ class LogentriesController extends AppController {
     public function index() {
         if (!$this->isAngularJsRequest()) {
             //Only ship HTML template for angular
-            $LogentryTypes = new LogentryTypes();
-            $this->set('logentry_types', $LogentryTypes->getTypes());
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());

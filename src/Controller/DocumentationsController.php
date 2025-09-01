@@ -40,7 +40,6 @@ use App\Model\Table\ServicesTable;
 use App\Model\Table\ServicetemplatesTable;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\DateTime;
 use Cake\ORM\TableRegistry;
 use Exception;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -58,8 +57,7 @@ class DocumentationsController extends AppController {
      */
     public function view($uuid = null, $type = 'host') {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (empty($type)) {
@@ -226,8 +224,7 @@ class DocumentationsController extends AppController {
      */
     public function wiki() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $documentations = [

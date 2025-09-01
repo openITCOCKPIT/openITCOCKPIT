@@ -55,8 +55,7 @@ class SystemHealthUsersController extends AppController {
      */
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var SystemHealthUsersTable $SystemHealthUsersTable */
@@ -127,8 +126,7 @@ class SystemHealthUsersController extends AppController {
      */
     public function add() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -181,8 +179,7 @@ class SystemHealthUsersController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $SystemHealthUsersTable SystemHealthUsersTable */

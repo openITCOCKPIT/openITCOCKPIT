@@ -27,7 +27,6 @@ namespace App\Model\Table;
 
 use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\I18n\DateTime;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -102,7 +101,7 @@ class SystemfailuresTable extends Table {
             ->dateTime('end_time')
             ->requirePresence('end_time', 'create')
             ->allowEmptyDateTime('end_time', __('Please enter a valid date'), false)
-            ->add('start_time', 'custom', [
+            ->add('end_time', 'custom', [
                 'rule'    => [$this, 'startBeforeEnd'], //\App\Lib\Traits\CustomValidationTrait
                 'message' => __('Start time must be before end time.')
             ]);

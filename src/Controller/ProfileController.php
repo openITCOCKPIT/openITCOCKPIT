@@ -57,8 +57,7 @@ class ProfileController extends AppController {
 
     public function edit() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
@@ -215,8 +214,7 @@ class ProfileController extends AppController {
 
     public function upload_profile_icon() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
@@ -369,8 +367,7 @@ class ProfileController extends AppController {
 
     public function create_apikey() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ApikeysTable ApikeysTable */
@@ -437,8 +434,7 @@ class ProfileController extends AppController {
 
     public function delete_apikey($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
 
@@ -467,8 +463,7 @@ class ProfileController extends AppController {
 
     public function deleteImage() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());

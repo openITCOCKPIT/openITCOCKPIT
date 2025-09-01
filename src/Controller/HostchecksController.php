@@ -52,8 +52,7 @@ class HostchecksController extends AppController {
 
     public function index($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $session = $this->request->getSession();

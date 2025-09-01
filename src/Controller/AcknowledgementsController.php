@@ -63,8 +63,7 @@ class AcknowledgementsController extends AppController {
      */
     public function host($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $session = $this->request->getSession();
@@ -131,8 +130,7 @@ class AcknowledgementsController extends AppController {
      */
     public function service($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $session = $this->request->getSession();

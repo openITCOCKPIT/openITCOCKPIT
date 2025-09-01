@@ -69,10 +69,7 @@ class HosttemplatesController extends AppController {
         /** @var $HosttemplatesTable HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-
-            $this->set('types', $HosttemplatesTable->getHosttemplateTypes());
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
 
@@ -141,8 +138,7 @@ class HosttemplatesController extends AppController {
      */
     public function add($hosttemplatetype_id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         if ($this->request->is('get')) {
             /** @var HosttemplatesTable $HosttemplatesTable */
@@ -190,8 +186,7 @@ class HosttemplatesController extends AppController {
      */
     public function edit($id = null, $hosttemplatetype_id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HosttemplatesTable HosttemplatesTable */
@@ -319,8 +314,7 @@ class HosttemplatesController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HosttemplatesTable HosttemplatesTable */
@@ -442,8 +436,7 @@ class HosttemplatesController extends AppController {
      */
     public function usedBy($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HosttemplatesTable HosttemplatesTable */

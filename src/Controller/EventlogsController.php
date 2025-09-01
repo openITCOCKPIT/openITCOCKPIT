@@ -43,8 +43,7 @@ class EventlogsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var EventlogsTable $EventlogsTable */
@@ -87,6 +86,10 @@ class EventlogsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['all_events', 'logTypes', 'typeTranslations', 'typeIconClasses']);
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     */
     public function listToPdf() {
 
         /** @var EventlogsTable $EventlogsTable */

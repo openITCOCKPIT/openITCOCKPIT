@@ -91,8 +91,7 @@ class DashboardsController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
@@ -166,36 +165,6 @@ class DashboardsController extends AppController {
 
         $this->set('widgets', $widgets);
         $this->viewBuilder()->setOption('serialize', ['widgets']);
-    }
-
-    public function dynamicDirective() {
-        $directiveName = $this->request->getQuery('directive');
-        $readOnly = filter_var($this->request->getQuery('readonly'), FILTER_VALIDATE_BOOLEAN);
-
-        /** @var WidgetsTable $WidgetsTable */
-        $WidgetsTable = TableRegistry::getTableLocator()->get('Widgets');
-        if ($readOnly) {
-            $widgets = $WidgetsTable->getAvailableForViewWidgets($this->PERMISSIONS);
-        } else {
-            $widgets = $WidgetsTable->getAvailableWidgets($this->PERMISSIONS);
-        }
-        // $widgets = $WidgetsTable->getAvailableForViewWidgets($this->PERMISSIONS);
-        $isValidDirective = false;
-        foreach ($widgets as $widget) {
-            if ($widget['directive'] === $directiveName) {
-                $isValidDirective = true;
-                break;
-            }
-        }
-
-        if (!$isValidDirective) {
-            throw new ForbiddenException();
-        }
-
-        if (strlen($directiveName) < 2) {
-            throw new RuntimeException('Wrong AngularJS directive name?');
-        }
-        $this->set('directiveName', $directiveName);
     }
 
     public function saveGrid() {
@@ -956,54 +925,6 @@ class DashboardsController extends AppController {
             $this->viewBuilder()->setOption('serialize', ['isCommunityEdition', 'hasSubscription', 'server_timezone', 'user_timezone', 'userImage', 'user_fullname', 'OPENITCOCKPIT_VERSION']);
             return;
         }
-
-        /** Remove all code below - old AngularJS template code */
-        if (!$this->isApiRequest()) {
-            //Only ship HTML template
-
-            $user = $this->getUser();
-
-
-            $userImage = null;
-
-            if ($user->get('image') != null && $user->get('image') != '') {
-                if (file_exists(WWW_ROOT . 'img' . DS . 'userimages' . DS . $user->get('image'))) {
-                    $userImage = '/img/userimages' . DS . $user->get('image');
-                }
-            }
-
-            if ($userImage === null) {
-                $userImage = '/img/fallback_user.png';
-
-                $User = new User($this->getUser());
-                $userImage = $User->getUserAvatar();
-
-            }
-
-
-            $userFullName = sprintf('%s %s', $user->get('firstname'), $user->get('lastname'));
-
-            /** @var RegistersTable $RegistersTable */
-            $RegistersTable = TableRegistry::getTableLocator()->get('Registers');
-
-
-            $license = $RegistersTable->getLicense();
-            $isCommunityEdition = false;
-            $hasSubscription = $license !== null;
-            if (isset($license['license']) && $license['license'] === $RegistersTable->getCommunityLicenseKey()) {
-                $isCommunityEdition = true;
-            }
-
-
-            $this->set('userImage', $userImage);
-            $this->set('userFullName', $userFullName);
-            $this->set('userTimezone', $user->get('timezone'));
-            $this->set('systemname', $this->getSystemname());
-            $this->set('isCommunityEdition', $isCommunityEdition);
-            $this->set('hasSubscription', $hasSubscription);
-
-            return;
-        }
     }
 
     /**
@@ -1011,8 +932,7 @@ class DashboardsController extends AppController {
      */
     public function parentOutagesWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
@@ -1091,8 +1011,7 @@ class DashboardsController extends AppController {
 
     public function hostsTopAlertsWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $HostsTopAlertJson = new HostsTopAlertJson();
 
@@ -1151,8 +1070,7 @@ class DashboardsController extends AppController {
     // This gets also used by the hostsStatusListExtendedWidget to load and save the filters
     public function hostsStatusListWidget() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $widgetId = (int)$this->request->getQuery('widgetId');
@@ -1212,8 +1130,7 @@ class DashboardsController extends AppController {
 
     public function hostsDowntimeWidget() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $widgetId = (int)$this->request->getQuery('widgetId');
@@ -1267,8 +1184,7 @@ class DashboardsController extends AppController {
 
     public function servicesDowntimeWidget() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $widgetId = (int)$this->request->getQuery('widgetId');
@@ -1324,8 +1240,7 @@ class DashboardsController extends AppController {
     // Gets also used by the servicesStatusListExtendedWidget
     public function servicesStatusListWidget() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $widgetId = (int)$this->request->getQuery('widgetId');
@@ -1385,8 +1300,7 @@ class DashboardsController extends AppController {
 
     public function noticeWidget() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $widgetId = (int)$this->request->getQuery('widgetId');
         $NoticeJson = new NoticeJson();
@@ -1451,8 +1365,7 @@ class DashboardsController extends AppController {
 
     public function trafficLightWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $TrafficlightJson = new TrafficlightJson();
@@ -1530,8 +1443,7 @@ class DashboardsController extends AppController {
 
     public function tachoWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $TachoJson = new TachoJson();
@@ -1728,8 +1640,7 @@ class DashboardsController extends AppController {
 
     public function hostStatusOverviewWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $HostStatusOverviewJson = new HostStatusOverviewJson();
 
@@ -1820,8 +1731,7 @@ class DashboardsController extends AppController {
 
     public function hostStatusOverviewExtendedWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $HostStatusOverviewExtendedJson = new HostStatusOverviewExtendedJson();
 
@@ -1915,8 +1825,7 @@ class DashboardsController extends AppController {
 
     public function servicesTopAlertsWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $ServicesTopAlertJson = new ServicesTopAlertJson();
 
@@ -1974,8 +1883,7 @@ class DashboardsController extends AppController {
 
     public function serviceStatusOverviewWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $ServiceStatusOverviewJson = new ServiceStatusOverviewJson();
 
@@ -2068,8 +1976,7 @@ class DashboardsController extends AppController {
 
     public function serviceStatusOverviewExtendedWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $ServiceStatusOverviewExtendedJson = new ServiceStatusOverviewExtendedJson();
 
@@ -2221,8 +2128,7 @@ class DashboardsController extends AppController {
 
     public function websiteWidget() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $widgetId = (int)$this->request->getQuery('widgetId');
         $WebsiteJson = new WebsiteJson();
@@ -2295,8 +2201,7 @@ class DashboardsController extends AppController {
 
     public function tacticalOverviewWidget() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $widgetId = (int)$this->request->getQuery('widgetId');
         $type = $this->request->getQuery('type');
@@ -2478,8 +2383,7 @@ class DashboardsController extends AppController {
 
     public function todayWidget() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $widgetId = (int)$this->request->getQuery('widgetId');
         /** @var WidgetsTable $WidgetsTable */
@@ -2511,8 +2415,7 @@ class DashboardsController extends AppController {
 
     public function calendarWidget() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $widgetId = (int)$this->request->getQuery('widgetId');
         /** @var WidgetsTable $WidgetsTable */

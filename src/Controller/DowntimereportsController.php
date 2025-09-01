@@ -70,8 +70,7 @@ class DowntimereportsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -589,19 +588,5 @@ class DowntimereportsController extends AppController {
         $downtimeReport['downtimes'] = $downtimes;
         return $downtimeReport;
     }
-
-    public function hostsBarChart() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function hostAvailabilityOverview() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function serviceAvailabilityOverview() {
-        //Only ship HTML template
-        return;
-    }
+    
 }

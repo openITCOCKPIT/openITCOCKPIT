@@ -43,14 +43,12 @@ use itnovum\openITCOCKPIT\Filter\HostFilter;
 
 /**
  * Class DeletedHostsController
- * @property AppPaginatorComponent $Paginator
  */
 class DeletedHostsController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $DeletedHostsTable DeletedHostsTable */

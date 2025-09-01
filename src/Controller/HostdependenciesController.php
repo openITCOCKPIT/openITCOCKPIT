@@ -56,8 +56,7 @@ class HostdependenciesController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostdependenciesTable HostdependenciesTable */
@@ -112,8 +111,7 @@ class HostdependenciesController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -165,8 +163,7 @@ class HostdependenciesController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var HostdependenciesTable $HostdependenciesTable */

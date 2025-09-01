@@ -138,9 +138,6 @@ class AclDependencies {
             ->allow('Proxy', 'getSettings');
 
         $this
-            ->allow('Services', 'icon')
-            ->allow('Services', 'servicecumulatedstatusicon')
-            ->allow('Services', 'details')
             ->allow('Services', 'byUuid')
             ->allow('Services', 'loadServicesByStringCake4')
             ->allow('Services', 'loadServicesByContainerIdCake4')

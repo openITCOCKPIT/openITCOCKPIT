@@ -623,7 +623,6 @@ class AclDependencies {
 
         $this
             ->dependency('Administrators', 'debug', 'Administrators', 'testMail')
-            ->dependency('Administrators', 'debug', 'Administrators', 'querylog')
             ->dependency('Administrators', 'debug', 'Administrators', 'php_info');
 
 

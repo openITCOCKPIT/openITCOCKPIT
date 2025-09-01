@@ -39,7 +39,6 @@ use App\Model\Table\HosttemplatesTable;
 use App\Model\Table\ServicesTable;
 use Cake\Cache\Cache;
 use Cake\Core\Plugin;
-use Cake\Http\Client\Request;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\ServerRequest;
@@ -510,6 +509,7 @@ class HostgroupsController extends AppController {
 
 
     /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
      * @throws MissingDbBackendException
      */
     public function listToPdf() {
@@ -590,6 +590,11 @@ class HostgroupsController extends AppController {
         );
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToCsv() {
         /** @var $HostgroupsTable HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');

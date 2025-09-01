@@ -34,8 +34,6 @@ use Cake\Core\Configure;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Mailer\Mailer;
 use Cake\ORM\TableRegistry;
-use itnovum\openITCOCKPIT\Core\DnfRepositoryChecker;
-use itnovum\openITCOCKPIT\Core\RepositoryChecker;
 use itnovum\openITCOCKPIT\Core\System\Gearman;
 use itnovum\openITCOCKPIT\Core\System\Health\CpuLoad;
 use itnovum\openITCOCKPIT\Core\System\Health\Disks;
@@ -52,15 +50,7 @@ class AdministratorsController extends AppController {
 
     function debug() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-
-            $RepositoryChecker = new RepositoryChecker();
-            $DnfRepositoryChecker = new DnfRepositoryChecker();
-            $LsbRelease = new LsbRelease();
-            $this->set('RepositoryChecker', $RepositoryChecker);
-            $this->set('DnfRepositoryChecker', $DnfRepositoryChecker);
-            $this->set('LsbRelease', $LsbRelease);
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $isoTimestamp = (bool)$this->request->getQuery('isoTimestamp', 0);
@@ -412,10 +402,6 @@ class AdministratorsController extends AppController {
             $this->set('message', __('An error occured while sending test mail: ') . $ex->getMessage());
             $this->viewBuilder()->setOption('serialize', ['success', 'message']);
         }
-    }
-
-    public function querylog() {
-        //Only ship HTML template
     }
 
     /**

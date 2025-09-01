@@ -87,6 +87,10 @@ class EventlogsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['all_events', 'logTypes', 'typeTranslations', 'typeIconClasses']);
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     */
     public function listToPdf() {
 
         /** @var EventlogsTable $EventlogsTable */

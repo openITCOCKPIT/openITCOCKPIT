@@ -2411,6 +2411,11 @@ class HostsController extends AppController {
         ]);
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToPdf() {
         $User = new User($this->getUser());
 
@@ -2520,6 +2525,11 @@ class HostsController extends AppController {
         );
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToCsv() {
         $User = new User($this->getUser());
 

@@ -147,6 +147,7 @@ class StatuspagesController extends AppController {
 
     /**
      * Public View method
+     * USED BY THE NEW ANGULAR FRONTEND !!
      *
      * @param string|null $id Statuspage id.
      * @return \Cake\Http\Response|null|void Renders view

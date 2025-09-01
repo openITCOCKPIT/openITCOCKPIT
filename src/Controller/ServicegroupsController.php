@@ -489,6 +489,7 @@ class ServicegroupsController extends AppController {
     }
 
     /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
      * @throws MissingDbBackendException
      */
     public function listToPdf() {
@@ -588,6 +589,11 @@ class ServicegroupsController extends AppController {
         );
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToCsv() {
         /** @var $ServicegroupsTable ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');

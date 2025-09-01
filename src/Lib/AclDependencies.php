@@ -118,8 +118,7 @@ class AclDependencies {
             ->allow('Containers', 'loadSatellitesByContainerIds');
 
         $this
-            ->allow('Downtimes', 'validateDowntimeInputFromAngular')
-            ->allow('Downtimes', 'icon');
+            ->allow('Downtimes', 'validateDowntimeInputFromAngular');
 
         $this
             ->allow('Packetmanager', 'getPackets')

@@ -60,8 +60,7 @@ class DowntimesController extends AppController {
 
     public function host() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $HostDowntimesControllerRequest = new HostDowntimesControllerRequest($this->request);
@@ -401,9 +400,5 @@ class DowntimesController extends AppController {
         $this->set('message', __('Successfully'));
         $this->viewBuilder()->setOption('serialize', ['success', 'message']);
     }
-
-    public function icon() {
-        //Only ship template
-        return;
-    }
+    
 }

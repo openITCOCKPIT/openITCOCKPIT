@@ -154,7 +154,6 @@ class AclDependencies {
         $this
             ->allow('Dashboards', 'index')
             ->allow('Dashboards', 'getWidgetsForTab')
-            ->allow('Dashboards', 'dynamicDirective')
             ->allow('Dashboards', 'welcomeWidget')
             ->allow('Dashboards', 'saveGrid')
             ->allow('Dashboards', 'addWidgetToTab')

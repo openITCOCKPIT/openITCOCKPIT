@@ -27,6 +27,7 @@ namespace itnovum\openITCOCKPIT\Filter;
 
 use App\itnovum\openITCOCKPIT\Database\SanitizeOrder;
 use Cake\Http\ServerRequest;
+use itnovum\openITCOCKPIT\Core\Views\UserTime;
 
 abstract class Filter {
 
@@ -35,8 +36,16 @@ abstract class Filter {
      */
     protected $Request;
 
-    public function __construct(ServerRequest $Request) {
+    /**
+     * @var UserTime|null
+     */
+    protected ?UserTime $UserTime = null;
+
+    public function __construct(ServerRequest $Request, ?UserTime $UserTime = null) {
         $this->Request = $Request;
+        if ($UserTime) {
+            $this->UserTime = $UserTime;
+        }
     }
 
     /**
@@ -409,5 +418,43 @@ abstract class Filter {
      */
     public function isValidRegularExpression($regEx) {
         return @preg_match('`' . $regEx . '`', '') !== false;
+    }
+
+    /**
+     * From the given timestamp, I will subtract the offset between the user's timezone and the server's timezone.
+     * @param int $timeStamp (Unix timestamp in user's timezone)
+     * @return int           (Unix timestamp in server's timezone)
+     */
+    final protected function toServerTime(int $timeStamp): int {
+        if (!$this->UserTime) {
+            return $timeStamp;
+        }
+        return $this->UserTime->toServerTime($timeStamp);
+    }
+
+    /**
+     * @return int
+     */
+    public function getFrom() {
+        if ($this->queryHasField('from')) {
+            $value = strtotime($this->getQueryFieldValue('from'));
+            if ($value) {
+                return $this->toServerTime($value);
+            }
+        }
+        return time();
+    }
+
+    /**
+     * @return int
+     */
+    public function getTo() {
+        if ($this->queryHasField('to')) {
+            $value = strtotime($this->getQueryFieldValue('to'));
+            if ($value) {
+                return $this->toServerTime($value);
+            }
+        }
+        return time();
     }
 }

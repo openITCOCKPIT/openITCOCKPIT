@@ -150,6 +150,10 @@ class HostsController extends AppController {
             $satellites[0] = $masterInstanceName;
         }
 
+        if (!$this->isApiRequest()) {
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
+        }
+
         /** @var $ContainersTable ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 

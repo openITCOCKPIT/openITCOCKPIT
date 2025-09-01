@@ -45,8 +45,7 @@ class SystemsettingsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var SystemsettingsTable $SystemsettingsTable */

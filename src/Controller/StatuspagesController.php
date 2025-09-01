@@ -65,8 +65,7 @@ class StatuspagesController extends AppController {
      */
     public function index($withState = false) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
@@ -116,8 +115,7 @@ class StatuspagesController extends AppController {
      */
     public function view($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $id = (int)$id;
@@ -204,8 +202,7 @@ class StatuspagesController extends AppController {
      */
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var StatuspagesTable $StatuspagesTable */
@@ -250,8 +247,7 @@ class StatuspagesController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var StatuspagesTable $StatuspagesTable */

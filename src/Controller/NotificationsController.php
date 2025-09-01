@@ -74,8 +74,8 @@ class NotificationsController extends AppController {
         //Process conditions
         $Conditions = new HostNotificationConditions();
         $Conditions->setContainerIds($this->MY_RIGHTS);
-        $Conditions->setFrom($AngularNotificationsOverviewControllerRequest->getFrom());
-        $Conditions->setTo($AngularNotificationsOverviewControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($AngularNotificationsOverviewControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($AngularNotificationsOverviewControllerRequest->getTo()));
         $Conditions->setOrder($AngularNotificationsOverviewControllerRequest->getOrderForPaginator('NotificationHosts.start_time', 'desc'));
         $Conditions->setStates($AngularNotificationsOverviewControllerRequest->getHostStates());
         $Conditions->setConditions($AngularNotificationsOverviewControllerRequest->getHostFilters());
@@ -123,8 +123,8 @@ class NotificationsController extends AppController {
         //Process conditions
         $Conditions = new ServiceNotificationConditions();
         $Conditions->setContainerIds($this->MY_RIGHTS);
-        $Conditions->setFrom($AngularNotificationsOverviewControllerRequest->getFrom());
-        $Conditions->setTo($AngularNotificationsOverviewControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($AngularNotificationsOverviewControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($AngularNotificationsOverviewControllerRequest->getTo()));
         $Conditions->setOrder($AngularNotificationsOverviewControllerRequest->getOrderForPaginator('NotificationServices.start_time', 'desc'));
         $Conditions->setStates($AngularNotificationsOverviewControllerRequest->getServiceStates());
         $Conditions->setConditions($AngularNotificationsOverviewControllerRequest->getServiceFilters());

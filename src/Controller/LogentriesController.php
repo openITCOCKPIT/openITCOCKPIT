@@ -71,8 +71,8 @@ class LogentriesController extends AppController {
 
         $AngularRequest = new AngularRequest($this->request);
         $LogentryConditions = new LogentryConditions();
-        $LogentryConditions->setFrom($AngularRequest->getFrom());
-        $LogentryConditions->setTo($AngularRequest->getTo());
+        $LogentryConditions->setFrom($UserTime->toServerTime($AngularRequest->getFrom()));
+        $LogentryConditions->setTo($UserTime->toServerTime($AngularRequest->getTo()));
         $LogentryConditions->setOrder($AngularRequest->getOrderForPaginator('Logentries.entry_time', 'desc'));
 
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $LogentryFilter->getPage());

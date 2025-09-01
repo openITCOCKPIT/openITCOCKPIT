@@ -86,18 +86,19 @@ class AcknowledgementsController extends AppController {
         $AngularAcknowledgementsControllerRequest = new AcknowledgementsControllerRequest($this->request);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $AngularAcknowledgementsControllerRequest->getPage());
 
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
         //Process conditions
         $Conditions = new AcknowledgedHostConditions();
-        $Conditions->setFrom($AngularAcknowledgementsControllerRequest->getFrom());
-        $Conditions->setTo($AngularAcknowledgementsControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($AngularAcknowledgementsControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($AngularAcknowledgementsControllerRequest->getTo()));
         $Conditions->setStates($AngularAcknowledgementsControllerRequest->getHostStates());
         $Conditions->setOrder($AngularAcknowledgementsControllerRequest->getOrderForPaginator('AcknowledgementHosts.entry_time', 'desc'));
         $Conditions->setConditions($AngularAcknowledgementsControllerRequest->getHostFilters());
         $Conditions->setHostUuid($host->get('uuid'));
 
 
-        $User = new User($this->getUser());
-        $UserTime = $User->getUserTime();
 
         $AcknowledgementHostsTable = $this->DbBackend->getAcknowledgementHostsTable();
 
@@ -155,17 +156,17 @@ class AcknowledgementsController extends AppController {
         $AngularAcknowledgementsControllerRequest = new AcknowledgementsControllerRequest($this->request);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $AngularAcknowledgementsControllerRequest->getPage());
 
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
         //Process conditions
         $Conditions = new AcknowledgedServiceConditions();
-        $Conditions->setFrom($AngularAcknowledgementsControllerRequest->getFrom());
-        $Conditions->setTo($AngularAcknowledgementsControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($AngularAcknowledgementsControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($AngularAcknowledgementsControllerRequest->getTo()));
         $Conditions->setStates($AngularAcknowledgementsControllerRequest->getServiceStates());
         $Conditions->setOrder($AngularAcknowledgementsControllerRequest->getOrderForPaginator('AcknowledgementServices.entry_time', 'desc'));
         $Conditions->setConditions($AngularAcknowledgementsControllerRequest->getServiceFilters());
         $Conditions->setServiceUuid($service->get('uuid'));
-
-        $User = new User($this->getUser());
-        $UserTime = $User->getUserTime();
 
         $AcknowledgementServicesTable = $this->DbBackend->getAcknowledgementServicesTable();
 

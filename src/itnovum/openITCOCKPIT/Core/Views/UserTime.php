@@ -26,6 +26,7 @@
 namespace itnovum\openITCOCKPIT\Core\Views;
 
 
+use Cake\Log\Log;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 
 class UserTime {
@@ -276,6 +277,21 @@ class UserTime {
 
     public function getFormatString() {
         return $this->format;
+    }
+
+    /**
+     * From the given timestamp, I will subtract the offset between the user's timezone and the server's timezone.
+     * @param int $timeStamp (Unix timestamp in user's timezone)
+     * @return int           (Unix timestamp in server's timezone)
+     */
+    public function toServerTime(int $timeStamp): int {
+        try {
+            $timeStamp -= $this->getUserTimeToServerOffset();
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        } finally {
+            return $timeStamp;
+        }
     }
 
 }

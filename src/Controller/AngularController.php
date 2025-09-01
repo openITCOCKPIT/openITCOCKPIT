@@ -96,42 +96,49 @@ class AngularController extends AppController {
         if (strlen($userTimezone) < 2) {
             $userTimezone = 'Europe/Berlin';
         }
+
+        $browserTimezone = (string)$this->request->getQuery('browserTimezone', '');
+        if (strlen($browserTimezone) < 2) {
+            $browserTimezone = 'Europe/Berlin';
+        }
+
         $UserTime = new DateTime($userTimezone);
         $ServerTime = new DateTime();
         $ServerTimeZone = new DateTimeZone($ServerTime->getTimezone()->getName());
         $timezone = [
-            'user_timezone'              => $userTimezone,
-            'user_time_to_server_offset' => $this->get_timezone_offset($ServerTimeZone->getName(), $userTimezone),
-            'user_offset'                => $UserTime->getOffset(),
-            'server_time_utc'            => time(),
-            'server_time'                => date('F d, Y H:i:s'),
-            'server_timezone_offset'     => $ServerTime->getOffset(),
+            'user_timezone'               => $userTimezone,
+            'user_time_to_server_offset'  => $this->getTimeZoneOffset($ServerTimeZone->getName(), $userTimezone),
+            'user_time_to_browser_offset' => $this->getTimeZoneOffset($browserTimezone, $userTimezone),
+            'browser_timezone'            => $browserTimezone,
+            'user_offset'                 => $UserTime->getOffset(),
+            'server_time_utc'             => time(),
+            'server_time'                 => date('F d, Y H:i:s'),
+            'server_timezone_offset'      => $ServerTime->getOffset(),
             //ISO 8601
-            'server_time_iso'            => date('c'),
-            'server_timezone'            => $ServerTimeZone->getName()
+            'server_time_iso'             => date('c'),
+            'server_timezone'             => $ServerTimeZone->getName()
         ];
         $this->set('timezone', $timezone);
         $this->viewBuilder()->setOption('serialize', ['timezone']);
     }
 
     /**
-     * @param $remote_tz
-     * @param null $origin_tz
+     * For the given $remote and $origin (server timezone), I will return the offset in seconds.
+     * @param string $remote
+     * @param string $origin
      * @return bool|int
      * @throws Exception
      */
-    private function get_timezone_offset($remote_tz, $origin_tz = null) {
-        if ($origin_tz === null) {
-            if (!is_string($origin_tz = date_default_timezone_get())) {
-                return false; // A UTC timestamp was returned -- bail out!
-            }
+    private function getTimeZoneOffset(string $remote, string $origin = '') {
+        if (($origin === '') && !is_string($origin = date_default_timezone_get())) {
+            return false; // A UTC timestamp was returned -- bail out!
         }
-        $origin_dtz = new DateTimeZone($origin_tz);
-        $remote_dtz = new DateTimeZone($remote_tz);
-        $origin_dt = new DateTime("now", $origin_dtz);
-        $remote_dt = new DateTime("now", $remote_dtz);
-        $offset = $origin_dtz->getOffset($origin_dt) - $remote_dtz->getOffset($remote_dt);
-        return $offset;
+        $originTimeZone = new DateTimeZone($origin);
+        $remoteTimeZone = new DateTimeZone($remote);
+        $originDateTime = new DateTime("now", $originTimeZone);
+        $remoteDateTime = new DateTime("now", $remoteTimeZone);
+
+        return $originTimeZone->getOffset($originDateTime) - $remoteTimeZone->getOffset($remoteDateTime);
     }
 
     public function version_check() {

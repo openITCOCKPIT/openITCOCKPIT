@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -85,8 +86,7 @@ class GrafanaUserdashboardsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new MethodNotAllowedException();
         }
 
         /** @var GrafanaUserdashboardsTable $GrafanaUserdashboardsTable */
@@ -122,8 +122,7 @@ class GrafanaUserdashboardsController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new MethodNotAllowedException();
         }
 
         /** @var GrafanaConfigurationsTable $GrafanaConfigurationsTable */
@@ -165,7 +164,7 @@ class GrafanaUserdashboardsController extends AppController {
             $grafanaConfig = $GrafanaConfigurationsTable->getGrafanaConfiguration();
             $hasGrafanaConfig = $grafanaConfig['api_url'] !== '';
             $this->set('hasGrafanaConfig', $hasGrafanaConfig);
-            return;
+            throw new MethodNotAllowedException();
         }
 
         if (!$this->request->is('get')) {
@@ -193,8 +192,6 @@ class GrafanaUserdashboardsController extends AppController {
         $this->set('userdashboardData', $dashboard);
         $this->set('grafanaUnits', $GrafanaUnits->getUnits());
         $this->viewBuilder()->setOption('serialize', ['userdashboardData', 'grafanaUnits']);
-
-        return;
     }
 
     /**
@@ -202,8 +199,7 @@ class GrafanaUserdashboardsController extends AppController {
      */
     public function edit($id = null) {
         if ($this->isHtmlRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new MethodNotAllowedException();
         }
 
         /** @var GrafanaConfigurationsTable $GrafanaConfigurationsTable */
@@ -252,8 +248,7 @@ class GrafanaUserdashboardsController extends AppController {
      */
     public function view($id = null) {
         if ($this->isHtmlRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new MethodNotAllowedException();
         }
 
         /** @var GrafanaUserdashboardsTable $GrafanaUserdashboardsTable */
@@ -428,8 +423,7 @@ class GrafanaUserdashboardsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new MethodNotAllowedException();
         }
 
         /** @var GrafanaUserdashboardsTable $GrafanaUserdashboardsTable */
@@ -1114,8 +1108,7 @@ class GrafanaUserdashboardsController extends AppController {
 
     public function grafanaWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new MethodNotAllowedException();
         }
 
         /** @var WidgetsTable $WidgetsTable */

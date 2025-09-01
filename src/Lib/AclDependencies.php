@@ -210,8 +210,6 @@ class AclDependencies {
             ->allow('Hosts', 'hoststatus')
             ->allow('Hosts', 'byUuid');
 
-        $this
-            ->allow('Statistics', 'ask_anonymous_statistics');
 
         $this
             ->allow('Pages', 'index');

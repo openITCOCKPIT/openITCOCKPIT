@@ -48,12 +48,7 @@ class PacketmanagerController extends AppController {
 
     public function index() {
         if ($this->isHtmlRequest()) {
-            $this->set('systemname', $this->getSystemname());
-            $this->set('RepositoryChecker', new RepositoryChecker());
-            $this->set('DnfRepositoryChecker', new DnfRepositoryChecker());
-            $this->set('LsbRelease', new LsbRelease());
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
 

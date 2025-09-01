@@ -34,11 +34,8 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Model\Table\ContainersTable;
-use App\Model\Table\HostsTable;
 use App\Model\Table\OrganizationalChartsTable;
-use App\Model\Table\SystemsettingsTable;
 use App\Model\Table\TenantsTable;
-use Cake\Core\Plugin;
 use Cake\Http\Exception\BadRequestException;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -58,27 +55,7 @@ class BrowsersController extends AppController {
         $User = new User($this->getUser());
 
         if (!$this->isApiRequest()) {
-            /** @var SystemsettingsTable $SystemsettingsTable */
-            $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
-            $masterInstanceName = $SystemsettingsTable->getMasterInstanceName();
-            $satellites = [];
-
-            /** @var HostsTable $HostsTable */
-            $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-
-            if (Plugin::isLoaded('DistributeModule')) {
-                /** @var \DistributeModule\Model\Table\SatellitesTable $SatellitesTable */
-                $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
-
-                $satellites = $SatellitesTable->getSatellitesAsListWithDescription($this->MY_RIGHTS);
-                $satellites[0] = $masterInstanceName;
-            }
-
-            $this->set('username', $User->getFullName());
-            $this->set('satellites', $satellites);
-            $this->set('types', $HostsTable->getHostTypes());
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($containerId === null) {

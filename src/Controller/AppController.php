@@ -322,6 +322,7 @@ class AppController extends Controller {
             'hostgroups.listtocsv'    => 'hostgroups.listtocsv',
             'servicegroups.listtocsv' => 'servicegroups.listtocsv',
             'users.listtocsv'         => 'users.listtocsv',
+            'users.logout'            => 'users.logout',
             'statuspages.publicview'  => 'statuspages.publicview',
         ];
 
@@ -374,7 +375,7 @@ class AppController extends Controller {
                 }
             }
 
-            $this->render('/Error/errorBackend', 'backend');
+            $event->setResult($this->render('/Error/errorBackend', 'backend'));
             return;
         }
 

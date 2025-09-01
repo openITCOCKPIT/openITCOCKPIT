@@ -64,8 +64,7 @@ class WizardsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var WizardAssignmentsTable $WizardAssignmentsTable */
@@ -91,8 +90,7 @@ class WizardsController extends AppController {
 
     public function assignments() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var WizardAssignmentsTable $WizardAssignmentsTable */

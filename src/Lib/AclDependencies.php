@@ -320,10 +320,7 @@ class AclDependencies {
             ->dependency('DashboardAllocations', 'edit', 'Users', 'loadContainersForAngular');
 
         $this
-            ->dependency('Downtimereports', 'index', 'Downtimereports', 'createPdfReport')
-            ->dependency('Downtimereports', 'index', 'Downtimereports', 'hostsBarChart')
-            ->dependency('Downtimereports', 'index', 'Downtimereports', 'hostAvailabilityOverview')
-            ->dependency('Downtimereports', 'index', 'Downtimereports', 'serviceAvailabilityOverview');
+            ->dependency('Downtimereports', 'index', 'Downtimereports', 'createPdfReport');
 
 
         $this

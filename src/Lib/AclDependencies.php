@@ -539,7 +539,6 @@ class AclDependencies {
             ->dependency('Users', 'index', 'Users', 'loadUsersByContainerId')
             ->dependency('Users', 'index', 'Users', 'loadUsergroups')
             ->dependency('Users', 'index', 'Users', 'listToCsv')
-            ->dependency('Users', 'add', 'Users', 'addFromLdap')
             ->dependency('Users', 'add', 'Users', 'loadLdapUserByString')
             ->dependency('Users', 'add', 'Users', 'loadLdapUserDetails')
             ->dependency('Users', 'add', 'Users', 'loadUsergroups')

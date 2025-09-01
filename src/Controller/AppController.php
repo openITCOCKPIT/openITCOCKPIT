@@ -309,11 +309,6 @@ class AppController extends Controller {
      * @return bool
      */
     protected function isLegacyHtmlTemplateRequest(): bool {
-        if (!filter_var(env('DISABLE_ANGULARJS', false), FILTER_VALIDATE_BOOLEAN)) {
-            // Do not disable AngularJS frontend
-            return false;
-        }
-
         // Some actions actually need to render HTML (phpinfo for example).
         // In this case, we create a whitelist for now
         $controller = strtolower($this->request->getParam('controller'));

@@ -497,7 +497,6 @@ class AclDependencies {
         $this
             ->dependency('Servicetemplates', 'index', 'Servicetemplates', 'view')
             ->dependency('Servicetemplates', 'index', 'Servicetemplates', 'loadServicetemplatesByContainerId')
-            ->dependency('Servicetemplates', 'index', 'Servicetemplates', 'addServicetemplatesToServicetemplategroup')
             ->dependency('Servicetemplates', 'add', 'Servicetemplates', 'loadContainers')
             ->dependency('Servicetemplates', 'add', 'Servicetemplates', 'loadCommands')
             ->dependency('Servicetemplates', 'add', 'Servicetemplates', 'loadCommandArguments')

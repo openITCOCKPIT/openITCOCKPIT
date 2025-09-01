@@ -365,12 +365,7 @@ class UsersController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-
-            /** @var SystemsettingsTable $SystemsettingsTable */
-            $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
-            $this->set('isOAuth2', $SystemsettingsTable->isOAuth2());
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var UsersTable $UsersTable */
@@ -421,8 +416,7 @@ class UsersController extends AppController {
 
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var UsersTable $UsersTable */
@@ -747,12 +741,7 @@ class UsersController extends AppController {
 
     public function addFromLdap() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-
-            /** @var SystemsettingsTable $SystemsettingsTable */
-            $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
-            $this->set('isOAuth2', $SystemsettingsTable->isOAuth2());
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var UsersTable $UsersTable */
@@ -1105,8 +1094,7 @@ class UsersController extends AppController {
 
     public function loadDateformats() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
@@ -1230,8 +1218,7 @@ class UsersController extends AppController {
 
     public function getLocaleOptions() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $localesPath = Configure::read('App.paths.locales')[0];
@@ -1332,8 +1319,7 @@ class UsersController extends AppController {
 
     public function getUserPermissions() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $modules = PluginManager::getAvailablePlugins();

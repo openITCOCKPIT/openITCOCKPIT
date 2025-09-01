@@ -718,8 +718,8 @@ class ServicegroupsController extends AppController {
             ]);
     }
 
+    //Only for ACLs
     public function extended() {
-        //Only ship template
         $User = new User($this->getUser());
         $this->set('username', $User->getFullName());
         $this->viewBuilder()->setOption('serialize', ['username']);

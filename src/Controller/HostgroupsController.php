@@ -74,8 +74,7 @@ class HostgroupsController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostgroupsTable HostgroupsTable */
@@ -152,17 +151,14 @@ class HostgroupsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['hostgroup']);
     }
 
+    //Only for ACLs
     public function extended() {
-        if (!$this->isApiRequest()) {
-            $User = new User($this->getUser());
-            $this->set('username', $User->getFullName());
-        }
+
     }
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
 
@@ -211,8 +207,7 @@ class HostgroupsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest() && $id === null) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostgroupsTable HostgroupsTable */
@@ -726,15 +721,9 @@ class HostgroupsController extends AppController {
             ]);
     }
 
-    public function addHostsToHostgroup() {
-        //Only ship template
-        return;
-    }
-
     public function append() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -868,8 +857,7 @@ class HostgroupsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var HostgroupsTable $HostgroupsTable */

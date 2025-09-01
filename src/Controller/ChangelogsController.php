@@ -46,8 +46,7 @@ class ChangelogsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var SystemsettingsTable $SystemsettingsTable */
@@ -144,8 +143,5 @@ class ChangelogsController extends AppController {
         $this->set('all_changes', $all_changes);
         $this->viewBuilder()->setOption('serialize', ['all_changes']);
     }
-
-    //Only for ACLs
-    public function entity(): void {
-    }
+    
 }

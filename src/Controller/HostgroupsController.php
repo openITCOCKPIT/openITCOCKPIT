@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -38,8 +39,10 @@ use App\Model\Table\HosttemplatesTable;
 use App\Model\Table\ServicesTable;
 use Cake\Cache\Cache;
 use Cake\Core\Plugin;
+use Cake\Http\Client\Request;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\ServerRequest;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use ImportModule\Model\Table\ImportedHostgroupsTable;
@@ -100,7 +103,7 @@ class HostgroupsController extends AppController {
 
             $hostgroup['hasSLAHosts'] = false;
             if (Plugin::isLoaded('SLAModule')) {
-                $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroup->get('id'), $MY_RIGHTS);
+                $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroup->get('id'));
                 if (!empty($hostIds)) {
                     $hostgroup['hasSLAHosts'] = $HostsTable->hasSLAHosts($hostIds) > 0;
                 }
@@ -380,7 +383,7 @@ class HostgroupsController extends AppController {
             if ($this->hasRootPrivileges) {
                 $MY_RIGHTS = [];
             }
-            $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroup->get('id'), $MY_RIGHTS);
+            $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroup->get('id'));
             if (!empty($hostIds)) {
                 $hasSLAHosts = $HostsTable->hasSLAHosts($hostIds) > 0;
             }
@@ -604,15 +607,16 @@ class HostgroupsController extends AppController {
         $hostgroups = $HostgroupsTable->getHostgroupsIndex($HostgroupFilter, null, $MY_RIGHTS);
         $User = new User($this->getUser());
         $UserTime = new UserTime($User->getTimezone(), $User->getDateformat());
-
+        $requestData = $this->request;
 
         $all_hostgroups = [];
         foreach ($hostgroups as $hostgroup) {
             /** @var Hostgroup $hostgroup */
 
             $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroup->get('id'));
+            $requestData->withoutData('query');
 
-            $HostFilter = new HostFilter($this->request);
+            $HostFilter = new HostFilter(new ServerRequest());
             $HostConditions = new HostConditions();
 
             $HostConditions->setIncludeDisabled(false);
@@ -900,6 +904,7 @@ class HostgroupsController extends AppController {
                     $newHostgroupData = [
                         'description'   => $hostgroupData['Hostgroup']['description'],
                         'hostgroup_url' => $sourceHostgroup['hostgroup_url'],
+                        'tags'          => $sourceHostgroup['tags'],
                         'uuid'          => UUID::v4(),
                         'container'     => [
                             'name'             => $hostgroupData['Hostgroup']['container']['name'],

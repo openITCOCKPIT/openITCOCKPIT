@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -47,9 +48,9 @@ $images = $LoginBackgrounds->getImages();
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- font awesome 4 is usd by the checkbox fa-check -->
-    <link rel="stylesheet" type="text/css" href="/node_modules/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/font-awesome/css/font-awesome.min.css">
 
-    <link rel="stylesheet" type="text/css" href="/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="/css/coreui/coreui.min.css">
 
 

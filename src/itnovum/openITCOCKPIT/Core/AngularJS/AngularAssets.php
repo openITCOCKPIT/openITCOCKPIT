@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -27,6 +28,9 @@ namespace itnovum\openITCOCKPIT\Core\AngularJS;
 
 use itnovum\openITCOCKPIT\CakePHP\Folder;
 
+/**
+ * @deprecated This is obsolete because the AngularJS frontend got replaced by an Angular implementation
+ */
 class AngularAssets implements AngularAssetsInterface {
 
     /**

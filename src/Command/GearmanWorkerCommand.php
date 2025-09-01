@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -42,15 +43,13 @@ use App\Model\Table\AgentconfigsTable;
 use App\Model\Table\ChangelogsTable;
 use App\Model\Table\ExportsTable;
 use App\Model\Table\SystemsettingsTable;
-use Cake\Console\Arguments;
 use Cake\Command\Command;
+use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\Exception\RecordNotFoundException;
-use itnovum\openITCOCKPIT\CakePHP\Folder;
-use Cake\I18n\FrozenDate;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use CheckmkModule\Command\CheckmkNagiosExportCommand;
@@ -61,11 +60,13 @@ use DistributeModule\Model\Entity\Satellite;
 use DistributeModule\Model\Entity\SatelliteTask;
 use DistributeModule\Model\Table\SatelliteTasksTable;
 use ImportModule\Model\Table\SatellitePushAgentsTable;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 use itnovum\openITCOCKPIT\Core\MonitoringEngine\NagiosConfigDefaults;
 use itnovum\openITCOCKPIT\Core\MonitoringEngine\NagiosConfigGenerator;
 use itnovum\openITCOCKPIT\Core\System\Health\LsbRelease;
 use NWCModule\itnovum\openITCOCKPIT\SNMP\SNMPScanNwc;
 use Symfony\Component\Filesystem\Filesystem;
+use VMWAREModule\itnovum\openITCOCKPIT\Datastore\DatastoreScan;
 
 /**
  * GearmanWorker command.
@@ -1064,6 +1065,25 @@ class GearmanWorkerCommand extends Command {
                     ];
                 }
                 break;
+
+            case 'WizardDatastoreServiceList':
+                $DatastoreScan = new DatastoreScan($payload['data']);
+                try {
+                    $services = $DatastoreScan->executeDatastoreDiscovery();
+                    $return = [
+                        'success'  => $services['success'],
+                        'error'    => $services['errormsg'],
+                        'services' => $services
+                    ];
+                } catch (\RuntimeException $e) {
+                    $return = [
+                        'success'   => false,
+                        'error'     => $e->getMessage(),
+                        'exception' => 'ProcessFailedException'
+                    ];
+                }
+                break;
+
 
             case 'OitcAgentSatResult':
                 // Got openITCOCKPIT Agent Query Result from Satellite

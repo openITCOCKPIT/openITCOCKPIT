@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -45,14 +46,14 @@ use itnovum\openITCOCKPIT\Core\Dashboards\ModuleWidgetsInterface;
  * @property \App\Model\Table\HostsTable&\Cake\ORM\Association\BelongsTo $Hosts
  * @property \App\Model\Table\ServicesTable&\Cake\ORM\Association\BelongsTo $Services
  *
- * @method \App\Model\Entity\Widget get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Widget get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Widget newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Widget[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Widget|false save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Widget saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Widget patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Widget[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Widget findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Widget findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

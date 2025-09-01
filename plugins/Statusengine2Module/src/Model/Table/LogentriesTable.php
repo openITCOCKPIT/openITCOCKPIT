@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -108,7 +109,7 @@ class LogentriesTable extends Table implements LogentriesTableInterface {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getLogentries(LogentryFilter $LogentryFilter, $PaginateOMat = null) {
+    public function getLogentries(LogentryFilter $LogentryFilter, ?PaginateOMat $PaginateOMat = null) {
         //Get all user ids where container assigned are made directly at the user
         $query = $this->find()
             ->where($LogentryFilter->indexFilter())

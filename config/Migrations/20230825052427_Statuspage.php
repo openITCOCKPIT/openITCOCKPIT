@@ -226,11 +226,4 @@ class Statuspage extends \Migrations\BaseMigration {
 
     }
 
-    public function down(): void {
-        $this->table('statuspages')->drop()->save();
-        $this->table('statuspages_to_hosts')->drop()->save();
-        $this->table('statuspages_to_servicess')->drop()->save();
-        $this->table('statuspages_to_hostgroups')->drop()->save();
-        $this->table('statuspages_to_servicegroups')->drop()->save();
-    }
 }

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -43,14 +44,14 @@ use itnovum\openITCOCKPIT\Core\ValueObjects\User;
  * @property \App\Model\Table\UsersTable&\Cake\ORM\Association\BelongsTo $Users
  * @property \App\Model\Table\WidgetsTable&\Cake\ORM\Association\HasMany $Widgets
  *
- * @method \App\Model\Entity\DashboardTab get($primaryKey, $options = [])
+ * @method \App\Model\Entity\DashboardTab get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\DashboardTab newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\DashboardTab[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\DashboardTab|false save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\DashboardTab saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\DashboardTab patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\DashboardTab[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\DashboardTab findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\DashboardTab findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

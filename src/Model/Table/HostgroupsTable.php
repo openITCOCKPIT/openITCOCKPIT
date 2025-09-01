@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -49,14 +50,14 @@ use itnovum\openITCOCKPIT\Filter\HostgroupFilter;
  * @property \App\Model\Table\HostsTable|\Cake\ORM\Association\BelongsToMany $Hosts
  * @property \App\Model\Table\HosttemplatesTable|\Cake\ORM\Association\BelongsToMany $Hosttemplates
  *
- * @method \App\Model\Entity\Hostgroup get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Hostgroup get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Hostgroup newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Hostgroup[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Hostgroup|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hostgroup|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hostgroup patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Hostgroup[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Hostgroup findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Hostgroup findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class HostgroupsTable extends Table {
 
@@ -305,6 +306,27 @@ class HostgroupsTable extends Table {
             ]);
 
         $where = $HostgroupFilter->indexFilter();
+
+        if (isset($where['Hostgroups.keywords rlike'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                $where['Hostgroups.keywords rlike'],
+                'string',
+                'RLIKE'
+            );
+            unset($where['Hostgroups.keywords rlike']);
+        }
+
+        if (isset($where['Hostgroups.not_keywords not rlike'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                $where['Hostgroups.not_keywords not rlike'],
+                'string',
+                'NOT RLIKE'
+            );
+            unset($where['Hostgroups.not_keywords not rlike']);
+        }
+
         if (!empty($MY_RIGHTS)) {
             $where['Containers.parent_id IN'] = $MY_RIGHTS;
         }

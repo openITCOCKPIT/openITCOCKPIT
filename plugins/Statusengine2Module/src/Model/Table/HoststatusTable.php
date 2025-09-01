@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -67,7 +73,7 @@ class HoststatusTable extends Table implements HoststatusTableInterface {
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config) :void {
+    public function initialize(array $config): void {
         parent::initialize($config);
 
         $this->setTable('nagios_hoststatus');
@@ -87,7 +93,7 @@ class HoststatusTable extends Table implements HoststatusTableInterface {
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator) :Validator {
+    public function validationDefault(Validator $validator): Validator {
         //Readonly table
         return $validator;
     }
@@ -99,7 +105,7 @@ class HoststatusTable extends Table implements HoststatusTableInterface {
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules) :RulesChecker {
+    public function buildRules(RulesChecker $rules): RulesChecker {
         //Readonly table
         return $rules;
     }
@@ -110,7 +116,7 @@ class HoststatusTable extends Table implements HoststatusTableInterface {
      * @param HoststatusConditions|null $HoststatusConditions
      * @return array
      */
-    public function byUuidMagic($uuid, HoststatusFields $HoststatusFields, $HoststatusConditions = null) {
+    public function byUuidMagic($uuid, HoststatusFields $HoststatusFields, ?HoststatusConditions $HoststatusConditions = null) {
         if ($uuid === null || empty($uuid)) {
             return [];
         }
@@ -172,7 +178,7 @@ class HoststatusTable extends Table implements HoststatusTableInterface {
      * @param HoststatusConditions|null $HoststatusConditions
      * @return array|string
      */
-    public function byUuid($uuid, HoststatusFields $HoststatusFields, $HoststatusConditions = null) {
+    public function byUuid($uuid, HoststatusFields $HoststatusFields, ?HoststatusConditions $HoststatusConditions = null) {
         return $this->byUuidMagic($uuid, $HoststatusFields, $HoststatusConditions);
     }
 
@@ -181,8 +187,8 @@ class HoststatusTable extends Table implements HoststatusTableInterface {
      * @param $uuids
      * @param HoststatusFields $HoststatusFields
      * @param HoststatusConditions|null $HoststatusConditions
-     * @throws \App\Lib\Exceptions\InvalidArgumentException
      * @return array
+     * @throws \App\Lib\Exceptions\InvalidArgumentException
      */
     public function byUuids($uuids, HoststatusFields $HoststatusFields, $HoststatusConditions = null) {
         if (!is_array($uuids)) {

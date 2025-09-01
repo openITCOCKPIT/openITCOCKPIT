@@ -1,4 +1,27 @@
 <?php
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 namespace App\Model\Table;
 
@@ -6,6 +29,7 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Lib\Traits\PluginManagerTableTrait;
 use App\Model\Entity\Changelog;
 use App\Model\Entity\Servicegroup;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -23,14 +47,14 @@ use itnovum\openITCOCKPIT\Filter\ServicegroupFilter;
  * @property \App\Model\Table\ServicesTable|\Cake\ORM\Association\HasMany $Services
  * @property \App\Model\Table\ServicetemplatesTable|\Cake\ORM\Association\HasMany $Servicetemplates
  *
- * @method \App\Model\Entity\Servicegroup get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Servicegroup get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Servicegroup newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Servicegroup[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Servicegroup|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicegroup saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicegroup patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Servicegroup[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Servicegroup findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Servicegroup findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class ServicegroupsTable extends Table {
 
@@ -292,7 +316,28 @@ class ServicegroupsTable extends Table {
     public function getServicegroupsIndex(ServicegroupFilter $ServicegroupFilter, $PaginateOMat = null, $MY_RIGHTS = []) {
         $query = $this->find('all');
         $query->contain(['Containers']);
-        $query->where($ServicegroupFilter->indexFilter());
+
+        $where = $ServicegroupFilter->indexFilter();
+
+        if (isset($where['Servicegroups.keywords rlike'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Servicegroups.tags IS NOT NULL), Servicegroups.tags, "")',
+                $where['Servicegroups.keywords rlike'],
+                'string',
+                'RLIKE'
+            );
+            unset($where['Servicegroups.keywords rlike']);
+        }
+
+        if (isset($where['Servicegroups.not_keywords not rlike'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Servicegroups.tags IS NOT NULL), Servicegroups.tags, "")',
+                $where['Servicegroups.not_keywords not rlike'],
+                'string',
+                'NOT RLIKE'
+            );
+            unset($where['Servicegroups.not_keywords not rlike']);
+        }
 
         $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
             if (!empty($MY_RIGHTS)) {
@@ -300,6 +345,8 @@ class ServicegroupsTable extends Table {
             }
             return $q;
         });
+
+        $query->where($where);
 
 
         $query->disableHydration();

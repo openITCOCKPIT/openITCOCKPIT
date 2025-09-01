@@ -48,7 +48,6 @@
         "cboden/ratchet": "^0.4.1",
         "chillerlan/php-qrcode": "^3.4.1 || ^4.3.3",
         "damienharper/adf-tools": "^1.1",
-        "ddeboer/imap": "^1.9",
         "erusev/parsedown": "^1.7",
         "erusev/parsedown-extra": "^0.8",
         "freedsx/ldap": "^0.8",

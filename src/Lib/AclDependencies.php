@@ -101,7 +101,6 @@ class AclDependencies {
             ->allow('Agentconnector', 'submit_checkdata');
 
         $this
-            ->allow('Automaps', 'icon')
             ->allow('Automaps', 'loadContainers')
             ->allow('Automaps', 'automapWidget')
             ->allow('Automaps', 'loadAutomapsByString');
@@ -210,8 +209,6 @@ class AclDependencies {
 
         $this
             ->allow('Hosts', 'view')
-            ->allow('Hosts', 'icon')
-            ->allow('Hosts', 'hostservicelist')
             ->allow('Hosts', 'loadParentHostsByString')
             ->allow('Hosts', 'hoststatus')
             ->allow('Hosts', 'byUuid');

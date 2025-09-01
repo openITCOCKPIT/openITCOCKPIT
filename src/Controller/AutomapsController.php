@@ -392,11 +392,6 @@ class AutomapsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['success', 'id']);
     }
 
-    public function icon() {
-        //Only ship HTML Template
-        return;
-    }
-
     /**
      * @param int|null $id
      */

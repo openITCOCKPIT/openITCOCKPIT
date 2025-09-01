@@ -627,7 +627,6 @@ class AclDependencies {
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'Statusengine3Cfg')
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'GraphiteWeb')
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'restorDefault')
-            ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'dynamicDirective')
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'NSTAMaster')
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'Gearman')
             ->dependency('ConfigurationFiles', 'edit', 'ConfigurationFiles', 'PhpFpmOitc');

@@ -49,8 +49,7 @@ class ExportsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var ExportsTable $ExportsTable */

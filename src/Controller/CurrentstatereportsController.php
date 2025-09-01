@@ -62,8 +62,7 @@ class CurrentstatereportsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $currentstatereportForm = new CurrentstatereportForm();
 

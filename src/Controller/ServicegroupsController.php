@@ -80,8 +80,7 @@ class ServicegroupsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicegroupsTable ServicegroupsTable */
@@ -146,8 +145,7 @@ class ServicegroupsController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
 
@@ -201,8 +199,7 @@ class ServicegroupsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest() && $id === null) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicegroupsTable ServicegroupsTable */
@@ -341,15 +338,9 @@ class ServicegroupsController extends AppController {
 
     }
 
-    public function addServicesToServicegroup() {
-        //Only ship template
-        return;
-    }
-
     public function append() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -720,9 +711,7 @@ class ServicegroupsController extends AppController {
 
     //Only for ACLs
     public function extended() {
-        $User = new User($this->getUser());
-        $this->set('username', $User->getFullName());
-        $this->viewBuilder()->setOption('serialize', ['username']);
+
     }
 
     /**
@@ -730,8 +719,7 @@ class ServicegroupsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var ServicegroupsTable $ServicegroupsTable */

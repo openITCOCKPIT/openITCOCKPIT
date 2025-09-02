@@ -79,7 +79,7 @@ class UsersController extends AppController {
     }
 
     public function login() {
-        $this->viewBuilder()->setLayout('login');
+        $this->viewBuilder()->setLayout('backend');
         $LoginBackgrounds = new LoginBackgrounds();
         $images = $LoginBackgrounds->getImages();
 

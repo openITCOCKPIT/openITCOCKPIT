@@ -82,6 +82,11 @@ class StatuspagegroupsController extends AppController {
 
         if ($this->request->is('post')) {
             $statuspagegroup = $StatuspagegroupsTable->newEmptyEntity();
+            $statuspagegroup->setAccess('id', false);
+            $statuspagegroup->setAccess('statuspagegroup_categories', false);
+            $statuspagegroup->setAccess('statuspagegroup_collections', false);
+            $statuspagegroup->setAccess('statuspages_memberships', false);
+
             $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
 
             $StatuspagegroupsTable->save($statuspagegroup);
@@ -103,23 +108,6 @@ class StatuspagegroupsController extends AppController {
     }
 
     /**
-     * If you remove this function, please also clean up ACLDependencies
-     * @return void
-     */
-    public function addCollection() {
-
-    }
-
-    /**
-     * If you remove this function, please also clean up ACLDependencies
-     * @return void
-     */
-    public function addCategory() {
-
-    }
-
-
-    /**
      * Edit method
      *
      * @param string|null $id Statuspagegroup id.
@@ -139,35 +127,33 @@ class StatuspagegroupsController extends AppController {
             throw new NotFoundException(__('Host not found'));
         }
 
-        if ($this->request->is('get')) {
-            $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForEdit($id);
-
-
-            if (!$this->allowedByContainerId($statuspagegroup->container_id)) {
-                $this->render403();
-                return;
-            }
-
-            $this->set('statuspagegroup', $statuspagegroup);
-            $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
+        $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForEdit($id);
+        if (!$this->allowedByContainerId($statuspagegroup->container_id)) {
+            $this->render403();
             return;
         }
 
-    }
+        if ($this->request->is('post')) {
+            $statuspagegroup->setAccess('id', false);
+            $statuspagegroup->setAccess('statuspages_memberships', false);
+            $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
 
-    /**
-     * If you remove this function, please also clean up ACLDependencies
-     * @return void
-     */
-    public function editCollection() {
+            $StatuspagegroupsTable->save($statuspagegroup);
+            if ($statuspagegroup->hasErrors()) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', $statuspagegroup->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            } else {
+                if ($this->isJsonRequest()) {
+                    $this->serializeCake4Id($statuspagegroup); // REST API ID serialization
+                    return;
+                }
+            }
+        }
 
-    }
-
-    /**
-     * If you remove this function, please also clean up ACLDependencies
-     * @return void
-     */
-    public function editCategory() {
+        $this->set('statuspagegroup', $statuspagegroup);
+        $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
 
     }
 

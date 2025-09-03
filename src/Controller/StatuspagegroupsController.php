@@ -59,6 +59,8 @@ class StatuspagegroupsController extends AppController {
 
         /** @var StatuspagegroupsTable $StatuspagegroupsTable */
         $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+        /** @var ContainersTable $ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $GenericFilter = new GenericFilter($this->request);
         $GenericFilter->setFilters([
@@ -74,6 +76,7 @@ class StatuspagegroupsController extends AppController {
         }
         $statuspagegroups = $StatuspagegroupsTable->getStatuspagegroupsIndex($GenericFilter, $PaginateOMat, $MY_RIGHTS);
         foreach ($statuspagegroups as $index => $statuspagegroup) {
+            $statuspagegroups[$index]['container'] = '/' . $ContainersTable->treePath($statuspagegroup['container_id']);
             if ($this->hasRootPrivileges === true) {
                 $statuspagegroups[$index]['allowEdit'] = true;
                 $statuspagegroups[$index]['allowView'] = true;
@@ -83,7 +86,7 @@ class StatuspagegroupsController extends AppController {
             }
         }
         $this->set('all_statuspagegroups', $statuspagegroups);
-        $this->viewBuilder()->setOption('serialize', ['$statuspagegroups']);
+        $this->viewBuilder()->setOption('serialize', ['all_statuspagegroups']);
 
     }
 
@@ -203,15 +206,41 @@ class StatuspagegroupsController extends AppController {
     }
 
     /**
-     * Delete method
-     *
-     * @param string|null $id Statuspagegroup id.
-     * @return \Cake\Http\Response|null Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     * @param int|null $id
      */
-    public function delete($id = null) {
+    public function delete($id = null): void {
+        if (!$this->request->is('post')) {
+            throw new MethodNotAllowedException();
+        }
 
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+        
+        $id = (int)$id;
+        if (!$StatuspagegroupsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid status page group'));
+        }
 
+        $statuspagegroup = $StatuspagegroupsTable->get($id, contain: [
+            'StatuspagegroupCategories',
+            'StatuspagegroupCollections',
+            'StatuspagesMemberships'
+        ]);
+        if (!$this->allowedByContainerId($statuspagegroup['container_id'])) {
+            $this->render403();
+            return;
+        }
+        if ($StatuspagegroupsTable->delete($statuspagegroup)) {
+            $this->set('success', true);
+            $this->set('message', __('Status page group deleted successfully'));
+            $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+            return;
+        }
+
+        $this->response = $this->response->withStatus(400);
+        $this->set('success', false);
+        $this->set('message', __('Issue while deleting Status page group'));
+        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
     }
 
 

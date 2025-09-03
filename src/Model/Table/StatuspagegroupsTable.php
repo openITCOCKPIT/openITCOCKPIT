@@ -77,12 +77,15 @@ class StatuspagegroupsTable extends Table {
             'foreignKey' => 'container_id',
             'joinType'   => 'INNER',
         ]);
+
         $this->hasMany('StatuspagegroupCategories', [
             'foreignKey' => 'statuspagegroup_id',
         ]);
+
         $this->hasMany('StatuspagegroupCollections', [
             'foreignKey' => 'statuspagegroup_id',
         ]);
+
         $this->belongsToMany('StatuspagesMemberships', [
             'className'        => 'Statuspages',
             'through'          => 'StatuspagesMembership',
@@ -100,7 +103,9 @@ class StatuspagegroupsTable extends Table {
     public function validationDefault(Validator $validator): Validator {
         $validator
             ->integer('container_id')
-            ->notEmptyString('container_id');
+            ->requirePresence('container_id', 'create')
+            ->allowEmptyString('container_id', null, false)
+            ->greaterThanOrEqual('container_id', 1);
 
         $validator
             ->scalar('name')
@@ -127,6 +132,14 @@ class StatuspagegroupsTable extends Table {
         $rules->add($rules->existsIn(['container_id'], 'Containers'), ['errorField' => 'container_id']);
 
         return $rules;
+    }
+
+    /**
+     * @param int $id
+     * @return bool
+     */
+    public function existsById(int $id): bool {
+        return $this->exists(['Statuspagegroups.id' => $id]);
     }
 
     /**

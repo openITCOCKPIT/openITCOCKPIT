@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Model\Entity\Statuspagegroup;
+use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -37,7 +39,7 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\ContainersTable&\Cake\ORM\Association\BelongsTo $Containers
  * @property \App\Model\Table\StatuspagegroupCategoriesTable&\Cake\ORM\Association\HasMany $StatuspagegroupCategories
  * @property \App\Model\Table\StatuspagegroupCollectionsTable&\Cake\ORM\Association\HasMany $StatuspagegroupCollections
- * @property \App\Model\Table\StatuspagesToStatuspagegroupsTable&\Cake\ORM\Association\HasMany $StatuspagesToStatuspagegroups
+ * @property \App\Model\Table\StatuspagesMembershipTable&\Cake\ORM\Association\HasMany $StatuspagesToStatuspagegroups
  *
  * @method \App\Model\Entity\Statuspagegroup newEmptyEntity()
  * @method \App\Model\Entity\Statuspagegroup newEntity(array $data, array $options = [])
@@ -81,8 +83,11 @@ class StatuspagegroupsTable extends Table {
         $this->hasMany('StatuspagegroupCollections', [
             'foreignKey' => 'statuspagegroup_id',
         ]);
-        $this->hasMany('StatuspagesToStatuspagegroups', [
-            'foreignKey' => 'statuspagegroup_id',
+        $this->belongsToMany('StatuspagesMemberships', [
+            'className'        => 'Statuspages',
+            'through'          => 'StatuspagesMembership',
+            'targetForeignKey' => 'statuspage_id',
+            'saveStrategy'     => 'replace'
         ]);
     }
 
@@ -123,4 +128,28 @@ class StatuspagegroupsTable extends Table {
 
         return $rules;
     }
+
+    /**
+     * @param int $id
+     * @return Statuspagegroup
+     */
+    public function getStatuspagegroupForEdit(int $id): Statuspagegroup {
+        $query = $this->find();
+        $query->contain([
+            'StatuspagegroupCategories',
+            'StatuspagegroupCollections',
+            'StatuspagesMemberships' => function (Query $query) {
+                return $query->select([
+                    'id',
+                    'name'
+                ]);
+            }
+        ])
+            ->where([
+                'Statuspagegroups.id' => $id
+            ]);
+
+        return $query->firstOrFail();
+    }
+
 }

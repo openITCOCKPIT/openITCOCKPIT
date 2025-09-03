@@ -67,8 +67,16 @@ class StatuspagegroupsController extends AppController {
      */
     public function add() {
 
+    }
+
+    public function addCollection() {
 
     }
+
+    public function addCategory() {
+
+    }
+
 
     /**
      * Edit method
@@ -78,6 +86,14 @@ class StatuspagegroupsController extends AppController {
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function edit($id = null) {
+
+    }
+
+    public function editCollection() {
+
+    }
+
+    public function editCategory() {
 
     }
 

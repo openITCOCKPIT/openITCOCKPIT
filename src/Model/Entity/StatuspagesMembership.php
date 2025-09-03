@@ -30,21 +30,20 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * Statuspagegroup Entity
+ * StatuspagesMembership Entity
  *
  * @property int $id
- * @property int $container_id
- * @property string $name
- * @property string|null $description
+ * @property int $statuspagegroup_id
+ * @property int $collection_id
+ * @property int $category_id
+ * @property int $statuspage_id
  * @property \Cake\I18n\DateTime $modified
  * @property \Cake\I18n\DateTime $created
  *
- * @property \App\Model\Entity\Container $container
- * @property \App\Model\Entity\StatuspagegroupCategory[] $statuspagegroup_categories
- * @property \App\Model\Entity\StatuspagegroupCollection[] $statuspagegroup_collections
- * @property \App\Model\Entity\StatuspagesMembership[] $statuspages_to_statuspagegroups
+ * @property \App\Model\Entity\Statuspagegroup $statuspagegroup
+ * @property \App\Model\Entity\Statuspage $statuspage
  */
-class Statuspagegroup extends Entity {
+class StatuspagesMembership extends Entity {
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -55,14 +54,13 @@ class Statuspagegroup extends Entity {
      * @var array<string, bool>
      */
     protected array $_accessible = [
-        'container_id'                    => true,
-        'name'                            => true,
-        'description'                     => true,
-        'modified'                        => true,
-        'created'                         => true,
-        'container'                       => true,
-        'statuspagegroup_categories'      => true,
-        'statuspagegroup_collections'     => true,
-        'statuspages_to_statuspagegroups' => true,
+        'statuspagegroup_id' => true,
+        'collection_id'      => true,
+        'category_id'        => true,
+        'statuspage_id'      => true,
+        'modified'           => true,
+        'created'            => true,
+        'statuspagegroup'    => true,
+        'statuspage'         => true,
     ];
 }

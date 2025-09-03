@@ -27,9 +27,12 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\Table\ContainersTable;
 use App\Model\Table\StatuspagegroupsTable;
 use Cake\Http\Exception\MethodNotAllowedException;
+use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
+use itnovum\openITCOCKPIT\Core\AngularJS\Api;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
 
@@ -101,7 +104,33 @@ class StatuspagegroupsController extends AppController {
      * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
      */
     public function add() {
+        if (!$this->isApiRequest()) {
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
+        }
 
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        if ($this->request->is('post')) {
+            $statuspagegroup = $StatuspagegroupsTable->newEmptyEntity();
+            $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
+
+            $StatuspagegroupsTable->save($statuspagegroup);
+            if ($statuspagegroup->hasErrors()) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', $statuspagegroup->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            } else {
+
+                if ($this->isJsonRequest()) {
+                    $this->serializeCake4Id($statuspagegroup); // REST API ID serialization
+                    return;
+                }
+            }
+            $this->set('statuspagegroup', $statuspagegroup);
+            $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
+        }
     }
 
     /**
@@ -129,6 +158,31 @@ class StatuspagegroupsController extends AppController {
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function edit($id = null) {
+        if (!$this->isApiRequest()) {
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
+        }
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        $id = (int)$id;
+        if (!$StatuspagegroupsTable->existsById($id)) {
+            throw new NotFoundException(__('Host not found'));
+        }
+
+        if ($this->request->is('get')) {
+            $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForEdit($id);
+
+
+            if (!$this->allowedByContainerId($statuspagegroup->container_id)) {
+                $this->render403();
+                return;
+            }
+
+            $this->set('statuspagegroup', $statuspagegroup);
+            $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
+            return;
+        }
 
     }
 
@@ -158,5 +212,31 @@ class StatuspagegroupsController extends AppController {
     public function delete($id = null) {
 
 
+    }
+
+
+    /****************************
+     *       AJAX METHODS       *
+     ****************************/
+
+    /**
+     * @return void
+     * @throws \Exception
+     */
+    public function loadContainers() {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var ContainersTable $ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+        if ($this->hasRootPrivileges === true) {
+            $containers = $ContainersTable->easyPath($this->MY_RIGHTS, CT_TENANT, [], $this->hasRootPrivileges);
+        } else {
+            $containers = $ContainersTable->easyPath($this->getWriteContainers(), CT_TENANT, [], true);
+        }
+        $containers = Api::makeItJavaScriptAble($containers);
+        $this->set('containers', $containers);
+        $this->viewBuilder()->setOption('serialize', ['containers']);
     }
 }

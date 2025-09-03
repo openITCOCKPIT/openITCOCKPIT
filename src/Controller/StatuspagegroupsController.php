@@ -27,6 +27,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\Table\StatuspagegroupsTable;
+use Cake\Http\Exception\MethodNotAllowedException;
+use itnovum\openITCOCKPIT\Database\PaginateOMat;
+use itnovum\openITCOCKPIT\Filter\GenericFilter;
+
 /**
  * Statuspagegroups Controller
  *
@@ -46,6 +51,40 @@ class StatuspagegroupsController extends AppController {
      * @return \Cake\Http\Response|null|void Renders view
      */
     public function index() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get(' Statuspagegroups');
+
+
+        $GenericFilter = new GenericFilter($this->request);
+        $GenericFilter->setFilters([
+            'like' => [
+                'Statuspagegroups.name',
+                'Statuspagegroups.description'
+            ]
+        ]);
+        $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $GenericFilter->getPage());
+
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $statuspagegroups = $StatuspagegroupsTable->getStatuspagegroupsIndex($GenericFilter, $PaginateOMat, $MY_RIGHTS);
+        foreach ($statuspagegroups as $index => $statuspagegroup) {
+            if ($this->hasRootPrivileges === true) {
+                $statuspagegroups[$index]['allowEdit'] = true;
+                $statuspagegroups[$index]['allowView'] = true;
+            } else {
+                $statuspagegroups[$index]['allowEdit'] = $this->isWritableContainer($statuspagegroup['container_id']);
+                $statuspagegroups[$index]['allowView'] = in_array($statuspagegroup['container_id'], $MY_RIGHTS, true);
+            }
+        }
+        $this->set('all_statuspagegroups', $statuspagegroups);
+        $this->viewBuilder()->setOption('serialize', ['$statuspagegroups']);
 
     }
 

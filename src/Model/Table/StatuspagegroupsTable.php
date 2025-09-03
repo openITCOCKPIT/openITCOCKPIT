@@ -27,11 +27,13 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\Statuspagegroup;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use itnovum\openITCOCKPIT\Filter\GenericFilter;
 
 /**
  * Statuspagegroups Model
@@ -58,6 +60,8 @@ use Cake\Validation\Validator;
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class StatuspagegroupsTable extends Table {
+    use PaginationAndScrollIndexTrait;
+
     /**
      * Initialize method
      *
@@ -127,6 +131,41 @@ class StatuspagegroupsTable extends Table {
         $rules->add($rules->existsIn(['container_id'], 'Containers'), ['errorField' => 'container_id']);
 
         return $rules;
+    }
+
+    /**
+     * @param GenericFilter $GenericFilter
+     * @param $PaginateOMat
+     * @param $MY_RIGHTS
+     * @return array
+     */
+    public function getStatuspagegroupsIndex(GenericFilter $GenericFilter, $PaginateOMat = null, $MY_RIGHTS = []): array {
+        $query = $this->find()
+            ->contain([
+                'Containers'
+            ])
+            ->where($GenericFilter->genericFilters());
+
+        $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
+            if (!empty($MY_RIGHTS)) {
+                return $q->where(['Statuspagegroups.container_id IN' => $MY_RIGHTS]);
+            }
+            return $q;
+        });
+        $query->disableHydration();
+        $query->orderBy($GenericFilter->getOrderForPaginator('Statuspagegroups.name', 'asc'));
+
+        if ($PaginateOMat === null) {
+            //Just execute query
+            $result = $query->toArray();
+        } else {
+            if ($PaginateOMat->useScroll()) {
+                $result = $this->scrollCake4($query, $PaginateOMat->getHandler());
+            } else {
+                $result = $this->paginateCake4($query, $PaginateOMat->getHandler());
+            }
+        }
+        return $result;
     }
 
     /**

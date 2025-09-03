@@ -106,8 +106,24 @@ class StatuspagegroupsController extends AppController {
      */
     public function add() {
 
+    }
+
+    /**
+     * If you remove this function, please also clean up ACLDependencies
+     * @return void
+     */
+    public function addCollection() {
 
     }
+
+    /**
+     * If you remove this function, please also clean up ACLDependencies
+     * @return void
+     */
+    public function addCategory() {
+
+    }
+
 
     /**
      * Edit method
@@ -117,6 +133,22 @@ class StatuspagegroupsController extends AppController {
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function edit($id = null) {
+
+    }
+
+    /**
+     * If you remove this function, please also clean up ACLDependencies
+     * @return void
+     */
+    public function editCollection() {
+
+    }
+
+    /**
+     * If you remove this function, please also clean up ACLDependencies
+     * @return void
+     */
+    public function editCategory() {
 
     }
 

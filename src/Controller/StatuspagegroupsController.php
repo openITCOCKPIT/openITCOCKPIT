@@ -69,10 +69,18 @@ class StatuspagegroupsController extends AppController {
 
     }
 
+    /**
+     * If you remove this function, please also clean up ACLDependencies
+     * @return void
+     */
     public function addCollection() {
 
     }
 
+    /**
+     * If you remove this function, please also clean up ACLDependencies
+     * @return void
+     */
     public function addCategory() {
 
     }
@@ -89,10 +97,18 @@ class StatuspagegroupsController extends AppController {
 
     }
 
+    /**
+     * If you remove this function, please also clean up ACLDependencies
+     * @return void
+     */
     public function editCollection() {
 
     }
 
+    /**
+     * If you remove this function, please also clean up ACLDependencies
+     * @return void
+     */
     public function editCategory() {
 
     }

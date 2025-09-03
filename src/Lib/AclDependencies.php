@@ -513,11 +513,7 @@ class AclDependencies {
             ->dependency('Statuspages', 'edit', 'Statuspages', 'loadContainers');
 
         $this
-            ->dependency('Statuspagegroups', 'add', 'Statuspagegroups', 'addCollection')
-            ->dependency('Statuspagegroups', 'add', 'Statuspagegroups', 'addCategory')
             ->dependency('Statuspagegroups', 'add', 'Statuspagegroups', 'loadContainers')
-            ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'editCollection')
-            ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'editCategory')
             ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'loadContainers');
 
         $this

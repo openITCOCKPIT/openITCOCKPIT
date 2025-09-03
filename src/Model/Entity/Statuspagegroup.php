@@ -42,7 +42,7 @@ use Cake\ORM\Entity;
  * @property \App\Model\Entity\Container $container
  * @property \App\Model\Entity\StatuspagegroupCategory[] $statuspagegroup_categories
  * @property \App\Model\Entity\StatuspagegroupCollection[] $statuspagegroup_collections
- * @property \App\Model\Entity\StatuspagesMembership[] $statuspages_to_statuspagegroups
+ * @property \App\Model\Entity\StatuspagesMembership[] $statuspages_memberships
  */
 class Statuspagegroup extends Entity {
     /**
@@ -55,14 +55,14 @@ class Statuspagegroup extends Entity {
      * @var array<string, bool>
      */
     protected array $_accessible = [
-        'container_id'                    => true,
-        'name'                            => true,
-        'description'                     => true,
-        'modified'                        => true,
-        'created'                         => true,
-        'container'                       => true,
-        'statuspagegroup_categories'      => true,
-        'statuspagegroup_collections'     => true,
-        'statuspages_to_statuspagegroups' => true,
+        'container_id'                => true,
+        'name'                        => true,
+        'description'                 => true,
+        'modified'                    => true,
+        'created'                     => true,
+        'container'                   => true,
+        'statuspagegroup_categories'  => true,
+        'statuspagegroup_collections' => true,
+        'statuspages_memberships'     => true,
     ];
 }

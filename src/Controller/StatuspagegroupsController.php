@@ -33,6 +33,8 @@ use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
+use itnovum\openITCOCKPIT\Database\PaginateOMat;
+use itnovum\openITCOCKPIT\Filter\GenericFilter;
 
 /**
  * Statuspagegroups Controller
@@ -48,11 +50,40 @@ class StatuspagegroupsController extends AppController {
 
 
     /**
-     * Index method
-     *
-     * @return \Cake\Http\Response|null|void Renders view
+     * @return void
      */
     public function index() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        $GenericFilter = new GenericFilter($this->request);
+        $GenericFilter->setFilters([
+            'like' => [
+                'Statuspagegroups.name',
+                'Statuspagegroups.description'
+            ]
+        ]);
+        $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $GenericFilter->getPage());
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+        $statuspagegroups = $StatuspagegroupsTable->getStatuspagegroupsIndex($GenericFilter, $PaginateOMat, $MY_RIGHTS);
+        foreach ($statuspagegroups as $index => $statuspagegroup) {
+            if ($this->hasRootPrivileges === true) {
+                $statuspagegroups[$index]['allowEdit'] = true;
+                $statuspagegroups[$index]['allowView'] = true;
+            } else {
+                $statuspagegroups[$index]['allowEdit'] = $this->isWritableContainer($statuspagegroup['container_id']);
+                $statuspagegroups[$index]['allowView'] = in_array($statuspagegroup['container_id'], $MY_RIGHTS, true);
+            }
+        }
+        $this->set('all_statuspagegroups', $statuspagegroups);
+        $this->viewBuilder()->setOption('serialize', ['$statuspagegroups']);
 
     }
 

@@ -1,0 +1,114 @@
+<?php
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
+
+declare(strict_types=1);
+
+namespace App\Model\Table;
+
+use Cake\ORM\RulesChecker;
+use Cake\ORM\Table;
+use Cake\Validation\Validator;
+
+/**
+ * StatuspagegroupCollections Model
+ *
+ * @property \App\Model\Table\StatuspagegroupsTable&\Cake\ORM\Association\BelongsTo $Statuspagegroups
+ *
+ * @method \App\Model\Entity\StatuspagegroupCollection newEmptyEntity()
+ * @method \App\Model\Entity\StatuspagegroupCollection newEntity(array $data, array $options = [])
+ * @method array<\App\Model\Entity\StatuspagegroupCollection> newEntities(array $data, array $options = [])
+ * @method \App\Model\Entity\StatuspagegroupCollection get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
+ * @method \App\Model\Entity\StatuspagegroupCollection findOrCreate($search, ?callable $callback = null, array $options = [])
+ * @method \App\Model\Entity\StatuspagegroupCollection patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
+ * @method array<\App\Model\Entity\StatuspagegroupCollection> patchEntities(iterable $entities, array $data, array $options = [])
+ * @method \App\Model\Entity\StatuspagegroupCollection|false save(\Cake\Datasource\EntityInterface $entity, array $options = [])
+ * @method \App\Model\Entity\StatuspagegroupCollection saveOrFail(\Cake\Datasource\EntityInterface $entity, array $options = [])
+ * @method iterable<\App\Model\Entity\StatuspagegroupCollection>|\Cake\Datasource\ResultSetInterface<\App\Model\Entity\StatuspagegroupCollection>|false saveMany(iterable $entities, array $options = [])
+ * @method iterable<\App\Model\Entity\StatuspagegroupCollection>|\Cake\Datasource\ResultSetInterface<\App\Model\Entity\StatuspagegroupCollection> saveManyOrFail(iterable $entities, array $options = [])
+ * @method iterable<\App\Model\Entity\StatuspagegroupCollection>|\Cake\Datasource\ResultSetInterface<\App\Model\Entity\StatuspagegroupCollection>|false deleteMany(iterable $entities, array $options = [])
+ * @method iterable<\App\Model\Entity\StatuspagegroupCollection>|\Cake\Datasource\ResultSetInterface<\App\Model\Entity\StatuspagegroupCollection> deleteManyOrFail(iterable $entities, array $options = [])
+ *
+ * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ */
+class StatuspagegroupCollectionsTable extends Table {
+    /**
+     * Initialize method
+     *
+     * @param array<string, mixed> $config The configuration for the Table.
+     * @return void
+     */
+    public function initialize(array $config): void {
+        parent::initialize($config);
+
+        $this->setTable('statuspagegroup_collections');
+        $this->setDisplayField('name');
+        $this->setPrimaryKey('id');
+
+        $this->addBehavior('Timestamp');
+
+        $this->belongsTo('Statuspagegroups', [
+            'foreignKey' => 'statuspagegroup_id',
+            'joinType'   => 'INNER',
+        ]);
+    }
+
+    /**
+     * Default validation rules.
+     *
+     * @param \Cake\Validation\Validator $validator Validator instance.
+     * @return \Cake\Validation\Validator
+     */
+    public function validationDefault(Validator $validator): Validator {
+        $validator
+            ->integer('statuspagegroup_id')
+            ->notEmptyString('statuspagegroup_id');
+
+        $validator
+            ->scalar('name')
+            ->maxLength('name', 255)
+            ->requirePresence('name', 'create')
+            ->notEmptyString('name');
+
+        $validator
+            ->scalar('description')
+            ->maxLength('description', 255)
+            ->allowEmptyString('description');
+
+        return $validator;
+    }
+
+    /**
+     * Returns a rules checker object that will be used for validating
+     * application integrity.
+     *
+     * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
+     * @return \Cake\ORM\RulesChecker
+     */
+    public function buildRules(RulesChecker $rules): RulesChecker {
+        $rules->add($rules->existsIn(['statuspagegroup_id'], 'Statuspagegroups'), ['errorField' => 'statuspagegroup_id']);
+
+        return $rules;
+    }
+}

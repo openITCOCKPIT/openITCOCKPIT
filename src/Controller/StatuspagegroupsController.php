@@ -275,8 +275,22 @@ class StatuspagegroupsController extends AppController {
             }
         }
 
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+        $selected = $this->request->getQuery('selected');
+
+        $MY_RIGHTS = [];
+        if (!$this->hasRootPrivileges) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $statuspages = Api::makeItJavaScriptAble(
+            $StatuspagesTable->getStatuspagesList($MY_RIGHTS)
+        );
+
         $this->set('statuspagegroup', $statuspagegroup);
-        $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
+        $this->set('statuspages', $statuspages);
+        $this->viewBuilder()->setOption('serialize', ['statuspagegroup', 'statuspages']);
 
     }
 
@@ -361,12 +375,12 @@ class StatuspagegroupsController extends AppController {
             $MY_RIGHTS = $this->MY_RIGHTS;
         }
 
-        $automaps = Api::makeItJavaScriptAble(
+        $statuspages = Api::makeItJavaScriptAble(
             $StatuspagesTable->getStatuspagesForAngular($selected, $statuspagesFilter, $MY_RIGHTS)
         );
 
-        $this->set('automaps', $automaps);
-        $this->viewBuilder()->setOption('serialize', ['automaps']);
+        $this->set('statuspages', $statuspages);
+        $this->viewBuilder()->setOption('serialize', ['statuspages']);
     }
 
 }

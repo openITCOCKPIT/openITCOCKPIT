@@ -1316,7 +1316,7 @@ class StatuspagesTable extends Table {
      * @param $MY_RIGHTS
      * @return array
      */
-    public function getStatuspagesForAngular($selected, StatuspagesFilter $StatuspagesFilter, $MY_RIGHTS = []) {
+    public function getStatuspagesForAngular($selected, StatuspagesFilter $StatuspagesFilter, $MY_RIGHTS = []): array {
         if (!is_array($selected)) {
             $selected = [$selected];
         }
@@ -1371,6 +1371,28 @@ class StatuspagesTable extends Table {
         $statuspages = $statuspagesWithLimit + $selectedStatuspages;
         asort($statuspages, SORT_FLAG_CASE | SORT_NATURAL);
         return $statuspages;
+    }
+
+    /**
+     * This method will return all available statuspages for a select list
+     * @param $MY_RIGHTS
+     * @return array
+     */
+    public function getStatuspagesList($MY_RIGHTS = []): array {
+        $query = $this->find('list')
+            ->select([
+                'Statuspages.id',
+                'Statuspages.name'
+            ]);
+
+        if (!empty($MY_RIGHTS)) {
+            $query->where([
+                'Statuspages.container_id IN' => $MY_RIGHTS
+            ]);
+        }
+
+        $query->orderBy(['Statuspages.name' => 'ASC']);
+        return $query->toArray();
     }
 
 }

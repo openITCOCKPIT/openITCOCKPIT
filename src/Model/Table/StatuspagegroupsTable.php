@@ -216,4 +216,32 @@ class StatuspagegroupsTable extends Table {
         return $query->firstOrFail();
     }
 
+    /**
+     * @param int $id
+     * @return array
+     */
+    public function getStatuspagegroupForById(int $id): array {
+        $query = $this->find();
+        $query->contain([
+            'StatuspagegroupCategories'  => function (Query $query) {
+                // Keep the order of categories stable
+                return $query->orderBy(['StatuspagegroupCategories.id' => 'ASC']);
+            },
+            'StatuspagegroupCollections' => function (Query $query) {
+                // Keep the order of collections stable
+                return $query->orderBy(['StatuspagegroupCollections.id' => 'ASC']);
+            },
+            'StatuspagesMemberships'     => function (Query $query) {
+                return $query->select([
+                    'id',
+                    'name'
+                ])->disableHydration();
+            }
+        ])
+            ->where([
+                'Statuspagegroups.id' => $id
+            ])->disableHydration();
+
+        return $query->firstOrFail();
+    }
 }

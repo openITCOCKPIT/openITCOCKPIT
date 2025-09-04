@@ -33,7 +33,9 @@ use App\Model\Table\StatuspagesTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
+use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
+use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
 use itnovum\openITCOCKPIT\Filter\StatuspagesFilter;
@@ -100,7 +102,41 @@ class StatuspagegroupsController extends AppController {
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function view($id = null) {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
 
+        $id = (int)$id;
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+        $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForById($id);
+        if (!$this->allowedByContainerId($statuspagegroup['container_id'])) {
+            $this->render403();
+            return;
+        }
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            /** @var $ContainersTable ContainersTable */
+            //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+            //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
+            // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+
+
+        if (!empty($statuspagegroup)) {
+            $User = new User($this->getUser());
+            $UserTime = $User->getUserTime();
+            $statuspages = Hash::combine($statuspagegroup['statuspages_memberships'], '{n}.id', '{n}.name');
+            $statuspagesSummary = [];
+            foreach ($statuspages as $statuspageId => $name) {
+                $statuspageId = (int)$statuspageId;
+                $statuspagesSummary[$statuspageId] = $StatuspagesTable->getStatuspageForView($statuspageId, $MY_RIGHTS, $UserTime);
+            }
+        }
     }
 
     /**
@@ -110,7 +146,7 @@ class StatuspagegroupsController extends AppController {
      */
     public function add() {
         if (!$this->isApiRequest()) {
-            throw new \Cake\Http\Exception\MethodNotAllowedException();
+            throw new MethodNotAllowedException();
         }
 
         /** @var StatuspagegroupsTable $StatuspagegroupsTable */
@@ -150,7 +186,7 @@ class StatuspagegroupsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            throw new \Cake\Http\Exception\MethodNotAllowedException();
+            throw new MethodNotAllowedException();
         }
 
         /** @var StatuspagegroupsTable $StatuspagegroupsTable */
@@ -201,7 +237,7 @@ class StatuspagegroupsController extends AppController {
      */
     public function editStepTwo($id = null) {
         if (!$this->isApiRequest()) {
-            throw new \Cake\Http\Exception\MethodNotAllowedException();
+            throw new MethodNotAllowedException();
         }
 
         /** @var StatuspagegroupsTable $StatuspagegroupsTable */

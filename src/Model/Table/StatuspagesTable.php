@@ -321,8 +321,7 @@ class StatuspagesTable extends Table {
         // Merge all host and service uuids to select the host and service status
         $hostUuids = [];
         $serviceUuids = [];
-        foreach (
-            ['hosts'] as $key => $host) {
+        foreach ($statuspage['hosts'] as $key => $host) {
             $hostUuids[$host['id']] = $host['uuid'];
             $statuspage['hosts'][$key]['host_uuids'] = [
                 $host['uuid'] => null // We make this to have the same code for hosts, host groups, service groups and services

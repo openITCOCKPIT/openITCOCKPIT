@@ -194,9 +194,15 @@ class StatuspagegroupsTable extends Table {
     public function getStatuspagegroupForEdit(int $id): Statuspagegroup {
         $query = $this->find();
         $query->contain([
-            'StatuspagegroupCategories',
-            'StatuspagegroupCollections',
-            'StatuspagesMemberships' => function (Query $query) {
+            'StatuspagegroupCategories'  => function (Query $query) {
+                // Keep the order of categories stable
+                return $query->orderBy(['StatuspagegroupCategories.id' => 'ASC']);
+            },
+            'StatuspagegroupCollections' => function (Query $query) {
+                // Keep the order of collections stable
+                return $query->orderBy(['StatuspagegroupCollections.id' => 'ASC']);
+            },
+            'StatuspagesMemberships'     => function (Query $query) {
                 return $query->select([
                     'id',
                     'name'

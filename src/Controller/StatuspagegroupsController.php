@@ -156,7 +156,7 @@ class StatuspagegroupsController extends AppController {
 
         $id = (int)$id;
         if (!$StatuspagegroupsTable->existsById($id)) {
-            throw new NotFoundException(__('Host not found'));
+            throw new NotFoundException(__('Invalid status page group'));
         }
 
         $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForEdit($id);
@@ -168,6 +168,59 @@ class StatuspagegroupsController extends AppController {
         if ($this->request->is('post')) {
             $statuspagegroup->setAccess('id', false);
             $statuspagegroup->setAccess('statuspages_memberships', false);
+            $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
+
+            $StatuspagegroupsTable->save($statuspagegroup);
+            if ($statuspagegroup->hasErrors()) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', $statuspagegroup->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            } else {
+                if ($this->isJsonRequest()) {
+                    $this->serializeCake4Id($statuspagegroup); // REST API ID serialization
+                    return;
+                }
+            }
+        }
+
+        $this->set('statuspagegroup', $statuspagegroup);
+        $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
+
+    }
+
+    /**
+     * editStepTwo method
+     * In this step, the user can only assign status pages to the group
+     *
+     * @param string|null $id Statuspagegroup id.
+     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function editStepTwo($id = null) {
+        if (!$this->isApiRequest()) {
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
+        }
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        $id = (int)$id;
+        if (!$StatuspagegroupsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid status page group'));
+        }
+
+        $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForEdit($id);
+        if (!$this->allowedByContainerId($statuspagegroup->container_id)) {
+            $this->render403();
+            return;
+        }
+
+        if ($this->request->is('post')) {
+            $statuspagegroup->setAccess('id', false);
+            $statuspagegroup->setAccess('statuspages_memberships', true);
+            $statuspagegroup->setAccess('statuspagegroup_collections', false);
+            $statuspagegroup->setAccess('statuspagegroup_categories', false);
             $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
 
             $StatuspagegroupsTable->save($statuspagegroup);

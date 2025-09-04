@@ -117,8 +117,6 @@ class StatuspagegroupsController extends AppController {
         if ($this->request->is('post')) {
             $statuspagegroup = $StatuspagegroupsTable->newEmptyEntity();
             $statuspagegroup->setAccess('id', false);
-            $statuspagegroup->setAccess('statuspagegroup_categories', false);
-            $statuspagegroup->setAccess('statuspagegroup_collections', false);
             $statuspagegroup->setAccess('statuspages_memberships', false);
 
             $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
@@ -201,7 +199,7 @@ class StatuspagegroupsController extends AppController {
 
         /** @var StatuspagegroupsTable $StatuspagegroupsTable */
         $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
-        
+
         $id = (int)$id;
         if (!$StatuspagegroupsTable->existsById($id)) {
             throw new NotFoundException(__('Invalid status page group'));

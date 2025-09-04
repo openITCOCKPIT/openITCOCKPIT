@@ -83,11 +83,17 @@ class StatuspagegroupsTable extends Table {
         ]);
 
         $this->hasMany('StatuspagegroupCategories', [
-            'foreignKey' => 'statuspagegroup_id',
+            'foreignKey'       => 'statuspagegroup_id',
+            'saveStrategy'     => 'replace',
+            'dependent'        => true,
+            'cascadeCallbacks' => true
         ]);
 
         $this->hasMany('StatuspagegroupCollections', [
-            'foreignKey' => 'statuspagegroup_id',
+            'foreignKey'       => 'statuspagegroup_id',
+            'saveStrategy'     => 'replace',
+            'dependent'        => true,
+            'cascadeCallbacks' => true
         ]);
 
         $this->belongsToMany('StatuspagesMemberships', [

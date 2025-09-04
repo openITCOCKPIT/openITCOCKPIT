@@ -72,6 +72,13 @@ class StatuspagegroupCategoriesTable extends Table {
             'foreignKey' => 'statuspagegroup_id',
             'joinType'   => 'INNER',
         ]);
+
+        // Only required for delete cascade
+        $this->hasMany('CategoryStatuspagesMemberships', [
+            'className'  => 'StatuspagesMembership',
+            'foreignKey' => 'category_id',
+            'dependent'  => true,
+        ]);
     }
 
     /**

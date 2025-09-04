@@ -321,7 +321,8 @@ class StatuspagesTable extends Table {
         // Merge all host and service uuids to select the host and service status
         $hostUuids = [];
         $serviceUuids = [];
-        foreach ($statuspage['hosts'] as $key => $host) {
+        foreach (
+            ['hosts'] as $key => $host) {
             $hostUuids[$host['id']] = $host['uuid'];
             $statuspage['hosts'][$key]['host_uuids'] = [
                 $host['uuid'] => null // We make this to have the same code for hosts, host groups, service groups and services
@@ -1309,4 +1310,68 @@ class StatuspagesTable extends Table {
 
         return $query;
     }
+
+    /**
+     * @param $selected
+     * @param StatuspagesFilter $StatuspagesFilter
+     * @param $MY_RIGHTS
+     * @return array
+     */
+    public function getStatuspagesForAngular($selected, StatuspagesFilter $StatuspagesFilter, $MY_RIGHTS = []) {
+        if (!is_array($selected)) {
+            $selected = [$selected];
+        }
+        $query = $this->find('list')
+            ->limit(ITN_AJAX_LIMIT)
+            ->select([
+                'Statuspages.id',
+                'Statuspages.name'
+            ])->where(
+                $StatuspagesFilter->indexFilter()
+            );
+
+        if (!empty($MY_RIGHTS)) {
+            $query->andWhere([
+                'Statuspages.container_id IN' => $MY_RIGHTS
+            ]);
+        }
+
+        $selected = array_filter($selected);
+        if (!empty($selected)) {
+            $query->where([
+                'Statuspages.id NOT IN' => $selected
+            ]);
+            if (!empty($MY_RIGHTS)) {
+                $query->andWhere([
+                    'Statuspages.container_id IN' => $MY_RIGHTS
+                ]);
+            }
+        }
+
+        $query->orderBy(['Statuspages.name' => 'ASC']);
+        $statuspagesWithLimit = $query->toArray();
+        $selectedStatuspages = [];
+        if (!empty($selected)) {
+            $query = $this->find('list')
+                ->select([
+                    'Statuspages.id',
+                    'Statuspages.name'
+                ])
+                ->where([
+                    'Statuspages.id IN' => $selected
+                ]);
+
+            $query->orderBy([
+                'Statuspages.name' => 'ASC',
+                'Statuspages.id'   => 'ASC'
+            ]);
+
+            $selectedStatuspages = $query->toArray();
+        }
+
+        $statuspages = $statuspagesWithLimit + $selectedStatuspages;
+        asort($statuspages, SORT_FLAG_CASE | SORT_NATURAL);
+        return $statuspages;
+    }
+
 }

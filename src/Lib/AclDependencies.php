@@ -514,7 +514,9 @@ class AclDependencies {
 
         $this
             ->dependency('Statuspagegroups', 'add', 'Statuspagegroups', 'loadContainers')
-            ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'loadContainers');
+            ->dependency('Statuspagegroups', 'add', 'Statuspagegroups', 'loadStatuspagesByString')
+            ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'loadContainers')
+            ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'loadStatuspagesByString');
 
         $this
             ->dependency('Users', 'index', 'Users', 'view')

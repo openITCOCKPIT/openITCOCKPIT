@@ -29,12 +29,14 @@ namespace App\Controller;
 
 use App\Model\Table\ContainersTable;
 use App\Model\Table\StatuspagegroupsTable;
+use App\Model\Table\StatuspagesTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
+use itnovum\openITCOCKPIT\Filter\StatuspagesFilter;
 
 /**
  * Statuspagegroups Controller
@@ -305,4 +307,30 @@ class StatuspagegroupsController extends AppController {
         $this->set('containers', $containers);
         $this->viewBuilder()->setOption('serialize', ['containers']);
     }
+
+    public function loadStatuspagesByString() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $statuspagesFilter = new StatuspagesFilter($this->request);
+
+
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+        $selected = $this->request->getQuery('selected');
+
+        $MY_RIGHTS = [];
+        if (!$this->hasRootPrivileges) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $automaps = Api::makeItJavaScriptAble(
+            $StatuspagesTable->getStatuspagesForAngular($selected, $statuspagesFilter, $MY_RIGHTS)
+        );
+
+        $this->set('automaps', $automaps);
+        $this->viewBuilder()->setOption('serialize', ['automaps']);
+    }
+
 }

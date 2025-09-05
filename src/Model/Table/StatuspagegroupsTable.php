@@ -96,7 +96,7 @@ class StatuspagegroupsTable extends Table {
             'cascadeCallbacks' => true
         ]);
 
-        $this->belongsToMany('StatuspagesMemberships', [
+        $this->belongsToMany('Statuspages', [
             'className'        => 'Statuspages',
             'through'          => 'StatuspagesMembership',
             'targetForeignKey' => 'statuspage_id',
@@ -202,7 +202,7 @@ class StatuspagegroupsTable extends Table {
                 // Keep the order of collections stable
                 return $query->orderBy(['StatuspagegroupCollections.id' => 'ASC']);
             },
-            'StatuspagesMemberships'     => function (Query $query) {
+            'Statuspages'                => function (Query $query) {
                 return $query->select([
                     'id',
                     'name'

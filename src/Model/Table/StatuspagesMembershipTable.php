@@ -120,4 +120,8 @@ class StatuspagesMembershipTable extends Table {
 
         return $rules;
     }
+
+    public function deleteAllRecordsByStatuspagegroupId(int $statuspagegroupId): void {
+        $this->deleteAll(['statuspagegroup_id' => $statuspagegroupId]);
+    }
 }

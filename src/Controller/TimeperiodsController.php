@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -61,8 +67,7 @@ class TimeperiodsController extends AppController {
 
     function index() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -132,8 +137,7 @@ class TimeperiodsController extends AppController {
      */
     public function viewDetails($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -142,9 +146,7 @@ class TimeperiodsController extends AppController {
         if (!$TimeperiodsTable->existsById($id)) {
             throw new NotFoundException(__('Invalid timeperiod'));
         }
-        $timeperiod = $TimeperiodsTable->get($id, [
-            'contain' => 'TimeperiodTimeranges'
-        ]);
+        $timeperiod = $TimeperiodsTable->get($id, contain: 'TimeperiodTimeranges');
         $timeperiod = $timeperiod->toArray();
 
 
@@ -163,8 +165,7 @@ class TimeperiodsController extends AppController {
      */
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -203,8 +204,7 @@ class TimeperiodsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -333,8 +333,7 @@ class TimeperiodsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $MY_RIGHTS = $this->MY_RIGHTS;
@@ -365,10 +364,8 @@ class TimeperiodsController extends AppController {
                     //Create/clone timeperiod
                     $sourceTimeperiodId = $timeperiodData['Source']['id'];
                     if (!$Cache->has($sourceTimeperiodId)) {
-                        $sourceTimeperiod = $TimeperiodsTable->get($sourceTimeperiodId, [
-                            'contain' => [
-                                'TimeperiodTimeranges'
-                            ]
+                        $sourceTimeperiod = $TimeperiodsTable->get($sourceTimeperiodId, contain: [
+                            'TimeperiodTimeranges'
                         ])->toArray();
                         foreach ($sourceTimeperiod['timeperiod_timeranges'] as $i => $timerange) {
                             unset($sourceTimeperiod['timeperiod_timeranges'][$i]['id']);
@@ -449,8 +446,7 @@ class TimeperiodsController extends AppController {
      */
     public function usedBy($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */

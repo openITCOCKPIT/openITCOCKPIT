@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -33,6 +34,7 @@ namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\ORM\Query;
+use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Utility\Hash;
 use Cake\Validation\Validator;
@@ -41,6 +43,7 @@ use itnovum\openITCOCKPIT\Core\Hoststatus;
 use itnovum\openITCOCKPIT\Core\HoststatusFields;
 use itnovum\openITCOCKPIT\Core\Servicestatus;
 use itnovum\openITCOCKPIT\Core\ServicestatusFields;
+use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\Views\AcknowledgementHost;
 use itnovum\openITCOCKPIT\Core\Views\AcknowledgementService;
 use itnovum\openITCOCKPIT\Core\Views\Downtime;
@@ -54,7 +57,7 @@ use itnovum\openITCOCKPIT\Filter\StatuspagesFilter;
  * @method \App\Model\Entity\Statuspage newEmptyEntity()
  * @method \App\Model\Entity\Statuspage newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Statuspage[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\Statuspage get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Statuspage get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Statuspage findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\Statuspage patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Statuspage[] patchEntities(iterable $entities, array $data, array $options = [])
@@ -133,6 +136,13 @@ class StatuspagesTable extends Table {
      */
     public function validationDefault(Validator $validator): Validator {
         $validator
+            ->scalar('uuid')
+            ->maxLength('uuid', 37)
+            ->requirePresence('uuid', 'create')
+            ->allowEmptyString('uuid', null, false)
+            ->add('uuid', 'unique', ['rule' => 'validateUnique', 'provider' => 'table']);
+
+        $validator
             ->integer('container_id')
             ->requirePresence('container_id', 'create')
             ->allowEmptyString('container_id', null, false)
@@ -153,6 +163,16 @@ class StatuspagesTable extends Table {
             ->scalar('public_title')
             ->maxLength('public_title', 255)
             ->allowEmptyString('public_title');
+
+        $validator
+            ->scalar('public_identifier')
+            ->maxLength('public_identifier', 255)
+            ->allowEmptyString('public_identifier', null, true)
+            ->add('public_identifier', 'unique', [
+                'rule'     => 'validateUnique',
+                'provider' => 'table',
+                'message'  => __('This public identifier has already been taken.')
+            ]);
 
         $validator
             ->boolean('public')
@@ -199,6 +219,20 @@ class StatuspagesTable extends Table {
     }
 
     /**
+     * @param RulesChecker $rules
+     * @return RulesChecker
+     */
+    public function buildRules(RulesChecker $rules): RulesChecker {
+        $rules->add($rules->isUnique(['uuid']));
+        $rules->add($rules->isUnique(
+            ['public_identifier'],
+            ['allowMultipleNulls' => true]
+        ));
+
+        return $rules;
+    }
+
+    /**
      * @param $value
      * @param $context
      * @return bool
@@ -232,7 +266,7 @@ class StatuspagesTable extends Table {
             $query->where(['Statuspages.container_id IN' => $MY_RIGHTS]);
         }
 
-        $query->order($StatuspagesFilter->getOrderForPaginator('Statuspages.id', 'asc'))
+        $query->orderBy($StatuspagesFilter->getOrderForPaginator('Statuspages.id', 'asc'))
             ->disableHydration();
 
         if ($PaginateOMat === null) {
@@ -842,9 +876,11 @@ class StatuspagesTable extends Table {
         if (empty($items)) {
             return [
                 'statuspage' => [
+                    'uuid'                        => $statuspage['uuid'],
                     'name'                        => $statuspage['name'],
                     'description'                 => $statuspage['description'],
                     'public_title'                => $statuspage['public_title'],
+                    'public_identifier'           => $statuspage['public_identifier'],
                     'public'                      => $statuspage['public'],
                     'showDowntimes'               => $statuspage['show_downtimes'],
                     'showDowntimeComments'        => $statuspage['show_downtime_comments'],
@@ -863,9 +899,11 @@ class StatuspagesTable extends Table {
 
         $statuspageView = [
             'statuspage' => [
+                'uuid'                        => $statuspage['uuid'],
                 'name'                        => $statuspage['name'],
                 'description'                 => $statuspage['description'],
                 'public_title'                => $statuspage['public_title'],
+                'public_identifier'           => $statuspage['public_identifier'],
                 'public'                      => $statuspage['public'],
                 'showDowntimes'               => $statuspage['show_downtimes'],
                 'showDowntimeComments'        => $statuspage['show_downtime_comments'],
@@ -967,7 +1005,7 @@ class StatuspagesTable extends Table {
                     ->where([
                         'Services.disabled' => 0
                     ])
-                    ->group(['Services.id']);
+                    ->groupBy(['Services.id']);
             })
             ->contain('Hostgroups', function (Query $q) use ($MY_RIGHTS) {
                 return $q
@@ -1237,5 +1275,38 @@ class StatuspagesTable extends Table {
         return [
             'Statuspage' => $statuspage
         ];
+    }
+
+    public function addMissingUuidToStatuspages() {
+        $statuspages = $this->find()
+            ->where([
+                'Statuspages.uuid IS NULL'
+            ])
+            ->all();
+
+        foreach ($statuspages as $statuspage) {
+            $statuspage->set('uuid', UUID::v4());
+            $this->save($statuspage);
+        }
+    }
+
+    public function getStatuspageByUuid(string $uuid) {
+        $query = $this->find()
+            ->where([
+                'Statuspages.uuid' => $uuid
+            ])
+            ->firstOrFail();
+
+        return $query;
+    }
+
+    public function getStatuspageByPublicIdentifier(string $publicIdentifier) {
+        $query = $this->find()
+            ->where([
+                'Statuspages.public_identifier' => $publicIdentifier
+            ])
+            ->firstOrFail();
+
+        return $query;
     }
 }

@@ -58,7 +58,7 @@ class StatusengineServiceScheduleddowntime extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'entry_time'           => true,
         'author_name'          => true,
         'comment_data'         => true,

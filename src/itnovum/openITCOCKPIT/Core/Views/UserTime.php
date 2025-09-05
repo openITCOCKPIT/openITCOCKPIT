@@ -1,32 +1,32 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//  This program is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // 2.
-//  If you purchased an openITCOCKPIT Enterprise Edition you can use this file
-//  under the terms of the openITCOCKPIT Enterprise Edition license agreement.
-//  License agreement and license key will be shipped with the order
-//  confirmation.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 namespace itnovum\openITCOCKPIT\Core\Views;
 
 
-use Cake\I18n\FrozenTime;
-use DateTime;
+use Cake\Log\Log;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 
 class UserTime {
@@ -68,11 +68,11 @@ class UserTime {
      */
     public function format($t_time) {
         if (gettype($t_time) === 'object') {
-            if (get_class($t_time) === 'Cake\I18n\FrozenTime') {
-                /** @var FrozenTime $t_time */
+            if ($t_time instanceof \Cake\I18n\DateTime) {
+                /** @var \Cake\I18n\DateTime $t_time */
                 $t_time = $t_time->timestamp;
-            } else if (get_class($t_time) === 'DateTime') {
-                /** @var DateTime $t_time */
+            } else if ($t_time instanceof \DateTime) {
+                /** @var \DateTime $t_time */
                 $t_time = $t_time->getTimestamp();
             }
         }
@@ -83,7 +83,7 @@ class UserTime {
         if (!is_numeric($t_time)) {
             $t_time = 0;
         }
-        $time = FrozenTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
+        $time = \Cake\I18n\DateTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
         return $time->format($this->format);
     }
 
@@ -95,11 +95,11 @@ class UserTime {
     public function customFormat($format, $t_time) {
 
         if (gettype($t_time) === 'object') {
-            if (get_class($t_time) === 'Cake\I18n\FrozenTime') {
-                /** @var FrozenTime $t_time */
+            if ($t_time instanceof \Cake\I18n\DateTime) {
+                /** @var \Cake\I18n\DateTime $t_time */
                 $t_time = $t_time->timestamp;
-            } else if (get_class($t_time) === 'DateTime') {
-                /** @var DateTime $t_time */
+            } else if ($t_time instanceof \DateTime) {
+                /** @var \DateTime $t_time */
                 $t_time = $t_time->getTimestamp();
             }
         }
@@ -110,7 +110,7 @@ class UserTime {
         if (!is_numeric($t_time)) {
             $t_time = 0;
         }
-        $time = FrozenTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
+        $time = \Cake\I18n\DateTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
         return $time->format($format);
     }
 
@@ -130,8 +130,8 @@ class UserTime {
             $duration = 0;
         }
 
-        $zero = new DateTime("@0");
-        $seconds = new DateTime("@$duration");
+        $zero = new \DateTime("@0");
+        $seconds = new \DateTime("@$duration");
         $closure = function ($duration) {
             //Check how much "time" we need
             if ($duration >= 31536000) {
@@ -199,11 +199,11 @@ class UserTime {
      */
     public function timeAgoInWords($t_time, $options = []) {
         if (gettype($t_time) === 'object') {
-            if (get_class($t_time) === 'Cake\I18n\FrozenTime') {
-                /** @var FrozenTime $t_time */
+            if ($t_time instanceof \Cake\I18n\DateTime) {
+                /** @var \Cake\I18n\DateTime $t_time */
                 $t_time = $t_time->timestamp;
-            } else if (get_class($t_time) === 'DateTime') {
-                /** @var DateTime $t_time */
+            } else if ($t_time instanceof \DateTime) {
+                /** @var \DateTime $t_time */
                 $t_time = $t_time->getTimestamp();
             }
         }
@@ -214,7 +214,7 @@ class UserTime {
         if (!is_numeric($t_time)) {
             $t_time = 0;
         }
-        $time = FrozenTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
+        $time = \Cake\I18n\DateTime::createFromTimestamp($t_time, new \DateTimeZone($this->timezone));
         return $time->timeAgoInWords($options);
     }
 
@@ -277,6 +277,21 @@ class UserTime {
 
     public function getFormatString() {
         return $this->format;
+    }
+
+    /**
+     * From the given timestamp, I will subtract the offset between the user's timezone and the server's timezone.
+     * @param int $timeStamp (Unix timestamp in user's timezone)
+     * @return int           (Unix timestamp in server's timezone)
+     */
+    public function toServerTime(int $timeStamp): int {
+        try {
+            $timeStamp -= $this->getUserTimeToServerOffset();
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        } finally {
+            return $timeStamp;
+        }
     }
 
 }

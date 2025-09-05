@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -148,12 +149,9 @@ class HostsController extends AppController {
             $satellites = $SatellitesTable->getSatellitesAsListWithDescription($this->MY_RIGHTS);
             $satellites[0] = $masterInstanceName;
         }
+
         if (!$this->isApiRequest()) {
-            $this->set('username', $User->getFullName());
-            $this->set('satellites', $satellites);
-            $this->set('types', $HostsTable->getHostTypes());
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ContainersTable ContainersTable */
@@ -235,9 +233,7 @@ class HostsController extends AppController {
             $existingImportedHostIdsByHostIds = Hash::combine($existingImportedHostIdsByHostIds, '{n}', '{n}');
         }
         foreach ($hosts as $host) {
-            $serviceUuids = $ServiceTable->find('list', [
-                'valueField' => 'uuid'
-            ])
+            $serviceUuids = $ServiceTable->find('list', valueField: 'uuid')
                 ->where([
                     'Services.host_id' => $host['Host']['id']
                 ])
@@ -325,16 +321,6 @@ class HostsController extends AppController {
         $this->set('all_hosts', $all_hosts);
         $this->set('username', $User->getFullName());
         $this->viewBuilder()->setOption('serialize', ['all_hosts', 'username']);
-    }
-
-    public function icon() {
-        //Only ship HTML Template
-        return;
-    }
-
-    public function hostservicelist() {
-        //Only ship HTML Template
-        return;
     }
 
     /**
@@ -512,8 +498,7 @@ class HostsController extends AppController {
      */
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -632,8 +617,7 @@ class HostsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */
@@ -866,8 +850,7 @@ class HostsController extends AppController {
 
     public function sharing($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */
@@ -987,8 +970,7 @@ class HostsController extends AppController {
 
     public function edit_details($host_id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $User = new User($this->getUser());
         /** @var HostsTable $HostsTable */
@@ -1169,9 +1151,7 @@ class HostsController extends AppController {
                                 if (!empty($contactsFromHost)) {
                                     foreach ($contactsFromHost as $contactId) {
                                         if (!$ContactCache->has($contactId)) {
-                                            $ContactCache->set($contactId, $ContactsTable->get($contactId, [
-                                                'contain' => 'Containers'
-                                            ])->toArray());
+                                            $ContactCache->set($contactId, $ContactsTable->get($contactId, contain: ['Containers'])->toArray());
 
                                         }
                                         $contact = $ContactCache->get($contactId);
@@ -1251,9 +1231,7 @@ class HostsController extends AppController {
                                 if (!empty($contactgroupsFromHost)) {
                                     foreach ($contactgroupsFromHost as $contactgroupId) {
                                         if (!$ContactgroupCache->has($contactgroupId)) {
-                                            $ContactgroupCache->set($contactgroupId, $ContactgroupsTable->get($contactgroupId, [
-                                                'contain' => 'Containers'
-                                            ])->toArray());
+                                            $ContactgroupCache->set($contactgroupId, $ContactgroupsTable->get($contactgroupId, contain: ['Containers'])->toArray());
 
                                         }
                                         $contactgroup = $ContactgroupCache->get($contactgroupId);
@@ -1457,8 +1435,7 @@ class HostsController extends AppController {
      */
     public function deactivate($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */
@@ -1522,8 +1499,7 @@ class HostsController extends AppController {
      */
     public function enable($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */
@@ -1678,8 +1654,7 @@ class HostsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
@@ -1768,7 +1743,7 @@ class HostsController extends AppController {
                     $tmpHost = $HostsTable->newEmptyEntity();
                     $tmpHost->setNew(true);
                     if (!empty($hostDefaultValues)) {
-                        $tmpHost->set($hostDefaultValues);
+                        $tmpHost->patch($hostDefaultValues);
                     }
 
                     $tmpHost->set('uuid', UUID::v4());
@@ -1809,28 +1784,28 @@ class HostsController extends AppController {
                         ];
                     }
 
-                    $tmpHost->set([
+                    $tmpHost->patch([
                         'hosts_to_containers_sharing' => [
                             '_ids' => $containerIds
                         ]
                     ]);
-                    $tmpHost->set([
+                    $tmpHost->patch([
                         'hostgroups' => [
                             '_ids' => $hostgroupsIds
                         ]
                     ]);
 
-                    $tmpHost->set([
+                    $tmpHost->patch([
                         'parenthosts' => [
                             '_ids' => $parenthostsIds
                         ]
                     ]);
-                    $tmpHost->set([
+                    $tmpHost->patch([
                         'contacts' => [
                             '_ids' => $contactsIds
                         ]
                     ]);
-                    $tmpHost->set([
+                    $tmpHost->patch([
                         'contactgroups' => [
                             '_ids' => $contactgroupsIds
                         ]
@@ -2416,6 +2391,11 @@ class HostsController extends AppController {
         ]);
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToPdf() {
         $User = new User($this->getUser());
 
@@ -2525,6 +2505,11 @@ class HostsController extends AppController {
         );
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToCsv() {
         $User = new User($this->getUser());
 
@@ -3631,8 +3616,7 @@ class HostsController extends AppController {
      */
     public function usedBy($id = null): void {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */

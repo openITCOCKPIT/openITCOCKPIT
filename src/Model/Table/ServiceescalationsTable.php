@@ -1,11 +1,34 @@
 <?php
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 namespace App\Model\Table;
 
 use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -22,14 +45,14 @@ use itnovum\openITCOCKPIT\Filter\ServiceescalationsFilter;
  * @property \App\Model\Table\ServiceescalationsTable|\Cake\ORM\Association\HasMany $Services
  * @property \App\Model\Table\ServiceescalationsTable|\Cake\ORM\Association\HasMany $Servicegroups
  *
- * @method \App\Model\Entity\Serviceescalation get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Serviceescalation get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Serviceescalation newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Serviceescalation[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Serviceescalation|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Serviceescalation|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Serviceescalation patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Serviceescalation[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Serviceescalation findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Serviceescalation findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -299,7 +322,7 @@ class ServiceescalationsTable extends Table {
                     },
                 ]
             ])
-            ->group('Serviceescalations.id')
+            ->groupBy('Serviceescalations.id')
             ->disableHydration();
         $indexFilter = $ServiceescalationsFilter->indexFilter();
         $containFilter = [
@@ -312,7 +335,7 @@ class ServiceescalationsTable extends Table {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
-            $where = new Comparison(
+            $where = new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))',
                 $indexFilter['Services.servicename LIKE'],
                 'string',
@@ -332,7 +355,7 @@ class ServiceescalationsTable extends Table {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
-            $where = new Comparison(
+            $where = new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(ServicesExcluded.name IS NULL, Servicetemplates.name, ServicesExcluded.name))',
                 $indexFilter['ServicesExcluded.servicename LIKE'],
                 'string',
@@ -386,7 +409,7 @@ class ServiceescalationsTable extends Table {
         $query->where($indexFilter);
 
 
-        $query->order($ServiceescalationsFilter->getOrderForPaginator('Serviceescalations.id', 'asc'));
+        $query->orderBy($ServiceescalationsFilter->getOrderForPaginator('Serviceescalations.id', 'asc'));
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $this->emptyArrayIfNull($query->toArray());
@@ -601,7 +624,7 @@ class ServiceescalationsTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'serviceescalation_id'
             ])
             ->disableHydration()
@@ -628,7 +651,7 @@ class ServiceescalationsTable extends Table {
         });
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Containers.name' => 'asc'
         ]);
 

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -37,7 +38,7 @@ use App\Model\Table\ProxiesTable;
 use App\Model\Table\ServicesTable;
 use App\Model\Table\SystemsettingsTable;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
+use Cake\Command\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\ORM\TableRegistry;

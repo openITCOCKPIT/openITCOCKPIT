@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -56,14 +57,14 @@ use itnovum\openITCOCKPIT\Filter\ServicetemplateFilter;
  * @property \App\Model\Table\ServicetemplatecommandargumentvaluesTable|\Cake\ORM\Association\HasMany $Servicetemplatecommandargumentvalues
  * @property \App\Model\Table\ServicetemplateeventcommandargumentvaluesTable|\Cake\ORM\Association\HasMany $Servicetemplateeventcommandargumentvalues
  *
- * @method \App\Model\Entity\Servicetemplate get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Servicetemplate get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Servicetemplate newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Servicetemplate[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Servicetemplate|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicetemplate|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicetemplate patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Servicetemplate[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Servicetemplate findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Servicetemplate findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -481,7 +482,7 @@ class ServicetemplatesTable extends Table {
         }
 
         $query->where($where);
-        $query->order($ServicetemplateFilter->getOrderForPaginator('Servicetemplates.name', 'asc'));
+        $query->orderBy($ServicetemplateFilter->getOrderForPaginator('Servicetemplates.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -819,10 +820,10 @@ class ServicetemplatesTable extends Table {
      * @param array $MY_RIGHTS
      * @return array|\Cake\Datasource\EntityInterface|null
      */
-    public function getServicetemplateFoWizardDeployInterfaces($MY_RIGHTS = []) {
+    public function getServicetemplateForWizardByUuid($uuid, $MY_RIGHTS = []) {
         $query = $this->find()
             ->where([
-                'Servicetemplates.uuid' => 'de5e3045-3011-45d8-8ac6-bc5fbb3d396d'
+                'Servicetemplates.uuid' => $uuid
             ])
             ->contain([
                 'Servicetemplatecommandargumentvalues' => [
@@ -886,12 +887,11 @@ class ServicetemplatesTable extends Table {
 
         $where = $ServicetemplateFilter->ajaxFilter();
         $where['Servicetemplates.container_id IN'] = $containerIds;
-        $query = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'template_name'
-        ])
+        $query = $this->find('list',
+            keyField: 'id',
+            valueField: 'template_name')
             ->where($where)
-            ->order([
+            ->orderBy([
                 'Servicetemplates.template_name' => 'asc'
             ])
             ->limit(ITN_AJAX_LIMIT)
@@ -904,15 +904,14 @@ class ServicetemplatesTable extends Table {
 
         $selectedServicetemplates = [];
         if (!empty($selected)) {
-            $query = $this->find('list', [
-                'keyField'   => 'id',
-                'valueField' => 'template_name'
-            ])
+            $query = $this->find('list',
+                keyField: 'id',
+                valueField: 'template_name')
                 ->where([
                     'Servicetemplates.id IN'           => $selected,
                     'Servicetemplates.container_id IN' => $containerIds
                 ])
-                ->order([
+                ->orderBy([
                     'Servicetemplates.template_name' => 'asc'
                 ]);
 
@@ -955,7 +954,7 @@ class ServicetemplatesTable extends Table {
                 ]
             ])
             ->where(['Servicetemplates.id IN' => $ids])
-            ->order(['Servicetemplates.id' => 'asc']);
+            ->orderBy(['Servicetemplates.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere(['Servicetemplates.container_id IN' => $MY_RIGHTS]);
@@ -1206,7 +1205,7 @@ class ServicetemplatesTable extends Table {
                 ['Servicetemplates.eventhandler_command_id' => $commandId]
             ]
         ])
-            ->order(['Servicetemplates.name' => 'asc'])
+            ->orderBy(['Servicetemplates.name' => 'asc'])
             ->enableHydration($enableHydration)
             ->all();
 
@@ -1231,7 +1230,7 @@ class ServicetemplatesTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'servicetemplate_id'
             ])
             ->disableHydration()
@@ -1253,7 +1252,7 @@ class ServicetemplatesTable extends Table {
         }
         $query->where($where);
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Servicetemplates.name' => 'asc'
         ]);
 
@@ -1464,7 +1463,7 @@ class ServicetemplatesTable extends Table {
         }
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Servicetemplates.name' => 'asc'
         ]);
 
@@ -1666,7 +1665,7 @@ class ServicetemplatesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->order([
+        $query->orderBy([
             'Servicetemplates.name' => 'asc'
         ]);
 
@@ -1719,7 +1718,7 @@ class ServicetemplatesTable extends Table {
         $query->andWhere([
             'Servicetemplates.id IN ' => $servicetemplateIds
         ])
-            ->order(['Servicetemplates.name' => 'asc'])
+            ->orderBy(['Servicetemplates.name' => 'asc'])
             ->enableHydration($enableHydration)
             ->all();
 

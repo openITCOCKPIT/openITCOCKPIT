@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -97,13 +98,14 @@ class NotificationServicesTable extends Table implements NotificationServicesTab
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getNotifications(ServiceNotificationConditions $ServiceNotificationConditions, $PaginateOMat = null) {
+    public function getNotifications(ServiceNotificationConditions $ServiceNotificationConditions, ?PaginateOMat $PaginateOMat = null) {
         $query = $this->find();
         $query->select([
             'NotificationServices.hostname',
             'NotificationServices.service_description',
             'NotificationServices.start_time',
             'NotificationServices.state',
+            'NotificationServices.reason_type',
             'NotificationServices.output',
 
             'Hosts.id',
@@ -158,8 +160,8 @@ class NotificationServicesTable extends Table implements NotificationServicesTab
                 'NotificationServices.start_time >' => $ServiceNotificationConditions->getFrom(),
                 'NotificationServices.start_time <' => $ServiceNotificationConditions->getTo()
             ])
-            ->order($ServiceNotificationConditions->getOrder())
-            ->group([
+            ->orderBy($ServiceNotificationConditions->getOrder())
+            ->groupBy([
                 'NotificationServices.service_description',
                 'NotificationServices.start_time',
                 'NotificationServices.start_time_usec'

@@ -35,7 +35,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * oitc migrations migrate -p MapModule
  */
-class AddBackgroundSizeColumns extends AbstractMigration {
+class AddBackgroundSizeColumns extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

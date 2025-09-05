@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -45,14 +46,14 @@ use itnovum\openITCOCKPIT\Filter\TimeperiodsFilter;
  * @property \App\Model\Table\ContainersTable|\Cake\ORM\Association\BelongsTo $Containers
  * @property \App\Model\Table\TimeperiodTimerangesTable|\Cake\ORM\Association\HasMany $TimeperiodTimeranges
  *
- * @method \App\Model\Entity\Timeperiod get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Timeperiod get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Timeperiod newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Timeperiod[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Timeperiod|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Timeperiod|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Timeperiod patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Timeperiod[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Timeperiod findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Timeperiod findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -179,7 +180,7 @@ class TimeperiodsTable extends Table {
             ->where([
                 'Timeperiods.container_id IN' => $MY_RIGHTS
             ])
-            ->order(['Timeperiods.name' => 'asc'])
+            ->orderBy(['Timeperiods.name' => 'asc'])
             ->disableHydration()
             ->all();
         return $this->formatResultAsCake2($query->toArray(), false);
@@ -189,10 +190,9 @@ class TimeperiodsTable extends Table {
      * @return array
      */
     public function getAllTimeperiodsUuidsAsList() {
-        $query = $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => 'uuid'
-        ])
+        $query = $this->find('list',
+            keyField: 'id',
+            valueField: 'uuid')
             ->disableHydration();
         return $query->toArray();
     }
@@ -205,7 +205,7 @@ class TimeperiodsTable extends Table {
     public function getTimeperiodsIndex(TimeperiodsFilter $TimeperiodsFilter, $PaginateOMat = null) {
         $query = $this->find('all')->disableHydration();
         $query->where($TimeperiodsFilter->indexFilter());
-        $query->order($TimeperiodsFilter->getOrderForPaginator('Timeperiods.name', 'asc'));
+        $query->orderBy($TimeperiodsFilter->getOrderForPaginator('Timeperiods.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -370,7 +370,7 @@ class TimeperiodsTable extends Table {
             ->where([
                 'Timeperiods.id IN' => $ids
             ])
-            ->order(['Timeperiods.id' => 'asc']);
+            ->orderBy(['Timeperiods.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere([
@@ -670,7 +670,7 @@ class TimeperiodsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->order([
+        $query->orderBy([
             'Timeperiods.name' => 'asc'
         ]);
 

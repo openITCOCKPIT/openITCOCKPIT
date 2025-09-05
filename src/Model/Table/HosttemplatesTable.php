@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -53,14 +54,14 @@ use itnovum\openITCOCKPIT\Filter\HosttemplateFilter;
  * @property \App\Model\Table\HostsTable|\Cake\ORM\Association\HasMany $Hosts
  * @property \App\Model\Table\HosttemplatecommandargumentvaluesTable|\Cake\ORM\Association\HasMany $Hosttemplatecommandargumentvalues
  *
- * @method \App\Model\Entity\Hosttemplate get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Hosttemplate get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Hosttemplate newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Hosttemplate[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Hosttemplate|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hosttemplate|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hosttemplate patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Hosttemplate[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Hosttemplate findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Hosttemplate findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -426,7 +427,7 @@ class HosttemplatesTable extends Table {
         }
 
         $query->where($where);
-        $query->order($HosttemplateFilter->getOrderForPaginator('Hosttemplates.name', 'asc'));
+        $query->orderBy($HosttemplateFilter->getOrderForPaginator('Hosttemplates.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -676,7 +677,7 @@ class HosttemplatesTable extends Table {
             ])
             ->contain($contain)
             ->where(['Hosttemplates.id IN' => $ids])
-            ->order(['Hosttemplates.id' => 'asc']);
+            ->orderBy(['Hosttemplates.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere(['Hosttemplates.container_id IN' => $MY_RIGHTS]);
@@ -717,7 +718,7 @@ class HosttemplatesTable extends Table {
                 'Hosttemplates.name'
             ])
             ->where($where)
-            ->order([
+            ->orderBy([
                 'Hosttemplates.name' => 'asc'
             ])
             ->limit(ITN_AJAX_LIMIT)
@@ -735,7 +736,7 @@ class HosttemplatesTable extends Table {
                     'Hosttemplates.id IN'           => $selected,
                     'Hosttemplates.container_id IN' => $containerIds
                 ])
-                ->order([
+                ->orderBy([
                     'Hosttemplates.name' => 'asc'
                 ]);
 
@@ -776,7 +777,7 @@ class HosttemplatesTable extends Table {
             ->where(
                 $where
             )
-            ->order([
+            ->orderBy([
                 'Hosttemplates.name' => 'asc',
             ])
             ->disableHydration();
@@ -1149,7 +1150,7 @@ class HosttemplatesTable extends Table {
                 ['Hosttemplates.eventhandler_command_id' => $commandId]
             ]
         ])
-            ->order(['Hosttemplates.name' => 'asc'])
+            ->orderBy(['Hosttemplates.name' => 'asc'])
             ->enableHydration($enableHydration)
             ->all();
 
@@ -1174,7 +1175,7 @@ class HosttemplatesTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'hosttemplate_id'
             ])
             ->disableHydration()
@@ -1196,7 +1197,7 @@ class HosttemplatesTable extends Table {
         }
         $query->where($where);
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Hosttemplates.name' => 'asc'
         ]);
 
@@ -1306,7 +1307,7 @@ class HosttemplatesTable extends Table {
         }
 
         $query->disableHydration();
-        $query->order([
+        $query->orderBy([
             'Hosttemplates.name' => 'asc'
         ]);
 

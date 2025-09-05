@@ -36,8 +36,8 @@ use Cake\ORM\Entity;
  * @property string $webhook_url
  * @property bool $two_way
  * @property bool $use_proxy
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  */
 class MattermostSetting extends Entity {
     /**
@@ -49,7 +49,7 @@ class MattermostSetting extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'webhook_url' => true,
         'two_way'     => true,
         'apikey'      => true,

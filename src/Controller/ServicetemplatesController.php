@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -73,10 +74,7 @@ class ServicetemplatesController extends AppController {
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-
-            $this->set('types', $ServicetemplatesTable->getServicetemplateTypes());
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $ServicetemplateFilter = new ServicetemplateFilter($this->request);
@@ -142,8 +140,7 @@ class ServicetemplatesController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('get')) {
@@ -200,8 +197,7 @@ class ServicetemplatesController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplatesTable ServicetemplatesTable */
@@ -343,8 +339,7 @@ class ServicetemplatesController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplatesTable ServicetemplatesTable */
@@ -469,19 +464,13 @@ class ServicetemplatesController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['result']);
     }
 
-    public function addServicetemplatesToServicetemplategroup() {
-        //Only ship HTML Template
-        return;
-    }
-
 
     /**
      * @param int|null $id
      */
     public function usedBy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */

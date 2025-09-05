@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -50,8 +51,7 @@ class MapsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $MapFilter = new MapFilter($this->request);
@@ -97,8 +97,7 @@ class MapsController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $data = $this->request->getData();
@@ -140,8 +139,7 @@ class MapsController extends AppController {
 
     public function edit($id = null) {
         if (!$this->isApiRequest() && $id === null) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var MapsTable $MapsTable */
@@ -270,8 +268,7 @@ class MapsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var MapsTable $MapsTable */
@@ -301,16 +298,14 @@ class MapsController extends AppController {
                     //Create/clone map
                     $sourceMapId = $mapData['Source']['id'];
                     if (!$Cache->has($sourceMapId)) {
-                        $sourceMapEntity = $MapsTable->get($sourceMapId, [
-                            'contain' => [
-                                'Containers',
-                                'Mapgadgets',
-                                'Mapicons',
-                                'Mapitems',
-                                'Maplines',
-                                'Maptexts',
-                                'Mapsummaryitems'
-                            ]
+                        $sourceMapEntity = $MapsTable->get($sourceMapId, contain: [
+                            'Containers',
+                            'Mapgadgets',
+                            'Mapicons',
+                            'Mapitems',
+                            'Maplines',
+                            'Maptexts',
+                            'Mapsummaryitems'
                         ]);
 
                         $sourceMap = $sourceMapEntity->toArray();
@@ -346,10 +341,8 @@ class MapsController extends AppController {
                     //Update existing map
                     //This happens, if a user copy multiple maps, and one run into an validation error
                     //All maps without validation errors got already saved to the database
-                    $newMapEntity = $MapsTable->get($mapData['Map']['id'], [
-                        'contain' => [
-                            'Containers'
-                        ]
+                    $newMapEntity = $MapsTable->get($mapData['Map']['id'], contain: [
+                        'Containers'
                     ]);
                     $mapData['Map']['containers']['_ids'] = $newMapEntity->getContainerIds();
                     if (isset($mapData['Map']['refresh_interval'])) {

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -65,11 +66,6 @@ class StatisticsController extends AppController {
         $this->set('statistics', $StatisticsCollector->getData());
         $this->set('IS_CONTAINER', IS_CONTAINER);
         $this->viewBuilder()->setOption('serialize', ['settings', 'statistics', 'IS_CONTAINER']);
-    }
-
-    public function ask_anonymous_statistics() {
-        //Only ship HTML template
-        return;
     }
 
     public function saveStatisticDecision() {

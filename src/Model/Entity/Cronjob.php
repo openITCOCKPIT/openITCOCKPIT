@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -35,8 +36,8 @@ use Cake\ORM\Entity;
  * @property int|null $interval
  * @property bool $enabled
  * @property string $priority
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Cronschedule[] $cronschedules
  */
@@ -54,7 +55,7 @@ class Cronjob extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'task'         => true,
         'plugin'       => true,
         'interval'     => true,

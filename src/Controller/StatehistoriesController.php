@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -54,8 +60,7 @@ class StatehistoriesController extends AppController {
      */
     public function host($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $session = $this->request->getSession();
@@ -87,8 +92,8 @@ class StatehistoriesController extends AppController {
         $Conditions->setOrder($AngularStatehistoryControllerRequest->getOrderForPaginator('StatehistoryHosts.state_time', 'desc'));
         $Conditions->setStates($AngularStatehistoryControllerRequest->getHostStates());
         $Conditions->setStateTypes($AngularStatehistoryControllerRequest->getHostStateTypes());
-        $Conditions->setFrom($AngularStatehistoryControllerRequest->getFrom());
-        $Conditions->setTo($AngularStatehistoryControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($AngularStatehistoryControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($AngularStatehistoryControllerRequest->getTo()));
         $Conditions->setHostUuid($host->get('uuid'));
         $Conditions->setConditions($AngularStatehistoryControllerRequest->getHostFilters());
 
@@ -124,8 +129,7 @@ class StatehistoriesController extends AppController {
      */
     public function service($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $session = $this->request->getSession();
@@ -158,8 +162,8 @@ class StatehistoriesController extends AppController {
         $Conditions->setOrder($AngularStatehistoryControllerRequest->getOrderForPaginator('StatehistoryServices.state_time', 'desc'));
         $Conditions->setStates($AngularStatehistoryControllerRequest->getServiceStates());
         $Conditions->setStateTypes($AngularStatehistoryControllerRequest->getServiceStateTypes());
-        $Conditions->setFrom($AngularStatehistoryControllerRequest->getFrom());
-        $Conditions->setTo($AngularStatehistoryControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($AngularStatehistoryControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($AngularStatehistoryControllerRequest->getTo()));
         $Conditions->setConditions($AngularStatehistoryControllerRequest->getServiceFilters());
         $Conditions->setServiceUuid($service->get('uuid'));
 

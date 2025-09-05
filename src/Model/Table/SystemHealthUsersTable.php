@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -263,7 +264,7 @@ class SystemHealthUsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -281,7 +282,7 @@ class SystemHealthUsersTable extends Table {
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
-            ->group([
+            ->groupBy([
                 'Users.id'
             ])
             ->disableHydration();
@@ -342,13 +343,13 @@ class SystemHealthUsersTable extends Table {
             $query->having($having);
         }
 
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $SystemHealthUsersFilter->getOrderForPaginator('full_name', 'asc'),
                 ['Users.id' => 'asc']
             )
         );
-        $query->group([
+        $query->groupBy([
             'Users.id'
         ]);
 

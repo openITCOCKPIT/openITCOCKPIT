@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -34,7 +35,6 @@ namespace App\Controller;
 
 use App\Model\Table\ConfigurationFilesTable;
 use App\Model\Table\ConfigurationQueueTable;
-use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\ServiceUnavailableException;
@@ -50,8 +50,7 @@ class ConfigurationFilesController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $configFilesForFrontend = [];
@@ -85,8 +84,7 @@ class ConfigurationFilesController extends AppController {
      */
     public function edit($configFile = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (IS_CONTAINER) {
@@ -339,24 +337,4 @@ class ConfigurationFilesController extends AppController {
         }
     }
 
-    public function dynamicDirective() {
-        $directiveName = $this->request->getQuery('directive');
-        $isValidDirective = false;
-
-        $GeneratorRegistry = new GeneratorRegistry();
-        foreach ($GeneratorRegistry->getAllConfigFiles() as $ConfigFileObject) {
-            /** @var ConfigInterface $ConfigFileObject */
-
-            if ($ConfigFileObject->getAngularDirective() === $directiveName) {
-                $isValidDirective = true;
-                break;
-            }
-        }
-
-        if (!$isValidDirective) {
-            throw new ForbiddenException();
-        }
-
-        $this->set('directiveName', $directiveName);
-    }
 }

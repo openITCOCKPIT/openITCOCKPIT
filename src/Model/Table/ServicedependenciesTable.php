@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -28,7 +29,7 @@ use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\Service;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
@@ -45,14 +46,14 @@ use itnovum\openITCOCKPIT\Filter\ServicedependenciesFilter;
  * @property \App\Model\Table\ServicedependenciesTable|\Cake\ORM\Association\HasMany $Services
  * @property \App\Model\Table\ServicedependenciesTable|\Cake\ORM\Association\HasMany $Servicegroups
  *
- * @method \App\Model\Entity\Servicedependency get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Servicedependency get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Servicedependency newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Servicedependency[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Servicedependency|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicedependency|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Servicedependency patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Servicedependency[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Servicedependency findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Servicedependency findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -239,7 +240,7 @@ class ServicedependenciesTable extends Table {
                     },
                 ]
             ])
-            ->group('Servicedependencies.id')
+            ->groupBy('Servicedependencies.id')
             ->disableHydration();
 
         $indexFilter = $ServicedependenciesFilter->indexFilter();
@@ -253,7 +254,7 @@ class ServicedependenciesTable extends Table {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
-            $where = new Comparison(
+            $where = new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))',
                 $indexFilter['Services.servicename LIKE'],
                 'string',
@@ -272,7 +273,7 @@ class ServicedependenciesTable extends Table {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
-            $where = new Comparison(
+            $where = new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(ServicesDependent.name IS NULL, Servicetemplates.name, ServicesDependent.name))',
                 $indexFilter['ServicesDependent.servicename LIKE'],
                 'string',
@@ -316,7 +317,7 @@ class ServicedependenciesTable extends Table {
             $indexFilter['Servicedependencies.container_id IN'] = $MY_RIGHTS;
         }
         $query->where($indexFilter);
-        $query->order($ServicedependenciesFilter->getOrderForPaginator('Servicedependencies.id', 'asc'));
+        $query->orderBy($ServicedependenciesFilter->getOrderForPaginator('Servicedependencies.id', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -325,7 +326,7 @@ class ServicedependenciesTable extends Table {
             if ($PaginateOMat->useScroll()) {
                 $result = $this->scrollCake4($query, $PaginateOMat->getHandler());
             } else {
-                $result = $this->paginateCake4($query, $PaginateOMat->getHandler(), false);
+                $result = $this->paginateCake4($query, $PaginateOMat->getHandler());
             }
         }
 

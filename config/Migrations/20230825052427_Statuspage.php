@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
-class Statuspage extends AbstractMigration {
-    public $autoId = false;
+class Statuspage extends \Migrations\BaseMigration {
+    public bool $autoId = false;
 
     /**
      * Change Method.
@@ -226,11 +226,4 @@ class Statuspage extends AbstractMigration {
 
     }
 
-    public function down(): void {
-        $this->table('statuspages')->drop()->save();
-        $this->table('statuspages_to_hosts')->drop()->save();
-        $this->table('statuspages_to_servicess')->drop()->save();
-        $this->table('statuspages_to_hostgroups')->drop()->save();
-        $this->table('statuspages_to_servicegroups')->drop()->save();
-    }
 }

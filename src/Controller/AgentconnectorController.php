@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -49,7 +50,6 @@ use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\FrozenTime;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use DistributeModule\Model\Table\SatellitesTable;
@@ -104,8 +104,7 @@ class AgentconnectorController extends AppController {
 
     public function pull() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var AgentconfigsTable $AgentconfigsTable */
@@ -140,8 +139,7 @@ class AgentconnectorController extends AppController {
 
     public function push() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var PushAgentsTable $PushAgentsTable */
@@ -185,8 +183,7 @@ class AgentconnectorController extends AppController {
 
     public function push_satellite() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (!Plugin::isLoaded('DistributeModule') || !Plugin::isLoaded('ImportModule')) {
@@ -248,10 +245,8 @@ class AgentconnectorController extends AppController {
             throw new NotFoundException(__('Agent config not found'));
         }
 
-        $agentConfig = $AgentconfigsTable->get($id, [
-            'contain' => [
-                'Hosts'
-            ]
+        $agentConfig = $AgentconfigsTable->get($id, contain: [
+            'Hosts'
         ]);
         if (!$this->allowedByContainerId($agentConfig->get('host')->get('container_id'))) {
             $this->render403();
@@ -290,10 +285,8 @@ class AgentconnectorController extends AppController {
             throw new NotFoundException(__('Push Agent config not found'));
         }
 
-        $pushAgent = $PushAgentsTable->get($id, [
-            'contain' => [
-                'Agentconfigs'
-            ]
+        $pushAgent = $PushAgentsTable->get($id, contain: [
+            'Agentconfigs'
         ]);
 
         if (!empty($pushAgent->get('agentconfig'))) {
@@ -353,10 +346,8 @@ class AgentconnectorController extends AppController {
             throw new NotFoundException(__('Satellite Push Agent config not found'));
         }
 
-        $satellitePushAgent = $SatellitePushAgentsTable->get($id, [
-            'contain' => [
-                'Agentconfigs'
-            ]
+        $satellitePushAgent = $SatellitePushAgentsTable->get($id, contain: [
+            'Agentconfigs'
         ]);
 
         if (!empty($satellitePushAgent->get('agentconfig'))) {
@@ -393,8 +384,7 @@ class AgentconnectorController extends AppController {
 
     public function showOutput() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $mode = $this->request->getQuery('mode', 'pull');
@@ -552,8 +542,7 @@ class AgentconnectorController extends AppController {
     // Step 2
     public function config() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var HostsTable $HostsTable */
@@ -709,7 +698,7 @@ class AgentconnectorController extends AppController {
     // Step 3
     public function install() {
         if (!$this->isAngularJsRequest()) {
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $hostId = $this->request->getQuery('hostId', 0);
@@ -743,7 +732,7 @@ class AgentconnectorController extends AppController {
     // Step 4 (In Pull mode)
     public function autotls() {
         if (!$this->isAngularJsRequest()) {
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $hostId = $this->request->getQuery('hostId', 0);
@@ -831,7 +820,7 @@ class AgentconnectorController extends AppController {
     // Step 4 (In Push mode)
     public function select_agent() {
         if (!$this->isJsonRequest()) {
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var HostsTable $HostsTable */
@@ -1061,7 +1050,7 @@ class AgentconnectorController extends AppController {
     // Step 5
     public function create_services() {
         if (!$this->isAngularJsRequest()) {
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $hostId = $this->request->getQuery('hostId', 0);
@@ -1437,7 +1426,7 @@ class AgentconnectorController extends AppController {
                 'ipaddress'            => $this->request->getData('ipaddress', null),
                 'remote_address'       => $remoteAddress,
                 'http_x_forwarded_for' => $HTTP_X_FORWARDED_FOR,
-                'last_update'          => new FrozenTime(),
+                'last_update'          => new \Cake\I18n\DateTime(),
                 'checkresults'         => null
             ]);
 
@@ -1554,7 +1543,7 @@ class AgentconnectorController extends AppController {
                 // and ignore the error
             }
 
-            $pushAgent->set('last_update', new FrozenTime());
+            $pushAgent->set('last_update', new \Cake\I18n\DateTime());
             $pushAgent->set('checkresults', json_encode($checkdata));
             $PushAgentsTable->save($pushAgent);
 
@@ -1569,7 +1558,7 @@ class AgentconnectorController extends AppController {
                     $agentUuid,
                     $agentPassword
                 );
-                $pushAgent->set('last_update', new FrozenTime());
+                $pushAgent->set('last_update', new \Cake\I18n\DateTime());
                 $pushAgent->set('checkresults', json_encode($checkdata));
                 $PushAgentsTable->save($pushAgent);
             }

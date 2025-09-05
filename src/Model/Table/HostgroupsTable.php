@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -29,7 +30,7 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Lib\Traits\PluginManagerTableTrait;
 use App\Model\Entity\Changelog;
 use App\Model\Entity\Hostgroup;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
@@ -49,14 +50,14 @@ use itnovum\openITCOCKPIT\Filter\HostgroupFilter;
  * @property \App\Model\Table\HostsTable|\Cake\ORM\Association\BelongsToMany $Hosts
  * @property \App\Model\Table\HosttemplatesTable|\Cake\ORM\Association\BelongsToMany $Hosttemplates
  *
- * @method \App\Model\Entity\Hostgroup get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Hostgroup get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Hostgroup newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Hostgroup[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Hostgroup|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hostgroup|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hostgroup patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Hostgroup[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Hostgroup findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Hostgroup findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class HostgroupsTable extends Table {
 
@@ -204,7 +205,7 @@ class HostgroupsTable extends Table {
                         'Containers.parent_id IN'     => $containerIds,
                         'Containers.containertype_id' => CT_HOSTGROUP
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -222,7 +223,7 @@ class HostgroupsTable extends Table {
                         'Containers.parent_id IN'     => $containerIds,
                         'Containers.containertype_id' => CT_HOSTGROUP
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -305,12 +306,33 @@ class HostgroupsTable extends Table {
             ]);
 
         $where = $HostgroupFilter->indexFilter();
+
+        if (isset($where['Hostgroups.keywords rlike'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                $where['Hostgroups.keywords rlike'],
+                'string',
+                'RLIKE'
+            );
+            unset($where['Hostgroups.keywords rlike']);
+        }
+
+        if (isset($where['Hostgroups.not_keywords not rlike'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                $where['Hostgroups.not_keywords not rlike'],
+                'string',
+                'NOT RLIKE'
+            );
+            unset($where['Hostgroups.not_keywords not rlike']);
+        }
+
         if (!empty($MY_RIGHTS)) {
             $where['Containers.parent_id IN'] = $MY_RIGHTS;
         }
         $query->where($where);
 
-        $query->order($HostgroupFilter->getOrderForPaginator('Containers.name', 'asc'));
+        $query->orderBy($HostgroupFilter->getOrderForPaginator('Containers.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -426,10 +448,8 @@ class HostgroupsTable extends Table {
      * @return \App\Model\Entity\Hostgroup
      */
     public function getHostgroupById($id) {
-        return $this->get($id, [
-            'contain' => [
-                'Containers'
-            ]
+        return $this->get($id, contain: [
+            'Containers'
         ]);
     }
 
@@ -562,7 +582,7 @@ class HostgroupsTable extends Table {
             ->where(
                 $where
             )
-            ->order([
+            ->orderBy([
                 'Containers.name' => 'asc'
             ])
             ->limit(ITN_AJAX_LIMIT)
@@ -594,7 +614,7 @@ class HostgroupsTable extends Table {
                     'Containers.parent_id IN' => $HostgroupConditions->getContainerIds()
                 ]);
             }
-            $query->order([
+            $query->orderBy([
                 'Containers.name' => 'asc'
             ])
                 ->limit(ITN_AJAX_LIMIT)
@@ -633,7 +653,7 @@ class HostgroupsTable extends Table {
             ->where(
                 $where
             )
-            ->order([
+            ->orderBy([
                 'Containers.name' => 'asc'
             ])
             ->disableHydration()
@@ -666,7 +686,7 @@ class HostgroupsTable extends Table {
             $where['Containers.parent_id IN'] = $MY_RIGHTS;
         }
         $query->where($where)
-            ->order(
+            ->orderBy(
                 $HostgroupFilter->getOrderForPaginator('Containers.name', 'asc')
             )->disableHydration();
 
@@ -1085,7 +1105,7 @@ class HostgroupsTable extends Table {
         $where = [];
 
         if ($this->isValidRegularExpression($hostgroupRegex)) {
-            $where[] = new Comparison(
+            $where[] = new ComparisonExpression(
                 'Containers.name',
                 $hostgroupRegex,
                 'string',
@@ -1241,10 +1261,8 @@ class HostgroupsTable extends Table {
         // Through hosttemplate maybe?
         /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        $host = $HostsTable->get($hostId, [
-            'contain' => [
-                'Hostgroups'
-            ]
+        $host = $HostsTable->get($hostId, contain: [
+            'Hostgroups'
         ]);
 
         if (empty($host->get('hostgroups'))) {
@@ -1332,7 +1350,7 @@ class HostgroupsTable extends Table {
         }
 
         $query->disableHydration();
-        $query->order([
+        $query->orderBy([
             'Containers.name' => 'asc'
         ]);
 
@@ -1427,7 +1445,7 @@ class HostgroupsTable extends Table {
                         'Containers.containertype_id' => CT_HOSTGROUP,
                         'Hosts.id IN '                => $hostIds
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -1444,7 +1462,7 @@ class HostgroupsTable extends Table {
                         'Containers.containertype_id' => CT_HOSTGROUP,
                         'Hosts.id IN '                => $hostIds
                     ])
-                    ->order([
+                    ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
                     ->disableHydration()
@@ -1477,7 +1495,7 @@ class HostgroupsTable extends Table {
             ->contain([
                 'Containers'
             ])
-            ->order(['Hostgroups.id' => 'asc']);
+            ->orderBy(['Hostgroups.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere([

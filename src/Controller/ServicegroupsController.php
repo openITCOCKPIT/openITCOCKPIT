@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -46,6 +47,7 @@ use Cake\Cache\Cache;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\ServerRequest;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
@@ -78,8 +80,7 @@ class ServicegroupsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicegroupsTable ServicegroupsTable */
@@ -128,10 +129,8 @@ class ServicegroupsController extends AppController {
             throw new NotFoundException(__('Invalid Servicegroup'));
         }
 
-        $servicegroup = $ServicegroupsTable->get($id, [
-            'contain' => [
-                'Containers'
-            ]
+        $servicegroup = $ServicegroupsTable->get($id, contain: [
+            'Containers'
         ]);
 
         if (!$this->allowedByContainerId($servicegroup->get('container')->get('parent_id'))) {
@@ -146,8 +145,7 @@ class ServicegroupsController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
 
@@ -201,8 +199,7 @@ class ServicegroupsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest() && $id === null) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicegroupsTable ServicegroupsTable */
@@ -235,10 +232,8 @@ class ServicegroupsController extends AppController {
 
             $ContainersTable->acquireLock();
 
-            $servicegroupEntity = $ServicegroupsTable->get($id, [
-                'contain' => [
-                    'Containers'
-                ]
+            $servicegroupEntity = $ServicegroupsTable->get($id, contain: [
+                'Containers'
             ]);
 
             $servicegroupEntity->setAccess('uuid', false);
@@ -292,10 +287,8 @@ class ServicegroupsController extends AppController {
         $ContainersTable->acquireLock();
 
         $servicegroup = $ServicegroupsTable->getServicegroupById($id);
-        $container = $ContainersTable->get($servicegroup->get('container')->get('id'), [
-            'contain' => [
-                'Servicegroups'
-            ]
+        $container = $ContainersTable->get($servicegroup->get('container')->get('id'), contain: [
+            'Servicegroups'
         ]);
 
         if (!$this->allowedByContainerId($servicegroup->get('container')->get('parent_id'))) {
@@ -345,15 +338,9 @@ class ServicegroupsController extends AppController {
 
     }
 
-    public function addServicesToServicegroup() {
-        //Only ship template
-        return;
-    }
-
     public function append() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -493,6 +480,7 @@ class ServicegroupsController extends AppController {
     }
 
     /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
      * @throws MissingDbBackendException
      */
     public function listToPdf() {
@@ -592,6 +580,11 @@ class ServicegroupsController extends AppController {
         );
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToCsv() {
         /** @var $ServicegroupsTable ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
@@ -611,7 +604,7 @@ class ServicegroupsController extends AppController {
         foreach ($servicegroups as $servicegroup) {
             $serviceIds = $ServicegroupsTable->getServiceIdsByServicegroupId($servicegroup['id']);
 
-            $ServiceFilter = new ServiceFilter($this->request);
+            $ServiceFilter = new ServiceFilter(new ServerRequest());
             $ServiceConditions = new ServiceConditions($ServiceFilter->indexFilter());
 
             $ServiceConditions->setIncludeDisabled(false);
@@ -716,11 +709,9 @@ class ServicegroupsController extends AppController {
             ]);
     }
 
+    //Only for ACLs
     public function extended() {
-        //Only ship template
-        $User = new User($this->getUser());
-        $this->set('username', $User->getFullName());
-        $this->viewBuilder()->setOption('serialize', ['username']);
+
     }
 
     /**
@@ -728,8 +719,7 @@ class ServicegroupsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var ServicegroupsTable $ServicegroupsTable */
@@ -768,6 +758,7 @@ class ServicegroupsController extends AppController {
                     $newServicegroupData = [
                         'description'      => $servicegroupData['Servicegroup']['description'],
                         'servicegroup_url' => $sourceServicegroup['servicegroup_url'],
+                        'tags'             => $sourceServicegroup['tags'],
                         'uuid'             => UUID::v4(),
                         'container'        => [
                             'name'             => $servicegroupData['Servicegroup']['container']['name'],
@@ -791,10 +782,8 @@ class ServicegroupsController extends AppController {
                     //Update existing servicegroup
                     //This happens, if a user copy multiple servicegroups, and one run into an validation error
                     //All servicegroups without validation errors got already saved to the database
-                    $newServicegroupEntity = $ServicegroupsTable->get($servicegroupData['Servicegroup']['id'], [
-                        'contain' => [
-                            'Containers'
-                        ]
+                    $newServicegroupEntity = $ServicegroupsTable->get($servicegroupData['Servicegroup']['id'], contain: [
+                        'Containers'
                     ]);
                     $newServicegroupEntity->setAccess('*', false);
                     $newServicegroupEntity->container->setAccess('*', false);

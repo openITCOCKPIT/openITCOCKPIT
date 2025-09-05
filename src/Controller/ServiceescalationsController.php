@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -58,8 +59,7 @@ class ServiceescalationsController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var ServiceescalationsTable $ServiceescalationsTable */
@@ -109,8 +109,7 @@ class ServiceescalationsController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -151,8 +150,7 @@ class ServiceescalationsController extends AppController {
 
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var ServiceescalationsTable $ServiceescalationsTable */
@@ -161,25 +159,23 @@ class ServiceescalationsController extends AppController {
             throw new NotFoundException('Service escalation not found');
         }
 
-        $serviceescalation = $ServiceescalationsTable->get($id, [
-            'contain' => [
-                'Services'      => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id', 'name']);
-                },
-                'Servicegroups' => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-                'Contacts'      => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-                'Contactgroups' => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-            ]
+        $serviceescalation = $ServiceescalationsTable->get($id, contain: [
+            'Services'      => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id', 'name']);
+            },
+            'Servicegroups' => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
+            'Contacts'      => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
+            'Contactgroups' => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
         ]);
 
         if (!$this->allowedByContainerId($serviceescalation->get('container_id'))) {

@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -40,7 +46,6 @@ use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
 use ImportModule\Model\Table\ImportedHostsTable;
 use itnovum\openITCOCKPIT\Agent\AgentConfiguration;
-use itnovum\openITCOCKPIT\Core\FileDebugger;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
 
@@ -52,7 +57,7 @@ use itnovum\openITCOCKPIT\Filter\GenericFilter;
  * @method \App\Model\Entity\PushAgent newEmptyEntity()
  * @method \App\Model\Entity\PushAgent newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\PushAgent[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\PushAgent get($primaryKey, $options = [])
+ * @method \App\Model\Entity\PushAgent get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\PushAgent findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\PushAgent patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\PushAgent[] patchEntities(iterable $entities, array $data, array $options = [])
@@ -269,7 +274,7 @@ class PushAgentsTable extends Table {
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getPushAgents(GenericFilter $GenericFilter, PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
+    public function getPushAgents(GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
         // Yes - this query is from hell!
 
         $query = $this->find();
@@ -343,14 +348,14 @@ class PushAgentsTable extends Table {
 
         $query->where($where);
         $query->disableHydration();
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $GenericFilter->getOrderForPaginator('Hosts.name', 'asc'),
                 ['PushAgents.id' => 'asc']
             )
 
         );
-        $query->group('PushAgents.id');
+        $query->groupBy('PushAgents.id');
         //FileDebugger::dieQuery($query);
 
         if ($PaginateOMat === null) {
@@ -454,7 +459,7 @@ class PushAgentsTable extends Table {
                 ]
             ]);
         $query->disableHydration();
-        $query->order('PushAgents.ipaddress', 'asc');
+        $query->orderBy(['PushAgents.ipaddress' => 'asc']);
 
         return $this->emptyArrayIfNull($query->toArray());
     }

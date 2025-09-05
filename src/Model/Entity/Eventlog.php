@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -36,7 +37,7 @@ use Cake\ORM\Entity;
  * @property string $model
  * @property int $object_id
  * @property string $data
- * @property \Cake\I18n\FrozenTime $created
+ * @property \Cake\I18n\DateTime $created
  *
  * @property \App\Model\Entity\EventlogsToContainer[] $eventlogs_to_containers
  */
@@ -50,7 +51,7 @@ class Eventlog extends Entity {
      *
      * @var array<string, bool>
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'type'       => true,
         'model'      => true,
         'object_id'  => true,

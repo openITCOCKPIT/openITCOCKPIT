@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -68,8 +69,7 @@ class ServicetemplategroupsController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
@@ -127,8 +127,7 @@ class ServicetemplategroupsController extends AppController {
      */
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
@@ -173,8 +172,7 @@ class ServicetemplategroupsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
@@ -208,10 +206,8 @@ class ServicetemplategroupsController extends AppController {
 
             $ContainersTable->acquireLock();
 
-            $servicetemplategroupEntity = $ServicetemplategroupsTable->get($id, [
-                'contain' => [
-                    'Containers'
-                ]
+            $servicetemplategroupEntity = $ServicetemplategroupsTable->get($id, contain: [
+                'Containers'
             ]);
             $servicetemplategroupEntity->setAccess('uuid', false);
             $servicetemplategroupEntity = $ServicetemplategroupsTable->patchEntity($servicetemplategroupEntity, $this->request->getData('Servicetemplategroup'));
@@ -246,8 +242,7 @@ class ServicetemplategroupsController extends AppController {
 
     public function append() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -403,10 +398,8 @@ class ServicetemplategroupsController extends AppController {
 
         $ContainersTable->acquireLock();
 
-        $servicetemplategroupEntity = $ServicetemplategroupsTable->get($id, [
-            'contain' => [
-                'Containers'
-            ]
+        $servicetemplategroupEntity = $ServicetemplategroupsTable->get($id, contain: [
+            'Containers'
         ]);
 
         if (!$this->isWritableContainer($servicetemplategroupEntity->get('container')->get('parent_id'))) {
@@ -414,10 +407,8 @@ class ServicetemplategroupsController extends AppController {
             return;
         }
 
-        $container = $ContainersTable->get($servicetemplategroupEntity->get('container')->get('id'), [
-            'contain' => [
-                'Servicetemplategroups'
-            ]
+        $container = $ContainersTable->get($servicetemplategroupEntity->get('container')->get('id'), contain: [
+            'Servicetemplategroups'
         ]);
         if ($ContainersTable->allowDelete($container->id, CT_SERVICETEMPLATEGROUP)) {
             if ($ContainersTable->delete($container)) {
@@ -462,8 +453,7 @@ class ServicetemplategroupsController extends AppController {
 
     public function copy() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
@@ -521,10 +511,8 @@ class ServicetemplategroupsController extends AppController {
                     //Update existing servicetemplategroup
                     //This happens, if a user copy multiple servicetemplategroup, and one run into an validation error
                     //All servicetemplategroup without validation errors got already saved to the database
-                    $newServicetemplategroupEntity = $ServicetemplategroupsTable->get($servicetemplategroupData['Servicetemplategroup']['id'], [
-                        'contain' => [
-                            'Containers'
-                        ]
+                    $newServicetemplategroupEntity = $ServicetemplategroupsTable->get($servicetemplategroupData['Servicetemplategroup']['id'], contain: [
+                        'Containers'
                     ]);
                     $newServicetemplategroupEntity->setAccess('*', false);
                     $newServicetemplategroupEntity->setAccess('description', true);
@@ -583,8 +571,7 @@ class ServicetemplategroupsController extends AppController {
      */
     public function allocateToHost($servicetemplategroupId = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
@@ -690,8 +677,7 @@ class ServicetemplategroupsController extends AppController {
      */
     public function allocateToHostgroup($servicetemplategroupId = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
@@ -819,8 +805,7 @@ class ServicetemplategroupsController extends AppController {
      */
     public function allocateToMatchingHostgroup($servicetemplategroupId = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (!$this->request->is('post')) {

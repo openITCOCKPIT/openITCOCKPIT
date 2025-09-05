@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #
-# Copyright (C) <2015-present>  <it-novum GmbH>
+# Copyright (C) 2015-2025  it-novum GmbH
+# Copyright (C) 2025-today Allgeier IT Services GmbH
 #
 # This file is dual licensed
 #
@@ -367,10 +368,7 @@ chmod 400 /opt/openitc/etc/mod_gearman/secret.file
 
 echo "---------------------------------------------------------------"
 echo "Scan and import ACL objects. This will take a while..."
-oitc Acl.acl_extras aco_sync
-
-
-oitc compress
+oitc acl.aco_sync
 
 oitc setup
 

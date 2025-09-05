@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -641,6 +642,18 @@ class Menu {
                     3,
                     true,
                     '/locations/index'
+                ))
+                ->addLink(new MenuLink(
+                    __('Organizational charts'),
+                    'OrganizationalCharts',
+                    'organizationalcharts',
+                    'index',
+                    '',
+                    ['fas', 'sitemap'],
+                    [],
+                    5,
+                    true,
+                    '/organizationalcharts/index'
                 ))
             )
             ->addCategory((new MenuCategory(

@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Copyright (C) <2015-present>  <it-novum GmbH>
+# Copyright (C) 2015-2025  it-novum GmbH
+# Copyright (C) 2025-today Allgeier IT Services GmbH
 #
 # This file is dual licensed
 #
@@ -202,6 +203,9 @@ done
 
 mysql --defaults-extra-file=${INIFILE} -e "ALTER DATABASE ${dbc_dbname} CHARACTER SET utf8mb4 COLLATE ${MYSQL_COLLATIONS};"
 
+echo "Delete AcknowledgePerMail Cronjob if exists"
+mysql --defaults-extra-file=${INIFILE} -e "DELETE FROM cronjobs WHERE task='AcknowledgePerMail' AND plugin='Core';"
+
 echo "Running openITCOCKPIT Core database migration"
 oitc migrations migrate
 
@@ -282,13 +286,10 @@ mysql --defaults-extra-file=${INIFILE} --batch --skip-column-names -e "SELECT TA
     mysql --defaults-extra-file=${INIFILE} -e "ALTER TABLE \`${TABLE_NAME}\` CONVERT TO CHARACTER SET utf8mb4;"
 done
 
-#Compress and minify javascript files
-oitc compress
-
 #Acc ALC dependencies config for itc core
 echo "---------------------------------------------------------------"
 echo "Scan for new user permissions. This will take a while..."
-oitc Acl.acl_extras aco_sync
+oitc acl.aco_sync
 
 #Set default permissions, check for always allowed permissions and dependencies
 oitc roles --enable-defaults --admin

@@ -9,7 +9,7 @@ use App\Lib\Interfaces\ServicestatusTableInterface;
 use App\Model\Table\HostsTable;
 use App\Model\Table\ProxiesTable;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
+use Cake\Command\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Plugin;

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -31,7 +32,7 @@
 namespace itnovum\openITCOCKPIT\Core\Views;
 
 
-use Cake\Filesystem\Folder;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 
 class MultipleBarChart {
 

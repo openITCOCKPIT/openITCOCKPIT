@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -29,18 +35,17 @@ namespace App\Command;
 use App\Model\Table\HostsTable;
 use App\Model\Table\HosttemplatesTable;
 use App\Model\Table\SystemsettingsTable;
+use AutoreportModule\Model\Table\AutoreportsTable;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\DbBackend;
-use itnovum\openITCOCKPIT\Perfdata\UnitScaler;
 
 /**
  * Testing command.
  */
-class TestingCommand extends Command {
+class TestingCommand extends \Cake\Command\Command {
 
     /**
      * Hook method for defining this command's option parser.
@@ -81,6 +86,16 @@ class TestingCommand extends Command {
          * Lof of space for your experimental code
          * Have fun :)
          */
+
+        /** @var AutoreportsTable $AutoreportsTable */
+        $AutoreportsTable = TableRegistry::getTableLocator()->get('AutoreportModule.Autoreports');
+
+
+        $autoreportConfig = $AutoreportsTable->get(3);
+        debug($autoreportConfig->get('report_start_date')->toUnixString());
+        debug($autoreportConfig->get('created')->getTimestamp());
+
+
     }
 
 }

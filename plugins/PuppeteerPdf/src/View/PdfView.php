@@ -1,4 +1,27 @@
 <?php
+// Copyright (C) <2015-present>  <it-novum GmbH>
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
+
 //
 // This code is based on the work of FriendsOfCake / CakePdf
 // Many thanks!
@@ -12,7 +35,6 @@ declare(strict_types=1);
 namespace PuppeteerPdf\View;
 
 use Cake\Core\Configure;
-use Cake\Core\Exception\Exception;
 use Cake\Event\EventManager;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
@@ -25,23 +47,24 @@ class PdfView extends View {
      *
      * @var string|null
      */
-    protected $subDir = 'pdf';
+    protected string $subDir = 'pdf';
 
     /**
      * The name of the layouts subfolder containing layouts for this View.
      *
      * @var string|null
      */
-    protected $layoutPath = 'pdf';
+    protected string $layoutPath = 'pdf';
 
     /**
      * Default config options.
      *
      * @var array
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'pdfConfig' => [],
     ];
+    private PdfRenderer $_renderer;
 
     /**
      * Constructor
@@ -52,7 +75,7 @@ class PdfView extends View {
      * @param array $viewOptions View options. See View::$_passedVars for list of
      *   options which get set as class properties.
      *
-     * @throws \Cake\Core\Exception\Exception
+     * @throws \Exception
      */
     public function __construct(
         ?ServerRequest $request = null,
@@ -75,10 +98,20 @@ class PdfView extends View {
 
         $pdfConfig = $this->getConfig('pdfConfig');
         if (empty($pdfConfig)) {
-            throw new Exception('No PDF config set. Use ViewBuilder::setOption(\'pdfConfig\', $config) to do so.');
+            throw new \Exception('No PDF config set. Use ViewBuilder::setOption(\'pdfConfig\', $config) to do so.');
         }
 
         $this->renderer($pdfConfig);
+    }
+
+
+    /**
+     * Mime-type this view class renders as.
+     *
+     * @return string The CSV content type.
+     */
+    public static function contentType(): string {
+        return 'application/pdf';
     }
 
     /**
@@ -98,12 +131,12 @@ class PdfView extends View {
     /**
      * Render a Pdf view.
      *
-     * @param string $view The view being rendered.
-     * @param false|null|string $layout The layout being rendered.
+     * @param string $template The view being rendered.
+     * @param bool|string|null $layout The layout being rendered.
      * @return string The rendered view.
      */
-    public function render(?string $view = null, $layout = null): string {
-        $content = parent::render($view, $layout);
+    public function render(?string $template = null, string|false|null $layout = null): string {
+        $content = parent::render($template, $layout);
 
         $type = $this->response->getType();
         if ($type === 'text/html') {

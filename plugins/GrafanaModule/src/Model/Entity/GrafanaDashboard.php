@@ -51,7 +51,7 @@ class GrafanaDashboard extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'configuration_id' => true,
         'host_id'          => true,
         'host_uuid'        => true,

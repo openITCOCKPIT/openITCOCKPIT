@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -111,7 +117,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
      * @param PaginateOMat|null $PaginateOMat
      * @return array|void
      */
-    public function getDowntimes(DowntimeServiceConditions $DowntimeServiceConditions, $PaginateOMat = null) {
+    public function getDowntimes(DowntimeServiceConditions $DowntimeServiceConditions, ?PaginateOMat $PaginateOMat = null) {
         $query = $this->find();
         $query->select([
             'DowntimeServices.author_name',
@@ -165,8 +171,8 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
                 'DowntimeServices.scheduled_start_time >' => date('Y-m-d H:i:s', $DowntimeServiceConditions->getFrom()),
                 'DowntimeServices.scheduled_start_time <' => date('Y-m-d H:i:s', $DowntimeServiceConditions->getTo()),
             ])
-            ->order($DowntimeServiceConditions->getOrder())
-            ->group('DowntimeServices.downtimehistory_id');
+            ->orderBy($DowntimeServiceConditions->getOrder())
+            ->groupBy('DowntimeServices.downtimehistory_id');
 
 
         if ($DowntimeServiceConditions->hasContainerIds()) {
@@ -313,8 +319,8 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
                 ['HostsToContainers' => 'hosts_to_containers'],
                 ['HostsToContainers.host_id = Hosts.id']
             )
-            ->order($DowntimeServiceConditions->getOrder())
-            ->group('DowntimeServices.downtimehistory_id');
+            ->orderBy($DowntimeServiceConditions->getOrder())
+            ->groupBy('DowntimeServices.downtimehistory_id');
 
 
         if ($DowntimeServiceConditions->hasContainerIds()) {
@@ -403,7 +409,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
                 ['Objects' => 'nagios_objects'],
                 ['Objects.object_id = DowntimeServices.object_id', 'DowntimeServices.downtime_type = 1'] //Downtime.downtime_type = 1 Service downtime
             )
-            ->order([
+            ->orderBy([
                 'DowntimeServices.entry_time' => 'DESC'
             ])
             ->where([

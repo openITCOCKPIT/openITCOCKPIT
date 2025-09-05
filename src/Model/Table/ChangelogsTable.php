@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -43,14 +44,14 @@ use itnovum\openITCOCKPIT\Filter\ChangelogsFilter;
  * @property \App\Model\Table\UsersTable|\Cake\ORM\Association\BelongsTo $Users
  * @property \App\Model\Table\ContainersTable|\Cake\ORM\Association\HasMany $containers
  *
- * @method \App\Model\Entity\Changelog get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Changelog get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Changelog newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Changelog[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Changelog|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Changelog saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Changelog patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Changelog[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Changelog findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Changelog findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -212,13 +213,13 @@ class ChangelogsTable extends Table {
             ];
         }
 
-        $query->group(['Changelogs.id']);
+        $query->groupBy(['Changelogs.id']);
         $query->where([
             'Changelogs.module_flag' => $moduleFlag
         ]);
 
         $query->where($where);
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $ChangelogsFilter->getOrderForPaginator('Changelogs.id', 'desc'),
                 ['Changelogs.id' => 'desc']
@@ -266,7 +267,7 @@ class ChangelogsTable extends Table {
                 'Contact'                => '{n}.{(id|name)}',
             ],
             'hostgroup'            => [
-                'Hostgroup'           => '{(description|hostgroup_url)}',
+                'Hostgroup'           => '{(description|hostgroup_url|tags)}',
                 'Hostgroup.container' => '{(name)}',
                 'Host'                => '{n}.{(id|name)}',
                 'Hosttemplate'        => '{n}.{(id|name)}',
@@ -296,7 +297,7 @@ class ChangelogsTable extends Table {
                 'Servicegroup'                                              => '{n}.{(id|name)}',
             ],
             'servicegroup'         => [
-                'Servicegroup'           => '{(description|servicegroup_url)}',
+                'Servicegroup'           => '{(description|servicegroup_url|tags)}',
                 'Servicegroup.container' => '{(name)}',
                 'Service'                => '{n}.{(id|name)}',
                 'Servicetemplate'        => '{n}.{(id|name)}',

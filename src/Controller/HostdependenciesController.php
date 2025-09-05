@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -55,8 +56,7 @@ class HostdependenciesController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostdependenciesTable HostdependenciesTable */
@@ -111,8 +111,7 @@ class HostdependenciesController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -164,8 +163,7 @@ class HostdependenciesController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var HostdependenciesTable $HostdependenciesTable */
@@ -173,17 +171,15 @@ class HostdependenciesController extends AppController {
         if (!$HostdependenciesTable->existsById($id)) {
             throw new NotFoundException('Host dependency not found');
         }
-        $hostdependency = $HostdependenciesTable->get($id, [
-            'contain' => [
-                'Hosts'      => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id', 'name']);
-                },
-                'Hostgroups' => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-            ]
+        $hostdependency = $HostdependenciesTable->get($id, contain: [
+            'Hosts'      => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id', 'name']);
+            },
+            'Hostgroups' => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
         ]);
 
         if (!$this->allowedByContainerId($hostdependency->get('container_id'))) {

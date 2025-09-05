@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -33,7 +39,6 @@ use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Request\AngularRequest;
 use itnovum\openITCOCKPIT\Core\LogentryConditions;
-use itnovum\openITCOCKPIT\Core\ValueObjects\LogentryTypes;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Core\Views\Logentry;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -45,9 +50,7 @@ class LogentriesController extends AppController {
     public function index() {
         if (!$this->isAngularJsRequest()) {
             //Only ship HTML template for angular
-            $LogentryTypes = new LogentryTypes();
-            $this->set('logentry_types', $LogentryTypes->getTypes());
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
@@ -68,8 +71,8 @@ class LogentriesController extends AppController {
 
         $AngularRequest = new AngularRequest($this->request);
         $LogentryConditions = new LogentryConditions();
-        $LogentryConditions->setFrom($AngularRequest->getFrom());
-        $LogentryConditions->setTo($AngularRequest->getTo());
+        $LogentryConditions->setFrom($UserTime->toServerTime($AngularRequest->getFrom()));
+        $LogentryConditions->setTo($UserTime->toServerTime($AngularRequest->getTo()));
         $LogentryConditions->setOrder($AngularRequest->getOrderForPaginator('Logentries.entry_time', 'desc'));
 
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $LogentryFilter->getPage());

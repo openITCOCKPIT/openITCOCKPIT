@@ -37,7 +37,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class StatusengineNotificationsLog extends AbstractMigration {
+class StatusengineNotificationsLog extends \Migrations\BaseMigration {
     /**
      * Whether the tables created in this migration
      * should auto-create an `id` field or not
@@ -48,7 +48,7 @@ class StatusengineNotificationsLog extends AbstractMigration {
      *
      * @var bool
      */
-    public $autoId = false;
+    public bool $autoId = false;
 
     /**
      * Change Method.

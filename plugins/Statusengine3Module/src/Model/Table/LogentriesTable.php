@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -29,7 +35,7 @@ namespace Statusengine3Module\Model\Table;
 
 use App\Lib\Interfaces\LogentriesTableInterface;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Core\LogentryConditions;
@@ -94,16 +100,16 @@ class LogentriesTable extends Table implements LogentriesTableInterface {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getLogentries(LogentryFilter $LogentryFilter, $PaginateOMat = null, LogentryConditions $LogentryConditions = null) {
+    public function getLogentries(LogentryFilter $LogentryFilter, ?PaginateOMat $PaginateOMat = null, ?LogentryConditions $LogentryConditions = null) {
         //Get all user ids where container assigned are made directly at the user
         $query = $this->find()
             ->where($LogentryFilter->indexFilter())
-            ->order($LogentryFilter->getOrderForPaginator('Logentries.entry_time', 'desc'));
+            ->orderBy($LogentryFilter->getOrderForPaginator('Logentries.entry_time', 'desc'));
 
         if (!empty($LogentryFilter->getMatchingUuids())) {
             //Refactoring: to avoid "Timeout exceeded in regular expression match." error
             /*
-            $query->andWhere(new Comparison(
+            $query->andWhere(new ComparisonExpression(
                 'Logentries.logentry_data',
                 sprintf('.*(%s).*', implode('|', $LogentryFilter->getMatchingUuids())),
                 'string',
@@ -112,7 +118,7 @@ class LogentriesTable extends Table implements LogentriesTableInterface {
             */
             $comparisons = [];
             foreach ($LogentryFilter->getMatchingUuids() as $uuid) {
-                $comparisons[] = new Comparison(
+                $comparisons[] = new ComparisonExpression(
                     'Logentries.logentry_data',
                     sprintf('%%%s%%', $uuid),
                     'string',

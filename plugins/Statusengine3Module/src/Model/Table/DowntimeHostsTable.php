@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -105,7 +111,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
      * @param PaginateOMat|null $PaginateOMat
      * @return array|void
      */
-    public function getDowntimes(DowntimeHostConditions $DowntimeHostConditions, $PaginateOMat = null) {
+    public function getDowntimes(DowntimeHostConditions $DowntimeHostConditions, ?PaginateOMat $PaginateOMat = null) {
         $query = $this->find()
             ->select([
                 'DowntimeHosts.author_name',
@@ -149,12 +155,12 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
             ->bind(':end1', $endTimestamp, 'integer')
             ->bind(':start2', $startTimestamp, 'integer')
             ->bind(':end2', $endTimestamp, 'integer');
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $DowntimeHostConditions->getOrder(),
                 ['DowntimeHosts.internal_downtime_id' => 'asc']
             )
-        )->group('DowntimeHosts.internal_downtime_id');
+        )->groupBy('DowntimeHosts.internal_downtime_id');
 
 
         if ($DowntimeHostConditions->hasContainerIds()) {
@@ -274,12 +280,12 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 ['HostsToContainers' => 'hosts_to_containers'],
                 ['HostsToContainers.host_id = Hosts.id']
             )
-            ->order(
+            ->orderBy(
                 array_merge(
                     $DowntimeHostConditions->getOrder(),
                     ['DowntimeHosts.internal_downtime_id' => 'asc']
                 )
-            )->group('DowntimeHosts.internal_downtime_id');
+            )->groupBy('DowntimeHosts.internal_downtime_id');
 
 
         if ($DowntimeHostConditions->hasHostUuids()) {
@@ -360,7 +366,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 ['Hosts' => 'hosts'],
                 ['DowntimeHosts.hostname = Hosts.uuid']
             )
-            ->order([
+            ->orderBy([
                 'DowntimeHosts.entry_time' => 'DESC'
             ])
             ->where([
@@ -406,7 +412,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 'DowntimeHosts.internal_downtime_id',
                 'DowntimeHosts.was_cancelled',
             ])
-            ->order([
+            ->orderBy([
                 'DowntimeHosts.entry_time' => 'DESC'
             ])
             ->where([
@@ -470,7 +476,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 'DowntimeHosts.was_cancelled'          => 0,
                 'DowntimeHosts.hostname IN'            => $uuids
             ])
-            ->order([
+            ->orderBy([
                 'DowntimeHosts.scheduled_start_time' => 'DESC'
             ]);
 

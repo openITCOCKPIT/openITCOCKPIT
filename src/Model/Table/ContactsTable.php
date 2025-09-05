@@ -1,4 +1,27 @@
 <?php
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 namespace App\Model\Table;
 
@@ -24,14 +47,14 @@ use itnovum\openITCOCKPIT\Filter\ContactsFilter;
  * @property \App\Model\Table\ContainersTable|\Cake\ORM\Association\HasMany $ContactsToContainers
  * @property \App\Model\Table\CommandsTable|\Cake\ORM\Association\HasMany $ContactsToHostcommands
  *
- * @method \App\Model\Entity\Contact get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Contact get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Contact newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Contact[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Contact|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Contact|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Contact patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Contact[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Contact findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Contact findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class ContactsTable extends Table {
 
@@ -341,7 +364,7 @@ class ContactsTable extends Table {
         $query->distinct('Contacts.id');
 
         $query->disableHydration();
-        $query->order($ContactsFilter->getOrderForPaginator('Contacts.name', 'asc'));
+        $query->orderBy($ContactsFilter->getOrderForPaginator('Contacts.name', 'asc'));
 
 
         if ($PaginateOMat === null) {
@@ -391,7 +414,7 @@ class ContactsTable extends Table {
             ])
             ->contain('Containers')
             ->where(['Contacts.id IN' => $ids])
-            ->order(['Contacts.id' => 'asc']);
+            ->orderBy(['Contacts.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
@@ -815,7 +838,7 @@ class ContactsTable extends Table {
             ->where([
                 'command_id' => $commandId
             ])
-            ->group([
+            ->groupBy([
                 'contact_id'
             ])
             ->disableHydration()
@@ -835,7 +858,7 @@ class ContactsTable extends Table {
             ->where([
                 'command_id' => $commandId
             ])
-            ->group([
+            ->groupBy([
                 'contact_id'
             ])
             ->disableHydration()
@@ -869,7 +892,7 @@ class ContactsTable extends Table {
         ]);
         $query->distinct('Contacts.id');
         $query->enableHydration($enableHydration);
-        $query->order(['Contacts.name' => 'asc']);
+        $query->orderBy(['Contacts.name' => 'asc']);
 
         $result = $query->all();
 
@@ -895,7 +918,7 @@ class ContactsTable extends Table {
                     'Contacts.service_timeperiod_id' => $timeperiodId
                 ]
             ])
-            ->group([
+            ->groupBy([
                 'Contacts.id'
             ]);
 
@@ -912,7 +935,7 @@ class ContactsTable extends Table {
 
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Contacts.name' => 'asc',
             'Contacts.id'
         ]);
@@ -1306,7 +1329,7 @@ class ContactsTable extends Table {
             })->where([
                 'Contacts.id IN' => $ids
             ])
-            ->group(['Contacts.id'])
+            ->groupBy(['Contacts.id'])
             ->disableHydration();
         return $this->emptyArrayIfNull($query->toArray());
     }

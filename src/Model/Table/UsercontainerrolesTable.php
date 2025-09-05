@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -48,14 +49,14 @@ use itnovum\openITCOCKPIT\Filter\UsercontainerrolesFilter;
  * @property \App\Model\Table\UsercontainerrolesToContainersTable|\Cake\ORM\Association\HasMany $UsercontainerrolesToContainers
  * @property \App\Model\Table\UsersToUsercontainerrolesTable|\Cake\ORM\Association\HasMany $UsersToUsercontainerroles
  *
- * @method \App\Model\Entity\Usercontainerrole get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Usercontainerrole get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Usercontainerrole newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Usercontainerrole[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Usercontainerrole|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Usercontainerrole saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Usercontainerrole patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Usercontainerrole[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Usercontainerrole findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Usercontainerrole findOrCreate($search, ?callable $callback = null, array $options = [])
  */
 class UsercontainerrolesTable extends Table {
     use Cake2ResultTableTrait;
@@ -167,10 +168,10 @@ class UsercontainerrolesTable extends Table {
                 ]
             );
         }
-        $query->group([
+        $query->groupBy([
             'Usercontainerroles.id'
         ])
-            ->order([
+            ->orderBy([
                 'Usercontainerroles.name' => 'asc',
                 'Usercontainerroles.id'   => 'asc'
             ])
@@ -198,15 +199,17 @@ class UsercontainerrolesTable extends Table {
                 ->where([
                     'Usercontainerroles.id IN' => $selected
                 ])
-                ->group([
+                ->groupBy([
                     'Usercontainerroles.id'
                 ])
-                ->order([
+                ->orderBy([
                     'Usercontainerroles.name' => 'asc',
                     'Usercontainerroles.id'   => 'asc'
                 ])->disableHydration();
 
-
+            foreach ($query->toArray() as $record) {
+                $result[$record['id']] = $record['name'];
+            }
         }
         return $result;
     }
@@ -243,7 +246,7 @@ class UsercontainerrolesTable extends Table {
                                 ' ',
                                 'Users.lastname'  => 'literal'
                             ])
-                        ])->order('full_name');
+                        ])->orderBy('full_name');
                     return $q;
                 }
             ])
@@ -252,12 +255,12 @@ class UsercontainerrolesTable extends Table {
                 'ContainersUsercontainerrolesMemberships.container_id IN' => $MY_RIGHTS,
                 $UsercontainerrolesFilter->indexFilter()
             ])
-            ->order(array_merge(
+            ->orderBy(array_merge(
                     $UsercontainerrolesFilter->getOrderForPaginator('Usercontainerroles.name', 'asc'),
                     ['Usercontainerroles.id' => 'asc']
                 )
             )
-            ->group([
+            ->groupBy([
                 'Usercontainerroles.id'
             ]);
 
@@ -392,7 +395,7 @@ class UsercontainerrolesTable extends Table {
                 'Containers',
             ])
             ->matching('Containers')
-            ->order(['Usercontainerroles.id' => 'asc']);
+            ->orderBy(['Usercontainerroles.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
             $query->andWhere([
@@ -400,7 +403,7 @@ class UsercontainerrolesTable extends Table {
             ]);
         }
 
-        $query->group([
+        $query->groupBy([
             'Usercontainerroles.id'
         ]);
 
@@ -551,12 +554,11 @@ class UsercontainerrolesTable extends Table {
         if (!is_array($userRoleContainerIds)) {
             $userRoleContainerIds = [$userRoleContainerIds];
         }
-        return $this->find('list', [
-            'keyField'   => 'id',
-            'valueField' => function ($row) {
+        return $this->find('list',
+            keyField: 'id',
+            valueField: function ($row) {
                 return Hash::extract($row['containers'], '{n}.id');
-            }
-        ])->select([
+            })->select([
             'Usercontainerroles.id'
         ])->contain([
             'Containers' => function (\Cake\ORM\Query $q) {
@@ -592,10 +594,10 @@ class UsercontainerrolesTable extends Table {
                 ]
             );
         }
-        $query->group([
+        $query->groupBy([
             'Usercontainerroles.id'
         ])
-            ->order([
+            ->orderBy([
                 'Usercontainerroles.name' => 'asc',
                 'Usercontainerroles.id'   => 'asc'
             ])

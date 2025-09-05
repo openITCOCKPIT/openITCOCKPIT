@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -44,7 +45,7 @@ use itnovum\openITCOCKPIT\Database\PaginateOMat;
  * @method \App\Model\Entity\Eventlog newEmptyEntity()
  * @method \App\Model\Entity\Eventlog newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Eventlog[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\Eventlog get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Eventlog get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Eventlog findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\Eventlog patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Eventlog[] patchEntities(iterable $entities, array $data, array $options = [])
@@ -177,13 +178,13 @@ class EventlogsTable extends Table {
         $where['Eventlogs.created >='] = date('Y-m-d H:i:s', $EventlogsFilter->getFrom());
         $where['Eventlogs.created <='] = date('Y-m-d H:i:s', $EventlogsFilter->getTo());
 
-        $query->group(['Eventlogs.id']);
+        $query->groupBy(['Eventlogs.id']);
 
         $query->where($where);
         if (!empty($having)) {
             $query->having($having);
         }
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $EventlogsFilter->getOrderForPaginator('Eventlogs.id', 'desc'),
                 ['Eventlogs.id' => 'desc']

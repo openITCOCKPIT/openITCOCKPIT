@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -29,8 +35,6 @@ namespace Statusengine3Module\Model\Table;
 
 use App\Lib\Interfaces\HostchecksTableInterface;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\ORM\Query;
-use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Core\HostcheckConditions;
@@ -94,14 +98,14 @@ class HostchecksTable extends Table implements HostchecksTableInterface {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getHostchecks(HostcheckConditions $HostcheckConditions, $PaginateOMat = null) {
+    public function getHostchecks(HostcheckConditions $HostcheckConditions, ?PaginateOMat $PaginateOMat = null) {
         $query = $this->find()
             ->where([
                 'Hostchecks.hostname'     => $HostcheckConditions->getHostUuid(),
                 'Hostchecks.start_time >' => $HostcheckConditions->getFrom(),
                 'Hostchecks.start_time <' => $HostcheckConditions->getTo()
             ])
-            ->order($HostcheckConditions->getOrder());
+            ->orderBy($HostcheckConditions->getOrder());
 
         if ($HostcheckConditions->hasConditions()) {
             $query->andWhere($HostcheckConditions->getConditions());

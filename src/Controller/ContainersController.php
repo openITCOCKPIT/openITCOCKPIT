@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -92,8 +93,7 @@ class ContainersController extends AppController {
 
     public function add() {
         if ($this->request->is('GET')) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (!$this->request->is('post') && !$this->request->is('put')) {
@@ -151,7 +151,7 @@ class ContainersController extends AppController {
 
     public function edit() {
         if (!$this->isAngularJsRequest()) {
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         if ($this->request->is('post')) {
 

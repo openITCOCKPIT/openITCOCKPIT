@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -25,11 +26,12 @@
 namespace App\Lib\Interfaces;
 
 use itnovum\openITCOCKPIT\Core\HostNotificationConditions;
+use itnovum\openITCOCKPIT\Database\PaginateOMat;
 
 
 interface NotificationHostsLogTableInterface {
 
-    public function getNotifications(HostNotificationConditions $HostNotificationConditions, $PaginateOMat = null);
+    public function getNotifications(HostNotificationConditions $HostNotificationConditions, ?PaginateOMat $PaginateOMat = null);
 
 
 }

@@ -33,7 +33,7 @@ declare(strict_types=1);
 namespace MapModule\Model\Entity;
 
 use App\Model\Entity\Container;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\ORM\Entity;
 use DistributeModule\Model\Entity\Satellite;
 
@@ -50,8 +50,8 @@ use DistributeModule\Model\Entity\Satellite;
  * @property int $background_size_y
  * @property int $refresh_interval
  * @property string|null $json_data
- * @property FrozenTime $created
- * @property FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property Mapgadget[] $mapgadgets
  * @property Mapicon[] $mapicons
@@ -74,7 +74,7 @@ class Map extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'name'               => true,
         'title'              => true,
         'background'         => true,

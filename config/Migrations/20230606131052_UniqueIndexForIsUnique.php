@@ -36,7 +36,7 @@ use Migrations\AbstractMigration;
  * oitc migrations migrate
  *
  */
-class UniqueIndexForIsUnique extends AbstractMigration {
+class UniqueIndexForIsUnique extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

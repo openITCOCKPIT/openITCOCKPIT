@@ -1,4 +1,27 @@
 <?php
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 namespace App\Model\Table;
 
@@ -21,14 +44,14 @@ use itnovum\openITCOCKPIT\Filter\HostescalationsFilter;
  * @property \App\Model\Table\HostescalationTable|\Cake\ORM\Association\HasMany $Hosts
  * @property \App\Model\Table\HostescalationTable|\Cake\ORM\Association\HasMany $Hostgroups
  *
- * @method \App\Model\Entity\Hostescalation get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Hostescalation get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Hostescalation newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Hostescalation[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Hostescalation|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hostescalation|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Hostescalation patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Hostescalation[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Hostescalation findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Hostescalation findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -307,7 +330,7 @@ class HostescalationsTable extends Table {
                 'Hostescalations.escalate_on_down',
                 'Hostescalations.escalate_on_unreachable'
             ])
-            ->group('Hostescalations.id')
+            ->groupBy('Hostescalations.id')
             ->disableHydration();
 
         $indexFilter = $HostescalationsFilter->indexFilter();
@@ -379,7 +402,7 @@ class HostescalationsTable extends Table {
             unset($indexFilter['Hostescalations.notification_interval LIKE']);
         }
         $query->where($indexFilter);
-        $query->order($HostescalationsFilter->getOrderForPaginator('Hostescalations.id', 'asc'));
+        $query->orderBy($HostescalationsFilter->getOrderForPaginator('Hostescalations.id', 'asc'));
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $this->emptyArrayIfNull($query->toArray());
@@ -586,7 +609,7 @@ class HostescalationsTable extends Table {
             ->where([
                 'contact_id' => $contactId
             ])
-            ->group([
+            ->groupBy([
                 'hostescalation_id'
             ])
             ->disableHydration()
@@ -614,7 +637,7 @@ class HostescalationsTable extends Table {
         });
 
         $query->enableHydration($enableHydration);
-        $query->order([
+        $query->orderBy([
             'Containers.name' => 'asc'
         ]);
 

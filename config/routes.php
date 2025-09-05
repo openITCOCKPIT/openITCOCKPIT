@@ -51,6 +51,7 @@ $routes->setRouteClass(InflectedRoute::class);
 //CakePHP 4 default
 //$routes->setRouteClass(DashedRoute::class);
 
+// CakePHP 5              ✅      ✅     ✅     ✅     ✅
 $routes->setExtensions(['json', 'html', 'pdf', 'png', 'zip']);
 
 $routes->scope('/', function (RouteBuilder $builder) {

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -31,6 +32,7 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Core\ServiceNotificationConditions;
+use itnovum\openITCOCKPIT\Database\PaginateOMat;
 
 /**
  * NotificationServicesLog Model
@@ -118,7 +120,7 @@ class NotificationServicesLogTable extends Table implements NotificationServices
         return $validator;
     }
 
-    public function getNotifications(ServiceNotificationConditions $ServiceNotificationConditions, $PaginateOMat = null) {
+    public function getNotifications(ServiceNotificationConditions $ServiceNotificationConditions, ?PaginateOMat $PaginateOMat = null) {
         $query = $this->find();
         $query->select([
             'NotificationServicesLog.hostname',
@@ -162,8 +164,8 @@ class NotificationServicesLogTable extends Table implements NotificationServices
             ->where([
                 'NotificationServicesLog.start_time >' => $ServiceNotificationConditions->getFrom(),
             ])
-            ->order(['count' => 'DESC', 'start_time' => 'DESC'])
-            ->group([
+            ->orderBy(['count' => 'DESC', 'start_time' => 'DESC'])
+            ->groupBy([
                 'NotificationServicesLog.service_description',
             ]);
         $query->select([

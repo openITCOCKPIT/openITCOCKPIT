@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -54,8 +60,7 @@ class UsergroupsController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $GenericFilter = new GenericFilter($this->request);
@@ -101,8 +106,7 @@ class UsergroupsController extends AppController {
      */
     public function add() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var AcosTable $AcosTable */
@@ -110,7 +114,7 @@ class UsergroupsController extends AppController {
         if ($this->request->is('get') && $this->isJsonRequest()) {
             $acos = $AcosTable->find('threaded')
                 ->disableHydration()
-                ->orderAsc('alias')
+                ->orderByAsc('alias')
                 ->all();
             $AclDependencies = new AclDependencies();
             $acos = $AclDependencies->filterAcosForFrontend($acos->toArray());
@@ -198,9 +202,7 @@ class UsergroupsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isJsonRequest()) {
-            $this->set('systemname', $this->getSystemname());
-            //Only ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var UsergroupsTable $UsergroupsTable */
@@ -339,9 +341,7 @@ class UsergroupsController extends AppController {
         // For this reason we use the same lock to avoid broken nested set.
         $ContainersTable->acquireLock();
 
-        $usergroup = $UsergroupsTable->get($id, [
-            'contain' => 'Users'
-        ]);
+        $usergroup = $UsergroupsTable->get($id, contain: 'Users');
 
         if ($usergroup->get('name') === 'Administrator') {
             throw new \RuntimeException('The "Administrator" can not be deleted!');
@@ -367,8 +367,7 @@ class UsergroupsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var UsergroupsTable $UsergroupsTable */

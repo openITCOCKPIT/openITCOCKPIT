@@ -1,21 +1,27 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
 // 1.
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, version 3 of the License.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -29,8 +35,6 @@ namespace Statusengine3Module\Model\Table;
 
 use App\Lib\Interfaces\ServicechecksTableInterface;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\ORM\Query;
-use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Core\ServicechecksConditions;
@@ -94,14 +98,14 @@ class ServicechecksTable extends Table implements ServicechecksTableInterface {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getServicechecks(ServicechecksConditions $ServicechecksConditions, $PaginateOMat = null) {
+    public function getServicechecks(ServicechecksConditions $ServicechecksConditions, ?PaginateOMat $PaginateOMat = null) {
         $query = $this->find()
             ->where([
                 'Servicechecks.service_description' => $ServicechecksConditions->getServiceUuid(),
                 'Servicechecks.start_time >'        => $ServicechecksConditions->getFrom(),
                 'Servicechecks.start_time <'        => $ServicechecksConditions->getTo()
             ])
-            ->order($ServicechecksConditions->getOrder());
+            ->orderBy($ServicechecksConditions->getOrder());
 
         if ($ServicechecksConditions->hasConditions()) {
             $query->andWhere($ServicechecksConditions->getConditions());

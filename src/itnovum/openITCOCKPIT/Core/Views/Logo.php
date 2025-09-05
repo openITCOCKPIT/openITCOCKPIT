@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -335,13 +336,16 @@ class Logo {
         return sprintf('/img/login/%s', $images['images'][0]['image']);
     }
 
+    /**
+     * @return string
+     */
     public function getCustomStatusPageHeaderHtml(): string {
         if ($this->isCustomStatusPageHeader()) {
             // Cache images for 1 hour
             return sprintf($this->logoBasePath, '', $this->customStatusPageHeaderName) . '?v=' . date('YmdH');
         }
-
         // No custom status page header - So there is NO header image.
+        return '';
     }
 
     /**

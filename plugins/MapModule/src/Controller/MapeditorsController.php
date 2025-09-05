@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -89,8 +90,7 @@ class MapeditorsController extends AppController {
      */
     public function view($id = null) {
         if (!$this->isApiRequest() && $id === null) {
-            //Only ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var MapsTable $MapsTable */
@@ -101,16 +101,14 @@ class MapeditorsController extends AppController {
         if (!$MapsTable->existsById($id)) {
             throw new NotFoundException();
         }
-        $map = $MapsTable->get($id, [
-            'contain' => [
-                'Containers',
-                'Mapgadgets',
-                'Mapicons',
-                'Mapitems',
-                'Maplines',
-                'Maptexts',
-                'Mapsummaryitems'
-            ]
+        $map = $MapsTable->get($id, contain: [
+            'Containers',
+            'Mapgadgets',
+            'Mapicons',
+            'Mapitems',
+            'Maplines',
+            'Maptexts',
+            'Mapsummaryitems'
         ])->toArray();
         $containerIdsToCheck = Hash::extract($map, 'containers.{n}.id');
         if (!$this->allowedByContainerId($containerIdsToCheck, false)) {
@@ -519,31 +517,6 @@ class MapeditorsController extends AppController {
         return $allRelatedMapIdsOfParent;
     }
 
-    public function mapline() {
-        //Only ship template
-        return;
-    }
-
-    public function mapicon() {
-        //Only ship template
-        return;
-    }
-
-    public function maptext() {
-        //Only ship template
-        return;
-    }
-
-    public function perfdatatext() {
-        //Only ship template
-        return;
-    }
-
-    public function serviceOutput() {
-        //Only ship template
-        return;
-    }
-
     /**
      * @throws MissingDbBackendException
      */
@@ -856,26 +829,6 @@ class MapeditorsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['allowView', 'host', 'service']);
     }
 
-    public function tacho() {
-        //Only ship template
-        return;
-    }
-
-    public function cylinder() {
-        //Only ship template
-        return;
-    }
-
-    public function trafficlight() {
-        //Only ship template
-        return;
-    }
-
-    public function temperature() {
-        //Only ship template
-        return;
-    }
-
     /**
      * @throws MissingDbBackendException
      */
@@ -912,17 +865,14 @@ class MapeditorsController extends AppController {
                 /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
-                $host = $HostsTable->get($objectId, [
-                    'contain' => [
-                        'HostsToContainersSharing'
-                    ],
-                    'fields'  => [
-                        'Hosts.id',
-                        'Hosts.uuid',
-                        'Hosts.name',
-                        'Hosts.description',
-                        'Hosts.disabled'
-                    ],
+                $host = $HostsTable->get($objectId, contain: [
+                    'HostsToContainersSharing'
+                ], fields: [
+                    'Hosts.id',
+                    'Hosts.uuid',
+                    'Hosts.name',
+                    'Hosts.description',
+                    'Hosts.disabled'
                 ])->toArray();
 
                 if (!empty($host)) {
@@ -950,29 +900,27 @@ class MapeditorsController extends AppController {
             case 'service':
                 /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-                $service = $ServicesTable->get($objectId, [
-                    'contain' => [
-                        'Hosts'            => [
-                            'fields' => [
-                                'Hosts.id',
-                                'Hosts.uuid',
-                                'Hosts.name'
-                            ],
-                            'HostsToContainersSharing',
+
+                $service = $ServicesTable->get($objectId, contain: [
+                    'Hosts'            => [
+                        'fields' => [
+                            'Hosts.id',
+                            'Hosts.uuid',
+                            'Hosts.name'
                         ],
-                        'Servicetemplates' => [
-                            'fields' => [
-                                'Servicetemplates.name'
-                            ]
+                        'HostsToContainersSharing',
+                    ],
+                    'Servicetemplates' => [
+                        'fields' => [
+                            'Servicetemplates.name'
                         ]
-                    ],
-                    'fields'  => [
-                        'Services.id',
-                        'Services.name',
-                        'Services.uuid',
-                        'Services.description',
-                        'Services.disabled'
-                    ],
+                    ]
+                ], fields: [
+                    'Services.id',
+                    'Services.name',
+                    'Services.uuid',
+                    'Services.description',
+                    'Services.disabled'
                 ])->toArray();
 
                 if (!empty($service)) {
@@ -1224,16 +1172,14 @@ class MapeditorsController extends AppController {
         if (!$MapsTable->existsById($id)) {
             throw new NotFoundException();
         }
-        $map = $MapsTable->get($id, [
-            'contain' => [
-                'Containers',
-                'Mapgadgets',
-                'Mapicons',
-                'Mapitems',
-                'Maplines',
-                'Maptexts',
-                'Mapsummaryitems'
-            ]
+        $map = $MapsTable->get($id, contain: [
+            'Containers',
+            'Mapgadgets',
+            'Mapicons',
+            'Mapitems',
+            'Maplines',
+            'Maptexts',
+            'Mapsummaryitems'
         ])->toArray();
         $MapForAngular = new MapForAngular($map);
         $map = $MapForAngular->toArray();
@@ -1844,16 +1790,14 @@ class MapeditorsController extends AppController {
 
         //Save new possition after drag and drop
         if ($this->request->getData('action') === 'dragstop') {
-            $map = $MapsTable->get($id, [
-                'contain' => [
-                    'Containers',
-                    'Mapgadgets',
-                    'Mapicons',
-                    'Mapitems',
-                    'Maplines',
-                    'Maptexts',
-                    'Mapsummaryitems'
-                ]
+            $map = $MapsTable->get($id, contain: [
+                'Containers',
+                'Mapgadgets',
+                'Mapicons',
+                'Mapitems',
+                'Maplines',
+                'Maptexts',
+                'Mapsummaryitems'
             ]);
 
             $map->background_x = (int)$this->request->getData('Map.background_x');
@@ -1878,16 +1822,14 @@ class MapeditorsController extends AppController {
 
         //Save new background size
         if ($this->request->getData('action') === 'resizestop') {
-            $map = $MapsTable->get($id, [
-                'contain' => [
-                    'Containers',
-                    'Mapgadgets',
-                    'Mapicons',
-                    'Mapitems',
-                    'Maplines',
-                    'Maptexts',
-                    'Mapsummaryitems'
-                ]
+            $map = $MapsTable->get($id, contain: [
+                'Containers',
+                'Mapgadgets',
+                'Mapicons',
+                'Mapitems',
+                'Maplines',
+                'Maptexts',
+                'Mapsummaryitems'
             ]);
 
             $map->background_size_x = (int)$this->request->getData('Map.background_size_x');
@@ -1910,16 +1852,14 @@ class MapeditorsController extends AppController {
             return;
         }
 
-        $map = $MapsTable->get($id, [
-            'contain' => [
-                'Containers',
-                'Mapgadgets',
-                'Mapicons',
-                'Mapitems',
-                'Maplines',
-                'Maptexts',
-                'Mapsummaryitems'
-            ]
+        $map = $MapsTable->get($id, contain: [
+            'Containers',
+            'Mapgadgets',
+            'Mapicons',
+            'Mapitems',
+            'Maplines',
+            'Maptexts',
+            'Mapsummaryitems'
         ]);
 
         $map->background = $this->request->getData('Map.background');
@@ -1954,16 +1894,14 @@ class MapeditorsController extends AppController {
         if (!$MapsTable->existsById($id)) {
             throw new NotFoundException();
         }
-        $map = $MapsTable->get($id, [
-            'contain' => [
-                'Containers',
-                'Mapgadgets',
-                'Mapicons',
-                'Mapitems',
-                'Maplines',
-                'Maptexts',
-                'Mapsummaryitems'
-            ]
+        $map = $MapsTable->get($id, contain: [
+            'Containers',
+            'Mapgadgets',
+            'Mapicons',
+            'Mapitems',
+            'Maplines',
+            'Maptexts',
+            'Mapsummaryitems'
         ]);
 
         $map->background = null;
@@ -2109,11 +2047,8 @@ class MapeditorsController extends AppController {
         if (!$MapsTable->existsById($id)) {
             throw new NotFoundException();
         }
-        $map = $MapsTable->get($id, [
-            //'recursive'  => -1,
-            'contain' => [
-                'Containers'
-            ]
+        $map = $MapsTable->get($id, contain: [
+            'Containers'
         ])->toArray();
 
         $containerIdsToCheck = Hash::extract($map, 'containers.{n}.id');
@@ -2129,16 +2064,9 @@ class MapeditorsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['map']);
     }
 
-    public function viewDirective() {
-        //Ship template of Mapeditors view directive.
-        //It is a directive be able to also use the maps as an widget
-        return;
-    }
-
     public function mapWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var MapsTable $MapsTable */

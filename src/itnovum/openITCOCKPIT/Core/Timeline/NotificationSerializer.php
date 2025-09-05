@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -73,14 +74,18 @@ class NotificationSerializer {
         for ($i = 0; $i < $size; $i++) {
             if ($this->type === 'host') {
                 $notificationTime = $this->records[$i]['NotificationHost']->getStartTime();
+                $reasonType = $this->records[$i]['NotificationHost']->getReasonTypeString();
             } else {
                 $notificationTime = $this->records[$i]['NotificationService']->getStartTime();
+                $reasonType = $this->records[$i]['NotificationService']->getReasonTypeString();
             }
             $title = sprintf(
-                '<b class="not-xss-filtered-html">%s</b> via <b class="not-xss-filtered-html">%s</b> at %s',
+                '<b class="not-xss-filtered-html">%s</b> via <b class="not-xss-filtered-html">%s</b> at %s (%s: %s)',
                 h($this->records[$i]['Contact']->getName()),
                 h($this->records[$i]['Command']->getName()),
-                $this->UserTime->format($notificationTime)
+                $this->UserTime->format($notificationTime),
+                __('Reason'),
+                h($reasonType)
             );
 
             $records[] = [

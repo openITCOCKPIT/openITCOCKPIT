@@ -50,7 +50,7 @@ class Perfdata extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'hostname'            => true,
         'service_description' => true,
         'label'               => true,

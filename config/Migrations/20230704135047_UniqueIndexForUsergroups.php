@@ -36,7 +36,7 @@ use Migrations\AbstractMigration;
  * oitc migrations migrate
  *
  */
-class UniqueIndexForUsergroups extends AbstractMigration {
+class UniqueIndexForUsergroups extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

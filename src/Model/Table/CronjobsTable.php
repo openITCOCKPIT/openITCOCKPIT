@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -35,14 +36,14 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\CronschedulesTable|\Cake\ORM\Association\HasMany $Cronschedules
  *
- * @method \App\Model\Entity\Cronjob get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Cronjob get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Cronjob newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Cronjob[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Cronjob|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Cronjob|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Cronjob patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Cronjob[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Cronjob findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Cronjob findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -130,10 +131,8 @@ class CronjobsTable extends Table {
      * @return array
      */
     public function getCronjob($id = null) {
-        $query = $this->get($id, [
-            'contain' => [
-                'Cronschedules'
-            ]
+        $query = $this->get($id, contain: [
+            'Cronschedules'
         ]);
         if (!is_null($query)) {
             return $this->formatFirstResultAsCake2($query->toArray());

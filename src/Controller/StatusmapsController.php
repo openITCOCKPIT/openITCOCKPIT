@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -88,7 +89,7 @@ class StatusmapsController extends AppController {
                     'Satellites.id',
                     'Satellites.name'
                 ])
-                ->order([
+                ->orderBy([
                     'Satellites.name' => 'asc'
                 ])
                 ->toArray();

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -49,7 +50,6 @@ use App\Model\Table\ServicesTable;
 use Cake\Core\Plugin;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\Exception\RecordNotFoundException;
-use Cake\Datasource\RepositoryInterface;
 use Cake\ORM\Association\HasMany;
 use Cake\ORM\Behavior\TimestampBehavior;
 use Cake\ORM\Query;
@@ -86,7 +86,7 @@ use Statusengine\PerfdataParser;
  * @property MapsummaryitemsTable&HasMany $Mapsummaryitems
  * @property MaptextsTable&HasMany $Maptexts
  *
- * @method Map get($primaryKey, $options = [])
+ * @method Map get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method Map newEntity($data = null, array $options = [])
  * @method Map[] newEntities(array $data, array $options = [])
  * @method Map|false save(EntityInterface $entity, $options = [])
@@ -189,16 +189,18 @@ class MapsTable extends Table {
         }
     }
 
-    public function bindCoreAssociations(RepositoryInterface $coreTable) {
+    public function bindCoreAssociations(Table $coreTable) {
         switch ($coreTable->getAlias()) {
             case 'Satellites':
-                $coreTable->belongsToMany('Maps', [
-                    'className'        => 'MapModules.Maps',
-                    'foreignKey'       => 'satellite_id',
-                    'targetForeignKey' => 'map_id',
-                    'joinTable'        => 'maps_to_satellites',
-                    'saveStrategy'     => 'replace'
-                ]);
+                if (!$coreTable->hasAssociation('Maps')) {
+                    $coreTable->belongsToMany('Maps', [
+                        'className'        => 'MapModules.Maps',
+                        'foreignKey'       => 'satellite_id',
+                        'targetForeignKey' => 'map_id',
+                        'joinTable'        => 'maps_to_satellites',
+                        'saveStrategy'     => 'replace'
+                    ]);
+                }
                 break;
         }
     }
@@ -268,7 +270,7 @@ class MapsTable extends Table {
                 }
                 return $query;
             })
-            ->order($MapFilter->getOrderForPaginator('Maps.name', 'asc'));
+            ->orderBy($MapFilter->getOrderForPaginator('Maps.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -453,7 +455,7 @@ class MapsTable extends Table {
                 'Maps.refresh_interval'
             ])
             ->where(['Maps.id IN' => $ids])
-            ->order(['Maps.id' => 'asc'])
+            ->orderBy(['Maps.id' => 'asc'])
             ->contain(['Containers'])
             ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
@@ -461,7 +463,7 @@ class MapsTable extends Table {
                 }
                 return $query;
             })
-            ->group(['Maps.id'])
+            ->groupBy(['Maps.id'])
             ->disableHydration()
             ->all();
 
@@ -500,10 +502,10 @@ class MapsTable extends Table {
             ]);
         }
 
-        $query->order([
+        $query->orderBy([
             'Maps.name' => 'asc',
             'Maps.id'   => 'asc'
-        ])->group('Maps.id');
+        ])->groupBy('Maps.id');
         $mapsWithLimit = $query->toArray();
         $selectedMaps = [];
         if (!empty($selected)) {
@@ -529,10 +531,10 @@ class MapsTable extends Table {
                     'MapsToContainers.container_id IN' => $MapConditions->getContainerIds()
                 ]);
             }
-            $query->order([
+            $query->orderBy([
                 'Maps.name' => 'asc',
                 'Maps.id'   => 'asc'
-            ])->group('Maps.id');
+            ])->groupBy('Maps.id');
 
             $selectedMaps = $query->toArray();
         }
@@ -2385,7 +2387,7 @@ class MapsTable extends Table {
                 'Mapgadgets.id IS NOT NULL'
             ]
         ]);
-        $query->group(['Maps.id'])
+        $query->groupBy(['Maps.id'])
             ->disableHydration();
 
         return $this->emptyArrayIfNull($query->toArray());
@@ -2444,7 +2446,7 @@ class MapsTable extends Table {
                 'Mapsummaryitems.id IS NOT NULL'
             ]
         ]);
-        $query->group(['Maps.id'])
+        $query->groupBy(['Maps.id'])
             ->disableHydration();
 
         return $this->emptyArrayIfNull($query->toArray());

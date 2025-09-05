@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -43,9 +44,7 @@ class RegistersController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //get also the state env for License input autocompletion
-            //Ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $TableLocator = $this->getTableLocator();

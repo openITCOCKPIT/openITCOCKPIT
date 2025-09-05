@@ -26,7 +26,7 @@
 
 use Migrations\AbstractMigration;
 
-class GrafanaDashboardSettings extends AbstractMigration {
+class GrafanaDashboardSettings extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

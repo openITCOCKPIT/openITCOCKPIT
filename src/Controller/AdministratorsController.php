@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -33,8 +34,6 @@ use Cake\Core\Configure;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Mailer\Mailer;
 use Cake\ORM\TableRegistry;
-use itnovum\openITCOCKPIT\Core\DnfRepositoryChecker;
-use itnovum\openITCOCKPIT\Core\RepositoryChecker;
 use itnovum\openITCOCKPIT\Core\System\Gearman;
 use itnovum\openITCOCKPIT\Core\System\Health\CpuLoad;
 use itnovum\openITCOCKPIT\Core\System\Health\Disks;
@@ -51,15 +50,7 @@ class AdministratorsController extends AppController {
 
     function debug() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-
-            $RepositoryChecker = new RepositoryChecker();
-            $DnfRepositoryChecker = new DnfRepositoryChecker();
-            $LsbRelease = new LsbRelease();
-            $this->set('RepositoryChecker', $RepositoryChecker);
-            $this->set('DnfRepositoryChecker', $DnfRepositoryChecker);
-            $this->set('LsbRelease', $LsbRelease);
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $isoTimestamp = (bool)$this->request->getQuery('isoTimestamp', 0);
@@ -413,16 +404,12 @@ class AdministratorsController extends AppController {
         }
     }
 
-    public function querylog() {
-        //Only ship HTML template
-    }
-
     /**
      * USED BY THE NEW ANGULAR FRONTEND !!
      * @return void
      */
     public function php_info() {
-        $this->layout = 'blank';
+        $this->viewBuilder()->setLayout('default');
         //Only ship HTML template
     }
 }

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -39,7 +40,6 @@ use App\Model\Table\ServicesTable;
 use App\Model\Table\ServicetemplatesTable;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\FrozenTime;
 use Cake\ORM\TableRegistry;
 use Exception;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -57,8 +57,7 @@ class DocumentationsController extends AppController {
      */
     public function view($uuid = null, $type = 'host') {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (empty($type)) {
@@ -165,7 +164,7 @@ class DocumentationsController extends AppController {
             if ($docuExists) {
                 $documentation = $DocumentationsTable->getDocumentationByUuid($uuid);
 
-                /** @var FrozenTime $modified */
+                /** @var \Cake\I18n\DateTime $modified */
                 $modified = $documentation->get('modified');
                 $lastUpdate = $UserTime->format($modified->getTimestamp());
                 $content = $documentation->get('content');
@@ -225,8 +224,7 @@ class DocumentationsController extends AppController {
      */
     public function wiki() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $documentations = [

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -65,12 +66,12 @@ use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\Exception\RecordNotFoundException;
-use Cake\Filesystem\File;
-use Cake\Filesystem\Folder;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Agent\AgentConfiguration;
+use itnovum\openITCOCKPIT\CakePHP\File;
+use itnovum\openITCOCKPIT\CakePHP\Folder;
 use itnovum\openITCOCKPIT\ConfigGenerator\GraphingDocker;
 use itnovum\openITCOCKPIT\Core\KeyValueStore;
 use itnovum\openITCOCKPIT\Core\UUID;
@@ -542,11 +543,9 @@ class NagiosConfigGenerator {
             }
 
             if (!$HosttemplatesCache->has($host->get('hosttemplate_id'))) {
-                $hosttemplate = $HosttemplatesTable->get($host->get('hosttemplate_id'), [
-                    'contain' => [
-                        'Hosttemplatecommandargumentvalues' => [
-                            'Commandarguments'
-                        ]
+                $hosttemplate = $HosttemplatesTable->get($host->get('hosttemplate_id'), contain: [
+                    'Hosttemplatecommandargumentvalues' => [
+                        'Commandarguments'
                     ]
                 ]);
                 $HosttemplatesCache->set($host->get('hosttemplate_id'), $hosttemplate);
@@ -2621,9 +2620,9 @@ class NagiosConfigGenerator {
             $servicegroupIds = [];
             $dependentServicegroupIds = [];
 
-            $services = $servicedependency->get('services', [
-                'contain' => 'Hosts'
-            ]);
+            $services = $servicedependency->get('services',
+                contain: ['Hosts']
+            );
 
             $servicegroupsForCfg = [];
             $dependentServicegroupsForCfg = [];

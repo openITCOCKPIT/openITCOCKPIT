@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -50,7 +51,6 @@ use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Event\EventInterface;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\FrozenTime;
 use Cake\Mailer\Mailer;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -79,7 +79,7 @@ class UsersController extends AppController {
     }
 
     public function login() {
-        $this->viewBuilder()->setLayout('login');
+        $this->viewBuilder()->setLayout('backend');
         $LoginBackgrounds = new LoginBackgrounds();
         $images = $LoginBackgrounds->getImages();
 
@@ -243,7 +243,7 @@ class UsersController extends AppController {
                 return;
             }
 
-            $this->RequestHandler->renderAs($this, 'json');
+            //$this->RequestHandler->renderAs($this, 'json');
             $this->response = $this->response->withStatus(400);
             $errors = $result->getErrors();
             $errors['Password'][] = __('Invalid username or password');
@@ -365,12 +365,7 @@ class UsersController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-
-            /** @var SystemsettingsTable $SystemsettingsTable */
-            $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
-            $this->set('isOAuth2', $SystemsettingsTable->isOAuth2());
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var UsersTable $UsersTable */
@@ -421,8 +416,7 @@ class UsersController extends AppController {
 
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var UsersTable $UsersTable */
@@ -475,7 +469,7 @@ class UsersController extends AppController {
         $User = new \itnovum\openITCOCKPIT\Core\ValueObjects\User($this->getUser());
         $UserTime = $User->getUserTime();
         foreach ($user['User']['apikeys'] as $i => $apikey) {
-            if (isset($apikey['last_use']) && $apikey['last_use'] instanceof FrozenTime) {
+            if (isset($apikey['last_use']) && $apikey['last_use'] instanceof \Cake\I18n\DateTime) {
                 $user['User']['apikeys'][$i]['last_use'] = $UserTime->format($apikey['last_use']->getTimestamp());
             }
         }
@@ -747,12 +741,7 @@ class UsersController extends AppController {
 
     public function addFromLdap() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-
-            /** @var SystemsettingsTable $SystemsettingsTable */
-            $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
-            $this->set('isOAuth2', $SystemsettingsTable->isOAuth2());
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var UsersTable $UsersTable */
@@ -951,7 +940,10 @@ class UsersController extends AppController {
 
     }
 
-
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     */
     public function listToCsv() {
         /** @var SystemsettingsTable $SystemsettingsTable */
         $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
@@ -1102,8 +1094,7 @@ class UsersController extends AppController {
 
     public function loadDateformats() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
@@ -1227,8 +1218,7 @@ class UsersController extends AppController {
 
     public function getLocaleOptions() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $localesPath = Configure::read('App.paths.locales')[0];
@@ -1329,8 +1319,7 @@ class UsersController extends AppController {
 
     public function getUserPermissions() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $modules = PluginManager::getAvailablePlugins();

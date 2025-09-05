@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -56,8 +57,7 @@ class ProfileController extends AppController {
 
     public function edit() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
@@ -214,18 +214,15 @@ class ProfileController extends AppController {
 
     public function upload_profile_icon() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
 
         /** @var $UsersTable UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        $user = $UsersTable->get($User->getId(), [
-            'contain' => [
-                'Containers'
-            ]
+        $user = $UsersTable->get($User->getId(), contain: [
+            'Containers'
         ]);
 
         if ($user === null) {
@@ -370,8 +367,7 @@ class ProfileController extends AppController {
 
     public function create_apikey() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ApikeysTable ApikeysTable */
@@ -438,8 +434,7 @@ class ProfileController extends AppController {
 
     public function delete_apikey($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
 
@@ -468,18 +463,15 @@ class ProfileController extends AppController {
 
     public function deleteImage() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
 
         /** @var $UsersTable UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        $user = $UsersTable->get($User->getId(), [
-            'contain' => [
-                'Containers'
-            ]
+        $user = $UsersTable->get($User->getId(), contain: [
+            'Containers'
         ]);
 
         //prevent multiple hash of password

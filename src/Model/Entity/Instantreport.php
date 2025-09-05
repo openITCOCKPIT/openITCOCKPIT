@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -45,8 +46,8 @@ use Cake\ORM\Entity;
  * @property bool $group_by_host
  * @property string|null $font_size
  * @property bool $recursive
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Container $container
  */
@@ -60,7 +61,7 @@ class Instantreport extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'name'           => true,
         'container_id'   => true,
         'evaluation'     => true,

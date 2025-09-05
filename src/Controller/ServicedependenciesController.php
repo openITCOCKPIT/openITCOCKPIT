@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -54,8 +55,7 @@ class ServicedependenciesController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var ServicedependenciesTable $ServicedependenciesTable */
@@ -109,8 +109,7 @@ class ServicedependenciesController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -158,8 +157,7 @@ class ServicedependenciesController extends AppController {
 
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var ServicedependenciesTable $ServicedependenciesTable */
@@ -167,17 +165,15 @@ class ServicedependenciesController extends AppController {
         if (!$ServicedependenciesTable->existsById($id)) {
             throw new NotFoundException('Service dependency not found');
         }
-        $servicedependency = $ServicedependenciesTable->get($id, [
-            'contain' => [
-                'Services'      => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id', 'name']);
-                },
-                'Servicegroups' => function (Query $q) {
-                    return $q->enableAutoFields(false)
-                        ->select(['id']);
-                },
-            ]
+        $servicedependency = $ServicedependenciesTable->get($id, contain: [
+            'Services'      => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id', 'name']);
+            },
+            'Servicegroups' => function (Query $q) {
+                return $q->enableAutoFields(false)
+                    ->select(['id']);
+            },
         ]);
 
         if (!$this->allowedByContainerId($servicedependency->get('container_id'))) {

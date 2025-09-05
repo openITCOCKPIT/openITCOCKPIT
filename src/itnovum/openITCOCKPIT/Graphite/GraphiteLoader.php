@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -279,7 +280,8 @@ class GraphiteLoader {
         $options = $this->getBaseRequestOptions();
 
         $options['target'] = sprintf(
-            'scale(nonNegativeDerivative(keepLastValue(%s.%s)), 0.125)',
+        //'scale(nonNegativeDerivative(keepLastValue(%s.%s)), 0.125)',
+            'nonNegativeDerivative(keepLastValue(%s.%s))',
             $this->GraphiteConfig->getGraphitePrefix(),
             $GraphiteMetric->getMetricPath()
         );

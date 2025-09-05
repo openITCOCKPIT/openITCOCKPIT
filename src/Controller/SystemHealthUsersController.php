@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -54,8 +55,7 @@ class SystemHealthUsersController extends AppController {
      */
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var SystemHealthUsersTable $SystemHealthUsersTable */
@@ -126,8 +126,7 @@ class SystemHealthUsersController extends AppController {
      */
     public function add() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -180,8 +179,7 @@ class SystemHealthUsersController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $SystemHealthUsersTable SystemHealthUsersTable */

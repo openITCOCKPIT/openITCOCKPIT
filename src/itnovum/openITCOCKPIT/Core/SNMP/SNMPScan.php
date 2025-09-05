@@ -1,8 +1,27 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
-// This file is licensed under the terms of the openITCOCKPIT Enterprise Edition license agreement.
-// The license agreement and license key were sent with the order confirmation.
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 
 namespace itnovum\openITCOCKPIT\Core\SNMP;
@@ -108,7 +127,7 @@ class SNMPScan {
         if (empty($this->snmpCommunity)) {
             throw new \InvalidArgumentException('Community name is missing');
         }
-        return ['--community', $this->snmpCommunity];
+        return ['--community', '"' . trim($this->snmpCommunity) . '"'];
     }
 
     /**
@@ -127,23 +146,23 @@ class SNMPScan {
         $snmpV3Credentials = ['--protocol 3'];
         if (!empty($this->securityName)) {
             $snmpV3Credentials[] = '--username';
-            $snmpV3Credentials[] = $this->securityName;
+            $snmpV3Credentials[] = '"' . trim($this->securityName) . '"';
         }
         if (!empty($this->authPassword)) {
             $snmpV3Credentials[] = '--authpassword';
-            $snmpV3Credentials[] = $this->authPassword;
+            $snmpV3Credentials[] = '"' . trim($this->authPassword) . '"';
         }
         if (!empty($this->authProtocol)) {
             $snmpV3Credentials[] = '--authprotocol';
-            $snmpV3Credentials[] = $this->authProtocol;
+            $snmpV3Credentials[] = '"' . trim($this->authProtocol) . '"';
         }
         if (!empty($this->privacyPassword)) {
             $snmpV3Credentials[] = '--privpassword';
-            $snmpV3Credentials[] = $this->privacyPassword;
+            $snmpV3Credentials[] = '"' . trim($this->privacyPassword) . '"';
         }
         if (!empty($this->privacyProtocol)) {
             $snmpV3Credentials[] = '--privprotocol';
-            $snmpV3Credentials[] = $this->privacyProtocol;
+            $snmpV3Credentials[] = '"' . trim($this->privacyProtocol) . '"';
         }
 
         if (sizeof($snmpV3Credentials) === 1) {

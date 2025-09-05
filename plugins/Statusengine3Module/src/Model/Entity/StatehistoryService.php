@@ -55,7 +55,7 @@ class StatehistoryService extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'state_change'          => true,
         'state'                 => true,
         'is_hardstate'          => true,

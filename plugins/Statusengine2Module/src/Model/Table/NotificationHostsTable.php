@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -114,7 +115,7 @@ class NotificationHostsTable extends Table implements NotificationHostsTableInte
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getNotifications(HostNotificationConditions $HostNotificationConditions, $PaginateOMat = null) {
+    public function getNotifications(HostNotificationConditions $HostNotificationConditions, ?PaginateOMat $PaginateOMat = null) {
         $query = $this->find()
             ->select([
                 'NotificationHosts.object_id',
@@ -182,8 +183,8 @@ class NotificationHostsTable extends Table implements NotificationHostsTableInte
                 'NotificationHosts.start_time <'      => date('Y-m-d H:i:s', $HostNotificationConditions->getTo()),
                 'NotificationHosts.notification_type' => 0
             ])
-            ->order($HostNotificationConditions->getOrder())
-            ->group(['Contactnotifications.contactnotification_id']);
+            ->orderBy($HostNotificationConditions->getOrder())
+            ->groupBy(['Contactnotifications.contactnotification_id']);
 
 
         if ($HostNotificationConditions->getHostUuid()) {

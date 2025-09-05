@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -45,8 +46,7 @@ class ChangelogsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var SystemsettingsTable $SystemsettingsTable */
@@ -56,8 +56,10 @@ class ChangelogsController extends AppController {
 
         $result = $SystemsettingsTable->getSystemsettingByKey('FRONTEND.HIDDEN_USER_IN_CHANGELOG');
         $includeUser = $result->get('value') === '0';
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
 
-        $ChangelogsFilter = new ChangelogsFilter($this->request);
+        $ChangelogsFilter = new ChangelogsFilter($this->request, $UserTime);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $ChangelogsFilter->getPage());
         $MY_RIGHTS = $this->MY_RIGHTS;
         if ($this->hasRootPrivileges === true) {
@@ -68,8 +70,6 @@ class ChangelogsController extends AppController {
         $showInherit = (bool)($this->request->getQueryParams()['filter']['ShowServices'] ?? false);
         $all_changes = $ChangelogsTable->getChangelogIndex($ChangelogsFilter, $PaginateOMat, $MY_RIGHTS, $includeUser, CORE, false, $showInherit);
 
-        $User = new User($this->getUser());
-        $UserTime = $User->getUserTime();
         $todayMidnight = strtotime('today');
 
         foreach ($all_changes as $index => $change) {
@@ -110,7 +110,7 @@ class ChangelogsController extends AppController {
             $all_changes[$index]['time'] = $UserTime->format($changeTimestamp);
             $isToday = ($changeTimestamp > $todayMidnight);
             if ($isToday) {
-                $all_changes[$index]['time'] = date('H:i:s', $changeTimestamp);
+                $all_changes[$index]['time'] = $UserTime->customFormat('H:i:s', $changeTimestamp);
             }
 
             $dataUnserialized = unserialize($change['data']);
@@ -143,8 +143,5 @@ class ChangelogsController extends AppController {
         $this->set('all_changes', $all_changes);
         $this->viewBuilder()->setOption('serialize', ['all_changes']);
     }
-
-    //Only for ACLs
-    public function entity(): void {
-    }
+    
 }

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -29,7 +30,7 @@ namespace itnovum\openITCOCKPIT\Core\ValueObjects;
  * The User object is needed for the Changelog.
  */
 class CronjobUser extends User {
-    
+
     public function __construct() {
         $timezone = date_default_timezone_get();
         if (empty($timezone)) {

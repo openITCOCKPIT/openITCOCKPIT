@@ -36,7 +36,7 @@ use Migrations\AbstractMigration;
  * Usage:
  * openitcockpit-update
  */
-class AddLastLoginToUsersAndLastUseToApiKeys extends AbstractMigration {
+class AddLastLoginToUsersAndLastUseToApiKeys extends \Migrations\BaseMigration {
     /**
      * Change Method.
      *

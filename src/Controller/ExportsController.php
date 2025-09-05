@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -48,8 +49,7 @@ class ExportsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var ExportsTable $ExportsTable */

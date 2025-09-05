@@ -33,7 +33,7 @@ use Cake\ORM\Entity;
  * @property int $hoststatus_id
  * @property int $instance_id
  * @property int $host_object_id
- * @property \Cake\I18n\FrozenTime $status_update_time
+ * @property \Cake\I18n\DateTime $status_update_time
  * @property string|null $output
  * @property string|null $long_output
  * @property string|null $perfdata
@@ -42,18 +42,18 @@ use Cake\ORM\Entity;
  * @property int $should_be_scheduled
  * @property int $current_check_attempt
  * @property int $max_check_attempts
- * @property \Cake\I18n\FrozenTime $last_check
- * @property \Cake\I18n\FrozenTime $next_check
+ * @property \Cake\I18n\DateTime $last_check
+ * @property \Cake\I18n\DateTime $next_check
  * @property int $check_type
- * @property \Cake\I18n\FrozenTime $last_state_change
- * @property \Cake\I18n\FrozenTime $last_hard_state_change
+ * @property \Cake\I18n\DateTime $last_state_change
+ * @property \Cake\I18n\DateTime $last_hard_state_change
  * @property int $last_hard_state
- * @property \Cake\I18n\FrozenTime $last_time_up
- * @property \Cake\I18n\FrozenTime $last_time_down
- * @property \Cake\I18n\FrozenTime $last_time_unreachable
+ * @property \Cake\I18n\DateTime $last_time_up
+ * @property \Cake\I18n\DateTime $last_time_down
+ * @property \Cake\I18n\DateTime $last_time_unreachable
  * @property int $state_type
- * @property \Cake\I18n\FrozenTime $last_notification
- * @property \Cake\I18n\FrozenTime $next_notification
+ * @property \Cake\I18n\DateTime $last_notification
+ * @property \Cake\I18n\DateTime $next_notification
  * @property int $no_more_notifications
  * @property int $notifications_enabled
  * @property int $problem_has_been_acknowledged
@@ -91,7 +91,7 @@ class Hoststatus extends Entity {
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'instance_id'                   => false,
         'host_object_id'                => false,
         'status_update_time'            => false,

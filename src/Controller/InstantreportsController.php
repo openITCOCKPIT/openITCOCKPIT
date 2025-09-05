@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -69,8 +70,7 @@ class InstantreportsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $InstantreportFilter = new InstantreportFilter($this->request);
         /** @var $InstantreportsTable InstantreportsTable */
@@ -99,8 +99,7 @@ class InstantreportsController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship template for AngularJs
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         /** @var $InstantreportsTable InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
@@ -139,8 +138,7 @@ class InstantreportsController extends AppController {
 
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $InstantreportsTable InstantreportsTable */
@@ -196,8 +194,7 @@ class InstantreportsController extends AppController {
 
     public function generate($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $requestData = $this->request->getData();
@@ -441,21 +438,6 @@ class InstantreportsController extends AppController {
 
         $this->set('instantreports', $instantreports);
         $this->viewBuilder()->setOption('serialize', ['instantreports']);
-    }
-
-    public function hostAvailabilityPieChart() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function serviceAvailabilityPieChart() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function serviceAvailabilityBarChart() {
-        //Only ship HTML template
-        return;
     }
 
 }

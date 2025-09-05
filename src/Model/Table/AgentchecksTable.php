@@ -1,4 +1,27 @@
 <?php
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
 
 namespace App\Model\Table;
 
@@ -17,14 +40,14 @@ use itnovum\openITCOCKPIT\Filter\AgentchecksFilter;
  *
  * @property \App\Model\Table\ServicetemplatesTable|\Cake\ORM\Association\BelongsTo $Servicetemplates
  *
- * @method \App\Model\Entity\Agentcheck get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Agentcheck get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Agentcheck newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Agentcheck[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Agentcheck|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Agentcheck saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Agentcheck patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Agentcheck[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Agentcheck findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Agentcheck findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -105,7 +128,7 @@ class AgentchecksTable extends Table {
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getAgentchecksIndex(AgentchecksFilter $AgentchecksFilter, PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
+    public function getAgentchecksIndex(AgentchecksFilter $AgentchecksFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
         $query = $this->find('all');
         $where = $AgentchecksFilter->indexFilter();
         if (!empty($MY_RIGHTS)) {
@@ -116,7 +139,7 @@ class AgentchecksTable extends Table {
             'Servicetemplates'
         ]);
         $query->where($where);
-        $query->order($AgentchecksFilter->getOrderForPaginator('Agentchecks.name', 'asc'));
+        $query->orderBy($AgentchecksFilter->getOrderForPaginator('Agentchecks.name', 'asc'));
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -244,7 +267,7 @@ class AgentchecksTable extends Table {
         $query = $this->find()
             ->contain(['Servicetemplates'])
             ->where($where)
-            ->order('Agentchecks.name')
+            ->orderBy('Agentchecks.name')
             ->disableHydration()
             ->all();
 

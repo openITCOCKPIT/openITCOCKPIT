@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -41,14 +42,14 @@ use itnovum\openITCOCKPIT\Filter\InstantreportFilter;
  *
  * @property \App\Model\Table\ContainersTable|\Cake\ORM\Association\BelongsTo $Containers
  *
- * @method \App\Model\Entity\Instantreport get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Instantreport get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Instantreport newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Instantreport[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Instantreport|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Instantreport saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Instantreport patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Instantreport[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Instantreport findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Instantreport findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -245,7 +246,7 @@ class InstantreportsTable extends Table {
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getInstantreportsIndex(InstantreportFilter $InstantreportFilter, PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
+    public function getInstantreportsIndex(InstantreportFilter $InstantreportFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
         $query = $this->find('all')
             ->contain([
                 'Timeperiods' => function (Query $q) {
@@ -276,7 +277,7 @@ class InstantreportsTable extends Table {
                 'Instantreports.send_email',
                 'Instantreports.send_interval'
             ])
-            ->group('Instantreports.id')
+            ->groupBy('Instantreports.id')
             ->disableHydration();
 
         $indexFilter = $InstantreportFilter->indexFilter();
@@ -287,7 +288,7 @@ class InstantreportsTable extends Table {
         }
 
         $query->where($indexFilter);
-        $query->order(
+        $query->orderBy(
             array_merge(
                 $InstantreportFilter->getOrderForPaginator('Instantreports.name', 'asc'),
                 ['Instantreports.id' => 'asc']
@@ -909,7 +910,7 @@ class InstantreportsTable extends Table {
                 'Instantreports.container_id IN' => $MY_RIGHTS
             ]);
         }
-        $query->order('Instantreports.name', 'asc');
+        $query->orderBy('Instantreports.name', 'asc');
         $query->enableHydration($enableHydration);
 
         $result = $query->all();
@@ -1045,7 +1046,7 @@ class InstantreportsTable extends Table {
                 'Instantreports.container_id',
                 'Instantreports.name',
             ])
-            ->group('Instantreports.id')
+            ->groupBy('Instantreports.id')
             ->disableHydration();
 
         $where = [];
@@ -1054,7 +1055,7 @@ class InstantreportsTable extends Table {
         }
 
         $query->where($where);
-        $query->order([
+        $query->orderBy([
             'Instantreports.name' => 'asc'
         ]);
 

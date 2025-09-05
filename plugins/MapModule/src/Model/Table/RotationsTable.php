@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -52,7 +53,7 @@ use MapModule\Model\Entity\Rotation;
  * @property RotationsTable&HasMany $MapsToRotations
  * @property ContainersTable&HasMany $RotationsToContainers
  *
- * @method Rotation get($primaryKey, $options = [])
+ * @method Rotation get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method Rotation newEntity($data = null, array $options = [])
  * @method Rotation[] newEntities(array $data, array $options = [])
  * @method Rotation|false save(EntityInterface $entity, $options = [])
@@ -159,7 +160,7 @@ class RotationsTable extends Table {
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getAll(array $indexFilter, array $orderForPaginator, int $limit = null, PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
+    public function getAll(array $indexFilter, array $orderForPaginator, ?int $limit = null, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
         if (!is_array($MY_RIGHTS)) {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
@@ -183,8 +184,8 @@ class RotationsTable extends Table {
             $query->limit($limit);
         }
 
-        $queryResult = $query->order($orderForPaginator)
-            ->group(['Rotations.id'])
+        $queryResult = $query->orderBy($orderForPaginator)
+            ->groupBy(['Rotations.id'])
             ->enableAutoFields(true)
             ->all();
 
@@ -235,7 +236,7 @@ class RotationsTable extends Table {
                 });
                 return $q;
             })
-            ->group([
+            ->groupBy([
                 'Rotations.id'
             ])
             ->enableHydration(false)

@@ -42,7 +42,7 @@ use Cake\ORM\Entity;
  * @property \App\Model\Entity\Container $container
  * @property \App\Model\Entity\StatuspagegroupCategory[] $statuspagegroup_categories
  * @property \App\Model\Entity\StatuspagegroupCollection[] $statuspagegroup_collections
- * @property \App\Model\Entity\StatuspagesMembership[] $statuspages_memberships
+ * @property \App\Model\Entity\StatuspagesMembership[] $statuspages
  */
 class Statuspagegroup extends Entity {
     /**
@@ -63,6 +63,6 @@ class Statuspagegroup extends Entity {
         'container'                   => true,
         'statuspagegroup_categories'  => true,
         'statuspagegroup_collections' => true,
-        'statuspages_memberships'     => true,
+        'statuspages'                 => true,
     ];
 }

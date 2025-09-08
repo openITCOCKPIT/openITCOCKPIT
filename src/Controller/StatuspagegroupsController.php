@@ -29,12 +29,10 @@ namespace App\Controller;
 
 use App\Model\Table\ContainersTable;
 use App\Model\Table\StatuspagegroupsTable;
-use App\Model\Table\StatuspagesMembershipTable;
 use App\Model\Table\StatuspagesTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
-use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
@@ -121,7 +119,7 @@ class StatuspagegroupsController extends AppController {
         if ($this->request->is('post')) {
             $statuspagegroup = $StatuspagegroupsTable->newEmptyEntity();
             $statuspagegroup->setAccess('id', false);
-            $statuspagegroup->setAccess('statuspages', false);
+            $statuspagegroup->setAccess('statuspages_membership', false);
 
             $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
 
@@ -171,7 +169,7 @@ class StatuspagegroupsController extends AppController {
 
         if ($this->request->is('post')) {
             $statuspagegroup->setAccess('id', false);
-            $statuspagegroup->setAccess('statuspages', false);
+            $statuspagegroup->setAccess('statuspages_membership', false);
             $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
 
             $StatuspagegroupsTable->save($statuspagegroup);
@@ -223,7 +221,6 @@ class StatuspagegroupsController extends AppController {
 
             /** @var StatuspagesTable $StatuspagesTable */
             $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
-            $selected = $this->request->getQuery('selected');
 
             $MY_RIGHTS = [];
             if (!$this->hasRootPrivileges) {
@@ -236,49 +233,35 @@ class StatuspagegroupsController extends AppController {
 
             $this->set('statuspagegroup', $statuspagegroup);
             $this->set('statuspages', $statuspages);
-
-            $this->set('statuspagegroup', $statuspagegroup);
-            $this->set('statuspages', $statuspages);
             $this->viewBuilder()->setOption('serialize', ['statuspagegroup', 'statuspages']);
             return;
         }
 
         if ($this->request->is('post')) {
-            $statuspagegroup = $StatuspagegroupsTable->get($id);
+            $statuspagegroup = $StatuspagegroupsTable->get($id, contain: [
+                'StatuspagesMemberships'
+            ]);
             if (!$this->allowedByContainerId($statuspagegroup->container_id)) {
                 $this->render403();
                 return;
             }
 
-            /** @var StatuspagesMembershipTable $StatuspagesMembershipTable */
-            $StatuspagesMembershipTable = TableRegistry::getTableLocator()->get('StatuspagesMembership');
+            $statuspagegroup->setAccess('statuspages_membership', true);
+            $statuspagegroup->setAccess('statuspagegroup_categories', false);
+            $statuspagegroup->setAccess('statuspagegroup_collections', false);
+            $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
 
-            // This is a workaround for https://github.com/cakephp/cakephp/issues/18885
-            $StatuspagesMembershipTable->deleteAllRecordsByStatuspagegroupId($statuspagegroup->id);
-            $data = $this->request->getData(null, []);
-            if (empty($data['statuspages'])) {
-                $data['statuspages'] = [];
-            }
-
-            $joinTableRecords = [];
-            foreach ($data['statuspages'] as $statuspage) {
-                $joinTableRecords[] = Hash::remove($statuspage['_joinData'], 'id');
-            }
-
-            $joinTableEntities = $StatuspagesMembershipTable->newEntities($joinTableRecords);
-            $StatuspagesMembershipTable->saveMany($joinTableEntities);
-            foreach ($joinTableEntities as $entity) {
-                if ($entity->hasErrors()) {
-                    $this->response = $this->response->withStatus(400);
-                    $this->set('error', $entity->getErrors());
-                    $this->viewBuilder()->setOption('serialize', ['error']);
+            $StatuspagegroupsTable->save($statuspagegroup);
+            if ($statuspagegroup->hasErrors()) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', $statuspagegroup->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            } else {
+                if ($this->isJsonRequest()) {
+                    $this->serializeCake4Id($statuspagegroup); // REST API ID serialization
                     return;
                 }
-            }
-
-            if ($this->isJsonRequest()) {
-                $this->serializeCake4Id($statuspagegroup); // REST API ID serialization
-                return;
             }
 
             $this->set('statuspagegroup', $statuspagegroup);
@@ -307,7 +290,7 @@ class StatuspagegroupsController extends AppController {
         $statuspagegroup = $StatuspagegroupsTable->get($id, contain: [
             'StatuspagegroupCategories',
             'StatuspagegroupCollections',
-            'Statuspages'
+            'StatuspagesMemberships'
         ]);
         if (!$this->allowedByContainerId($statuspagegroup['container_id'])) {
             $this->render403();

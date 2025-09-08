@@ -96,11 +96,21 @@ class StatuspagegroupsTable extends Table {
             'cascadeCallbacks' => true
         ]);
 
+        /*
         $this->belongsToMany('Statuspages', [
             'className'        => 'Statuspages',
             'through'          => 'StatuspagesMembership',
             'targetForeignKey' => 'statuspage_id',
             'saveStrategy'     => 'replace'
+        ]);*/
+
+        // Use hasMany instead of belongsToMany to be able to set the category_id and collection_id fields
+        // https://github.com/cakephp/cakephp/issues/18885
+        $this->hasMany('StatuspagesMemberships', [
+            'className'    => 'StatuspagesMembership',
+            'foreignKey'   => 'statuspagegroup_id',
+            'saveStrategy' => 'replace',
+            'dependent'    => true,
         ]);
     }
 
@@ -202,10 +212,15 @@ class StatuspagegroupsTable extends Table {
                 // Keep the order of collections stable
                 return $query->orderBy(['StatuspagegroupCollections.id' => 'ASC']);
             },
-            'Statuspages'                => function (Query $query) {
+            'StatuspagesMemberships'     => function (Query $query) {
                 return $query->select([
-                    'id',
-                    'name'
+                    'StatuspagesMemberships.id',
+                    'StatuspagesMemberships.statuspagegroup_id',
+                    'StatuspagesMemberships.statuspage_id',
+                    'StatuspagesMemberships.category_id',
+                    'StatuspagesMemberships.collection_id',
+                    'StatuspagesMemberships.created',
+                    'StatuspagesMemberships.modified',
                 ]);
             }
         ])

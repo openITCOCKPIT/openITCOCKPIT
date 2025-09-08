@@ -126,6 +126,13 @@ class StatuspagesTable extends Table {
             'saveStrategy'     => 'replace'
         ])->setDependent(true);
 
+        $this->hasMany('StatuspagesMembership', [
+            'className'    => 'StatuspagesMembership',
+            'foreignKey'   => 'statuspage_id',
+            'saveStrategy' => 'replace',
+            'dependent'    => true,
+        ]);
+
     }
 
     /**

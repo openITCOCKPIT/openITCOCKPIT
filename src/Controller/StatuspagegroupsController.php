@@ -33,6 +33,7 @@ use App\Model\Table\StatuspagesTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
+use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -135,6 +136,7 @@ class StatuspagegroupsController extends AppController {
                 $statuspageId = (int)$statuspageId;
                 $statuspagesSummary[$statuspageId] = $StatuspagesTable->getStatuspageForView($statuspageId, $MY_RIGHTS, $UserTime);
             }
+            //dd($statuspagesSummary);
         }
     }
 
@@ -191,6 +193,9 @@ class StatuspagegroupsController extends AppController {
         /** @var StatuspagegroupsTable $StatuspagegroupsTable */
         $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
 
+        /** @var ContainersTable $ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+
         $id = (int)$id;
         if (!$StatuspagegroupsTable->existsById($id)) {
             throw new NotFoundException(__('Invalid status page group'));
@@ -202,10 +207,44 @@ class StatuspagegroupsController extends AppController {
             return;
         }
 
+        $oldContainerId = $statuspagegroup->container_id; // Save old container_id to check if container was changed -> necessary for status page cleanup
         if ($this->request->is('post')) {
             $statuspagegroup->setAccess('id', false);
             $statuspagegroup->setAccess('statuspages_membership', false);
             $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
+
+            $newContainerId = $statuspagegroup->container_id;
+
+            if ($oldContainerId != $newContainerId) {
+                $oldContainerIds = $ContainersTable->resolveChildrenOfContainerIds(
+                    $oldContainerId,
+                    true,
+                    [
+                        CT_GLOBAL,
+                        CT_TENANT,
+                        CT_LOCATION,
+                        CT_NODE
+                    ]
+                );
+                $newContainerIds = $ContainersTable->resolveChildrenOfContainerIds(
+                    $newContainerId,
+                    true,
+                    [
+                        CT_GLOBAL,
+                        CT_TENANT,
+                        CT_LOCATION,
+                        CT_NODE
+                    ]
+                );
+
+                $containersToRemove = array_diff($oldContainerIds, $newContainerIds);
+                if (!empty($containersToRemove)) {
+                    $StatuspagegroupsTable->_cleanupStatuspagesMembershipsByRemovedContainerIds(
+                        $statuspagegroup->id,
+                        $containersToRemove
+                    );
+                }
+            }
 
             $StatuspagegroupsTable->save($statuspagegroup);
             if ($statuspagegroup->hasErrors()) {
@@ -220,7 +259,6 @@ class StatuspagegroupsController extends AppController {
                 }
             }
         }
-
         $this->set('statuspagegroup', $statuspagegroup);
         $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
 

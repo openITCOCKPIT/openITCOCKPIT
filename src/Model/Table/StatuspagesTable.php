@@ -317,7 +317,7 @@ class StatuspagesTable extends Table {
      * @param UserTime $UserTime
      * @return array
      */
-    public function getStatuspageForView(int $id, array $MY_RIGHTS, UserTime $UserTime) {
+    public function getStatuspageForView(int $id, array $MY_RIGHTS, UserTime $UserTime): array {
         $statuspage = $this->getStatuspageWithAllObjects($id, $MY_RIGHTS);
 
         $showDowntimes = $statuspage['show_downtimes'];

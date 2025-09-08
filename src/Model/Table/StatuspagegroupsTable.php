@@ -32,6 +32,8 @@ use App\Model\Entity\Statuspagegroup;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
+use Cake\ORM\TableRegistry;
+use Cake\Utility\Hash;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
 
@@ -246,17 +248,51 @@ class StatuspagegroupsTable extends Table {
                 // Keep the order of collections stable
                 return $query->orderBy(['StatuspagegroupCollections.id' => 'ASC']);
             },
-            'StatuspagesMemberships'     => function (Query $query) {
-                return $query->select([
-                    'id',
-                    'name'
-                ])->disableHydration();
-            }
+            'StatuspagesMemberships'
         ])
             ->where([
                 'Statuspagegroups.id' => $id
             ])->disableHydration();
 
         return $query->firstOrFail();
+    }
+
+    /**
+     * Check if the status page was part of a status page groups outside of new permissions
+     * If yes, records must be deleted for valid configuration
+     *
+     * @param $statuspagegroupId
+     * @param $removedContainerIds
+     * @param $userId
+     */
+    public function _cleanupStatuspagesMembershipsByRemovedContainerIds($statuspagegroupId, $removedContainerIds) {
+        if (!is_array($removedContainerIds)) {
+            $removedContainerIds = [$removedContainerIds];
+        }
+        $query = $this->find()
+            ->select([
+                'StatuspagesMemberships.id'
+            ])
+            ->innerJoinWith('StatuspagesMemberships', function (Query $q) {
+                return $q->innerJoinWith('Statuspages');
+            })
+            ->where([
+                'StatuspagesMemberships.statuspagegroup_id' => $statuspagegroupId,
+                'Statuspages.container_id IN '              => $removedContainerIds
+            ])
+            ->disableHydration()
+            ->all();
+
+        $recordsToDelete = $this->emptyArrayIfNull($query->toArray());
+        if (!empty($recordsToDelete)) {
+            $statuspagesMembershipsIdsToDelete = Hash::extract($recordsToDelete, '{n}._matchingData.StatuspagesMemberships.id');
+            if (!empty($statuspagesMembershipsIdsToDelete)) {
+                /** @var StatuspagesMembershipTable $StatuspagesMembershipTable */
+                $StatuspagesMembershipTable = TableRegistry::getTableLocator()->get('StatuspagesMembership');
+                $StatuspagesMembershipTable->deleteAll([
+                    'StatuspagesMemberships.id IN' => $statuspagesMembershipsIdsToDelete
+                ]);
+            }
+        }
     }
 }

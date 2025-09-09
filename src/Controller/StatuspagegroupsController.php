@@ -313,7 +313,7 @@ class StatuspagegroupsController extends AppController {
                     CT_NODE
                 ]);
             }
-            
+
             $statuspages = Api::makeItJavaScriptAble(
                 $StatuspagesTable->getStatuspagesList($containerIds)
             );
@@ -413,9 +413,9 @@ class StatuspagegroupsController extends AppController {
         /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         if ($this->hasRootPrivileges === true) {
-            $containers = $ContainersTable->easyPath($this->MY_RIGHTS, CT_TENANT, [], $this->hasRootPrivileges);
+            $containers = $ContainersTable->easyPath($this->MY_RIGHTS, OBJECT_HOST, [], $this->hasRootPrivileges, [CT_HOSTGROUP]);
         } else {
-            $containers = $ContainersTable->easyPath($this->getWriteContainers(), CT_TENANT, [], true);
+            $containers = $ContainersTable->easyPath($this->getWriteContainers(), OBJECT_HOST, [], false, [CT_HOSTGROUP]);
         }
         $containers = Api::makeItJavaScriptAble($containers);
         $this->set('containers', $containers);

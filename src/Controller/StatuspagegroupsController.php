@@ -294,14 +294,28 @@ class StatuspagegroupsController extends AppController {
 
             /** @var StatuspagesTable $StatuspagesTable */
             $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+            /** @var ContainersTable $ContainersTable */
+            $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
-            $MY_RIGHTS = [];
-            if (!$this->hasRootPrivileges) {
-                $MY_RIGHTS = $this->MY_RIGHTS;
+            if ($statuspagegroup->container_id == ROOT_CONTAINER) {
+                //Don't panic! Only root users can edit /root objects ;)s
+                $containerIds = $ContainersTable->resolveChildrenOfContainerIds(ROOT_CONTAINER, true, [
+                    CT_GLOBAL,
+                    CT_TENANT,
+                    CT_LOCATION,
+                    CT_NODE
+                ]);
+            } else {
+                $containerIds = $ContainersTable->resolveChildrenOfContainerIds($statuspagegroup->container_id, false, [
+                    CT_GLOBAL,
+                    CT_TENANT,
+                    CT_LOCATION,
+                    CT_NODE
+                ]);
             }
-
+            
             $statuspages = Api::makeItJavaScriptAble(
-                $StatuspagesTable->getStatuspagesList($MY_RIGHTS)
+                $StatuspagesTable->getStatuspagesList($containerIds)
             );
 
             $this->set('statuspagegroup', $statuspagegroup);

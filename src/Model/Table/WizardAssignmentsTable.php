@@ -424,6 +424,22 @@ class WizardAssignmentsTable extends Table {
                 'image'       => 'VMware_logo.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
+            ],
+            'proxmox'       => [
+                'type_id'     => 'proxmox',
+                'title'       => __('Promox Wizard'),
+                'description' => __('Monitor your Proxmox VE Server including virtual machines and containers'),
+                'image'       => 'proxmox-logo-stacked-color.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
+            ],
+            'proxmox_storage'       => [
+                'type_id'     => 'proxmox_storage',
+                'title'       => __('Promox Storage Wizard'),
+                'description' => __('Monitor the storage of your Proxmox VE Server'),
+                'image'       => 'proxmox-logo-stacked-color.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
             ]
         ];
 

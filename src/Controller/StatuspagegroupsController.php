@@ -130,7 +130,7 @@ class StatuspagegroupsController extends AppController {
         if (!empty($statuspagegroup)) {
             $User = new User($this->getUser());
             $UserTime = $User->getUserTime();
-            $statuspages = Hash::combine($statuspagegroup['statuspages_memberships'], '{n}.id', '{n}.name');
+            $statuspages = Hash::combine($statuspagegroup['statuspages_memberships'], '{n}.statuspage_id', '{n}.name');
             $statuspagesSummary = [];
             foreach ($statuspages as $statuspageId => $name) {
                 $statuspageId = (int)$statuspageId;

@@ -391,7 +391,7 @@ class WizardAssignmentsTable extends Table {
                 'description' => __('These checks will allow you to monitor your HP server'),
                 'image'       => 'hp.svg',
                 'category'    => ['hardware'],
-              'active' => true
+                'active'      => true
             ],
             'dell-idrac'             => [
                 'type_id'     => 'dell-idrac',
@@ -425,18 +425,18 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
-            'proxmox'       => [
+            'proxmox'                => [
                 'type_id'     => 'proxmox',
-                'title'       => __('Promox Wizard'),
-                'description' => __('Monitor your Proxmox VE Server including virtual machines and containers'),
+                'title'       => __('Proxmox'),
+                'description' => __('Used to monitor Proxmox (Status, Memory, CPU, ZFS, CEPH, Backup, ...)'),
                 'image'       => 'proxmox-logo-stacked-color.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
-            'proxmox_storage'       => [
+            'proxmox_storage'        => [
                 'type_id'     => 'proxmox_storage',
-                'title'       => __('Promox Storage Wizard'),
-                'description' => __('Monitor the storage of your Proxmox VE Server'),
+                'title'       => __('Proxmox Storage'),
+                'description' => __('Used to monitor Proxmox Storages.'),
                 'image'       => 'proxmox-logo-stacked-color.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true

@@ -318,7 +318,11 @@ class StatuspagesTable extends Table {
      * @return array
      */
     public function getStatuspageForView(int $id, array $MY_RIGHTS, UserTime $UserTime): array {
-        $statuspage = $this->getStatuspageWithAllObjects($id, $MY_RIGHTS);
+        $statuspages = $this->getStatuspageWithAllObjects([$id], $MY_RIGHTS);
+        if (empty($statuspages)) {
+            throw new \Cake\Datasource\Exception\RecordNotFoundException(__('Statuspage not found'));
+        }
+        $statuspage = $statuspages[0];
 
         $showDowntimes = $statuspage['show_downtimes'];
         $showDowntimeComments = $statuspage['show_downtime_comments'];
@@ -931,7 +935,7 @@ class StatuspagesTable extends Table {
      * @param array $MY_RIGHTS
      * @return array|\Cake\Datasource\EntityInterface
      */
-    public function getStatuspageWithAllObjects(int $id, array $MY_RIGHTS = []) {
+    public function getStatuspageWithAllObjects(array $ids, array $MY_RIGHTS = []) {
         $query = $this->find()
             ->contain('Containers', function (Query $q) {
                 $q->select([
@@ -1225,11 +1229,11 @@ class StatuspagesTable extends Table {
                     ]);
             })
             ->where([
-                'Statuspages.id' => $id
+                'Statuspages.id IN' => $ids
             ])
             ->disableHydration();
 
-        return $query->firstOrFail();
+        return $query->toArray();
     }
 
     public function getStatuspageForEdit($id) {

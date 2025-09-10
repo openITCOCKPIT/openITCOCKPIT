@@ -130,13 +130,116 @@ class StatuspagegroupsController extends AppController {
         if (!empty($statuspagegroup)) {
             $User = new User($this->getUser());
             $UserTime = $User->getUserTime();
-            $statuspages = Hash::combine($statuspagegroup['statuspages_memberships'], '{n}.statuspage_id', '{n}.name');
+            $statuspages = Hash::combine($statuspagegroup['statuspages_memberships'], '{n}.statuspage_id', '{n}.statuspage_id');
+            $statuspages = $StatuspagesTable->getStatuspageWithAllObjects($statuspages);
+            $allHostUuids = [];
+            $allServiceUuids = [];
+
+            $formatedHostUuids = [];
+            $formatedServiceUuids = [];
+
+
+            $statuspagesFormated = [];
+
+            foreach ($statuspages as $index => $statuspage) {
+                $hostsWithServices = [];
+                //Hosts
+                foreach ($statuspage['hosts'] as $host) {
+                    if (!isset($hostsWithServices['hosts'][$host['uuid']])) {
+                        $hostsWithServices['hosts'][$host['uuid']] = [
+                            'services' => []
+                        ];
+                        $allHostUuids[$host['id']] = $host['uuid'];
+
+                        foreach ($host['services'] as $service) {
+                            $hostsWithServices['hosts'][$host['uuid']]['services'][$service['uuid']] = $service['id'];
+                            $allServiceUuids[$service['id']] = $service['uuid'];
+                        }
+                    }
+                }
+                //Services
+                foreach ($statuspage['services'] as $service) {
+                    if (!isset($hostsWithServices['hosts'][$service['host']['uuid']])) {
+                        $hostsWithServices['hosts'][$service['host']['uuid']] = [
+                            'services' => []
+                        ];
+                    }
+                    $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
+                    $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
+                    $allServiceUuids[$service['id']] = $service['uuid'];
+                }
+                //Host groups
+                foreach ($statuspage['hostgroups'] as $key => $hostgroup) {
+                    foreach ($hostgroup['hosts'] as $host) {
+                        if (!isset($hostsWithServices['hosts'][$host['uuid']])) {
+                            $hostsWithServices['hosts'][$host['uuid']] = [
+                                'services' => []
+                            ];
+                        }
+                        $allHostUuids[$host['id']] = $host['uuid'];
+                        foreach ($host['services'] as $service) {
+                            $hostsWithServices['hosts'][$host['uuid']]['services'][$service['uuid']] = $service['id'];
+                            $allServiceUuids[$service['id']] = $service['uuid'];
+                        }
+                    }
+
+                    foreach ($hostgroup['hosttemplates'] as $hosttemplate) {
+                        foreach ($hosttemplate['hosts'] as $host) {
+                            if (!isset($hostsWithServices['hosts'][$host['uuid']])) {
+                                $hostsWithServices['hosts'][$host['uuid']] = [
+                                    'services' => []
+                                ];
+                            }
+                            $allHostUuids[$host['id']] = $host['uuid'];
+                            foreach ($host['services'] as $service) {
+                                $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
+                                $allServiceUuids[$service['id']] = $service['uuid'];
+                            }
+                        }
+                    }
+                }
+                //Service groups
+                foreach ($statuspage['servicegroups'] as $key => $servicegroup) {
+                    foreach ($servicegroup['services'] as $service) {
+                        if (!isset($hostsWithServices['hosts'][$service['host']['uuid']])) {
+                            $hostsWithServices['hosts'][$service['host']['uuid']] = [
+                                'services' => []
+                            ];
+                        }
+                        $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
+
+                        $allServiceUuids[$service['id']] = $service['uuid'];
+                        $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
+                    }
+
+                    foreach ($servicegroup['servicetemplates'] as $servicetemplate) {
+                        foreach ($servicetemplate['services'] as $service) {
+                            if (!isset($hostsWithServices['hosts'][$service['host']['uuid']])) {
+                                $hostsWithServices['hosts'][$service['host']['uuid']] = [
+                                    'services' => []
+                                ];
+                            }
+                            $hostsWithServices['hosts'][$service['host']['uuid']['uuid']]['services'][$service['uuid']] = $service['id'];
+                            $allServiceUuids[$service['id']] = $service['uuid'];
+                            $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
+                        }
+                    }
+                }
+
+                //debug($variable);
+                $statuspagesFormated[$statuspage['id']] = [
+                    'hostsWithServices' => $hostsWithServices
+                ];
+            }
+
+
+            dd($statuspagesFormated);
             $statuspagesSummary = [];
             foreach ($statuspages as $statuspageId => $name) {
                 $statuspageId = (int)$statuspageId;
                 $statuspagesSummary[$statuspageId] = $StatuspagesTable->getStatuspageForView($statuspageId, $MY_RIGHTS, $UserTime);
             }
-            //dd($statuspagesSummary);
+            dd($statuspagesSummary);
         }
     }
 

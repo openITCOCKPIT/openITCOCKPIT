@@ -427,7 +427,7 @@ class WizardAssignmentsTable extends Table {
             ],
             'microsoft-m365-ServiceStatus' => [
                 'type_id'     => 'microsoft-m365-ServiceStatus',
-                'title'       => __('Microsoft 365: Service Status'),
+                'title'       => __('Microsoft 365 (Service Status)'),
                 'description' => __('Service Status'),
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],
@@ -435,7 +435,7 @@ class WizardAssignmentsTable extends Table {
             ],
             'microsoft-m365-OneDrive'      => [
                 'type_id'     => 'microsoft-m365-OneDrive',
-                'title'       => __('Microsoft 365: OneDrive'),
+                'title'       => __('Microsoft 365 (OneDrive)'),
                 'description' => __('OneDrive'),
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],
@@ -443,7 +443,7 @@ class WizardAssignmentsTable extends Table {
             ],
             'microsoft-m365-Mailbox'       => [
                 'type_id'     => 'microsoft-m365-Mailbox',
-                'title'       => __('Microsoft 365: Mailbox'),
+                'title'       => __('Microsoft 365 (Mailbox)'),
                 'description' => __('Mailbox'),
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud', 'mail'],
@@ -451,7 +451,7 @@ class WizardAssignmentsTable extends Table {
             ],
             'microsoft-m365-SharePoint'    => [
                 'type_id'     => 'microsoft-m365-SharePoint',
-                'title'       => __('Microsoft 365: SharePoint'),
+                'title'       => __('Microsoft 365 (SharePoint)'),
                 'description' => __('SharePoint'),
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],

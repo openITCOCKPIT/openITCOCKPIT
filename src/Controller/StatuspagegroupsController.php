@@ -131,16 +131,16 @@ class StatuspagegroupsController extends AppController {
         /** @var StatuspagesTable $StatuspagesTable */
         $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
 
-
+        // Get cumulated status per status page AND total cumulated status for the group
+        $statuspagesFormated = [];
         if (!empty($statuspagegroup)) {
-            $statuspages = Hash::combine($statuspagegroup['statuspages_memberships'], '{n}.statuspage_id', '{n}.statuspage_id');
-            $statuspages = $StatuspagesTable->getStatuspageWithAllObjects($statuspages);
+            $statuspageIds = Hash::combine($statuspagegroup['statuspages_memberships'], '{n}.statuspage_id', '{n}.statuspage_id');
+            $statuspages = $StatuspagesTable->getStatuspageWithAllObjects($statuspageIds, $MY_RIGHTS);
             $allHostUuids = [];
             $allServiceUuids = [];
 
-            $statuspagesFormated = [];
 
-            foreach ($statuspages as $index => $statuspage) {
+            foreach ($statuspages as $statuspage) {
                 $hostsWithServices = [
                     'hosts' => []
                 ];
@@ -229,6 +229,16 @@ class StatuspagegroupsController extends AppController {
                 }
 
                 $statuspagesFormated[$statuspage['id']] = [
+                    'statuspage'               => [
+                        'id'                => $statuspage['id'],
+                        'uuid'              => $statuspage['uuid'],
+                        'container_id'      => $statuspage['container_id'],
+                        'name'              => $statuspage['name'],
+                        'description'       => $statuspage['description'],
+                        'public_title'      => $statuspage['public_title'],
+                        'public_identifier' => $statuspage['public_identifier'],
+                        'public'            => $statuspage['public'],
+                    ],
                     'hostsWithServices'        => $hostsWithServices,
                     'cumulatedState'           => Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING,
                     'host_acknowledgements'    => 0, // Total amount of host acknowledgements
@@ -288,6 +298,28 @@ class StatuspagegroupsController extends AppController {
                             $cumulatedState = $Hoststatus->currentState() + 1;
                         }
 
+                        // Loop through services to count problems, acks and downtimes (just for the statistics)
+                        foreach ($services['services'] as $serviceUuid => $serviceId) {
+                            if (!isset($AllServicestatus[$serviceUuid]['Servicestatus'])) {
+                                continue;
+                            }
+                            $Servicestatus = new Servicestatus($AllServicestatus[$serviceUuid]['Servicestatus']);
+
+                            if ($Servicestatus->currentState() > 0) {
+                                $statuspagesFormated[$statuspageId]['service_problems']++;
+                            }
+                            if ($Servicestatus->isAcknowledged() && $Servicestatus->currentState() > 0) {
+                                $statuspagesFormated[$statuspageId]['service_acknowledgements']++;
+                            }
+                            if ($Servicestatus->isInDowntime()) {
+                                $statuspagesFormated[$statuspageId]['service_downtimes']++;
+                            }
+
+                            if ($Servicestatus->currentState() > $cumulatedState) {
+                                $cumulatedState = $Servicestatus->currentState();
+                            }
+                        }
+
                         continue;
                     }
 
@@ -319,15 +351,23 @@ class StatuspagegroupsController extends AppController {
                     }
                 }
                 $statuspagesFormated[$statuspageId]['cumulatedState'] = $cumulatedState;
+
+                // Remove hosts and services array to save memory (and to not have it in the response JSON)
+                unset($statuspagesFormated[$statuspageId]['hostsWithServices']);
             }
 
         }
 
         // Clear some memory
         unset($statuspages, $AllHoststatus, $AllServicestatus);
-        $cumulatedStategroupState = max(Hash::extract($statuspagesFormated, '{n}.cumulatedState'));
+        $cumulatedStategroupState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+        $allCumulatedStatuspageStates = Hash::extract($statuspagesFormated, '{n}.cumulatedState');
+        if (!empty($allCumulatedStatuspageStates)) {
+            // We have to check for empty array - max() throws an error then
+            $cumulatedStategroupState = max($allCumulatedStatuspageStates);
+        }
 
-        $this->set('statuspages', $statuspagesFormated);
+        $this->set('statuspages', array_values($statuspagesFormated));
         $this->set('cumulatedStategroupState', $cumulatedStategroupState);
 
         $this->viewBuilder()->setOption('serialize', ['statuspages', 'cumulatedStategroupState']);

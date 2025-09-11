@@ -401,7 +401,7 @@ class StatuspagegroupsController extends AppController {
             foreach ($statuspagegroup['statuspages_memberships'] as $statuspage_membership) {
                 $collectionIndex = $collectionIndexMapping[$statuspage_membership['collection_id']] ?? null;
                 $categoryIndex = $categoryIndexMapping[$statuspage_membership['category_id']] ?? null;
-                if ($collectionIndex && $categoryIndex && isset($statuspagesFormated[$statuspage_membership['statuspage_id']])) {
+                if ($collectionIndex !== null && $categoryIndex !== null && isset($statuspagesFormated[$statuspage_membership['statuspage_id']])) {
                     $statuspage = $statuspagesFormated[$statuspage_membership['statuspage_id']];
                     $matrix[$collectionIndex][$categoryIndex]['statuspageIds'][] = $statuspage['statuspage']['id'];
                     $matrix[$collectionIndex][$categoryIndex]['cumulatedStates'][] = $statuspage['cumulatedState'];
@@ -411,12 +411,11 @@ class StatuspagegroupsController extends AppController {
 
         }
 
-        dd($matrix);
-
         $this->set('statuspages', array_values($statuspagesFormated));
         $this->set('cumulatedStategroupState', $cumulatedStategroupState);
+        $this->set('matrix', $matrix);
 
-        $this->viewBuilder()->setOption('serialize', ['statuspages', 'cumulatedStategroupState']);
+        $this->viewBuilder()->setOption('serialize', ['statuspages', 'cumulatedStategroupState', 'matrix']);
     }
 
     /**

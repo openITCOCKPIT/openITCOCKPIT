@@ -36,7 +36,11 @@ use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
-use itnovum\openITCOCKPIT\Core\ValueObjects\User;
+use itnovum\openITCOCKPIT\Core\DbBackend;
+use itnovum\openITCOCKPIT\Core\Hoststatus;
+use itnovum\openITCOCKPIT\Core\HoststatusFields;
+use itnovum\openITCOCKPIT\Core\Servicestatus;
+use itnovum\openITCOCKPIT\Core\ServicestatusFields;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
 use itnovum\openITCOCKPIT\Filter\StatuspagesFilter;
@@ -129,21 +133,18 @@ class StatuspagegroupsController extends AppController {
 
 
         if (!empty($statuspagegroup)) {
-            $User = new User($this->getUser());
-            $UserTime = $User->getUserTime();
             $statuspages = Hash::combine($statuspagegroup['statuspages_memberships'], '{n}.statuspage_id', '{n}.statuspage_id');
             $statuspages = $StatuspagesTable->getStatuspageWithAllObjects($statuspages);
             $allHostUuids = [];
             $allServiceUuids = [];
 
-            $formatedHostUuids = [];
-            $formatedServiceUuids = [];
-
-
             $statuspagesFormated = [];
 
             foreach ($statuspages as $index => $statuspage) {
-                $hostsWithServices = [];
+                $hostsWithServices = [
+                    'hosts' => []
+                ];
+
                 //Hosts
                 foreach ($statuspage['hosts'] as $host) {
                     if (!isset($hostsWithServices['hosts'][$host['uuid']])) {
@@ -227,22 +228,109 @@ class StatuspagegroupsController extends AppController {
                     }
                 }
 
-                //debug($variable);
                 $statuspagesFormated[$statuspage['id']] = [
-                    'hostsWithServices' => $hostsWithServices,
-                    'cumulatedState'    => Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING
+                    'hostsWithServices'        => $hostsWithServices,
+                    'cumulatedState'           => Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING,
+                    'host_acknowledgements'    => 0, // Total amount of host acknowledgements
+                    'host_downtimes'           => 0, // Total amount of host downtimes
+                    'host_total'               => sizeof($hostsWithServices['hosts']), // Total amount of hosts
+                    'host_problems'            => 0, // Hosts in none up state
+                    'service_acknowledgements' => 0, // Total amount of service acknowledgements
+                    'service_downtimes'        => 0, // Total amount of service downtimes
+                    'service_total'            => Hash::apply($hostsWithServices['hosts'], '{s}.services.{s}', 'sizeof'), // Total amount of services
+                    'service_problems'         => 0, // Services in none up state
                 ];
             }
 
+            // Query host and service status for all objects in two queries
+            $DbBackend = new DbBackend();
+            $HoststatusTable = $DbBackend->getHoststatusTable();
+            $ServicestatusTable = $DbBackend->getServicestatusTable();
 
-            dd($statuspagesFormated);
-            $statuspagesSummary = [];
-            foreach ($statuspages as $statuspageId => $name) {
-                $statuspageId = (int)$statuspageId;
-                $statuspagesSummary[$statuspageId] = $StatuspagesTable->getStatuspageForView($statuspageId, $MY_RIGHTS, $UserTime);
+            $HoststatusFields = new HoststatusFields($DbBackend);
+            $HoststatusFields
+                ->currentState()
+                ->isHardstate()
+                ->problemHasBeenAcknowledged()
+                ->scheduledDowntimeDepth();
+
+            $ServicestatusFields = new ServicestatusFields($DbBackend);
+            $ServicestatusFields
+                ->currentState()
+                ->isHardstate()
+                ->problemHasBeenAcknowledged()
+                ->scheduledDowntimeDepth();
+
+            $AllHoststatus = $HoststatusTable->byUuid($allHostUuids, $HoststatusFields);
+            $AllServicestatus = $ServicestatusTable->byUuids($allServiceUuids, $ServicestatusFields);
+
+            foreach ($statuspagesFormated as $statuspageId => $statuspage) {
+                $cumulatedState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+                foreach ($statuspage['hostsWithServices']['hosts'] as $hostUuid => $services) {
+                    if (!isset($AllHoststatus[$hostUuid]['Hoststatus'])) {
+                        continue;
+                    }
+                    $Hoststatus = new Hoststatus($AllHoststatus[$hostUuid]['Hoststatus']);
+                    if ($Hoststatus->currentState() > 0) {
+                        $statuspagesFormated[$statuspageId]['host_problems']++;
+                    }
+                    if ($Hoststatus->isAcknowledged() && $Hoststatus->currentState() > 0) {
+                        $statuspagesFormated[$statuspageId]['host_acknowledgements']++;
+                    }
+                    if ($Hoststatus->isInDowntime()) {
+                        $statuspagesFormated[$statuspageId]['host_downtimes']++;
+                    }
+
+                    if ($Hoststatus->currentState() > 0) {
+                        // Host is down or unreachable - use the host status only
+                        // +1 shifts a host state into a service state so we can use a single array
+                        if ($Hoststatus->currentState() + 1 > $cumulatedState) {
+                            $cumulatedState = $Hoststatus->currentState() + 1;
+                        }
+
+                        continue;
+                    }
+
+                    // If the host is up -> use worst service state
+                    // IF host is down (or unreachable) use the host state (service state not needed in this case)
+                    // This is the same behavior as we use on Maps and Statuspages
+
+                    // Host is UP - use cumulated service status (just like on maps)
+                    // Merge host state and service state into one single cumulated state
+                    foreach ($services['services'] as $serviceUuid => $serviceId) {
+                        if (!isset($AllServicestatus[$serviceUuid]['Servicestatus'])) {
+                            continue;
+                        }
+                        $Servicestatus = new Servicestatus($AllServicestatus[$serviceUuid]['Servicestatus']);
+
+                        if ($Servicestatus->currentState() > 0) {
+                            $statuspagesFormated[$statuspageId]['service_problems']++;
+                        }
+                        if ($Servicestatus->isAcknowledged() && $Servicestatus->currentState() > 0) {
+                            $statuspagesFormated[$statuspageId]['service_acknowledgements']++;
+                        }
+                        if ($Servicestatus->isInDowntime()) {
+                            $statuspagesFormated[$statuspageId]['service_downtimes']++;
+                        }
+
+                        if ($Servicestatus->currentState() > $cumulatedState) {
+                            $cumulatedState = $Servicestatus->currentState();
+                        }
+                    }
+                }
+                $statuspagesFormated[$statuspageId]['cumulatedState'] = $cumulatedState;
             }
-            dd($statuspagesSummary);
+
         }
+
+        // Clear some memory
+        unset($statuspages, $AllHoststatus, $AllServicestatus);
+        $cumulatedStategroupState = max(Hash::extract($statuspagesFormated, '{n}.cumulatedState'));
+
+        $this->set('statuspages', $statuspagesFormated);
+        $this->set('cumulatedStategroupState', $cumulatedStategroupState);
+
+        $this->viewBuilder()->setOption('serialize', ['statuspages', 'cumulatedStategroupState']);
     }
 
     /**

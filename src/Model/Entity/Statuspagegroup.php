@@ -45,6 +45,13 @@ use Cake\ORM\Entity;
  * @property \App\Model\Entity\StatuspagesMembership[] $statuspages_memberships
  */
 class Statuspagegroup extends Entity {
+
+    public const CUMULATED_STATE_NOT_IN_MONITORING = -1;
+    public const CUMULATED_STATE_OPERATIONAL = 0;
+    public const CUMULATED_STATE_PERFORMANCE_ISSUES = 1;
+    public const CUMULATED_STATE_MAJOR_OUTAGE = 2;
+    public const CUMULATED_STATE_UNKNOWN = 3;
+
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *

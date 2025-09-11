@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\Entity\Statuspagegroup;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\StatuspagegroupsTable;
 use App\Model\Table\StatuspagesTable;
@@ -192,7 +193,7 @@ class StatuspagegroupsController extends AppController {
                             }
                             $allHostUuids[$host['id']] = $host['uuid'];
                             foreach ($host['services'] as $service) {
-                                $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
+                                $hostsWithServices['hosts'][$host['uuid']]['services'][$service['uuid']] = $service['id'];
                                 $allServiceUuids[$service['id']] = $service['uuid'];
                             }
                         }
@@ -228,7 +229,8 @@ class StatuspagegroupsController extends AppController {
 
                 //debug($variable);
                 $statuspagesFormated[$statuspage['id']] = [
-                    'hostsWithServices' => $hostsWithServices
+                    'hostsWithServices' => $hostsWithServices,
+                    'cumulatedState'    => Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING
                 ];
             }
 

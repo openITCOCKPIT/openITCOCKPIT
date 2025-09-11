@@ -432,7 +432,6 @@ class StatuspagegroupsController extends AppController {
                                 break;
                             case 2:
                                 $matrix[$collectionIndex][$categoryIndex]['total_critical']++;
-
                                 break;
                             case 3:
                                 $matrix[$collectionIndex][$categoryIndex]['total_unknown']++;
@@ -452,6 +451,40 @@ class StatuspagegroupsController extends AppController {
                 }
             }
         }
+
+
+        $collectionRows = Hash::combine($matrix, '{n}.{n}.categoryId', '{n}.{n}.cumulatedState', '{n}.{n}.collectionId');
+        $collectionsGlobalState = [];
+        foreach ($collectionRows as $collectionId => $categoryArr) {
+            if (!isset($collectionsGlobalState[$collectionId])) {
+                $collectionsGlobalState[$collectionId] = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+            }
+            if (!empty($categoryArr)) {
+                $maxState = max($categoryArr);
+                if ($maxState > $collectionsGlobalState[$collectionId]) {
+                    $collectionsGlobalState[$collectionId] = $maxState;
+                }
+            }
+        }
+        $categoryColumns = Hash::combine($matrix, '{n}.{n}.collectionId', '{n}.{n}', '{n}.{n}.categoryId');
+        $categoriesGlobalState = [];
+        foreach ($categoryColumns as $categoryId => $collectionArr) {
+            if (!isset($categoriesGlobalState[$categoryId])) {
+                $categoriesGlobalState[$categoryId] = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+            }
+            foreach ($collectionArr as $collection) {
+                if (!empty($collection['cumulatedStates'])) {
+                    $maxState = max($collection['cumulatedStates']);
+                    if ($maxState > $categoriesGlobalState[$categoryId]) {
+                        $categoriesGlobalState[$categoryId] = (int)$maxState;
+                    }
+                }
+            }
+        }
+
+        //debug($categoriesGlobalState);
+        //dd($collectionsGlobalState);
+
 
         //dd($matrix);
 

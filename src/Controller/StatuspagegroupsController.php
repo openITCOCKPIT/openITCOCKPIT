@@ -114,7 +114,7 @@ class StatuspagegroupsController extends AppController {
         $id = (int)$id;
         /** @var StatuspagegroupsTable $StatuspagegroupsTable */
         $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
-        $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForById($id);
+        $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForViewById($id);
         if (!$this->allowedByContainerId($statuspagegroup['container_id'])) {
             $this->render403();
             return;
@@ -366,6 +366,52 @@ class StatuspagegroupsController extends AppController {
             // We have to check for empty array - max() throws an error then
             $cumulatedStategroupState = max($allCumulatedStatuspageStates);
         }
+
+        // Build status page group matrix (collections and categories)
+        if (!empty($statuspagegroup)) {
+            $matrix = [];
+            foreach ($statuspagegroup['statuspagegroup_collections'] as $collectionIndex => $collection) {
+                $matrix[$collectionIndex] = [];
+                foreach ($statuspagegroup['statuspagegroup_categories'] as $categoryIndex => $category) {
+                    $matrix[$collectionIndex][$categoryIndex] = [
+                        'collectionIndex' => $collectionIndex,
+                        'collectionId'    => $collection['id'],
+                        'categoryIndex'   => $categoryIndex,
+                        'categoryId'      => $category['id'],
+                        'statuspageIds'   => [],
+                        'cumulatedStates' => [],
+                        'statuspages'     => []
+                    ];
+                }
+            }
+
+            // Map collection IDs to their index in the $statuspagegroup['statuspagegroup_collections'] array
+            $collectionIndexMapping = [];
+            foreach ($statuspagegroup['statuspagegroup_collections'] as $collectionIndex => $collection) {
+                $collectionIndexMapping[$collection['id']] = $collectionIndex;
+            }
+
+            // Map category IDs to their index in the $statuspagegroup['statuspagegroup_categories'] array
+            $categoryIndexMapping = [];
+            foreach ($statuspagegroup['statuspagegroup_categories'] as $categoryIndex => $category) {
+                $categoryIndexMapping[$category['id']] = $categoryIndex;
+            }
+
+            // Assign statuspages to the matrix based on their collection_id and category_id
+            foreach ($statuspagegroup['statuspages_memberships'] as $statuspage_membership) {
+                $collectionIndex = $collectionIndexMapping[$statuspage_membership['collection_id']] ?? null;
+                $categoryIndex = $categoryIndexMapping[$statuspage_membership['category_id']] ?? null;
+                if ($collectionIndex && $categoryIndex && isset($statuspagesFormated[$statuspage_membership['statuspage_id']])) {
+                    $statuspage = $statuspagesFormated[$statuspage_membership['statuspage_id']];
+                    $matrix[$collectionIndex][$categoryIndex]['statuspageIds'][] = $statuspage['statuspage']['id'];
+                    $matrix[$collectionIndex][$categoryIndex]['cumulatedStates'][] = $statuspage['cumulatedState'];
+                    $matrix[$collectionIndex][$categoryIndex]['statuspages'][] = $statuspage;
+                }
+            }
+
+        }
+
+        dd($matrix);
 
         $this->set('statuspages', array_values($statuspagesFormated));
         $this->set('cumulatedStategroupState', $cumulatedStategroupState);

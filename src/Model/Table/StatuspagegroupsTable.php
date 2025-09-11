@@ -237,7 +237,7 @@ class StatuspagegroupsTable extends Table {
      * @param int $id
      * @return array
      */
-    public function getStatuspagegroupForById(int $id): array {
+    public function getStatuspagegroupForViewById(int $id): array {
         $query = $this->find();
         $query->contain([
             'StatuspagegroupCategories'  => function (Query $query) {

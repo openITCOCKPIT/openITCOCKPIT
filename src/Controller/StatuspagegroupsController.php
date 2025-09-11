@@ -368,19 +368,26 @@ class StatuspagegroupsController extends AppController {
         }
 
         // Build status page group matrix (collections and categories)
+        $matrix = [];
         if (!empty($statuspagegroup)) {
-            $matrix = [];
             foreach ($statuspagegroup['statuspagegroup_collections'] as $collectionIndex => $collection) {
                 $matrix[$collectionIndex] = [];
                 foreach ($statuspagegroup['statuspagegroup_categories'] as $categoryIndex => $category) {
                     $matrix[$collectionIndex][$categoryIndex] = [
-                        'collectionIndex' => $collectionIndex,
-                        'collectionId'    => $collection['id'],
-                        'categoryIndex'   => $categoryIndex,
-                        'categoryId'      => $category['id'],
-                        'statuspageIds'   => [],
-                        'cumulatedStates' => [],
-                        'statuspages'     => []
+                        'collectionIndex'     => $collectionIndex,
+                        'collectionId'        => $collection['id'],
+                        'categoryIndex'       => $categoryIndex,
+                        'categoryId'          => $category['id'],
+                        'statuspageIds'       => [],
+                        'cumulatedStates'     => [],
+                        'cumulatedState'      => Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING,
+                        'statuspages'         => [],
+                        'total_statuspages'   => 0,
+                        'total_not_monitored' => 0,
+                        'total_ok'            => 0,
+                        'total_warning'       => 0,
+                        'total_critical'      => 0,
+                        'total_unknown'       => 0,
                     ];
                 }
             }
@@ -409,7 +416,44 @@ class StatuspagegroupsController extends AppController {
                 }
             }
 
+            // Calculate cumulated state for each cell in the matrix
+            foreach ($matrix as $collectionIndex => $categories) {
+                foreach ($categories as $categoryIndex => $category) {
+
+                    $matrix[$collectionIndex][$categoryIndex]['total_statuspages'] = sizeof($category['statuspages']);
+                    // I'm so sorry
+                    foreach ($category['statuspages'] as $spage) {
+                        switch ($spage['cumulatedState']) {
+                            case 0:
+                                $matrix[$collectionIndex][$categoryIndex]['total_ok']++;
+                                break;
+                            case 1:
+                                $matrix[$collectionIndex][$categoryIndex]['total_warning']++;
+                                break;
+                            case 2:
+                                $matrix[$collectionIndex][$categoryIndex]['total_critical']++;
+
+                                break;
+                            case 3:
+                                $matrix[$collectionIndex][$categoryIndex]['total_unknown']++;
+                                break;
+                            default:
+                                $matrix[$collectionIndex][$categoryIndex]['total_not_monitored']++;
+
+                        }
+                    }
+
+                    if (!empty($category['cumulatedStates'])) {
+                        $maxState = max($category['cumulatedStates']);
+                        $matrix[$collectionIndex][$categoryIndex]['cumulatedState'] = $maxState;
+                    } else {
+                        $matrix[$collectionIndex][$categoryIndex]['cumulatedState'] = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+                    }
+                }
+            }
         }
+
+        //dd($matrix);
 
         $this->set('statuspages', array_values($statuspagesFormated));
         $this->set('cumulatedStategroupState', $cumulatedStategroupState);

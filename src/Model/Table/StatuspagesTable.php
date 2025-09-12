@@ -759,9 +759,7 @@ class StatuspagesTable extends Table {
 
                 }
 
-
-                if ($statuspage[$objectType][$index]['state_summary']['hosts']['cumulatedStateId'] > 0 &&
-                    in_array($objectType, ['hosts', 'hostgroups'], true)) {
+                if ($statuspage[$objectType][$index]['state_summary']['hosts']['cumulatedStateId'] > 0) {
                     // Host is down or unreachable - use the host status only
                     // +1 shifts a host state into a service state so we can use a single array
                     $item['cumulatedColorId'] = $cumulatedStateId + 1;

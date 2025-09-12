@@ -54,13 +54,15 @@ class StatuspagesMembership extends Entity {
      * @var array<string, bool>
      */
     protected array $_accessible = [
-        'statuspagegroup_id' => true,
-        'collection_id'      => true,
-        'category_id'        => true,
-        'statuspage_id'      => true,
-        'modified'           => true,
-        'created'            => true,
-        'statuspagegroup'    => true,
-        'statuspage'         => true,
+        'statuspagegroup_id'         => true,
+        'collection_id'              => true,
+        'category_id'                => true,
+        'statuspage_id'              => true,
+        'modified'                   => true,
+        'created'                    => true,
+        'statuspagegroup'            => true,
+        'statuspage'                 => true,
+        'statuspagegroup_category'   => true,
+        'statuspagegroup_collection' => true,
     ];
 }

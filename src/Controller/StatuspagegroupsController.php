@@ -28,8 +28,10 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Model\Entity\Statuspagegroup;
+use App\Model\Entity\StatuspagesMembership;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\StatuspagegroupsTable;
+use App\Model\Table\StatuspagesMembershipTable;
 use App\Model\Table\StatuspagesTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
@@ -114,6 +116,11 @@ class StatuspagegroupsController extends AppController {
         $id = (int)$id;
         /** @var StatuspagegroupsTable $StatuspagegroupsTable */
         $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        if (!$StatuspagegroupsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid status page group'));
+        }
+
         $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForViewById($id);
         if (!$this->allowedByContainerId($statuspagegroup['container_id'])) {
             $this->render403();
@@ -133,46 +140,60 @@ class StatuspagegroupsController extends AppController {
 
         // Get cumulated status per status page AND total cumulated status for the group
         $statuspagesFormated = [];
-        if (!empty($statuspagegroup)) {
-            $statuspageIds = Hash::combine($statuspagegroup['statuspages_memberships'], '{n}.statuspage_id', '{n}.statuspage_id');
-            $statuspages = $StatuspagesTable->getStatuspageWithAllObjects($statuspageIds, $MY_RIGHTS);
-            $allHostUuids = [];
-            $allServiceUuids = [];
+
+        $statuspageIds = Hash::combine($statuspagegroup['statuspages_memberships'], '{n}.statuspage_id', '{n}.statuspage_id');
+        $statuspages = $StatuspagesTable->getStatuspageWithAllObjects($statuspageIds, $MY_RIGHTS);
+        $allHostUuids = [];
+        $allServiceUuids = [];
 
 
-            foreach ($statuspages as $statuspage) {
-                $hostsWithServices = [
-                    'hosts' => []
-                ];
+        foreach ($statuspages as $statuspage) {
+            $hostsWithServices = [
+                'hosts' => []
+            ];
 
-                //Hosts
-                foreach ($statuspage['hosts'] as $host) {
+            //Hosts
+            foreach ($statuspage['hosts'] as $host) {
+                if (!isset($hostsWithServices['hosts'][$host['uuid']])) {
+                    $hostsWithServices['hosts'][$host['uuid']] = [
+                        'services' => []
+                    ];
+                    $allHostUuids[$host['id']] = $host['uuid'];
+
+                    foreach ($host['services'] as $service) {
+                        $hostsWithServices['hosts'][$host['uuid']]['services'][$service['uuid']] = $service['id'];
+                        $allServiceUuids[$service['id']] = $service['uuid'];
+                    }
+                }
+            }
+            //Services
+            foreach ($statuspage['services'] as $service) {
+                if (!isset($hostsWithServices['hosts'][$service['host']['uuid']])) {
+                    $hostsWithServices['hosts'][$service['host']['uuid']] = [
+                        'services' => []
+                    ];
+                }
+                $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
+                $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
+                $allServiceUuids[$service['id']] = $service['uuid'];
+            }
+            //Host groups
+            foreach ($statuspage['hostgroups'] as $key => $hostgroup) {
+                foreach ($hostgroup['hosts'] as $host) {
                     if (!isset($hostsWithServices['hosts'][$host['uuid']])) {
                         $hostsWithServices['hosts'][$host['uuid']] = [
                             'services' => []
                         ];
-                        $allHostUuids[$host['id']] = $host['uuid'];
+                    }
+                    $allHostUuids[$host['id']] = $host['uuid'];
+                    foreach ($host['services'] as $service) {
+                        $hostsWithServices['hosts'][$host['uuid']]['services'][$service['uuid']] = $service['id'];
+                        $allServiceUuids[$service['id']] = $service['uuid'];
+                    }
+                }
 
-                        foreach ($host['services'] as $service) {
-                            $hostsWithServices['hosts'][$host['uuid']]['services'][$service['uuid']] = $service['id'];
-                            $allServiceUuids[$service['id']] = $service['uuid'];
-                        }
-                    }
-                }
-                //Services
-                foreach ($statuspage['services'] as $service) {
-                    if (!isset($hostsWithServices['hosts'][$service['host']['uuid']])) {
-                        $hostsWithServices['hosts'][$service['host']['uuid']] = [
-                            'services' => []
-                        ];
-                    }
-                    $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
-                    $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
-                    $allServiceUuids[$service['id']] = $service['uuid'];
-                }
-                //Host groups
-                foreach ($statuspage['hostgroups'] as $key => $hostgroup) {
-                    foreach ($hostgroup['hosts'] as $host) {
+                foreach ($hostgroup['hosttemplates'] as $hosttemplate) {
+                    foreach ($hosttemplate['hosts'] as $host) {
                         if (!isset($hostsWithServices['hosts'][$host['uuid']])) {
                             $hostsWithServices['hosts'][$host['uuid']] = [
                                 'services' => []
@@ -184,151 +205,107 @@ class StatuspagegroupsController extends AppController {
                             $allServiceUuids[$service['id']] = $service['uuid'];
                         }
                     }
-
-                    foreach ($hostgroup['hosttemplates'] as $hosttemplate) {
-                        foreach ($hosttemplate['hosts'] as $host) {
-                            if (!isset($hostsWithServices['hosts'][$host['uuid']])) {
-                                $hostsWithServices['hosts'][$host['uuid']] = [
-                                    'services' => []
-                                ];
-                            }
-                            $allHostUuids[$host['id']] = $host['uuid'];
-                            foreach ($host['services'] as $service) {
-                                $hostsWithServices['hosts'][$host['uuid']]['services'][$service['uuid']] = $service['id'];
-                                $allServiceUuids[$service['id']] = $service['uuid'];
-                            }
-                        }
-                    }
                 }
-                //Service groups
-                foreach ($statuspage['servicegroups'] as $key => $servicegroup) {
-                    foreach ($servicegroup['services'] as $service) {
+            }
+            //Service groups
+            foreach ($statuspage['servicegroups'] as $key => $servicegroup) {
+                foreach ($servicegroup['services'] as $service) {
+                    if (!isset($hostsWithServices['hosts'][$service['host']['uuid']])) {
+                        $hostsWithServices['hosts'][$service['host']['uuid']] = [
+                            'services' => []
+                        ];
+                    }
+                    $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
+
+                    $allServiceUuids[$service['id']] = $service['uuid'];
+                    $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
+                }
+
+                foreach ($servicegroup['servicetemplates'] as $servicetemplate) {
+                    foreach ($servicetemplate['services'] as $service) {
                         if (!isset($hostsWithServices['hosts'][$service['host']['uuid']])) {
                             $hostsWithServices['hosts'][$service['host']['uuid']] = [
                                 'services' => []
                             ];
                         }
-                        $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
-
+                        $hostsWithServices['hosts'][$service['host']['uuid']['uuid']]['services'][$service['uuid']] = $service['id'];
                         $allServiceUuids[$service['id']] = $service['uuid'];
                         $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
                     }
-
-                    foreach ($servicegroup['servicetemplates'] as $servicetemplate) {
-                        foreach ($servicetemplate['services'] as $service) {
-                            if (!isset($hostsWithServices['hosts'][$service['host']['uuid']])) {
-                                $hostsWithServices['hosts'][$service['host']['uuid']] = [
-                                    'services' => []
-                                ];
-                            }
-                            $hostsWithServices['hosts'][$service['host']['uuid']['uuid']]['services'][$service['uuid']] = $service['id'];
-                            $allServiceUuids[$service['id']] = $service['uuid'];
-                            $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
-                        }
-                    }
                 }
-
-                $statuspagesFormated[$statuspage['id']] = [
-                    'statuspage'               => [
-                        'id'                => $statuspage['id'],
-                        'uuid'              => $statuspage['uuid'],
-                        'container_id'      => $statuspage['container_id'],
-                        'name'              => $statuspage['name'],
-                        'description'       => $statuspage['description'],
-                        'public_title'      => $statuspage['public_title'],
-                        'public_identifier' => $statuspage['public_identifier'],
-                        'public'            => $statuspage['public'],
-                    ],
-                    'hostsWithServices'        => $hostsWithServices,
-                    'cumulatedState'           => Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING,
-                    'host_acknowledgements'    => 0, // Total amount of host acknowledgements
-                    'host_downtimes'           => 0, // Total amount of host downtimes
-                    'host_total'               => sizeof($hostsWithServices['hosts']), // Total amount of hosts
-                    'host_problems'            => 0, // Hosts in none up state
-                    'service_acknowledgements' => 0, // Total amount of service acknowledgements
-                    'service_downtimes'        => 0, // Total amount of service downtimes
-                    'service_total'            => Hash::apply($hostsWithServices['hosts'], '{s}.services.{s}', 'sizeof'), // Total amount of services
-                    'service_problems'         => 0, // Services in none up state
-                ];
             }
 
-            // Query host and service status for all objects in two queries
-            $DbBackend = new DbBackend();
-            $HoststatusTable = $DbBackend->getHoststatusTable();
-            $ServicestatusTable = $DbBackend->getServicestatusTable();
+            $statuspagesFormated[$statuspage['id']] = [
+                'statuspage'               => [
+                    'id'                => $statuspage['id'],
+                    'uuid'              => $statuspage['uuid'],
+                    'container_id'      => $statuspage['container_id'],
+                    'name'              => $statuspage['name'],
+                    'description'       => $statuspage['description'],
+                    'public_title'      => $statuspage['public_title'],
+                    'public_identifier' => $statuspage['public_identifier'],
+                    'public'            => $statuspage['public'],
+                ],
+                'hostsWithServices'        => $hostsWithServices,
+                'cumulatedState'           => Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING,
+                'host_acknowledgements'    => 0, // Total amount of host acknowledgements
+                'host_downtimes'           => 0, // Total amount of host downtimes
+                'host_total'               => sizeof($hostsWithServices['hosts']), // Total amount of hosts
+                'host_problems'            => 0, // Hosts in none up state
+                'service_acknowledgements' => 0, // Total amount of service acknowledgements
+                'service_downtimes'        => 0, // Total amount of service downtimes
+                'service_total'            => Hash::apply($hostsWithServices['hosts'], '{s}.services.{s}', 'sizeof'), // Total amount of services
+                'service_problems'         => 0, // Services in none up state
+            ];
+        }
 
-            $HoststatusFields = new HoststatusFields($DbBackend);
-            $HoststatusFields
-                ->currentState()
-                ->isHardstate()
-                ->problemHasBeenAcknowledged()
-                ->scheduledDowntimeDepth();
+        // Query host and service status for all objects in two queries
+        $DbBackend = new DbBackend();
+        $HoststatusTable = $DbBackend->getHoststatusTable();
+        $ServicestatusTable = $DbBackend->getServicestatusTable();
 
-            $ServicestatusFields = new ServicestatusFields($DbBackend);
-            $ServicestatusFields
-                ->currentState()
-                ->isHardstate()
-                ->problemHasBeenAcknowledged()
-                ->scheduledDowntimeDepth();
+        $HoststatusFields = new HoststatusFields($DbBackend);
+        $HoststatusFields
+            ->currentState()
+            ->isHardstate()
+            ->problemHasBeenAcknowledged()
+            ->scheduledDowntimeDepth();
 
-            $AllHoststatus = $HoststatusTable->byUuid($allHostUuids, $HoststatusFields);
-            $AllServicestatus = $ServicestatusTable->byUuids($allServiceUuids, $ServicestatusFields);
+        $ServicestatusFields = new ServicestatusFields($DbBackend);
+        $ServicestatusFields
+            ->currentState()
+            ->isHardstate()
+            ->problemHasBeenAcknowledged()
+            ->scheduledDowntimeDepth();
 
-            foreach ($statuspagesFormated as $statuspageId => $statuspage) {
-                $cumulatedState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
-                foreach ($statuspage['hostsWithServices']['hosts'] as $hostUuid => $services) {
-                    if (!isset($AllHoststatus[$hostUuid]['Hoststatus'])) {
-                        continue;
+        $AllHoststatus = $HoststatusTable->byUuid($allHostUuids, $HoststatusFields);
+        $AllServicestatus = $ServicestatusTable->byUuids($allServiceUuids, $ServicestatusFields);
+
+        foreach ($statuspagesFormated as $statuspageId => $statuspage) {
+            $cumulatedState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+            foreach ($statuspage['hostsWithServices']['hosts'] as $hostUuid => $services) {
+                if (!isset($AllHoststatus[$hostUuid]['Hoststatus'])) {
+                    continue;
+                }
+                $Hoststatus = new Hoststatus($AllHoststatus[$hostUuid]['Hoststatus']);
+                if ($Hoststatus->currentState() > 0) {
+                    $statuspagesFormated[$statuspageId]['host_problems']++;
+                }
+                if ($Hoststatus->isAcknowledged() && $Hoststatus->currentState() > 0) {
+                    $statuspagesFormated[$statuspageId]['host_acknowledgements']++;
+                }
+                if ($Hoststatus->isInDowntime()) {
+                    $statuspagesFormated[$statuspageId]['host_downtimes']++;
+                }
+
+                if ($Hoststatus->currentState() > 0) {
+                    // Host is down or unreachable - use the host status only
+                    // +1 shifts a host state into a service state so we can use a single array
+                    if ($Hoststatus->currentState() + 1 > $cumulatedState) {
+                        $cumulatedState = $Hoststatus->currentState() + 1;
                     }
-                    $Hoststatus = new Hoststatus($AllHoststatus[$hostUuid]['Hoststatus']);
-                    if ($Hoststatus->currentState() > 0) {
-                        $statuspagesFormated[$statuspageId]['host_problems']++;
-                    }
-                    if ($Hoststatus->isAcknowledged() && $Hoststatus->currentState() > 0) {
-                        $statuspagesFormated[$statuspageId]['host_acknowledgements']++;
-                    }
-                    if ($Hoststatus->isInDowntime()) {
-                        $statuspagesFormated[$statuspageId]['host_downtimes']++;
-                    }
 
-                    if ($Hoststatus->currentState() > 0) {
-                        // Host is down or unreachable - use the host status only
-                        // +1 shifts a host state into a service state so we can use a single array
-                        if ($Hoststatus->currentState() + 1 > $cumulatedState) {
-                            $cumulatedState = $Hoststatus->currentState() + 1;
-                        }
-
-                        // Loop through services to count problems, acks and downtimes (just for the statistics)
-                        foreach ($services['services'] as $serviceUuid => $serviceId) {
-                            if (!isset($AllServicestatus[$serviceUuid]['Servicestatus'])) {
-                                continue;
-                            }
-                            $Servicestatus = new Servicestatus($AllServicestatus[$serviceUuid]['Servicestatus']);
-
-                            if ($Servicestatus->currentState() > 0) {
-                                $statuspagesFormated[$statuspageId]['service_problems']++;
-                            }
-                            if ($Servicestatus->isAcknowledged() && $Servicestatus->currentState() > 0) {
-                                $statuspagesFormated[$statuspageId]['service_acknowledgements']++;
-                            }
-                            if ($Servicestatus->isInDowntime()) {
-                                $statuspagesFormated[$statuspageId]['service_downtimes']++;
-                            }
-
-                            if ($Servicestatus->currentState() > $cumulatedState) {
-                                $cumulatedState = $Servicestatus->currentState();
-                            }
-                        }
-
-                        continue;
-                    }
-
-                    // If the host is up -> use worst service state
-                    // IF host is down (or unreachable) use the host state (service state not needed in this case)
-                    // This is the same behavior as we use on Maps and Statuspages
-
-                    // Host is UP - use cumulated service status (just like on maps)
-                    // Merge host state and service state into one single cumulated state
+                    // Loop through services to count problems, acks and downtimes (just for the statistics)
                     foreach ($services['services'] as $serviceUuid => $serviceId) {
                         if (!isset($AllServicestatus[$serviceUuid]['Servicestatus'])) {
                             continue;
@@ -349,13 +326,41 @@ class StatuspagegroupsController extends AppController {
                             $cumulatedState = $Servicestatus->currentState();
                         }
                     }
+
+                    continue;
                 }
-                $statuspagesFormated[$statuspageId]['cumulatedState'] = $cumulatedState;
 
-                // Remove hosts and services array to save memory (and to not have it in the response JSON)
-                unset($statuspagesFormated[$statuspageId]['hostsWithServices']);
+                // If the host is up -> use worst service state
+                // IF host is down (or unreachable) use the host state (service state not needed in this case)
+                // This is the same behavior as we use on Maps and Statuspages
+
+                // Host is UP - use cumulated service status (just like on maps)
+                // Merge host state and service state into one single cumulated state
+                foreach ($services['services'] as $serviceUuid => $serviceId) {
+                    if (!isset($AllServicestatus[$serviceUuid]['Servicestatus'])) {
+                        continue;
+                    }
+                    $Servicestatus = new Servicestatus($AllServicestatus[$serviceUuid]['Servicestatus']);
+
+                    if ($Servicestatus->currentState() > 0) {
+                        $statuspagesFormated[$statuspageId]['service_problems']++;
+                    }
+                    if ($Servicestatus->isAcknowledged() && $Servicestatus->currentState() > 0) {
+                        $statuspagesFormated[$statuspageId]['service_acknowledgements']++;
+                    }
+                    if ($Servicestatus->isInDowntime()) {
+                        $statuspagesFormated[$statuspageId]['service_downtimes']++;
+                    }
+
+                    if ($Servicestatus->currentState() > $cumulatedState) {
+                        $cumulatedState = $Servicestatus->currentState();
+                    }
+                }
             }
+            $statuspagesFormated[$statuspageId]['cumulatedState'] = $cumulatedState;
 
+            // Remove hosts and services array to save memory (and to not have it in the response JSON)
+            unset($statuspagesFormated[$statuspageId]['hostsWithServices']);
         }
 
         // Clear some memory
@@ -369,85 +374,84 @@ class StatuspagegroupsController extends AppController {
 
         // Build status page group matrix (collections and categories)
         $matrix = [];
-        if (!empty($statuspagegroup)) {
-            foreach ($statuspagegroup['statuspagegroup_collections'] as $collectionIndex => $collection) {
-                $matrix[$collectionIndex] = [];
-                foreach ($statuspagegroup['statuspagegroup_categories'] as $categoryIndex => $category) {
-                    $matrix[$collectionIndex][$categoryIndex] = [
-                        'collectionIndex'     => $collectionIndex,
-                        'collectionId'        => $collection['id'],
-                        'categoryIndex'       => $categoryIndex,
-                        'categoryId'          => $category['id'],
-                        'statuspageIds'       => [],
-                        'cumulatedStates'     => [],
-                        'cumulatedState'      => Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING,
-                        'statuspages'         => [],
-                        'total_statuspages'   => 0,
-                        'total_not_monitored' => 0,
-                        'total_ok'            => 0,
-                        'total_warning'       => 0,
-                        'total_critical'      => 0,
-                        'total_unknown'       => 0,
-                    ];
-                }
-            }
 
-            // Map collection IDs to their index in the $statuspagegroup['statuspagegroup_collections'] array
-            $collectionIndexMapping = [];
-            foreach ($statuspagegroup['statuspagegroup_collections'] as $collectionIndex => $collection) {
-                $collectionIndexMapping[$collection['id']] = $collectionIndex;
-            }
-
-            // Map category IDs to their index in the $statuspagegroup['statuspagegroup_categories'] array
-            $categoryIndexMapping = [];
+        foreach ($statuspagegroup['statuspagegroup_collections'] as $collectionIndex => $collection) {
+            $matrix[$collectionIndex] = [];
             foreach ($statuspagegroup['statuspagegroup_categories'] as $categoryIndex => $category) {
-                $categoryIndexMapping[$category['id']] = $categoryIndex;
+                $matrix[$collectionIndex][$categoryIndex] = [
+                    'collectionIndex'     => $collectionIndex,
+                    'collectionId'        => $collection['id'],
+                    'categoryIndex'       => $categoryIndex,
+                    'categoryId'          => $category['id'],
+                    'statuspageIds'       => [],
+                    'cumulatedStates'     => [],
+                    'cumulatedState'      => Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING,
+                    'statuspages'         => [],
+                    'total_statuspages'   => 0,
+                    'total_not_monitored' => 0,
+                    'total_ok'            => 0,
+                    'total_warning'       => 0,
+                    'total_critical'      => 0,
+                    'total_unknown'       => 0,
+                ];
             }
+        }
 
-            // Assign statuspages to the matrix based on their collection_id and category_id
-            foreach ($statuspagegroup['statuspages_memberships'] as $statuspage_membership) {
-                $collectionIndex = $collectionIndexMapping[$statuspage_membership['collection_id']] ?? null;
-                $categoryIndex = $categoryIndexMapping[$statuspage_membership['category_id']] ?? null;
-                if ($collectionIndex !== null && $categoryIndex !== null && isset($statuspagesFormated[$statuspage_membership['statuspage_id']])) {
-                    $statuspage = $statuspagesFormated[$statuspage_membership['statuspage_id']];
-                    $matrix[$collectionIndex][$categoryIndex]['statuspageIds'][] = $statuspage['statuspage']['id'];
-                    $matrix[$collectionIndex][$categoryIndex]['cumulatedStates'][] = $statuspage['cumulatedState'];
-                    $matrix[$collectionIndex][$categoryIndex]['statuspages'][] = $statuspage;
+        // Map collection IDs to their index in the $statuspagegroup['statuspagegroup_collections'] array
+        $collectionIndexMapping = [];
+        foreach ($statuspagegroup['statuspagegroup_collections'] as $collectionIndex => $collection) {
+            $collectionIndexMapping[$collection['id']] = $collectionIndex;
+        }
+
+        // Map category IDs to their index in the $statuspagegroup['statuspagegroup_categories'] array
+        $categoryIndexMapping = [];
+        foreach ($statuspagegroup['statuspagegroup_categories'] as $categoryIndex => $category) {
+            $categoryIndexMapping[$category['id']] = $categoryIndex;
+        }
+
+        // Assign statuspages to the matrix based on their collection_id and category_id
+        foreach ($statuspagegroup['statuspages_memberships'] as $statuspage_membership) {
+            $collectionIndex = $collectionIndexMapping[$statuspage_membership['collection_id']] ?? null;
+            $categoryIndex = $categoryIndexMapping[$statuspage_membership['category_id']] ?? null;
+            if ($collectionIndex !== null && $categoryIndex !== null && isset($statuspagesFormated[$statuspage_membership['statuspage_id']])) {
+                $statuspage = $statuspagesFormated[$statuspage_membership['statuspage_id']];
+                $matrix[$collectionIndex][$categoryIndex]['statuspageIds'][] = $statuspage['statuspage']['id'];
+                $matrix[$collectionIndex][$categoryIndex]['cumulatedStates'][] = $statuspage['cumulatedState'];
+                $matrix[$collectionIndex][$categoryIndex]['statuspages'][] = $statuspage;
+            }
+        }
+
+        // Calculate cumulated state for each cell in the matrix
+        foreach ($matrix as $collectionIndex => $categories) {
+            foreach ($categories as $categoryIndex => $category) {
+
+                $matrix[$collectionIndex][$categoryIndex]['total_statuspages'] = sizeof($category['statuspages']);
+                // I'm so sorry
+                foreach ($category['statuspages'] as $spage) {
+                    switch ($spage['cumulatedState']) {
+                        case 0:
+                            $matrix[$collectionIndex][$categoryIndex]['total_ok']++;
+                            break;
+                        case 1:
+                            $matrix[$collectionIndex][$categoryIndex]['total_warning']++;
+                            break;
+                        case 2:
+                            $matrix[$collectionIndex][$categoryIndex]['total_critical']++;
+                            break;
+                        case 3:
+                            $matrix[$collectionIndex][$categoryIndex]['total_unknown']++;
+                            break;
+                        default:
+                            $matrix[$collectionIndex][$categoryIndex]['total_not_monitored']++;
+
+                    }
                 }
-            }
 
-            // Calculate cumulated state for each cell in the matrix
-            foreach ($matrix as $collectionIndex => $categories) {
-                foreach ($categories as $categoryIndex => $category) {
-
-                    $matrix[$collectionIndex][$categoryIndex]['total_statuspages'] = sizeof($category['statuspages']);
-                    // I'm so sorry
-                    foreach ($category['statuspages'] as $spage) {
-                        switch ($spage['cumulatedState']) {
-                            case 0:
-                                $matrix[$collectionIndex][$categoryIndex]['total_ok']++;
-                                break;
-                            case 1:
-                                $matrix[$collectionIndex][$categoryIndex]['total_warning']++;
-                                break;
-                            case 2:
-                                $matrix[$collectionIndex][$categoryIndex]['total_critical']++;
-                                break;
-                            case 3:
-                                $matrix[$collectionIndex][$categoryIndex]['total_unknown']++;
-                                break;
-                            default:
-                                $matrix[$collectionIndex][$categoryIndex]['total_not_monitored']++;
-
-                        }
-                    }
-
-                    if (!empty($category['cumulatedStates'])) {
-                        $maxState = max($category['cumulatedStates']);
-                        $matrix[$collectionIndex][$categoryIndex]['cumulatedState'] = $maxState;
-                    } else {
-                        $matrix[$collectionIndex][$categoryIndex]['cumulatedState'] = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
-                    }
+                if (!empty($category['cumulatedStates'])) {
+                    $maxState = max($category['cumulatedStates']);
+                    $matrix[$collectionIndex][$categoryIndex]['cumulatedState'] = $maxState;
+                } else {
+                    $matrix[$collectionIndex][$categoryIndex]['cumulatedState'] = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
                 }
             }
         }
@@ -482,17 +486,39 @@ class StatuspagegroupsController extends AppController {
             }
         }
 
-        //debug($categoriesGlobalState);
-        //dd($collectionsGlobalState);
+        foreach ($statuspagegroup['statuspagegroup_collections'] as $collectionIndex => $collection) {
+            $statuspagegroup['statuspagegroup_collections'][$collectionIndex]['cumulatedCollectionState'] = $collectionsGlobalState[$collection['id']] ?? Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+        }
 
+        foreach ($statuspagegroup['statuspagegroup_categories'] as $categoryIndex => $category) {
+            $statuspagegroup['statuspagegroup_categories'][$categoryIndex]['cumulatedCategoryState'] = $categoriesGlobalState[$category['id']] ?? Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+        }
 
-        //dd($matrix);
+        // List all status pages which have problems (host or service not in OK state)
+        /** @var StatuspagesMembershipTable $StatuspagesMembershipTable */
+        $StatuspagesMembershipTable = TableRegistry::getTableLocator()->get('StatuspagesMembership');
+        $problems = [];
+        $statuspageMemberships = $StatuspagesMembershipTable->getStatuspagesWithCollectionAndCategoryByStatuspagegroupId($id);
+        foreach ($statuspageMemberships as $StatuspageMembership) {
+            /** @var StatuspagesMembership $StatuspageMembership */
+            $state = $statuspagesFormated[$StatuspageMembership->statuspage_id]['cumulatedState'] ?? Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+            if ($state > Statuspagegroup::CUMULATED_STATE_OPERATIONAL) {
+                $problems[] = [
+                    'statuspage'     => $statuspagesFormated[$StatuspageMembership->statuspage_id] ?? [],
+                    'collection'     => $StatuspageMembership->statuspagegroup_collection,
+                    'category'       => $StatuspageMembership->statuspagegroup_category,
+                    'cumulatedState' => $state
+                ];
+            }
+        }
 
+        $this->set('statuspagegroup', $statuspagegroup);
         $this->set('statuspages', array_values($statuspagesFormated));
         $this->set('cumulatedStategroupState', $cumulatedStategroupState);
+        $this->set('problems', $problems);
         $this->set('matrix', $matrix);
 
-        $this->viewBuilder()->setOption('serialize', ['statuspages', 'cumulatedStategroupState', 'matrix']);
+        $this->viewBuilder()->setOption('serialize', ['statuspagegroup', 'statuspages', 'cumulatedStategroupState', 'problems', 'matrix']);
     }
 
     /**

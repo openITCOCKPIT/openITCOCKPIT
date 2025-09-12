@@ -77,6 +77,17 @@ class StatuspagesMembershipTable extends Table {
             'foreignKey' => 'statuspage_id',
             'joinType'   => 'INNER',
         ]);
+
+
+        $this->belongsTo('StatuspagegroupCollections', [
+            'foreignKey' => 'collection_id',
+            'joinType'   => 'INNER',
+        ]);
+
+        $this->belongsTo('StatuspagegroupCategories', [
+            'foreignKey' => 'category_id',
+            'joinType'   => 'INNER',
+        ]);
     }
 
     /**
@@ -119,5 +130,21 @@ class StatuspagesMembershipTable extends Table {
         $rules->add($rules->existsIn(['statuspage_id'], 'Statuspages'), ['errorField' => 'statuspage_id']);
 
         return $rules;
+    }
+
+    /**
+     * @param int $statuspagegroupId
+     * @return array
+     */
+    public function getStatuspagesWithCollectionAndCategoryByStatuspagegroupId(int $statuspagegroupId): array {
+        return $this->find()
+            ->contain([
+                'Statuspages',
+                'StatuspagegroupCollections',
+                'StatuspagegroupCategories'
+            ])
+            ->where(['StatuspagesMembership.statuspagegroup_id' => $statuspagegroupId])
+            ->all()
+            ->toArray();
     }
 }

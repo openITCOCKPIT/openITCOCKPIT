@@ -122,7 +122,7 @@ class StatuspagegroupsController extends AppController {
         }
 
         $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForViewById($id);
-        if (!$this->allowedByContainerId($statuspagegroup['container_id'])) {
+        if (!$this->allowedByContainerId($statuspagegroup['container_id'], false)) {
             $this->render403();
             return;
         }
@@ -146,6 +146,10 @@ class StatuspagegroupsController extends AppController {
         $allHostUuids = [];
         $allServiceUuids = [];
 
+        $totalHosts = 0;
+        $totalServices = 0;
+        $worstHostState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+        $worstServiceState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
 
         foreach ($statuspages as $statuspage) {
             $hostsWithServices = [
@@ -281,6 +285,9 @@ class StatuspagegroupsController extends AppController {
         $AllHoststatus = $HoststatusTable->byUuid($allHostUuids, $HoststatusFields);
         $AllServicestatus = $ServicestatusTable->byUuids($allServiceUuids, $ServicestatusFields);
 
+        $totalHosts = sizeof($allHostUuids);
+        $totalServices = sizeof($allServiceUuids);
+
         foreach ($statuspagesFormated as $statuspageId => $statuspage) {
             $cumulatedState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
             foreach ($statuspage['hostsWithServices']['hosts'] as $hostUuid => $services) {
@@ -290,6 +297,10 @@ class StatuspagegroupsController extends AppController {
                 $Hoststatus = new Hoststatus($AllHoststatus[$hostUuid]['Hoststatus']);
                 if ($Hoststatus->currentState() > 0) {
                     $statuspagesFormated[$statuspageId]['host_problems']++;
+
+                    if ($Hoststatus->currentState() > $worstHostState) {
+                        $worstHostState = $Hoststatus->currentState();
+                    }
                 }
                 if ($Hoststatus->isAcknowledged() && $Hoststatus->currentState() > 0) {
                     $statuspagesFormated[$statuspageId]['host_acknowledgements']++;
@@ -344,6 +355,10 @@ class StatuspagegroupsController extends AppController {
 
                     if ($Servicestatus->currentState() > 0) {
                         $statuspagesFormated[$statuspageId]['service_problems']++;
+
+                        if ($Servicestatus->currentState() > $worstServiceState) {
+                            $worstServiceState = $Servicestatus->currentState();
+                        }
                     }
                     if ($Servicestatus->isAcknowledged() && $Servicestatus->currentState() > 0) {
                         $statuspagesFormated[$statuspageId]['service_acknowledgements']++;
@@ -512,13 +527,32 @@ class StatuspagegroupsController extends AppController {
             }
         }
 
+        if ($worstHostState > Statuspagegroup::CUMULATED_STATE_OPERATIONAL) {
+            // Shift host status by one so that we can use the same naming pipe as we do for services
+            $worstHostState++;
+        }
+
+        $this->set('totalHosts', $totalHosts);
+        $this->set('totalServices', $totalServices);
+        $this->set('worstHostState', $worstHostState);
+        $this->set('worstServiceState', $worstServiceState);
         $this->set('statuspagegroup', $statuspagegroup);
         $this->set('statuspages', array_values($statuspagesFormated));
         $this->set('cumulatedStategroupState', $cumulatedStategroupState);
         $this->set('problems', $problems);
         $this->set('matrix', $matrix);
 
-        $this->viewBuilder()->setOption('serialize', ['statuspagegroup', 'statuspages', 'cumulatedStategroupState', 'problems', 'matrix']);
+        $this->viewBuilder()->setOption('serialize', [
+            'totalHosts',
+            'totalServices',
+            'worstHostState',
+            'worstServiceState',
+            'statuspagegroup',
+            'statuspages',
+            'cumulatedStategroupState',
+            'problems',
+            'matrix'
+        ]);
     }
 
     /**
@@ -826,6 +860,37 @@ class StatuspagegroupsController extends AppController {
 
         $this->set('statuspages', $statuspages);
         $this->viewBuilder()->setOption('serialize', ['statuspages']);
+    }
+
+    /**
+     * Get details about the status page group such as the ID and name.
+     * This is used by the view to show the correct title.
+     *
+     * @param string|null $id Statuspagegroup id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function getDetails($id = null) {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $id = (int)$id;
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        if (!$StatuspagegroupsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid status page group'));
+        }
+
+        $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForViewById($id);
+        if (!$this->allowedByContainerId($statuspagegroup['container_id'], false)) {
+            $this->render403();
+            return;
+        }
+
+        $this->set('statuspagegroup', $statuspagegroup);
+        $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
     }
 
 }

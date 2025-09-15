@@ -934,6 +934,10 @@ class StatuspagesTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface
      */
     public function getStatuspageWithAllObjects(array $ids, array $MY_RIGHTS = []) {
+        if (empty($ids)) {
+            return [];
+        }
+
         $query = $this->find()
             ->contain('Containers', function (Query $q) {
                 $q->select([

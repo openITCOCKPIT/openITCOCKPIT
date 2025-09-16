@@ -146,8 +146,7 @@ class StatuspagegroupsController extends AppController {
         $allHostUuids = [];
         $allServiceUuids = [];
 
-        $totalHosts = 0;
-        $totalServices = 0;
+
         $worstHostState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
         $worstServiceState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
 
@@ -297,10 +296,9 @@ class StatuspagegroupsController extends AppController {
                 $Hoststatus = new Hoststatus($AllHoststatus[$hostUuid]['Hoststatus']);
                 if ($Hoststatus->currentState() > 0) {
                     $statuspagesFormated[$statuspageId]['host_problems']++;
-
-                    if ($Hoststatus->currentState() > $worstHostState) {
-                        $worstHostState = $Hoststatus->currentState();
-                    }
+                }
+                if ($Hoststatus->currentState() > $worstHostState) {
+                    $worstHostState = $Hoststatus->currentState();
                 }
                 if ($Hoststatus->isAcknowledged() && $Hoststatus->currentState() > 0) {
                     $statuspagesFormated[$statuspageId]['host_acknowledgements']++;
@@ -339,6 +337,9 @@ class StatuspagegroupsController extends AppController {
                     }
 
                     continue;
+                }
+                if ($Hoststatus->currentState() === 0 && $Hoststatus->currentState() > $cumulatedState) {
+                    $cumulatedState = $Hoststatus->currentState();
                 }
 
                 // If the host is up -> use worst service state

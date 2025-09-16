@@ -85,13 +85,22 @@ abstract class Filter {
                             $value = $this->getQueryFieldValue($field, true);
                             if ($value) {
                                 if (!is_array($value)) {
+                                    if ($this->isSimpleWord($value)) {
+                                        // No regex required for simple words so we use LIKE instead of RLIKE
+                                        // to avoid ERROR 3699 (HY000): Timeout exceeded in regular expression match
+                                        // error
+                                        $conditions[sprintf('%s LIKE', $field)] = sprintf(
+                                            '%%%s%%',
+                                            $value
+                                        );
+                                        break;
+                                    }
                                     $value = [$value];
                                 }
                                 $regularExpression = sprintf('.*(%s).*', implode('|', $value));
                                 if ($this->isValidRegularExpression($regularExpression)) {
                                     $conditions[sprintf('%s rlike', $field)] = $regularExpression;
                                 }
-
                             }
                             break;
                         case 'notrlike':
@@ -418,6 +427,10 @@ abstract class Filter {
      */
     public function isValidRegularExpression($regEx) {
         return @preg_match('`' . $regEx . '`', '') !== false;
+    }
+
+    public function isSimpleWord($value): bool|int {
+        return @preg_match("/^[a-zA-Z0-9]+$/", $value);
     }
 
     /**

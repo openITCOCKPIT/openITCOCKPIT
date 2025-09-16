@@ -36,6 +36,8 @@ use Cake\ORM\Entity;
  * @property int $container_id
  * @property string $name
  * @property string|null $description
+ * @property string $additional_information
+ * @property bool $show_ticker
  * @property \Cake\I18n\DateTime $modified
  * @property \Cake\I18n\DateTime $created
  *
@@ -65,6 +67,8 @@ class Statuspagegroup extends Entity {
         'container_id'                => true,
         'name'                        => true,
         'description'                 => true,
+        'additional_information'      => true,
+        'show_ticker'                 => true,
         'modified'                    => true,
         'created'                     => true,
         'container'                   => true,

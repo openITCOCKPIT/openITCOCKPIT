@@ -356,11 +356,12 @@ class StatuspagegroupsController extends AppController {
 
                     if ($Servicestatus->currentState() > 0) {
                         $statuspagesFormated[$statuspageId]['service_problems']++;
-
-                        if ($Servicestatus->currentState() > $worstServiceState) {
-                            $worstServiceState = $Servicestatus->currentState();
-                        }
                     }
+
+                    if ($Servicestatus->currentState() > $worstServiceState) {
+                        $worstServiceState = $Servicestatus->currentState();
+                    }
+
                     if ($Servicestatus->isAcknowledged() && $Servicestatus->currentState() > 0) {
                         $statuspagesFormated[$statuspageId]['service_acknowledgements']++;
                     }

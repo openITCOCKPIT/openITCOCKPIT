@@ -55,7 +55,7 @@ class StatuspageGroups extends \Migrations\BaseMigration {
      * https://book.cakephp.org/phinx/0/en/migrations.html#the-change-method
      * @return void
      */
-    public function up(): void {
+    public function change(): void {
         if (!$this->hasTable('statuspagegroups')) {
             $this->table('statuspagegroups')
                 ->addColumn('id', 'integer', [
@@ -75,8 +75,18 @@ class StatuspageGroups extends \Migrations\BaseMigration {
                 ])
                 ->addColumn('description', 'string', [
                     'default' => null,
-                    'limit'   => 255,
+                    'limit'   => 1000,
                     'null'    => true,
+                ])
+                ->addColumn('additional_information', 'string', [
+                    'default' => '',
+                    'limit'   => 2048,
+                    'null'    => false,
+                ])
+                ->addColumn('show_ticker', 'boolean', [
+                    'default' => true,
+                    'limit'   => null,
+                    'null'    => false,
                 ])
                 ->addColumn('modified', 'datetime', [
                     'limit' => null,
@@ -224,25 +234,4 @@ class StatuspageGroups extends \Migrations\BaseMigration {
 
     }
 
-    /**
-     * Down Method.
-     *
-     * More information on this method is available here:
-     * https://book.cakephp.org/phinx/0/en/migrations.html#the-down-method
-     * @return void
-     */
-    public function down(): void {
-        if ($this->hasTable('statuspagegroups')) {
-            $this->table('statuspagegroups')->drop()->save();
-        }
-        if ($this->hasTable('statuspagegroup_collections')) {
-            $this->table('statuspagegroup_collections')->drop()->save();
-        }
-        if ($this->hasTable('statuspagegroup_categories')) {
-            $this->table('statuspagegroup_categories')->drop()->save();
-        }
-        if ($this->hasTable('statuspages_to_statuspagegroups')) {
-            $this->table('statuspages_to_statuspagegroups')->drop()->save();
-        }
-    }
 }

@@ -137,8 +137,17 @@ class StatuspagegroupsTable extends Table {
 
         $validator
             ->scalar('description')
-            ->maxLength('description', 255)
+            ->maxLength('description', 1000)
             ->allowEmptyString('description');
+
+        $validator
+            ->scalar('additional_information')
+            ->maxLength('additional_information', 2048)
+            ->allowEmptyString('additional_information');
+
+        $validator
+            ->allowEmptyString('show_ticker')
+            ->boolean('show_ticker');
 
         return $validator;
     }

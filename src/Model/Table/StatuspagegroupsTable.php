@@ -304,4 +304,65 @@ class StatuspagegroupsTable extends Table {
             }
         }
     }
+
+    /**
+     * @param $selected
+     * @param GenericFilter $GenericFilter
+     * @param $MY_RIGHTS
+     * @return array
+     */
+    public function getStatuspagegroupsForAngular($selected, GenericFilter $GenericFilter, $MY_RIGHTS = []) {
+        if (!is_array($selected)) {
+            $selected = [$selected];
+        }
+        $query = $this->find('list')
+            ->limit(ITN_AJAX_LIMIT)
+            ->select([
+                'Statuspagegroups.id',
+                'Statuspagegroups.name'
+            ])->where(
+                $GenericFilter->genericFilters()
+            );
+
+        if (!empty($MY_RIGHTS)) {
+            $query->andWhere([
+                'Statuspagegroups.container_id IN' => $MY_RIGHTS
+            ]);
+        }
+
+        $selected = array_filter($selected);
+        if (!empty($selected)) {
+            $query->where([
+                'Statuspagegroups.id NOT IN' => $selected
+            ]);
+            if (!empty($MY_RIGHTS)) {
+                $query->andWhere([
+                    'Statuspagegroups.container_id IN' => $MY_RIGHTS
+                ]);
+            }
+        }
+
+        $query->orderBy(['Statuspagegroups.name' => 'ASC']);
+        $statuspagegroupsWithLimit = $query->toArray();
+        $selectedStatuspagegroups = [];
+        if (!empty($selected)) {
+            $query = $this->find('list')
+                ->select([
+                    'Statuspagegroups.id',
+                    'Statuspagegroups.name'
+                ])
+                ->where([
+                    'Statuspagegroups.id IN' => $selected
+                ]);
+
+            $query->orderBy(['Statuspagegroups.name' => 'ASC']);
+
+            $selectedStatuspagegroups = $query->toArray();
+        }
+
+        $statuspagegroups = $statuspagegroupsWithLimit + $selectedStatuspagegroups;
+        asort($statuspagegroups, SORT_FLAG_CASE | SORT_NATURAL);
+        return $statuspagegroups;
+    }
+
 }

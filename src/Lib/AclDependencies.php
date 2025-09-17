@@ -221,6 +221,10 @@ class AclDependencies {
             ->allow('Users', 'getUserPermissions')
             ->allow('Users', 'loadDateformats');
 
+        $this
+            ->allow('Statuspagegroups', 'loadStatuspagegroupsByString')
+            ->allow('Statuspagegroups', 'statuspagegroupWidget');
+
 
         ///////////////////////////////
         //    Add dependencies       //

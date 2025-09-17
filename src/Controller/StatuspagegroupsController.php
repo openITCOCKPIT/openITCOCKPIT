@@ -27,12 +27,16 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\itnovum\openITCOCKPIT\Core\Dashboards\StatuspagegroupJson;
 use App\Model\Entity\Statuspagegroup;
 use App\Model\Entity\StatuspagesMembership;
 use App\Model\Table\ContainersTable;
+use App\Model\Table\DashboardTabsTable;
 use App\Model\Table\StatuspagegroupsTable;
 use App\Model\Table\StatuspagesMembershipTable;
 use App\Model\Table\StatuspagesTable;
+use App\Model\Table\WidgetsTable;
+use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
@@ -43,6 +47,7 @@ use itnovum\openITCOCKPIT\Core\Hoststatus;
 use itnovum\openITCOCKPIT\Core\HoststatusFields;
 use itnovum\openITCOCKPIT\Core\Servicestatus;
 use itnovum\openITCOCKPIT\Core\ServicestatusFields;
+use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
 use itnovum\openITCOCKPIT\Filter\StatuspagesFilter;
@@ -813,6 +818,85 @@ class StatuspagegroupsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['success', 'message']);
     }
 
+    public function statuspagegroupWidget() {
+        if (!$this->isAngularJsRequest()) {
+            //Only ship template
+            return;
+        }
+        /** @var WidgetsTable $WidgetsTable */
+        $WidgetsTable = TableRegistry::getTableLocator()->get('Widgets');
+
+        $widgetId = (int)$this->request->getQuery('widgetId');
+        if (!$WidgetsTable->existsById($widgetId)) {
+            throw new NotFoundException('Widget not found');
+        }
+
+        $StatuspagegroupJson = new StatuspagegroupJson();
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        $widget = $WidgetsTable->get($widgetId);
+
+        if ($this->request->is('get')) {
+            $widgetId = (int)$this->request->getQuery('widgetId');
+            if (!$WidgetsTable->existsById($widgetId)) {
+                throw new NotFoundException('Invalid widget id');
+            }
+            $widgetEntity = $WidgetsTable->get($widgetId);
+            $widget = $widgetEntity->toArray();
+            $config = [
+                'statuspagegroup_id' => null
+            ];
+            if ($widget['json_data'] !== null && $widget['json_data'] !== '') {
+                $config = json_decode($widget['json_data'], true);
+                if (!isset($config['statuspagegroup_id'])) {
+                    $config['statuspagegroup_id'] = null;
+                }
+            }
+            //Check statuspage group permissions
+            if ($config['statuspagegroup_id'] !== null) {
+                $id = (int)$config['statuspagegroup_id'];
+                if (!$StatuspagegroupsTable->existsById($id)) {
+                    throw new NotFoundException(__('Statuspage group not found'));
+                }
+                $statuspagegroup = $StatuspagegroupsTable->get($id);
+                $statuspagegroup = $statuspagegroup->toArray();
+                //Check statuspage group permissions
+                if (!empty($statuspagegroup) && isset($statuspagegroup[0])) {
+                    if (!$this->allowedByContainerId($statuspagegroup['container_id'], false)) {
+                        $config['statuspagegroup_id'] = null;
+                    }
+                }
+            }
+
+            $this->set('config', $config);
+            $this->viewBuilder()->setOption('serialize', ['config']);
+            return;
+        }
+
+        if ($this->request->is('post')) {
+            /** @var DashboardTabsTable $DashboardTabsTable */
+            $DashboardTabsTable = TableRegistry::getTableLocator()->get('DashboardTabs');
+
+            $User = new User($this->getUser());
+
+            if (!$DashboardTabsTable->isOwnedByUser($widget->dashboard_tab_id, $User->getId())) {
+                throw new ForbiddenException();
+            }
+
+            $config = $StatuspagegroupJson->standardizedData($this->request->getData());
+            $widget = $WidgetsTable->patchEntity($widget, [
+                'json_data' => json_encode($config)
+            ]);
+            $WidgetsTable->save($widget);
+
+            $this->set('config', $config);
+            $this->viewBuilder()->setOption('serialize', ['config']);
+            return;
+        }
+        throw new MethodNotAllowedException();
+    }
+
 
     /****************************
      *       AJAX METHODS       *
@@ -893,6 +977,36 @@ class StatuspagegroupsController extends AppController {
 
         $this->set('statuspagegroup', $statuspagegroup);
         $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
+    }
+
+    public function loadStatuspagegroupsByString(): void {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $GenericFilter = new GenericFilter($this->request);
+        $GenericFilter->setFilters([
+            'like' => [
+                'Statuspagegroups.name'
+            ]
+        ]);
+
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+        $selected = $this->request->getQuery('selected');
+
+        $MY_RIGHTS = $this->MY_RIGHTS;
+        if ($this->hasRootPrivileges) {
+            $MY_RIGHTS = [];
+        }
+
+        $statuspagegroups = Api::makeItJavaScriptAble(
+            $StatuspagegroupsTable->getStatuspagegroupsForAngular($selected, $GenericFilter, $MY_RIGHTS)
+        );
+
+        $this->set('statuspagegroups', $statuspagegroups);
+        $this->viewBuilder()->setOption('serialize', ['statuspagegroups']);
     }
 
 }

@@ -286,7 +286,7 @@ class WidgetsTable extends Table {
             */
         ];
 
-        //Depands on user rights
+        //Depends on user rights
         if (isset($ACL_PERMISSIONS['downtimes']['host'])) {
             $widgets[] = [
                 'type_id'   => 5,
@@ -464,6 +464,21 @@ class WidgetsTable extends Table {
                 'directive' => 'website-widget',
                 'width'     => 12,
                 'height'    => 30
+            ];
+        }
+
+        if (isset($ACL_PERMISSIONS['statuspagegroups']['view'])) {
+            $widgets[] = [
+                'type_id'   => 37,
+                'title'     => __('Status page group overview'),
+                'icon'      => 'fas fa-layer-group',
+                'directive' => 'statuspage-group-widget',
+                'width'     => 12,
+                'height'    => 40,
+                'default'   => [
+                    'row' => 28,
+                    'col' => 0
+                ]
             ];
         }
 

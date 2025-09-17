@@ -222,6 +222,10 @@ class AclDependencies {
             ->allow('Users', 'loadDateformats');
 
 
+        $this
+            ->allow('OrganizationalCharts', 'organizationalchartWidget');
+
+
         ///////////////////////////////
         //    Add dependencies       //
         //////////////////////////////

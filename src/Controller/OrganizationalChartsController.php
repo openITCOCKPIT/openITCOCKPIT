@@ -531,4 +531,34 @@ class OrganizationalChartsController extends AppController {
         $this->set('allowEdit', $allowEdit);
         $this->viewBuilder()->setOption('serialize', ['organizationalChart', 'containers', 'allowEdit']);
     }
+
+    public function loadOrganizationalChartsByString() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $GenericFilter = new GenericFilter($this->request);
+        $GenericFilter->setFilters([
+            'like' => [
+                'OrganizationalCharts.name'
+            ]
+        ]);
+
+
+        /** @var OrganizationalChartsTable $OrganizationalChartsTable */
+        $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+        $selected = $this->request->getQuery('selected');
+
+        $MY_RIGHTS = $this->MY_RIGHTS;
+        if ($this->hasRootPrivileges) {
+            $MY_RIGHTS = [];
+        }
+
+        $organizationalCharts = Api::makeItJavaScriptAble(
+            $OrganizationalChartsTable->getOrganizationalChartsForAngular($selected, $GenericFilter, $MY_RIGHTS)
+        );
+
+        $this->set('organizationalCharts', $organizationalCharts);
+        $this->viewBuilder()->setOption('serialize', ['organizationalCharts']);
+    }
 }

@@ -428,7 +428,7 @@ class WizardAssignmentsTable extends Table {
             'microsoft-m365-ServiceStatus' => [
                 'type_id'     => 'microsoft-m365-ServiceStatus',
                 'title'       => __('Microsoft 365 (Service Status)'),
-                'description' => __('Service Status'),
+                'description' => __('Microsoft 365 (Service Status)'),
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
@@ -436,7 +436,7 @@ class WizardAssignmentsTable extends Table {
             'microsoft-m365-OneDrive'      => [
                 'type_id'     => 'microsoft-m365-OneDrive',
                 'title'       => __('Microsoft 365 (OneDrive)'),
-                'description' => __('OneDrive'),
+                'description' => __('Microsoft 365 (OneDrive)'),
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
@@ -444,7 +444,7 @@ class WizardAssignmentsTable extends Table {
             'microsoft-m365-Mailbox'       => [
                 'type_id'     => 'microsoft-m365-Mailbox',
                 'title'       => __('Microsoft 365 (Mailbox)'),
-                'description' => __('Mailbox'),
+                'description' => __('Microsoft 365 (Mailbox)'),
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud', 'mail'],
                 'active'      => true
@@ -452,7 +452,7 @@ class WizardAssignmentsTable extends Table {
             'microsoft-m365-SharePoint'    => [
                 'type_id'     => 'microsoft-m365-SharePoint',
                 'title'       => __('Microsoft 365 (SharePoint)'),
-                'description' => __('SharePoint'),
+                'description' => __('Microsoft 365 (SharePoint)'),
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true

@@ -215,7 +215,7 @@ class OrganizationalChartsTable extends Table {
         if (!empty($MY_RIGHTS)) {
             //$query->where(['OrganizationalChartNodes.container_id IN' => $MY_RIGHTS]);
             $query->where($query->newExpr(
-                'NOT EXISTS (
+                'EXISTS (
                     SELECT ocs.organizational_chart_id
                     FROM `organizational_chart_nodes` ocs
                     WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`
@@ -308,4 +308,74 @@ class OrganizationalChartsTable extends Table {
 
         return $query->toArray();
     }
+
+    /**
+     * @param $selected
+     * @param GenericFilter $GenericFilter
+     * @param $MY_RIGHTS
+     * @return array
+     */
+    public function getOrganizationalChartsForAngular($selected, GenericFilter $GenericFilter, $MY_RIGHTS = []) {
+        if (!is_array($selected)) {
+            $selected = [$selected];
+        }
+        $query = $this->find('list')
+            ->limit(ITN_AJAX_LIMIT)
+            ->select([
+                'OrganizationalCharts.id',
+                'OrganizationalCharts.name'
+            ])->where(
+                $GenericFilter->genericFilters()
+            );
+        if (!empty($MY_RIGHTS)) {
+            $query->where($query->newExpr(
+                'EXISTS (
+                    SELECT ocs.organizational_chart_id
+                    FROM `organizational_chart_nodes` ocs
+                    WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`
+                      AND ocs.container_id IN (' . implode(',', $MY_RIGHTS) . ')
+                )'
+            ));
+        }
+
+        $selected = array_filter($selected);
+        if (!empty($selected)) {
+            $query->where([
+                'OrganizationalCharts.id NOT IN' => $selected
+            ]);
+            if (!empty($MY_RIGHTS)) {
+                $query->where($query->newExpr(
+                    'EXISTS (
+                    SELECT ocs.organizational_chart_id
+                    FROM `organizational_chart_nodes` ocs
+                    WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`
+                      AND ocs.container_id IN (' . implode(',', $MY_RIGHTS) . ')
+                )'
+                ));
+            }
+        }
+
+        $query->orderBy(['OrganizationalCharts.name' => 'ASC']);
+        $organizationalChartsWithLimit = $query->toArray();
+        $selectedOrganizationalCharts = [];
+        if (!empty($selected)) {
+            $query = $this->find('list')
+                ->select([
+                    'OrganizationalCharts.id',
+                    'OrganizationalCharts.name'
+                ])
+                ->where([
+                    'OrganizationalCharts.id IN' => $selected
+                ]);
+
+            $query->orderBy(['OrganizationalCharts.name' => 'ASC']);
+
+            $selectedOrganizationalCharts = $query->toArray();
+        }
+
+        $organizationalCharts = $organizationalChartsWithLimit + $selectedOrganizationalCharts;
+        asort($organizationalCharts, SORT_FLAG_CASE | SORT_NATURAL);
+        return $organizationalCharts;
+    }
+
 }

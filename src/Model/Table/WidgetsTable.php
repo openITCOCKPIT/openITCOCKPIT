@@ -456,6 +456,17 @@ class WidgetsTable extends Table {
             ];
         }
 
+        if (isset($ACL_PERMISSIONS['organizationalcharts']['view'])) {
+            $widgets[] = [
+                'type_id'   => 38,
+                'title'     => __('Organizational chart'),
+                'icon'      => 'fa-solid fa-sitemap',
+                'directive' => 'organizational-chart-widget',
+                'width'     => 12,
+                'height'    => 30
+            ];
+        }
+
         if ($SystemsettingsTable->isWebsiteWidgetEnabled()) {
             $widgets[] = [
                 'type_id'   => 18,

@@ -66,7 +66,7 @@ use itnovum\openITCOCKPIT\Core\MonitoringEngine\NagiosConfigGenerator;
 use itnovum\openITCOCKPIT\Core\System\Health\LsbRelease;
 use NWCModule\itnovum\openITCOCKPIT\SNMP\SNMPScanNwc;
 use Symfony\Component\Filesystem\Filesystem;
-use VMWAREModule\itnovum\openITCOCKPIT\Datastore\DatastoreScan;
+use ProxmoxModule\itnovum\openITCOCKPIT\ProxmoxStorage\ProxmoxStorageScan;
 
 /**
  * GearmanWorker command.
@@ -1070,6 +1070,24 @@ class GearmanWorkerCommand extends Command {
                 $DatastoreScan = new DatastoreScan($payload['data']);
                 try {
                     $services = $DatastoreScan->executeDatastoreDiscovery();
+                    $return = [
+                        'success'  => $services['success'],
+                        'error'    => $services['errormsg'],
+                        'services' => $services
+                    ];
+                } catch (\RuntimeException $e) {
+                    $return = [
+                        'success'   => false,
+                        'error'     => $e->getMessage(),
+                        'exception' => 'ProcessFailedException'
+                    ];
+                }
+                break;
+
+            case 'WizardProxmoxStorageDiscovery':
+                $DatastoreScan = new ProxmoxStorageScan($payload['data']);
+                try {
+                    $services = $DatastoreScan->executeStorageDiscovery();
                     $return = [
                         'success'  => $services['success'],
                         'error'    => $services['errormsg'],

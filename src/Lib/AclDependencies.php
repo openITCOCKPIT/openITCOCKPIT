@@ -221,6 +221,10 @@ class AclDependencies {
             ->allow('Users', 'getUserPermissions')
             ->allow('Users', 'loadDateformats');
 
+        $this
+            ->allow('Statuspagegroups', 'loadStatuspagegroupsByString')
+            ->allow('Statuspagegroups', 'statuspagegroupWidget');
+
 
         $this
             ->allow('OrganizationalCharts', 'organizationalchartWidget');
@@ -515,6 +519,15 @@ class AclDependencies {
             ->dependency('Statuspages', 'view', 'Statuspages', 'loadContainers')
             ->dependency('Statuspages', 'add', 'Statuspages', 'loadContainers')
             ->dependency('Statuspages', 'edit', 'Statuspages', 'loadContainers');
+
+        $this
+            ->dependency('Statuspagegroups', 'add', 'Statuspagegroups', 'loadContainers')
+            ->dependency('Statuspagegroups', 'add', 'Statuspagegroups', 'editStepTwo')
+            ->dependency('Statuspagegroups', 'add', 'Statuspagegroups', 'loadStatuspagesByString')
+            ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'loadContainers')
+            ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'editStepTwo')
+            ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'loadStatuspagesByString')
+            ->dependency('Statuspagegroups', 'view', 'Statuspagegroups', 'getDetails');
 
         $this
             ->dependency('Users', 'index', 'Users', 'view')

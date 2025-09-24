@@ -153,6 +153,16 @@ class Menu {
                         true,
                         '/currentstatereports/index'
                     ))
+
+            )
+            ->addCategory(
+                (new MenuCategory(
+                    'status_pages',
+                    __('Status Pages Management'),
+                    4,
+                    ['fas', 'globe']
+
+                ))
                     ->addLink(new MenuLink(
                         __('Status pages'),
                         'StatuspagesIndex',
@@ -165,7 +175,18 @@ class Menu {
                         true,
                         '/statuspages/index'
                     ))
-            )
+                    ->addLink(new MenuLink(
+                        __('Status page groups'),
+                        'StatuspagegroupsIndex',
+                        'statuspagegroups',
+                        'index',
+                        '',
+                        ['fas', 'layer-group'],
+                        [],
+                        3,
+                        true,
+                        '/statuspagegroups/index'
+                    )))
             ->addCategory(
                 (new MenuCategory(
                     'logs_category',

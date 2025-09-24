@@ -425,6 +425,22 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
+            'proxmox'                => [
+                'type_id'     => 'proxmox',
+                'title'       => __('Proxmox'),
+                'description' => __('Used to monitor Proxmox (Status, Memory, CPU, ZFS, CEPH, Backup, ...)'),
+                'image'       => 'proxmox-logo-stacked-color.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
+            ],
+            'proxmox_storage'        => [
+                'type_id'     => 'proxmox_storage',
+                'title'       => __('Proxmox Storage'),
+                'description' => __('Used to monitor Proxmox Storages.'),
+                'image'       => 'proxmox-logo-stacked-color.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
+            ],
             'microsoft-m365-ServiceStatus' => [
                 'type_id'     => 'microsoft-m365-ServiceStatus',
                 'title'       => __('Microsoft 365 (Service Status)'),

@@ -126,6 +126,13 @@ class StatuspagesTable extends Table {
             'saveStrategy'     => 'replace'
         ])->setDependent(true);
 
+        $this->hasMany('StatuspagesMembership', [
+            'className'    => 'StatuspagesMembership',
+            'foreignKey'   => 'statuspage_id',
+            'saveStrategy' => 'replace',
+            'dependent'    => true,
+        ]);
+
     }
 
     /**
@@ -310,8 +317,12 @@ class StatuspagesTable extends Table {
      * @param UserTime $UserTime
      * @return array
      */
-    public function getStatuspageForView(int $id, array $MY_RIGHTS, UserTime $UserTime) {
-        $statuspage = $this->getStatuspageWithAllObjects($id, $MY_RIGHTS);
+    public function getStatuspageForView(int $id, array $MY_RIGHTS, UserTime $UserTime): array {
+        $statuspages = $this->getStatuspageWithAllObjects([$id], $MY_RIGHTS);
+        if (empty($statuspages)) {
+            throw new \Cake\Datasource\Exception\RecordNotFoundException(__('Statuspage not found'));
+        }
+        $statuspage = $statuspages[0];
 
         $showDowntimes = $statuspage['show_downtimes'];
         $showDowntimeComments = $statuspage['show_downtime_comments'];
@@ -748,9 +759,7 @@ class StatuspagesTable extends Table {
 
                 }
 
-
-                if ($statuspage[$objectType][$index]['state_summary']['hosts']['cumulatedStateId'] > 0 &&
-                    in_array($objectType, ['hosts', 'hostgroups'], true)) {
+                if ($statuspage[$objectType][$index]['state_summary']['hosts']['cumulatedStateId'] > 0) {
                     // Host is down or unreachable - use the host status only
                     // +1 shifts a host state into a service state so we can use a single array
                     $item['cumulatedColorId'] = $cumulatedStateId + 1;
@@ -924,7 +933,11 @@ class StatuspagesTable extends Table {
      * @param array $MY_RIGHTS
      * @return array|\Cake\Datasource\EntityInterface
      */
-    public function getStatuspageWithAllObjects(int $id, array $MY_RIGHTS = []) {
+    public function getStatuspageWithAllObjects(array $ids, array $MY_RIGHTS = []) {
+        if (empty($ids)) {
+            return [];
+        }
+
         $query = $this->find()
             ->contain('Containers', function (Query $q) {
                 $q->select([
@@ -1218,11 +1231,11 @@ class StatuspagesTable extends Table {
                     ]);
             })
             ->where([
-                'Statuspages.id' => $id
+                'Statuspages.id IN' => $ids
             ])
             ->disableHydration();
 
-        return $query->firstOrFail();
+        return $query->toArray();
     }
 
     public function getStatuspageForEdit($id) {
@@ -1309,4 +1322,90 @@ class StatuspagesTable extends Table {
 
         return $query;
     }
+
+    /**
+     * @param $selected
+     * @param StatuspagesFilter $StatuspagesFilter
+     * @param $MY_RIGHTS
+     * @return array
+     */
+    public function getStatuspagesForAngular($selected, StatuspagesFilter $StatuspagesFilter, $MY_RIGHTS = []): array {
+        if (!is_array($selected)) {
+            $selected = [$selected];
+        }
+        $query = $this->find('list')
+            ->limit(ITN_AJAX_LIMIT)
+            ->select([
+                'Statuspages.id',
+                'Statuspages.name'
+            ])->where(
+                $StatuspagesFilter->indexFilter()
+            );
+
+        if (!empty($MY_RIGHTS)) {
+            $query->andWhere([
+                'Statuspages.container_id IN' => $MY_RIGHTS
+            ]);
+        }
+
+        $selected = array_filter($selected);
+        if (!empty($selected)) {
+            $query->where([
+                'Statuspages.id NOT IN' => $selected
+            ]);
+            if (!empty($MY_RIGHTS)) {
+                $query->andWhere([
+                    'Statuspages.container_id IN' => $MY_RIGHTS
+                ]);
+            }
+        }
+
+        $query->orderBy(['Statuspages.name' => 'ASC']);
+        $statuspagesWithLimit = $query->toArray();
+        $selectedStatuspages = [];
+        if (!empty($selected)) {
+            $query = $this->find('list')
+                ->select([
+                    'Statuspages.id',
+                    'Statuspages.name'
+                ])
+                ->where([
+                    'Statuspages.id IN' => $selected
+                ]);
+
+            $query->orderBy([
+                'Statuspages.name' => 'ASC',
+                'Statuspages.id'   => 'ASC'
+            ]);
+
+            $selectedStatuspages = $query->toArray();
+        }
+
+        $statuspages = $statuspagesWithLimit + $selectedStatuspages;
+        asort($statuspages, SORT_FLAG_CASE | SORT_NATURAL);
+        return $statuspages;
+    }
+
+    /**
+     * This method will return all available statuspages for a select list
+     * @param $MY_RIGHTS
+     * @return array
+     */
+    public function getStatuspagesList($MY_RIGHTS = []): array {
+        $query = $this->find('list')
+            ->select([
+                'Statuspages.id',
+                'Statuspages.name'
+            ]);
+
+        if (!empty($MY_RIGHTS)) {
+            $query->where([
+                'Statuspages.container_id IN' => $MY_RIGHTS
+            ]);
+        }
+
+        $query->orderBy(['Statuspages.name' => 'ASC']);
+        return $query->toArray();
+    }
+
 }

@@ -53,7 +53,7 @@ use MapModule\Model\Entity\Rotation;
  * @property RotationsTable&HasMany $MapsToRotations
  * @property ContainersTable&HasMany $RotationsToContainers
  *
- * @method Rotation get($primaryKey, $options = [])
+ * @method Rotation get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method Rotation newEntity($data = null, array $options = [])
  * @method Rotation[] newEntities(array $data, array $options = [])
  * @method Rotation|false save(EntityInterface $entity, $options = [])

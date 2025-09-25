@@ -69,8 +69,7 @@ class ServicetemplategroupsController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
@@ -128,8 +127,7 @@ class ServicetemplategroupsController extends AppController {
      */
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
@@ -174,8 +172,7 @@ class ServicetemplategroupsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
@@ -245,8 +242,7 @@ class ServicetemplategroupsController extends AppController {
 
     public function append() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -457,8 +453,7 @@ class ServicetemplategroupsController extends AppController {
 
     public function copy() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
@@ -576,8 +571,7 @@ class ServicetemplategroupsController extends AppController {
      */
     public function allocateToHost($servicetemplategroupId = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
@@ -683,8 +677,7 @@ class ServicetemplategroupsController extends AppController {
      */
     public function allocateToHostgroup($servicetemplategroupId = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
@@ -812,8 +805,7 @@ class ServicetemplategroupsController extends AppController {
      */
     public function allocateToMatchingHostgroup($servicetemplategroupId = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (!$this->request->is('post')) {

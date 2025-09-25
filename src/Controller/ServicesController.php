@@ -161,12 +161,7 @@ class ServicesController extends AppController {
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if (!$this->isApiRequest()) {
-            $this->set('username', $User->getFullName());
-            $this->set('satellites', $satellites);
-            $this->set('types', $ServicesTable->getServiceTypes());
-
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $ServiceFilter = new ServiceFilter($this->request);
@@ -394,8 +389,7 @@ class ServicesController extends AppController {
 
     public function notMonitored() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $ServiceFilter = new ServiceFilter($this->request);
@@ -485,8 +479,7 @@ class ServicesController extends AppController {
 
     public function disabled() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
 
@@ -566,8 +559,7 @@ class ServicesController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -691,8 +683,7 @@ class ServicesController extends AppController {
 
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HosttemplatesTable HosttemplatesTable */
@@ -855,8 +846,7 @@ class ServicesController extends AppController {
 
     public function deleted() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $DeletedServicesTable DeletedServicesTable */
@@ -946,8 +936,7 @@ class ServicesController extends AppController {
 
     public function copy() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */
@@ -1885,17 +1874,16 @@ class ServicesController extends AppController {
         ]);
     }
 
-    /**
-     * @param int|null $host_id
-     */
+    //Only for ACLs
     public function serviceList($host_id = null) {
-        $User = new User($this->getUser());
 
-        //Only ship HTML template
-        $this->set('username', $User->getFullName());
-        return;
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToPdf() {
         /** @var $HostsTable HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
@@ -2008,6 +1996,11 @@ class ServicesController extends AppController {
         );
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToCsv() {
         /** @var $HostsTable HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
@@ -2167,27 +2160,6 @@ class ServicesController extends AppController {
     public function externalcommands() {
         return;
     }
-
-    public function icon() {
-        //Only ship HTML Template
-        return;
-    }
-
-    public function servicecumulatedstatusicon() {
-        //Only ship HTML Template
-        return;
-    }
-
-    /**
-     * Angular directive serviceStatusDetails
-     */
-    public function details() {
-        //Only ship template for auto maps modal
-        $User = new User($this->getUser());
-        $this->set('username', $User->getFullName());
-        return;
-    }
-
 
     public function loadServicesByContainerId() {
         if (!$this->isAngularJsRequest()) {
@@ -3239,8 +3211,7 @@ class ServicesController extends AppController {
      */
     public function usedBy($id = null): void {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var ServicesTable $ServicesTable */

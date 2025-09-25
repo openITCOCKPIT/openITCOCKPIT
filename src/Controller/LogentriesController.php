@@ -39,7 +39,6 @@ use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Request\AngularRequest;
 use itnovum\openITCOCKPIT\Core\LogentryConditions;
-use itnovum\openITCOCKPIT\Core\ValueObjects\LogentryTypes;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Core\Views\Logentry;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -51,9 +50,7 @@ class LogentriesController extends AppController {
     public function index() {
         if (!$this->isAngularJsRequest()) {
             //Only ship HTML template for angular
-            $LogentryTypes = new LogentryTypes();
-            $this->set('logentry_types', $LogentryTypes->getTypes());
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
@@ -74,8 +71,8 @@ class LogentriesController extends AppController {
 
         $AngularRequest = new AngularRequest($this->request);
         $LogentryConditions = new LogentryConditions();
-        $LogentryConditions->setFrom($AngularRequest->getFrom());
-        $LogentryConditions->setTo($AngularRequest->getTo());
+        $LogentryConditions->setFrom($UserTime->toServerTime($AngularRequest->getFrom()));
+        $LogentryConditions->setTo($UserTime->toServerTime($AngularRequest->getTo()));
         $LogentryConditions->setOrder($AngularRequest->getOrderForPaginator('Logentries.entry_time', 'desc'));
 
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $LogentryFilter->getPage());

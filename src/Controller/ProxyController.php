@@ -46,8 +46,7 @@ class ProxyController extends AppController {
 
     function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $TableLocator = $this->getTableLocator();

@@ -37,7 +37,7 @@ interface HoststatusTableInterface {
      * @param HoststatusConditions|null $HoststatusConditions
      * @return array
      */
-    public function byUuidMagic($uuid, HoststatusFields $HoststatusFields, $HoststatusConditions = null);
+    public function byUuidMagic($uuid, HoststatusFields $HoststatusFields, ?HoststatusConditions $HoststatusConditions = null);
 
     /**
      * @param $uuid
@@ -45,7 +45,7 @@ interface HoststatusTableInterface {
      * @param HoststatusConditions|null $HoststatusConditions
      * @return array|string
      */
-    public function byUuid($uuid, HoststatusFields $HoststatusFields, $HoststatusConditions = null);
+    public function byUuid($uuid, HoststatusFields $HoststatusFields, ?HoststatusConditions $HoststatusConditions = null);
 
     /**
      * @param array $uuids
@@ -53,5 +53,5 @@ interface HoststatusTableInterface {
      * @param HoststatusConditions|null $HoststatusConditions
      * @return array
      */
-    public function byUuids($uuids, HoststatusFields $HoststatusFields, $HoststatusConditions = null);
+    public function byUuids($uuids, HoststatusFields $HoststatusFields, ?HoststatusConditions $HoststatusConditions = null);
 }

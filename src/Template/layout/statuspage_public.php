@@ -89,8 +89,8 @@ $logo = new Logo();
 
     <meta name="theme-color" content="#4085c6">
 
-    <link rel="stylesheet" type="text/css" href="/node_modules/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="/css/coreui/coreui.css">
     <link rel="stylesheet" type="text/css" href="/css/statuspage.css">
 

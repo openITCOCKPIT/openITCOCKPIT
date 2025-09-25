@@ -33,14 +33,20 @@ class HostgroupFilter extends Filter {
      */
     public function indexFilter() {
         $filters = [
-            'like' => [
+            'like'     => [
                 'Containers.name',
                 'Hostgroups.description'
             ],
-            'equals' => [
+            'equals'   => [
                 'Hostgroups.id',
                 'Containers.parent_id',
             ],
+            'rlike'    => [
+                'Hostgroups.keywords'
+            ],
+            'notrlike' => [
+                'Hostgroups.not_keywords'
+            ]
         ];
 
         return $this->getConditionsByFilters($filters);

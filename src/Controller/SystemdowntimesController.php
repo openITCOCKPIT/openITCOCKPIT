@@ -41,7 +41,6 @@ use App\Model\Table\SystemdowntimesTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
-use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Request\AngularRequest;
 use itnovum\openITCOCKPIT\Core\System\Gearman;
 use itnovum\openITCOCKPIT\Core\SystemdowntimesConditions;
@@ -62,8 +61,7 @@ class SystemdowntimesController extends AppController {
 
     public function host() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $AngularRequest = new AngularRequest($this->request);
@@ -92,7 +90,7 @@ class SystemdowntimesController extends AppController {
 
         foreach ($recurringHostDowntimes as $recurringHostDowntime) {
             if (!isset($recurringHostDowntime['Hosts'])) {
-                    continue;
+                continue;
             }
             if ($this->hasRootPrivileges) {
                 $allowEdit = true;
@@ -121,8 +119,7 @@ class SystemdowntimesController extends AppController {
 
     public function service() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $AngularRequest = new AngularRequest($this->request);
@@ -184,8 +181,7 @@ class SystemdowntimesController extends AppController {
 
     public function hostgroup() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $AngularRequest = new AngularRequest($this->request);
@@ -245,8 +241,7 @@ class SystemdowntimesController extends AppController {
 
     public function node() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $AngularRequest = new AngularRequest($this->request);
@@ -304,8 +299,7 @@ class SystemdowntimesController extends AppController {
 
     public function addHostdowntime() {
         if (!$this->isAngularJsRequest()) {
-            // ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post') || $this->request->is('put')) {
@@ -411,8 +405,7 @@ class SystemdowntimesController extends AppController {
 
     public function addHostgroupdowntime() {
         if (!$this->isAngularJsRequest()) {
-            // ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post') || $this->request->is('put')) {
@@ -518,8 +511,7 @@ class SystemdowntimesController extends AppController {
 
     public function addServicedowntime() {
         if (!$this->isAngularJsRequest()) {
-            // ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post') || $this->request->is('put')) {
@@ -629,8 +621,7 @@ class SystemdowntimesController extends AppController {
 
     public function addContainerdowntime() {
         if (!$this->isAngularJsRequest()) {
-            // ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post') || $this->request->is('put')) {

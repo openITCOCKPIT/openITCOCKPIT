@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -43,25 +44,15 @@ class AclDependencies extends PluginAclDependencies {
             ->allow('Mapeditors', 'mapitem')
             ->allow('Mapeditors', 'mapitemMulti')
             ->allow('Mapeditors', 'getDependendMaps')
-            ->allow('Mapeditors', 'mapline')
-            ->allow('Mapeditors', 'mapicon')
-            ->allow('Mapeditors', 'maptext')
-            ->allow('Mapeditors', 'perfdatatext')
             ->allow('Mapeditors', 'mapsummaryitem')
             ->allow('Mapeditors', 'graph')
-            ->allow('Mapeditors', 'tacho')
-            ->allow('Mapeditors', 'cylinder')
-            ->allow('Mapeditors', 'trafficlight')
-            ->allow('Mapeditors', 'temperature')
             ->allow('Mapeditors', 'mapsummary')
             ->allow('Mapeditors', 'backgroundImages')
             ->allow('Mapeditors', 'getIconsets')
             ->allow('Mapeditors', 'loadMapsByString')
             ->allow('Mapeditors', 'getPerformanceDataMetrics')
             ->allow('Mapeditors', 'mapWidget')
-            ->allow('Mapeditors', 'viewDirective')
-            ->allow('Mapeditors', 'mapDetails')
-            ->allow('Mapeditors', 'serviceOutput');
+            ->allow('Mapeditors', 'mapDetails');
 
         $this
             ->allow('Maps', 'loadUsersForTenant')

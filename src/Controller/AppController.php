@@ -309,11 +309,6 @@ class AppController extends Controller {
      * @return bool
      */
     protected function isLegacyHtmlTemplateRequest(): bool {
-        if (!filter_var(env('DISABLE_ANGULARJS', false), FILTER_VALIDATE_BOOLEAN)) {
-            // Do not disable AngularJS frontend
-            return false;
-        }
-
         // Some actions actually need to render HTML (phpinfo for example).
         // In this case, we create a whitelist for now
         $controller = strtolower($this->request->getParam('controller'));
@@ -327,6 +322,8 @@ class AppController extends Controller {
             'hostgroups.listtocsv'    => 'hostgroups.listtocsv',
             'servicegroups.listtocsv' => 'servicegroups.listtocsv',
             'users.listtocsv'         => 'users.listtocsv',
+            'users.login'             => 'users.login',
+            'users.logout'            => 'users.logout',
             'statuspages.publicview'  => 'statuspages.publicview',
         ];
 
@@ -379,7 +376,7 @@ class AppController extends Controller {
                 }
             }
 
-            $this->render('/Error/errorBackend', 'backend');
+            $event->setResult($this->render('/Error/errorBackend', 'backend'));
             return;
         }
 

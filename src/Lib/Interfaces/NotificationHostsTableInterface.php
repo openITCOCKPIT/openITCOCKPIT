@@ -36,5 +36,5 @@ interface NotificationHostsTableInterface {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getNotifications(HostNotificationConditions $HostNotificationConditions, $PaginateOMat = null);
+    public function getNotifications(HostNotificationConditions $HostNotificationConditions, ?PaginateOMat $PaginateOMat = null);
 }

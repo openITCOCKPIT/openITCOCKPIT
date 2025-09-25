@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -114,7 +115,7 @@ class NotificationServicesTable extends Table implements NotificationServicesTab
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getNotifications(ServiceNotificationConditions $ServiceNotificationConditions, $PaginateOMat = null) {
+    public function getNotifications(ServiceNotificationConditions $ServiceNotificationConditions, ?PaginateOMat $PaginateOMat = null) {
         $query = $this->find();
         $query->select([
             'NotificationServices.object_id',

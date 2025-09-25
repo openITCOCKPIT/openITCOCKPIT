@@ -131,6 +131,8 @@ plugins/MSTeamsModule
 plugins/IsarFlowModule
 plugins/ScmModule
 plugins/JiraModule
+plugins/DellModule
+plugins/ProxmoxModule
 
 # NFS mounts
 .nfs.*

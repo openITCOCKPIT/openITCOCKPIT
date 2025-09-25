@@ -267,7 +267,7 @@ class ChangelogsTable extends Table {
                 'Contact'                => '{n}.{(id|name)}',
             ],
             'hostgroup'            => [
-                'Hostgroup'           => '{(description|hostgroup_url)}',
+                'Hostgroup'           => '{(description|hostgroup_url|tags)}',
                 'Hostgroup.container' => '{(name)}',
                 'Host'                => '{n}.{(id|name)}',
                 'Hosttemplate'        => '{n}.{(id|name)}',
@@ -297,7 +297,7 @@ class ChangelogsTable extends Table {
                 'Servicegroup'                                              => '{n}.{(id|name)}',
             ],
             'servicegroup'         => [
-                'Servicegroup'           => '{(description|servicegroup_url)}',
+                'Servicegroup'           => '{(description|servicegroup_url|tags)}',
                 'Servicegroup.container' => '{(name)}',
                 'Service'                => '{n}.{(id|name)}',
                 'Servicetemplate'        => '{n}.{(id|name)}',

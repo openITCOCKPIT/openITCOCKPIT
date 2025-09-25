@@ -26,11 +26,12 @@
 namespace App\Lib\Interfaces;
 
 use itnovum\openITCOCKPIT\Core\HostNotificationConditions;
+use itnovum\openITCOCKPIT\Database\PaginateOMat;
 
 
 interface NotificationHostsLogTableInterface {
 
-    public function getNotifications(HostNotificationConditions $HostNotificationConditions, $PaginateOMat = null);
+    public function getNotifications(HostNotificationConditions $HostNotificationConditions, ?PaginateOMat $PaginateOMat = null);
 
 
 }

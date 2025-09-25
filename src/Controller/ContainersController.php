@@ -93,8 +93,7 @@ class ContainersController extends AppController {
 
     public function add() {
         if ($this->request->is('GET')) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (!$this->request->is('post') && !$this->request->is('put')) {
@@ -152,7 +151,7 @@ class ContainersController extends AppController {
 
     public function edit() {
         if (!$this->isAngularJsRequest()) {
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         if ($this->request->is('post')) {
 

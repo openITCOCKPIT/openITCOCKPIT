@@ -43,14 +43,16 @@ class EventlogsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var EventlogsTable $EventlogsTable */
         $EventlogsTable = TableRegistry::getTableLocator()->get('Eventlogs');
 
-        $EventlogsFilter = new EventlogsFilter($this->request);
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
+        $EventlogsFilter = new EventlogsFilter($this->request, $UserTime);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $EventlogsFilter->getPage());
         $MY_RIGHTS = $this->MY_RIGHTS;
         if ($this->hasRootPrivileges === true) {
@@ -63,9 +65,6 @@ class EventlogsController extends AppController {
         if (!empty($logTypes)) {
             $all_events = $EventlogsTable->getEventlogIndex($EventlogsFilter, $logTypes, $PaginateOMat, $MY_RIGHTS, false);
         }
-
-        $User = new User($this->getUser());
-        $UserTime = $User->getUserTime();
 
         foreach ($all_events as $index => $event) {
             $changeTimestamp = $event['created']->getTimestamp();
@@ -87,6 +86,10 @@ class EventlogsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['all_events', 'logTypes', 'typeTranslations', 'typeIconClasses']);
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     */
     public function listToPdf() {
 
         /** @var EventlogsTable $EventlogsTable */

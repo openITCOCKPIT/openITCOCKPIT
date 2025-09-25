@@ -61,8 +61,7 @@ class ContactgroupsController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ContactgroupsTable ContactgroupsTable */
@@ -115,8 +114,7 @@ class ContactgroupsController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -162,8 +160,7 @@ class ContactgroupsController extends AppController {
 
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ContactgroupsTable ContactgroupsTable */
@@ -325,8 +322,7 @@ class ContactgroupsController extends AppController {
 
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ContactgroupsTable ContactgroupsTable */
@@ -442,8 +438,7 @@ class ContactgroupsController extends AppController {
      */
     public function usedBy($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ContactgroupsTable ContactgroupsTable */

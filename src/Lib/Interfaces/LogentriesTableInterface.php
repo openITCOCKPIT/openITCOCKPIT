@@ -36,6 +36,6 @@ interface LogentriesTableInterface {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getLogentries(LogentryFilter $LogentryFilter, $PaginateOMat = null);
+    public function getLogentries(LogentryFilter $LogentryFilter, ?PaginateOMat $PaginateOMat = null);
 
 }

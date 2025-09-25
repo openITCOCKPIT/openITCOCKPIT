@@ -820,10 +820,10 @@ class ServicetemplatesTable extends Table {
      * @param array $MY_RIGHTS
      * @return array|\Cake\Datasource\EntityInterface|null
      */
-    public function getServicetemplateFoWizardDeployInterfaces($MY_RIGHTS = []) {
+    public function getServicetemplateForWizardByUuid($uuid, $MY_RIGHTS = []) {
         $query = $this->find()
             ->where([
-                'Servicetemplates.uuid' => 'de5e3045-3011-45d8-8ac6-bc5fbb3d396d'
+                'Servicetemplates.uuid' => $uuid
             ])
             ->contain([
                 'Servicetemplatecommandargumentvalues' => [

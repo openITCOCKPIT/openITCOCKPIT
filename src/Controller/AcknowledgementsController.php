@@ -63,8 +63,7 @@ class AcknowledgementsController extends AppController {
      */
     public function host($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $session = $this->request->getSession();
@@ -87,18 +86,19 @@ class AcknowledgementsController extends AppController {
         $AngularAcknowledgementsControllerRequest = new AcknowledgementsControllerRequest($this->request);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $AngularAcknowledgementsControllerRequest->getPage());
 
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
         //Process conditions
         $Conditions = new AcknowledgedHostConditions();
-        $Conditions->setFrom($AngularAcknowledgementsControllerRequest->getFrom());
-        $Conditions->setTo($AngularAcknowledgementsControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($AngularAcknowledgementsControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($AngularAcknowledgementsControllerRequest->getTo()));
         $Conditions->setStates($AngularAcknowledgementsControllerRequest->getHostStates());
         $Conditions->setOrder($AngularAcknowledgementsControllerRequest->getOrderForPaginator('AcknowledgementHosts.entry_time', 'desc'));
         $Conditions->setConditions($AngularAcknowledgementsControllerRequest->getHostFilters());
         $Conditions->setHostUuid($host->get('uuid'));
 
 
-        $User = new User($this->getUser());
-        $UserTime = $User->getUserTime();
 
         $AcknowledgementHostsTable = $this->DbBackend->getAcknowledgementHostsTable();
 
@@ -131,8 +131,7 @@ class AcknowledgementsController extends AppController {
      */
     public function service($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $session = $this->request->getSession();
@@ -157,17 +156,17 @@ class AcknowledgementsController extends AppController {
         $AngularAcknowledgementsControllerRequest = new AcknowledgementsControllerRequest($this->request);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $AngularAcknowledgementsControllerRequest->getPage());
 
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
         //Process conditions
         $Conditions = new AcknowledgedServiceConditions();
-        $Conditions->setFrom($AngularAcknowledgementsControllerRequest->getFrom());
-        $Conditions->setTo($AngularAcknowledgementsControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($AngularAcknowledgementsControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($AngularAcknowledgementsControllerRequest->getTo()));
         $Conditions->setStates($AngularAcknowledgementsControllerRequest->getServiceStates());
         $Conditions->setOrder($AngularAcknowledgementsControllerRequest->getOrderForPaginator('AcknowledgementServices.entry_time', 'desc'));
         $Conditions->setConditions($AngularAcknowledgementsControllerRequest->getServiceFilters());
         $Conditions->setServiceUuid($service->get('uuid'));
-
-        $User = new User($this->getUser());
-        $UserTime = $User->getUserTime();
 
         $AcknowledgementServicesTable = $this->DbBackend->getAcknowledgementServicesTable();
 

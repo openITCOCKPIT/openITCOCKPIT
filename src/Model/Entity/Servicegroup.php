@@ -35,10 +35,11 @@ use Cake\ORM\Entity;
  * @property int $container_id
  * @property string $description
  * @property string|null $servicegroup_url
+ * @property string $tags
  *
- * @property \App\Model\Entity\Container $container
- * @property \App\Model\Entity\Service[] $services
- * @property \App\Model\Entity\Servicetemplate[] $servicetemplates
+ * @property Container $container
+ * @property Service[] $services
+ * @property Servicetemplate[] $servicetemplates
  */
 class Servicegroup extends Entity {
     /**
@@ -55,6 +56,7 @@ class Servicegroup extends Entity {
         'container_id'     => true,
         'description'      => true,
         'servicegroup_url' => true,
+        'tags'             => true,
         'container'        => true,
         'services'         => true,
         'servicetemplates' => true

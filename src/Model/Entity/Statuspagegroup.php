@@ -1,0 +1,79 @@
+<?php
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
+
+declare(strict_types=1);
+
+namespace App\Model\Entity;
+
+use Cake\ORM\Entity;
+
+/**
+ * Statuspagegroup Entity
+ *
+ * @property int $id
+ * @property int $container_id
+ * @property string $name
+ * @property string|null $description
+ * @property string $additional_information
+ * @property bool $show_ticker
+ * @property \Cake\I18n\DateTime $modified
+ * @property \Cake\I18n\DateTime $created
+ *
+ * @property \App\Model\Entity\Container $container
+ * @property \App\Model\Entity\StatuspagegroupCategory[] $statuspagegroup_categories
+ * @property \App\Model\Entity\StatuspagegroupCollection[] $statuspagegroup_collections
+ * @property \App\Model\Entity\StatuspagesMembership[] $statuspages_memberships
+ */
+class Statuspagegroup extends Entity {
+
+    public const CUMULATED_STATE_NOT_IN_MONITORING = -1;
+    public const CUMULATED_STATE_OPERATIONAL = 0;
+    public const CUMULATED_STATE_PERFORMANCE_ISSUES = 1;
+    public const CUMULATED_STATE_MAJOR_OUTAGE = 2;
+    public const CUMULATED_STATE_UNKNOWN = 3;
+
+    /**
+     * Fields that can be mass assigned using newEntity() or patchEntity().
+     *
+     * Note that when '*' is set to true, this allows all unspecified fields to
+     * be mass assigned. For security purposes, it is advised to set '*' to false
+     * (or remove it), and explicitly make individual fields accessible as needed.
+     *
+     * @var array<string, bool>
+     */
+    protected array $_accessible = [
+        'container_id'                => true,
+        'name'                        => true,
+        'description'                 => true,
+        'additional_information'      => true,
+        'show_ticker'                 => true,
+        'modified'                    => true,
+        'created'                     => true,
+        'container'                   => true,
+        'statuspagegroup_categories'  => true,
+        'statuspagegroup_collections' => true,
+        'statuspages_memberships'     => true,
+    ];
+}

@@ -56,7 +56,7 @@ class EventlogsFilter extends Filter {
         if ($this->queryHasField('from')) {
             $value = strtotime($this->getQueryFieldValue('from'));
             if ($value) {
-                return $value;
+                return $this->toServerTime($value);
             }
         }
         return time() - (3600 * 24 * 30);
@@ -69,7 +69,7 @@ class EventlogsFilter extends Filter {
         if ($this->queryHasField('to')) {
             $value = strtotime($this->getQueryFieldValue('to'));
             if ($value) {
-                return $value;
+                return $this->toServerTime($value);
             }
         }
         return time() + (3600 * 24 * 30 * 2);

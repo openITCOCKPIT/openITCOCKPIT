@@ -35,17 +35,12 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Model\Table\RegistersTable;
-use App\Model\Table\SystemsettingsTable;
 use Authentication\Controller\Component\AuthenticationComponent;
 use Cake\Core\Configure;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Response;
-use Cake\ORM\TableRegistry;
 use Cake\View\Exception\MissingTemplateException;
-use itnovum\openITCOCKPIT\Core\Locales;
-use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 
 
 /**
@@ -57,76 +52,6 @@ class PagesController extends AppController {
 
     public function index() {
 
-        if ($this->isApiRequest() === false) {
-            $user = $this->Authentication->getIdentity();
-
-            /** @var RegistersTable $RegistersTable */
-            $RegistersTable = TableRegistry::getTableLocator()->get('Registers');
-
-
-            $license = $RegistersTable->getLicense();
-            $isCommunityEdition = false;
-            $hasSubscription = $license !== null;
-            if (isset($license['license']) && $license['license'] === $RegistersTable->getCommunityLicenseKey()) {
-                $isCommunityEdition = true;
-            }
-
-            /** @var SystemsettingsTable $SystemsettingsTable */
-            $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
-            $systemsettingsArray = $SystemsettingsTable->findAsArray();
-
-            $exportRunningHeaderInfo = false;
-            if (isset($systemsettingsArray['FRONTEND']['FRONTEND.SHOW_EXPORT_RUNNING'])) {
-                if ($systemsettingsArray['FRONTEND']['FRONTEND.SHOW_EXPORT_RUNNING'] === 'yes') {
-                    $exportRunningHeaderInfo = true;
-                }
-            }
-
-            $userImage = null;
-
-            if ($user->get('image') != null && $user->get('image') != '') {
-                if (file_exists(WWW_ROOT . 'img' . DS . 'userimages' . DS . $user->get('image'))) {
-                    $userImage = '/img/userimages' . DS . $user->get('image');
-                }
-            }
-
-            if ($userImage === null) {
-                $userImage = '/img/fallback_user.png';
-
-                $User = new User($this->getUser());
-                $userImage = $User->getUserAvatar();
-
-            }
-
-
-            $language = Locales::getLanguageByLocalCode($user->get('i18n'));
-            $localesPath = Configure::read('App.paths.locales')[0];
-            $localeOptions = [];
-            $definedLocalCodes = Locales::getLocalCodesFromDefinedLanguages();
-            $localeDirs = array_filter(glob($localesPath . '*'), 'is_dir');
-            array_walk($localeDirs, function ($value, $key) use (&$localeOptions, $localesPath, $definedLocalCodes) {
-                $i18n = substr($value, strlen($localesPath));
-                if (in_array($i18n, $definedLocalCodes, true)) {
-                    $language = Locales::getLanguageByLocalCode($i18n);
-                    $localeOptions[] = $language;
-                }
-            });
-
-            $userFullName = sprintf('%s %s', $user->get('firstname'), $user->get('lastname'));
-
-            $this->set('systemname', $systemsettingsArray['FRONTEND']['FRONTEND.SYSTEMNAME']);
-            $this->set('exportRunningHeaderInfo', $exportRunningHeaderInfo);
-            $this->set('showstatsinmenu', $user->get('showstatsinmenu'));
-            $this->set('userImage', $userImage);
-            $this->set('userFullName', $userFullName);
-            $this->set('hasRootPrivileges', $this->hasRootPrivileges);
-            $this->set('hasSubscription', $hasSubscription);
-            $this->set('isCommunityEdition', $isCommunityEdition);
-            $this->set('language', $language);
-            $this->set('localeOptions', $localeOptions);
-            // Ship the HTML layout to load JS and CSS files
-            $this->viewBuilder()->setLayout('app_frame');
-        }
     }
 
     /**

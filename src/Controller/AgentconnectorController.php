@@ -104,8 +104,7 @@ class AgentconnectorController extends AppController {
 
     public function pull() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var AgentconfigsTable $AgentconfigsTable */
@@ -140,8 +139,7 @@ class AgentconnectorController extends AppController {
 
     public function push() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var PushAgentsTable $PushAgentsTable */
@@ -185,8 +183,7 @@ class AgentconnectorController extends AppController {
 
     public function push_satellite() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (!Plugin::isLoaded('DistributeModule') || !Plugin::isLoaded('ImportModule')) {
@@ -387,8 +384,7 @@ class AgentconnectorController extends AppController {
 
     public function showOutput() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $mode = $this->request->getQuery('mode', 'pull');
@@ -546,8 +542,7 @@ class AgentconnectorController extends AppController {
     // Step 2
     public function config() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var HostsTable $HostsTable */
@@ -703,7 +698,7 @@ class AgentconnectorController extends AppController {
     // Step 3
     public function install() {
         if (!$this->isAngularJsRequest()) {
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $hostId = $this->request->getQuery('hostId', 0);
@@ -737,7 +732,7 @@ class AgentconnectorController extends AppController {
     // Step 4 (In Pull mode)
     public function autotls() {
         if (!$this->isAngularJsRequest()) {
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $hostId = $this->request->getQuery('hostId', 0);
@@ -825,7 +820,7 @@ class AgentconnectorController extends AppController {
     // Step 4 (In Push mode)
     public function select_agent() {
         if (!$this->isJsonRequest()) {
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var HostsTable $HostsTable */
@@ -1055,7 +1050,7 @@ class AgentconnectorController extends AppController {
     // Step 5
     public function create_services() {
         if (!$this->isAngularJsRequest()) {
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $hostId = $this->request->getQuery('hostId', 0);

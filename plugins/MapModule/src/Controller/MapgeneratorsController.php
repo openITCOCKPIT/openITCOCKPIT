@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -75,7 +76,7 @@ class MapgeneratorsController extends AppController {
         foreach ($all_mapgenerators as $key => $mapgenerator) {
             $mapgenerator['maps'] = Hash::extract($mapgenerator, 'maps.{n}.id');
             $all_mapgenerators[$key]['allowEdit'] = false;
-            if ($this->hasRootPrivileges == true) {
+            if ($this->hasRootPrivileges == true || empty($mapgenerator['containers'])) {
                 $all_mapgenerators[$key]['allowEdit'] = true;
                 continue;
             }
@@ -97,7 +98,7 @@ class MapgeneratorsController extends AppController {
             return;
         }
 
-        if ($this->request->is('post') || $this->request->is('put')) {
+        if (($this->request->is('post') || $this->request->is('put')) && $this->isAngularJsRequest()) {
             $data = $this->request->getData();
 
             if (empty($data['Mapgenerator']['map_refresh_interval'])) {
@@ -117,6 +118,7 @@ class MapgeneratorsController extends AppController {
             if ($data['Mapgenerator']['mapgenerator_levels'] !== null) {
                 foreach ($data['Mapgenerator']['mapgenerator_levels'] as $levelKey => $level) {
                     $data['Mapgenerator']['mapgenerator_levels'][$levelKey]['is_container'] = (int)$level['is_container'];
+                    $data['Mapgenerator']['mapgenerator_levels'][$levelKey]['divider'] = trim($data['Mapgenerator']['mapgenerator_levels'][$levelKey]['divider']);
                 }
             }
             $mapgeneratorsEntity = $MapgeneratorsTable->patchEntity($mapgeneratorsEntity, $data['Mapgenerator']);
@@ -174,13 +176,13 @@ class MapgeneratorsController extends AppController {
 
         $containerIds = Hash::extract($mapgenerator, 'containers.{n}.id');
 
-        if (!$this->allowedByContainerId($containerIds)) {
+        if (!empty($containerIds) && !$this->allowedByContainerId($containerIds)) {
             $this->render403();
             return;
         }
 
         if ($this->hasRootPrivileges === false) {
-            if (empty(array_intersect($containerIds, $this->getWriteContainers()))) {
+            if (!empty($containerIds) && empty(array_intersect($containerIds, $this->getWriteContainers()))) {
                 $this->render403();
             }
         }
@@ -188,7 +190,7 @@ class MapgeneratorsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['mapgenerator']);
         $this->set(compact('mapgenerator'));
 
-        if ($this->request->is('post') || $this->request->is('put')) {
+        if (($this->request->is('post') || $this->request->is('put')) && $this->isAngularJsRequest()) {
             $data = $this->request->getData();
 
             if (empty($data['Mapgenerator']['map_refresh_interval'])) {
@@ -204,6 +206,11 @@ class MapgeneratorsController extends AppController {
             if ($data['Mapgenerator']['mapgenerator_levels'] !== null) {
                 foreach ($data['Mapgenerator']['mapgenerator_levels'] as $levelKey => $level) {
                     $data['Mapgenerator']['mapgenerator_levels'][$levelKey]['is_container'] = (int)$level['is_container'];
+                    $data['Mapgenerator']['mapgenerator_levels'][$levelKey]['divider'] = trim($data['Mapgenerator']['mapgenerator_levels'][$levelKey]['divider']);
+                    // remove id from level when its null (new level added), because somehow this causes an error
+                    if (empty($level['id'])) {
+                        unset($data['Mapgenerator']['mapgenerator_levels'][$levelKey]['id']);
+                    }
                 }
             }
 
@@ -241,7 +248,7 @@ class MapgeneratorsController extends AppController {
             'Containers'
         ]);
         $containerIdsToCheck = Hash::extract($mapgenerator, 'containers.{n}.id');
-        if (!$this->allowedByContainerId($containerIdsToCheck)) {
+        if (!empty($containerIdsToCheck) && !$this->allowedByContainerId($containerIdsToCheck)) {
             $this->render403();
             return;
         }
@@ -282,7 +289,7 @@ class MapgeneratorsController extends AppController {
             return;
         }
 
-        if ($this->request->is('post') || $this->request->is('put')) {
+        if (($this->request->is('post') || $this->request->is('put')) && $this->isAngularJsRequest()) {
 
             /** @var $HostsTable HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
@@ -326,7 +333,7 @@ class MapgeneratorsController extends AppController {
                         $this->viewBuilder()->setOption('serialize', ['error']);
                     }
 
-                    $hostsAndData = $HostsTable->getHostsByNameSplitting($hosts, $mapgeneratorLevels, $containerIds, $MY_RIGHTS);
+                    $hostsAndData = $HostsTable->getHostsByNameSplitting($hosts, $mapgeneratorLevels, $MY_RIGHTS);
                     break;
                 //generate by container structure
                 default:

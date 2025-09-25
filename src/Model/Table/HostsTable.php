@@ -5445,11 +5445,10 @@ class HostsTable extends Table {
     /**
      * @param array $hosts
      * @param array $mapGeneratorLevels
-     * @param array $containers
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getHostsByNameSplitting($hosts, $mapGeneratorLevels, $containers, $MY_RIGHTS = []) {
+    public function getHostsByNameSplitting($hosts, $mapGeneratorLevels, $MY_RIGHTS = []) {
 
         $hostsAndMaps = [];
 
@@ -5501,11 +5500,10 @@ class HostsTable extends Table {
                         continue;
                     }
 
-
                     // container has to be the same as the tenant container of the host
                     $tenantContainer = $containerStructureFromHost[0]['containerHierarchy'][0];
 
-                    if ($tenantContainer['name'] === $part && (!empty($MY_RIGHTS) && in_array($tenantContainer['id'], $MY_RIGHTS))) {
+                    if ($tenantContainer['name'] === $part && ((!empty($MY_RIGHTS) && in_array($tenantContainer['id'], $MY_RIGHTS)) || empty($MY_RIGHTS))) {
                         // Found the container for the new map
                         $containerIdForNewMap = $tenantContainer['id'];
                     }
@@ -5539,7 +5537,7 @@ class HostsTable extends Table {
                 ->all();
 
             // Skip host if more than one result is returned or no host is found
-            if (empty($realHost) || count($realHost) > 1) {
+            if (empty($realHost) || $realHost->isEmpty() || count($realHost) > 1) {
                 continue;
             }
 

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -376,7 +377,7 @@ class Mapgenerator {
                         ];
                     } else if ($itemY === $y) {
                         $itemsPerLineCounter++;
-                        if ($itemX > $x) {
+                        if ($itemX > $x || ($itemX === $x && $itemX === 0 && $itemY === 0)) {
                             $x = $itemX;
                             $previousItem = [
                                 'type' => $item['type'],

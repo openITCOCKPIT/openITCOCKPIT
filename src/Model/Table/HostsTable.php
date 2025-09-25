@@ -5547,44 +5547,18 @@ class HostsTable extends Table {
                 }
 
             }
-
+            
             if ($containerIdForNewMap === 0 || count($hostNameParts) !== count($mapGeneratorLevels)) {
                 // Not enough parts for the defined levels, skip this host
                 continue;
             }
 
-            // get the real host
-            $query = $this->find()
-                ->where([
-                    'Hosts.name' => end($hostNameParts)
-                ]);
-            if (!empty($MY_RIGHTS)) {
-                $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
-                    'HostsToContainersSharing.host_id = Hosts.id'
-                ]);
-                $query->where([
-                    'HostsToContainersSharing.container_id IN' => $MY_RIGHTS
-                ])
-                    ->andWhere([
-                        'HostsToContainersSharing.container_id IN' => $containerIdForNewMap
-                    ]);
-            }
-            $realHost = $query->contain('HostsToContainersSharing')
-                ->all();
-
-            // Skip host if more than one result is returned or no host is found
-            if (empty($realHost) || $realHost->isEmpty() || count($realHost) > 1) {
-                continue;
-            }
-
-            $realHost = $realHost->first();
-
             // remove hostname from the parts
             array_pop($hostNameParts);
 
             $hostsAndMaps[] = [
-                'hostId'               => $realHost['id'],
-                'hostName'             => $realHost['name'],
+                'hostId'               => $host['id'],
+                'hostName'             => $host['name'],
                 'containerIdForNewMap' => $containerIdForNewMap,
                 'mapNames'             => $hostNameParts
             ];

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -42,14 +43,14 @@ use itnovum\openITCOCKPIT\Filter\CalendarFilter;
  * @property \App\Model\Table\CalendarHolidaysTable|\Cake\ORM\Association\HasMany $CalendarHolidays
  * @property |\Cake\ORM\Association\HasMany $Timeperiods
  *
- * @method \App\Model\Entity\Calendar get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Calendar get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Calendar newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Calendar[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Calendar|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Calendar saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Calendar patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Calendar[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Calendar findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Calendar findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

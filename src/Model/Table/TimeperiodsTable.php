@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -45,14 +46,14 @@ use itnovum\openITCOCKPIT\Filter\TimeperiodsFilter;
  * @property \App\Model\Table\ContainersTable|\Cake\ORM\Association\BelongsTo $Containers
  * @property \App\Model\Table\TimeperiodTimerangesTable|\Cake\ORM\Association\HasMany $TimeperiodTimeranges
  *
- * @method \App\Model\Entity\Timeperiod get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Timeperiod get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Timeperiod newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Timeperiod[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Timeperiod|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Timeperiod|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Timeperiod patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Timeperiod[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Timeperiod findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Timeperiod findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -190,8 +191,8 @@ class TimeperiodsTable extends Table {
      */
     public function getAllTimeperiodsUuidsAsList() {
         $query = $this->find('list',
-        keyField: 'id',
-        valueField: 'uuid')
+            keyField: 'id',
+            valueField: 'uuid')
             ->disableHydration();
         return $query->toArray();
     }

@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -64,14 +65,14 @@ use itnovum\openITCOCKPIT\Filter\HostFilter;
  * @property \App\Model\Table\DeletedHostsTable|\Cake\ORM\Association\HasMany $DeletedHosts
  * @property \App\Model\Table\ServicesTable|\Cake\ORM\Association\HasMany $Services
  *
- * @method \App\Model\Entity\Host get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Host get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Host newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Host[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Host|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Host|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Host patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Host[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Host findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Host findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -5444,11 +5445,10 @@ class HostsTable extends Table {
     /**
      * @param array $hosts
      * @param array $mapGeneratorLevels
-     * @param array $containers
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getHostsByNameSplitting($hosts, $mapGeneratorLevels, $containers, $MY_RIGHTS = []) {
+    public function getHostsByNameSplitting($hosts, $mapGeneratorLevels, $MY_RIGHTS = []) {
 
         $hostsAndMaps = [];
 
@@ -5456,7 +5456,6 @@ class HostsTable extends Table {
 
             $hostNameParts = [];
             $restofHostName = $host['name'];
-            $skipHost = false;
             $containerIdForNewMap = 0;
             $previousPartsAsString = ''; // to build unique names, which can be assigned to a map hierarchy
 
@@ -5491,23 +5490,29 @@ class HostsTable extends Table {
 
                 // find the container for the new map
                 if ($mapGeneratorLevel['is_container']) {
+
                     /** @var $ContainersTable ContainersTable */
                     $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
-                    $containersByName = $ContainersTable->getContainersByName($part, $MY_RIGHTS, $containers);
-                    if (empty($containersByName) || count($containersByName) > 1) {
-                        // No container found or to many found for this level, skip this host
-                        $skipHost = true;
-                        break;
+                    $containerStructureFromHost = $ContainersTable->getContainersForMapgeneratorByContainerStructure([$host], $MY_RIGHTS, []);
+                    if (empty($containerStructureFromHost)) {
+                        // No container found for this level, skip this host
+                        continue;
                     }
 
-                    $containerIdForNewMap = $containersByName[0]['id'];
+                    // container has to be the same as the tenant container of the host
+                    $tenantContainer = $containerStructureFromHost[0]['containerHierarchy'][0];
+
+                    if ($tenantContainer['name'] === $part && ((!empty($MY_RIGHTS) && in_array($tenantContainer['id'], $MY_RIGHTS)) || empty($MY_RIGHTS))) {
+                        // Found the container for the new map
+                        $containerIdForNewMap = $tenantContainer['id'];
+                    }
 
                 }
 
             }
 
-            if ($skipHost || count($hostNameParts) !== count($mapGeneratorLevels)) {
+            if ($containerIdForNewMap === 0 || count($hostNameParts) !== count($mapGeneratorLevels)) {
                 // Not enough parts for the defined levels, skip this host
                 continue;
             }
@@ -5523,13 +5528,16 @@ class HostsTable extends Table {
                 ]);
                 $query->where([
                     'HostsToContainersSharing.container_id IN' => $MY_RIGHTS
-                ]);
+                ])
+                    ->andWhere([
+                        'HostsToContainersSharing.container_id IN' => $containerIdForNewMap
+                    ]);
             }
             $realHost = $query->contain('HostsToContainersSharing')
                 ->all();
 
             // Skip host if more than one result is returned or no host is found
-            if (empty($realHost) || count($realHost) > 1) {
+            if (empty($realHost) || $realHost->isEmpty() || count($realHost) > 1) {
                 continue;
             }
 

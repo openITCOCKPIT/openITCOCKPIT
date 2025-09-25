@@ -56,7 +56,7 @@ class PerfdataParser {
      * @param string $perfdataString string with monitoring performance data
      */
     public function __construct($perfdataString) {
-        $this->perfdataString = $perfdataString;
+        $this->perfdataString = $perfdataString??'';
     }
 
     /**
@@ -66,7 +66,7 @@ class PerfdataParser {
      */
     function parse() {
         $return = [];
-        $gauges = $this->splitGauges($this->perfdataString);
+        $gauges = $this->splitGauges();
         foreach ($gauges as $gauge) {
             $result = $this->parseGauge($gauge);
             $return = array_merge($return, $result);

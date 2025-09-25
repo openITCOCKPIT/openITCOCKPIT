@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -138,11 +139,16 @@ class MapgeneratorsTable extends Table {
             ->notEmptyString('map_refresh_interval');
 
         $validator
-            ->requirePresence('containers', 'create', __('You have to choose at least one option.'))
             ->allowEmptyString('containers', null, false)
-            ->multipleOptions('containers', [
-                'min' => 1
-            ], __('You have to choose at least one option.'));
+            ->add('containers', 'minContainerRule', [
+                'rule'    => function ($value, $context) {
+                    return count($value['_ids']) > 0;
+                },
+                'message' => __('You have to choose at least one option.'),
+                'on'      => function ($context) {
+                    return $context['data']['type'] === \App\itnovum\openITCOCKPIT\Maps\Mapgenerator::TYPE_GENERATE_BY_CONTAINER_STRUCTURE;
+                }
+            ]);
 
         $validator
             ->integer('type')
@@ -170,7 +176,7 @@ class MapgeneratorsTable extends Table {
             $isContainerErrors = [];
             $levelErrors = [];
 
-            if ($entity->type === 1 && empty($levels)) {
+            if (($entity->type === 1 && empty($levels)) || $levels === null) {
                 return true;
             }
 
@@ -273,12 +279,16 @@ class MapgeneratorsTable extends Table {
                 'Maps',
                 'Containers'
             ])
-            ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
-                if (!empty($MY_RIGHTS)) {
+            ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS, $where) {
+                if (!empty($MY_RIGHTS) && isset($where['type']) && $where['type'] === \App\itnovum\openITCOCKPIT\Maps\Mapgenerator::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
                 return $query;
             });
+
+        if (!isset($where['type']) || $where['type'] !== \App\itnovum\openITCOCKPIT\Maps\Mapgenerator::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
+            $query->leftJoinWith('Containers');
+        }
 
         if (isset($where['has_generated_maps'])) {
             if ($where['has_generated_maps'] === 1) {

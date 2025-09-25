@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -76,14 +77,14 @@ use itnovum\openITCOCKPIT\Database\PaginateOMat;
  * @property |\Cake\ORM\Association\HasMany $ServicesToServicegroups
  * @property |\Cake\ORM\Association\HasMany $Widgets
  *
- * @method \App\Model\Entity\Service get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Service get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method \App\Model\Entity\Service newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Service[] newEntities(array $data, array $options = [])
  * @method \App\Model\Entity\Service|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Service saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \App\Model\Entity\Service patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\Service[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Service findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Service findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

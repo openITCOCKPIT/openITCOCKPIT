@@ -80,58 +80,12 @@ class AngularController extends AppController {
 
     private $errorCount = 0;
 
-    public function paginator() {
-        //Return HTML Template for PaginatorDirective
-        return;
-    }
-
-    public function scroll() {
-        //Return HTML Template for PaginatorDirective
-        return;
-    }
-
-    public function mass_delete() {
-        //Return HTML Template for PaginatorDirective
-        return;
-    }
-
-    public function confirm_delete() {
-        //Return HTML Template for PaginatorDirective
-        return;
-    }
-
-    public function confirm_deactivate() {
-        //Return HTML Template for PaginatorDirective
-        return;
-    }
-
-    public function mass_activate() {
-        //Return HTML Template for PaginatorDirective
-        return;
-    }
-
-    public function mass_deactivate() {
-        //Return HTML Template for PaginatorDirective
-        return;
-    }
-
-    public function export() {
-        //Return HTML Template for PaginatorDirective
-        return;
-    }
-
-    public function popover_graph() {
-        //Return HTML Template for PaginatorDirective
-        return;
-    }
-
     /**
      * @throws Exception
      */
     public function user_timezone() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $session = $this->request->getSession();
@@ -142,48 +96,54 @@ class AngularController extends AppController {
         if (strlen($userTimezone) < 2) {
             $userTimezone = 'Europe/Berlin';
         }
+
+        $browserTimezone = (string)$this->request->getQuery('browserTimezone', '');
+        if (strlen($browserTimezone) < 2) {
+            $browserTimezone = 'Europe/Berlin';
+        }
+
         $UserTime = new DateTime($userTimezone);
         $ServerTime = new DateTime();
         $ServerTimeZone = new DateTimeZone($ServerTime->getTimezone()->getName());
         $timezone = [
-            'user_timezone'              => $userTimezone,
-            'user_time_to_server_offset' => $this->get_timezone_offset($ServerTimeZone->getName(), $userTimezone),
-            'user_offset'                => $UserTime->getOffset(),
-            'server_time_utc'            => time(),
-            'server_time'                => date('F d, Y H:i:s'),
-            'server_timezone_offset'     => $ServerTime->getOffset(),
+            'user_timezone'               => $userTimezone,
+            'user_time_to_server_offset'  => $this->getTimeZoneOffset($ServerTimeZone->getName(), $userTimezone),
+            'user_time_to_browser_offset' => $this->getTimeZoneOffset($browserTimezone, $userTimezone),
+            'browser_timezone'            => $browserTimezone,
+            'user_offset'                 => $UserTime->getOffset(),
+            'server_time_utc'             => time(),
+            'server_time'                 => date('F d, Y H:i:s'),
+            'server_timezone_offset'      => $ServerTime->getOffset(),
             //ISO 8601
-            'server_time_iso'            => date('c'),
-            'server_timezone'            => $ServerTimeZone->getName()
+            'server_time_iso'             => date('c'),
+            'server_timezone'             => $ServerTimeZone->getName()
         ];
         $this->set('timezone', $timezone);
         $this->viewBuilder()->setOption('serialize', ['timezone']);
     }
 
     /**
-     * @param $remote_tz
-     * @param null $origin_tz
+     * For the given $remote and $origin (server timezone), I will return the offset in seconds.
+     * @param string $remote
+     * @param string $origin
      * @return bool|int
      * @throws Exception
      */
-    private function get_timezone_offset($remote_tz, $origin_tz = null) {
-        if ($origin_tz === null) {
-            if (!is_string($origin_tz = date_default_timezone_get())) {
-                return false; // A UTC timestamp was returned -- bail out!
-            }
+    private function getTimeZoneOffset(string $remote, string $origin = '') {
+        if (($origin === '') && !is_string($origin = date_default_timezone_get())) {
+            return false; // A UTC timestamp was returned -- bail out!
         }
-        $origin_dtz = new DateTimeZone($origin_tz);
-        $remote_dtz = new DateTimeZone($remote_tz);
-        $origin_dt = new DateTime("now", $origin_dtz);
-        $remote_dt = new DateTime("now", $remote_dtz);
-        $offset = $origin_dtz->getOffset($origin_dt) - $remote_dtz->getOffset($remote_dt);
-        return $offset;
+        $originTimeZone = new DateTimeZone($origin);
+        $remoteTimeZone = new DateTimeZone($remote);
+        $originDateTime = new DateTime("now", $originTimeZone);
+        $remoteDateTime = new DateTime("now", $remoteTimeZone);
+
+        return $originTimeZone->getOffset($originDateTime) - $remoteTimeZone->getOffset($remoteDateTime);
     }
 
     public function version_check() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $path = APP . 'Lib' . DS . 'openITCOCKPIT_AvailableVersion.php';
@@ -201,8 +161,7 @@ class AngularController extends AppController {
 
     public function message_of_the_day() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $messageOtdAvailable = false;
         $User = new User($this->getUser());
@@ -236,8 +195,7 @@ class AngularController extends AppController {
 
     public function menustats() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
 
@@ -457,8 +415,7 @@ class AngularController extends AppController {
 
     public function menu() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $user = $this->getUser();
@@ -485,15 +442,9 @@ class AngularController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['menu', 'headerLogoForHtml']);
     }
 
-    public function menuControl() {
-        //Only ship HTML template
-        return;
-    }
-
     public function topSearch() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -573,8 +524,7 @@ class AngularController extends AppController {
 
     public function websocket_configuration() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (!Cache::read('systemsettings', 'permissions')) {
@@ -598,8 +548,7 @@ class AngularController extends AppController {
 
     public function push_configuration() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (!Cache::read('systemsettings', 'permissions')) {
@@ -630,70 +579,11 @@ class AngularController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['websocket', 'user']);
     }
 
-    public function not_found() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function forbidden() {
-        //Only ship HTML template
-        return;
-    }
-
     public function executing() {
         //Only ship HTML template
         $id = $this->request->getQuery('id', 'angularExecutingModal');
 
         $this->set('id', $id);
-    }
-
-    public function acknowledge_service() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function downtime_service() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function reschedule_host() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function enable_host_notifications() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function disable_host_notifications() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function downtime_host() {
-        //Only ship HTML template
-
-        if ($this->isAngularJsRequest()) {
-            if (!Cache::read('FRONTEND.PRESELECTED_DOWNTIME_OPTION', 'permissions')) {
-                /** @var SystemsettingsTable $SystemsettingsTable */
-                $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
-                $record = $SystemsettingsTable->getSystemsettingByKey('FRONTEND.PRESELECTED_DOWNTIME_OPTION');
-                Cache::write('FRONTEND.PRESELECTED_DOWNTIME_OPTION', $record->get('value'), 'permissions');
-            }
-            $downtimetypeId = Cache::read('FRONTEND.PRESELECTED_DOWNTIME_OPTION', 'permissions');
-
-            $this->set('preselectedDowntimetype', $downtimetypeId);
-            $this->viewBuilder()->setOption('serialize', ['preselectedDowntimetype']);
-        }
-
-        return;
-    }
-
-    public function acknowledge_host() {
-        //Only ship HTML template
-        return;
     }
 
     public function getDowntimeData() {
@@ -735,8 +625,7 @@ class AngularController extends AppController {
         $session = $this->request->getSession();
         $session->close();
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $cache = Cache::read('system_health', 'permissions');
@@ -852,61 +741,6 @@ class AngularController extends AppController {
         $this->state = $state;
     }
 
-    public function mass_delete_host_downtimes() {
-        return;
-    }
-
-
-    public function mass_delete_service_downtimes() {
-        return;
-    }
-
-    public function mass_delete_acknowledgements() {
-        return;
-    }
-
-    public function submit_host_result() {
-        return;
-    }
-
-    public function disable_host_flap_detection() {
-        return;
-    }
-
-    public function enable_host_flap_detection() {
-        return;
-    }
-
-    public function send_host_notification() {
-        return;
-    }
-
-    public function submit_service_result() {
-        return;
-    }
-
-    public function disable_service_flap_detection() {
-        return;
-    }
-
-    public function enable_service_flap_detection() {
-        return;
-    }
-
-    public function send_service_notification() {
-        return;
-    }
-
-    public function enable_service_notifications() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function disable_service_notifications() {
-        //Only ship HTML template
-        return;
-    }
-
     /**
      * @param int $up up|ok
      * @param int $down down|warning
@@ -991,15 +825,9 @@ class AngularController extends AppController {
         $this->response = $this->response->withBody($stream);
     }
 
-    public function macros() {
-        //Only ship HTML template
-        return;
-    }
-
     public function ldap_configuration() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if (!Cache::read('systemsettings', 'permissions')) {
@@ -1022,45 +850,9 @@ class AngularController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['ldapConfig']);
     }
 
-    public function priority() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function intervalInput() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function intervalInputWithDiffer() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function colorpicker() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function humanTime() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function template_diff() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function template_diff_button() {
-        //Only ship HTML template
-        return;
-    }
-
     public function queryhandler() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var SystemsettingsTable $SystemsettingsTable */
@@ -1078,8 +870,7 @@ class AngularController extends AppController {
 
     public function hostBrowserMenu() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $hostId = $this->request->getQuery('hostId');
@@ -1173,8 +964,7 @@ class AngularController extends AppController {
 
     public function serviceBrowserMenu() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $serviceId = $this->request->getQuery('serviceId');
@@ -1312,97 +1102,6 @@ class AngularController extends AppController {
         ];
         $this->set('config', $config);
         $this->viewBuilder()->setOption('serialize', ['config']);
-    }
-
-    public function durationInput() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function calendar() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function reload_required() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function sidebar() {
-        //Only ship HTML template
-        $this->set('hasRootPrivileges', $this->hasRootPrivileges);
-        return;
-    }
-
-    public function thresholds() {
-        //Return HTML Template for PaginatorDirective
-        return;
-    }
-
-    public function regexHelperTooltip() {
-        //Return HTML Template for PaginatorDirective
-        return;
-    }
-
-    public function ackTooltip() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function downtimeTooltip() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function wizardFilter() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function wizardInterfaceFilter() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function columns_config_import() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function columns_config_export() {
-        //Only ship HTML template
-        return;
-    }
-
-    public function autoRefresher() {
-        if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
-        }
-
-        if ($this->isAngularJsRequest()) {
-            $timeranges = [
-                'refresh_interval' => [
-                    0   => __('Disabled'),
-                    5   => __('Refresh every 5s'),
-                    10  => __('Refresh every 10s'),
-                    30  => __('Refresh every 30s'),
-                    60  => __('Refresh every 1m'),
-                    120 => __('Refresh every 2m'),
-                    300 => __('Refresh every 5m'),
-                    900 => __('Refresh every 15m')
-                ]
-            ];
-            $this->set('timeranges', $timeranges);
-            $this->viewBuilder()->setOption('serialize', ['timeranges']);
-        }
-
-    }
-
-    public function changeLogEntry() {
-        //Return HTML Template for ChangeLogEntries
-        return;
     }
 
     public function getSatellites() {

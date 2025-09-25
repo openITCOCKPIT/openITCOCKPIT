@@ -49,10 +49,14 @@ class TacticalOverviewJson extends DashboardJsonStandardizer {
             'not_keywords'      => ''
         ],
         'Hostgroup'    => [
-            '_ids' => ''
+            '_ids'         => '',
+            'keywords'     => '',
+            'not_keywords' => ''
         ],
         'Servicegroup' => [
-            '_ids' => ''
+            '_ids'         => '',
+            'keywords'     => '',
+            'not_keywords' => ''
         ]
     ];
 

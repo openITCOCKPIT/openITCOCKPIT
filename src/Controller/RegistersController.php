@@ -44,9 +44,7 @@ class RegistersController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //get also the state env for License input autocompletion
-            //Ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $TableLocator = $this->getTableLocator();

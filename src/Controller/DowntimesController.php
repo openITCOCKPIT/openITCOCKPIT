@@ -60,17 +60,19 @@ class DowntimesController extends AppController {
 
     public function host() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
+
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
 
         $HostDowntimesControllerRequest = new HostDowntimesControllerRequest($this->request);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $HostDowntimesControllerRequest->getPage());
 
         //Process conditions
         $DowntimeHostConditions = new DowntimeHostConditions();
-        $DowntimeHostConditions->setFrom($HostDowntimesControllerRequest->getFrom());
-        $DowntimeHostConditions->setTo($HostDowntimesControllerRequest->getTo());
+        $DowntimeHostConditions->setFrom($UserTime->toServerTime($HostDowntimesControllerRequest->getFrom()));
+        $DowntimeHostConditions->setTo($UserTime->toServerTime($HostDowntimesControllerRequest->getTo()));
         $DowntimeHostConditions->setHideExpired($HostDowntimesControllerRequest->hideExpired());
         $DowntimeHostConditions->setIsRunning($HostDowntimesControllerRequest->isRunning());
         $DowntimeHostConditions->setContainerIds($this->MY_RIGHTS);
@@ -102,8 +104,6 @@ class DowntimesController extends AppController {
 
         //Prepare data for API
         $all_host_downtimes = [];
-        $User = new User($this->getUser());
-        $UserTime = $User->getUserTime();
 
         foreach ($hostDowntimes as $hostDowntime) {
             if ($this->hasRootPrivileges) {
@@ -141,13 +141,16 @@ class DowntimesController extends AppController {
             return;
         }
 
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
         $ServiceDowntimesControllerRequest = new ServiceDowntimesControllerRequest($this->request);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $ServiceDowntimesControllerRequest->getPage());
 
         //Process conditions
         $DowntimeServiceConditions = new DowntimeServiceConditions();
-        $DowntimeServiceConditions->setFrom($ServiceDowntimesControllerRequest->getFrom());
-        $DowntimeServiceConditions->setTo($ServiceDowntimesControllerRequest->getTo());
+        $DowntimeServiceConditions->setFrom($UserTime->toServerTime($ServiceDowntimesControllerRequest->getFrom()));
+        $DowntimeServiceConditions->setTo($UserTime->toServerTime($ServiceDowntimesControllerRequest->getTo()));
         $DowntimeServiceConditions->setHideExpired($ServiceDowntimesControllerRequest->hideExpired());
         $DowntimeServiceConditions->setIsRunning($ServiceDowntimesControllerRequest->isRunning());
         $DowntimeServiceConditions->setContainerIds($this->MY_RIGHTS);
@@ -180,8 +183,6 @@ class DowntimesController extends AppController {
 
         //Prepare data for API
         $all_service_downtimes = [];
-        $User = new User($this->getUser());
-        $UserTime = $User->getUserTime();
 
         foreach ($serviceDowntimes as $serviceDowntime) {
             if ($this->hasRootPrivileges) {
@@ -402,8 +403,4 @@ class DowntimesController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['success', 'message']);
     }
 
-    public function icon() {
-        //Only ship template
-        return;
-    }
 }

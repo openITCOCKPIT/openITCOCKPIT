@@ -207,7 +207,9 @@ class UsercontainerrolesTable extends Table {
                     'Usercontainerroles.id'   => 'asc'
                 ])->disableHydration();
 
-
+            foreach ($query->toArray() as $record) {
+                $result[$record['id']] = $record['name'];
+            }
         }
         return $result;
     }

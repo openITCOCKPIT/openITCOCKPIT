@@ -1,0 +1,1012 @@
+<?php
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
+//
+// This file is dual licensed
+//
+// 1.
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, version 3 of the License.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// 2.
+//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//     License agreement and license key will be shipped with the order
+//     confirmation.
+
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use App\itnovum\openITCOCKPIT\Core\Dashboards\StatuspagegroupJson;
+use App\Model\Entity\Statuspagegroup;
+use App\Model\Entity\StatuspagesMembership;
+use App\Model\Table\ContainersTable;
+use App\Model\Table\DashboardTabsTable;
+use App\Model\Table\StatuspagegroupsTable;
+use App\Model\Table\StatuspagesMembershipTable;
+use App\Model\Table\StatuspagesTable;
+use App\Model\Table\WidgetsTable;
+use Cake\Http\Exception\ForbiddenException;
+use Cake\Http\Exception\MethodNotAllowedException;
+use Cake\Http\Exception\NotFoundException;
+use Cake\ORM\TableRegistry;
+use Cake\Utility\Hash;
+use itnovum\openITCOCKPIT\Core\AngularJS\Api;
+use itnovum\openITCOCKPIT\Core\DbBackend;
+use itnovum\openITCOCKPIT\Core\Hoststatus;
+use itnovum\openITCOCKPIT\Core\HoststatusFields;
+use itnovum\openITCOCKPIT\Core\Servicestatus;
+use itnovum\openITCOCKPIT\Core\ServicestatusFields;
+use itnovum\openITCOCKPIT\Core\ValueObjects\User;
+use itnovum\openITCOCKPIT\Database\PaginateOMat;
+use itnovum\openITCOCKPIT\Filter\GenericFilter;
+use itnovum\openITCOCKPIT\Filter\StatuspagesFilter;
+
+/**
+ * Statuspagegroups Controller
+ *
+ * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
+ */
+class StatuspagegroupsController extends AppController {
+    /**
+     * Initialize controller
+     *
+     * @return void
+     */
+
+
+    /**
+     * @return void
+     */
+    public function index() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+        /** @var ContainersTable $ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+
+        $GenericFilter = new GenericFilter($this->request);
+        $GenericFilter->setFilters([
+            'like' => [
+                'Statuspagegroups.name',
+                'Statuspagegroups.description'
+            ]
+        ]);
+        $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $GenericFilter->getPage());
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+        $statuspagegroups = $StatuspagegroupsTable->getStatuspagegroupsIndex($GenericFilter, $PaginateOMat, $MY_RIGHTS);
+        foreach ($statuspagegroups as $index => $statuspagegroup) {
+            $statuspagegroups[$index]['container'] = '/' . $ContainersTable->treePath($statuspagegroup['container_id']);
+            if ($this->hasRootPrivileges === true) {
+                $statuspagegroups[$index]['allowEdit'] = true;
+                $statuspagegroups[$index]['allowView'] = true;
+            } else {
+                $statuspagegroups[$index]['allowEdit'] = $this->isWritableContainer($statuspagegroup['container_id']);
+                $statuspagegroups[$index]['allowView'] = in_array($statuspagegroup['container_id'], $MY_RIGHTS, true);
+            }
+        }
+        $this->set('all_statuspagegroups', $statuspagegroups);
+        $this->viewBuilder()->setOption('serialize', ['all_statuspagegroups']);
+
+    }
+
+    /**
+     * View method
+     *
+     * @param string|null $id Statuspagegroup id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function view($id = null) {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $id = (int)$id;
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        if (!$StatuspagegroupsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid status page group'));
+        }
+
+        $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForViewById($id);
+        if (!$this->allowedByContainerId($statuspagegroup['container_id'], false)) {
+            $this->render403();
+            return;
+        }
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            /** @var $ContainersTable ContainersTable */
+            //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+            //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
+            // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+
+        // Get cumulated status per status page AND total cumulated status for the group
+        $statuspagesFormated = [];
+
+        $statuspageIds = Hash::combine($statuspagegroup['statuspages_memberships'], '{n}.statuspage_id', '{n}.statuspage_id');
+        $statuspages = $StatuspagesTable->getStatuspageWithAllObjects($statuspageIds, $MY_RIGHTS);
+        $allHostUuids = [];
+        $allServiceUuids = [];
+
+
+        $worstHostState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+        $worstServiceState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+
+        foreach ($statuspages as $statuspage) {
+            $hostsWithServices = [
+                'hosts' => []
+            ];
+
+            //Hosts
+            foreach ($statuspage['hosts'] as $host) {
+                if (!isset($hostsWithServices['hosts'][$host['uuid']])) {
+                    $hostsWithServices['hosts'][$host['uuid']] = [
+                        'services' => []
+                    ];
+                    $allHostUuids[$host['id']] = $host['uuid'];
+
+                    foreach ($host['services'] as $service) {
+                        $hostsWithServices['hosts'][$host['uuid']]['services'][$service['uuid']] = $service['id'];
+                        $allServiceUuids[$service['id']] = $service['uuid'];
+                    }
+                }
+            }
+            //Services
+            foreach ($statuspage['services'] as $service) {
+                if (!isset($hostsWithServices['hosts'][$service['host']['uuid']])) {
+                    $hostsWithServices['hosts'][$service['host']['uuid']] = [
+                        'services' => []
+                    ];
+                }
+                $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
+                $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
+                $allServiceUuids[$service['id']] = $service['uuid'];
+            }
+            //Host groups
+            foreach ($statuspage['hostgroups'] as $key => $hostgroup) {
+                foreach ($hostgroup['hosts'] as $host) {
+                    if (!isset($hostsWithServices['hosts'][$host['uuid']])) {
+                        $hostsWithServices['hosts'][$host['uuid']] = [
+                            'services' => []
+                        ];
+                    }
+                    $allHostUuids[$host['id']] = $host['uuid'];
+                    foreach ($host['services'] as $service) {
+                        $hostsWithServices['hosts'][$host['uuid']]['services'][$service['uuid']] = $service['id'];
+                        $allServiceUuids[$service['id']] = $service['uuid'];
+                    }
+                }
+
+                foreach ($hostgroup['hosttemplates'] as $hosttemplate) {
+                    foreach ($hosttemplate['hosts'] as $host) {
+                        if (!isset($hostsWithServices['hosts'][$host['uuid']])) {
+                            $hostsWithServices['hosts'][$host['uuid']] = [
+                                'services' => []
+                            ];
+                        }
+                        $allHostUuids[$host['id']] = $host['uuid'];
+                        foreach ($host['services'] as $service) {
+                            $hostsWithServices['hosts'][$host['uuid']]['services'][$service['uuid']] = $service['id'];
+                            $allServiceUuids[$service['id']] = $service['uuid'];
+                        }
+                    }
+                }
+            }
+            //Service groups
+            foreach ($statuspage['servicegroups'] as $key => $servicegroup) {
+                foreach ($servicegroup['services'] as $service) {
+                    if (!isset($hostsWithServices['hosts'][$service['host']['uuid']])) {
+                        $hostsWithServices['hosts'][$service['host']['uuid']] = [
+                            'services' => []
+                        ];
+                    }
+                    $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
+
+                    $allServiceUuids[$service['id']] = $service['uuid'];
+                    $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
+                }
+
+                foreach ($servicegroup['servicetemplates'] as $servicetemplate) {
+                    foreach ($servicetemplate['services'] as $service) {
+                        if (!isset($hostsWithServices['hosts'][$service['host']['uuid']])) {
+                            $hostsWithServices['hosts'][$service['host']['uuid']] = [
+                                'services' => []
+                            ];
+                        }
+                        $hostsWithServices['hosts'][$service['host']['uuid']['uuid']]['services'][$service['uuid']] = $service['id'];
+                        $allServiceUuids[$service['id']] = $service['uuid'];
+                        $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
+                    }
+                }
+            }
+
+            $statuspagesFormated[$statuspage['id']] = [
+                'statuspage'               => [
+                    'id'                => $statuspage['id'],
+                    'uuid'              => $statuspage['uuid'],
+                    'container_id'      => $statuspage['container_id'],
+                    'name'              => $statuspage['name'],
+                    'description'       => $statuspage['description'],
+                    'public_title'      => $statuspage['public_title'],
+                    'public_identifier' => $statuspage['public_identifier'],
+                    'public'            => $statuspage['public'],
+                ],
+                'hostsWithServices'        => $hostsWithServices,
+                'cumulatedState'           => Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING,
+                'host_acknowledgements'    => 0, // Total amount of host acknowledgements
+                'host_downtimes'           => 0, // Total amount of host downtimes
+                'host_total'               => sizeof($hostsWithServices['hosts']), // Total amount of hosts
+                'host_problems'            => 0, // Hosts in none up state
+                'service_acknowledgements' => 0, // Total amount of service acknowledgements
+                'service_downtimes'        => 0, // Total amount of service downtimes
+                'service_total'            => Hash::apply($hostsWithServices['hosts'], '{s}.services.{s}', 'sizeof'), // Total amount of services
+                'service_problems'         => 0, // Services in none up state
+            ];
+        }
+
+        // Query host and service status for all objects in two queries
+        $DbBackend = new DbBackend();
+        $HoststatusTable = $DbBackend->getHoststatusTable();
+        $ServicestatusTable = $DbBackend->getServicestatusTable();
+
+        $HoststatusFields = new HoststatusFields($DbBackend);
+        $HoststatusFields
+            ->currentState()
+            ->isHardstate()
+            ->problemHasBeenAcknowledged()
+            ->scheduledDowntimeDepth();
+
+        $ServicestatusFields = new ServicestatusFields($DbBackend);
+        $ServicestatusFields
+            ->currentState()
+            ->isHardstate()
+            ->problemHasBeenAcknowledged()
+            ->scheduledDowntimeDepth();
+
+        $AllHoststatus = $HoststatusTable->byUuid($allHostUuids, $HoststatusFields);
+        $AllServicestatus = $ServicestatusTable->byUuids($allServiceUuids, $ServicestatusFields);
+
+        $totalHosts = sizeof($allHostUuids);
+        $totalServices = sizeof($allServiceUuids);
+
+        foreach ($statuspagesFormated as $statuspageId => $statuspage) {
+            $cumulatedState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+            foreach ($statuspage['hostsWithServices']['hosts'] as $hostUuid => $services) {
+                if (!isset($AllHoststatus[$hostUuid]['Hoststatus'])) {
+                    continue;
+                }
+                $Hoststatus = new Hoststatus($AllHoststatus[$hostUuid]['Hoststatus']);
+                if ($Hoststatus->currentState() > 0) {
+                    $statuspagesFormated[$statuspageId]['host_problems']++;
+                }
+                if ($Hoststatus->currentState() > $worstHostState) {
+                    $worstHostState = $Hoststatus->currentState();
+                }
+                if ($Hoststatus->isAcknowledged() && $Hoststatus->currentState() > 0) {
+                    $statuspagesFormated[$statuspageId]['host_acknowledgements']++;
+                }
+                if ($Hoststatus->isInDowntime()) {
+                    $statuspagesFormated[$statuspageId]['host_downtimes']++;
+                }
+
+                if ($Hoststatus->currentState() > 0) {
+                    // Host is down or unreachable - use the host status only
+                    // +1 shifts a host state into a service state so we can use a single array
+                    if ($Hoststatus->currentState() + 1 > $cumulatedState) {
+                        $cumulatedState = $Hoststatus->currentState() + 1;
+                    }
+
+                    // Loop through services to count problems, acks and downtimes (just for the statistics)
+                    foreach ($services['services'] as $serviceUuid => $serviceId) {
+                        if (!isset($AllServicestatus[$serviceUuid]['Servicestatus'])) {
+                            continue;
+                        }
+                        $Servicestatus = new Servicestatus($AllServicestatus[$serviceUuid]['Servicestatus']);
+
+                        if ($Servicestatus->currentState() > 0) {
+                            $statuspagesFormated[$statuspageId]['service_problems']++;
+                        }
+                        if ($Servicestatus->isAcknowledged() && $Servicestatus->currentState() > 0) {
+                            $statuspagesFormated[$statuspageId]['service_acknowledgements']++;
+                        }
+                        if ($Servicestatus->isInDowntime()) {
+                            $statuspagesFormated[$statuspageId]['service_downtimes']++;
+                        }
+
+                        if ($Servicestatus->currentState() > $cumulatedState) {
+                            $cumulatedState = $Servicestatus->currentState();
+                        }
+                    }
+
+                    continue;
+                }
+                if ($Hoststatus->currentState() === 0 && $Hoststatus->currentState() > $cumulatedState) {
+                    $cumulatedState = $Hoststatus->currentState();
+                }
+
+                // If the host is up -> use worst service state
+                // IF host is down (or unreachable) use the host state (service state not needed in this case)
+                // This is the same behavior as we use on Maps and Statuspages
+
+                // Host is UP - use cumulated service status (just like on maps)
+                // Merge host state and service state into one single cumulated state
+                foreach ($services['services'] as $serviceUuid => $serviceId) {
+                    if (!isset($AllServicestatus[$serviceUuid]['Servicestatus'])) {
+                        continue;
+                    }
+                    $Servicestatus = new Servicestatus($AllServicestatus[$serviceUuid]['Servicestatus']);
+
+                    if ($Servicestatus->currentState() > 0) {
+                        $statuspagesFormated[$statuspageId]['service_problems']++;
+                    }
+
+                    if ($Servicestatus->currentState() > $worstServiceState) {
+                        $worstServiceState = $Servicestatus->currentState();
+                    }
+
+                    if ($Servicestatus->isAcknowledged() && $Servicestatus->currentState() > 0) {
+                        $statuspagesFormated[$statuspageId]['service_acknowledgements']++;
+                    }
+                    if ($Servicestatus->isInDowntime()) {
+                        $statuspagesFormated[$statuspageId]['service_downtimes']++;
+                    }
+
+                    if ($Servicestatus->currentState() > $cumulatedState) {
+                        $cumulatedState = $Servicestatus->currentState();
+                    }
+                }
+            }
+            $statuspagesFormated[$statuspageId]['cumulatedState'] = $cumulatedState;
+
+            // Remove hosts and services array to save memory (and to not have it in the response JSON)
+            unset($statuspagesFormated[$statuspageId]['hostsWithServices']);
+        }
+
+        // Clear some memory
+        unset($statuspages, $AllHoststatus, $AllServicestatus);
+        $cumulatedStategroupState = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+        $allCumulatedStatuspageStates = Hash::extract($statuspagesFormated, '{n}.cumulatedState');
+        if (!empty($allCumulatedStatuspageStates)) {
+            // We have to check for empty array - max() throws an error then
+            $cumulatedStategroupState = max($allCumulatedStatuspageStates);
+        }
+
+        // Build status page group matrix (collections and categories)
+        $matrix = [];
+
+        foreach ($statuspagegroup['statuspagegroup_collections'] as $collectionIndex => $collection) {
+            $matrix[$collectionIndex] = [];
+            foreach ($statuspagegroup['statuspagegroup_categories'] as $categoryIndex => $category) {
+                $matrix[$collectionIndex][$categoryIndex] = [
+                    'collectionIndex'     => $collectionIndex,
+                    'collectionId'        => $collection['id'],
+                    'categoryIndex'       => $categoryIndex,
+                    'categoryId'          => $category['id'],
+                    'statuspageIds'       => [],
+                    'cumulatedStates'     => [],
+                    'cumulatedState'      => Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING,
+                    'statuspages'         => [],
+                    'total_statuspages'   => 0,
+                    'total_not_monitored' => 0,
+                    'total_ok'            => 0,
+                    'total_warning'       => 0,
+                    'total_critical'      => 0,
+                    'total_unknown'       => 0,
+                ];
+            }
+        }
+
+        // Map collection IDs to their index in the $statuspagegroup['statuspagegroup_collections'] array
+        $collectionIndexMapping = [];
+        foreach ($statuspagegroup['statuspagegroup_collections'] as $collectionIndex => $collection) {
+            $collectionIndexMapping[$collection['id']] = $collectionIndex;
+        }
+
+        // Map category IDs to their index in the $statuspagegroup['statuspagegroup_categories'] array
+        $categoryIndexMapping = [];
+        foreach ($statuspagegroup['statuspagegroup_categories'] as $categoryIndex => $category) {
+            $categoryIndexMapping[$category['id']] = $categoryIndex;
+        }
+
+        // Assign statuspages to the matrix based on their collection_id and category_id
+        foreach ($statuspagegroup['statuspages_memberships'] as $statuspage_membership) {
+            $collectionIndex = $collectionIndexMapping[$statuspage_membership['collection_id']] ?? null;
+            $categoryIndex = $categoryIndexMapping[$statuspage_membership['category_id']] ?? null;
+            if ($collectionIndex !== null && $categoryIndex !== null && isset($statuspagesFormated[$statuspage_membership['statuspage_id']])) {
+                $statuspage = $statuspagesFormated[$statuspage_membership['statuspage_id']];
+                $matrix[$collectionIndex][$categoryIndex]['statuspageIds'][] = $statuspage['statuspage']['id'];
+                $matrix[$collectionIndex][$categoryIndex]['cumulatedStates'][] = $statuspage['cumulatedState'];
+                $matrix[$collectionIndex][$categoryIndex]['statuspages'][] = $statuspage;
+            }
+        }
+
+        // Calculate cumulated state for each cell in the matrix
+        foreach ($matrix as $collectionIndex => $categories) {
+            foreach ($categories as $categoryIndex => $category) {
+
+                $matrix[$collectionIndex][$categoryIndex]['total_statuspages'] = sizeof($category['statuspages']);
+                // I'm so sorry
+                foreach ($category['statuspages'] as $spage) {
+                    switch ($spage['cumulatedState']) {
+                        case 0:
+                            $matrix[$collectionIndex][$categoryIndex]['total_ok']++;
+                            break;
+                        case 1:
+                            $matrix[$collectionIndex][$categoryIndex]['total_warning']++;
+                            break;
+                        case 2:
+                            $matrix[$collectionIndex][$categoryIndex]['total_critical']++;
+                            break;
+                        case 3:
+                            $matrix[$collectionIndex][$categoryIndex]['total_unknown']++;
+                            break;
+                        default:
+                            $matrix[$collectionIndex][$categoryIndex]['total_not_monitored']++;
+
+                    }
+                }
+
+                if (!empty($category['cumulatedStates'])) {
+                    $maxState = max($category['cumulatedStates']);
+                    $matrix[$collectionIndex][$categoryIndex]['cumulatedState'] = $maxState;
+                } else {
+                    $matrix[$collectionIndex][$categoryIndex]['cumulatedState'] = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+                }
+            }
+        }
+
+
+        $collectionRows = Hash::combine($matrix, '{n}.{n}.categoryId', '{n}.{n}.cumulatedState', '{n}.{n}.collectionId');
+        $collectionsGlobalState = [];
+        foreach ($collectionRows as $collectionId => $categoryArr) {
+            if (!isset($collectionsGlobalState[$collectionId])) {
+                $collectionsGlobalState[$collectionId] = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+            }
+            if (!empty($categoryArr)) {
+                $maxState = max($categoryArr);
+                if ($maxState > $collectionsGlobalState[$collectionId]) {
+                    $collectionsGlobalState[$collectionId] = $maxState;
+                }
+            }
+        }
+        $categoryColumns = Hash::combine($matrix, '{n}.{n}.collectionId', '{n}.{n}', '{n}.{n}.categoryId');
+        $categoriesGlobalState = [];
+        foreach ($categoryColumns as $categoryId => $collectionArr) {
+            if (!isset($categoriesGlobalState[$categoryId])) {
+                $categoriesGlobalState[$categoryId] = Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+            }
+            foreach ($collectionArr as $collection) {
+                if (!empty($collection['cumulatedStates'])) {
+                    $maxState = max($collection['cumulatedStates']);
+                    if ($maxState > $categoriesGlobalState[$categoryId]) {
+                        $categoriesGlobalState[$categoryId] = (int)$maxState;
+                    }
+                }
+            }
+        }
+
+        foreach ($statuspagegroup['statuspagegroup_collections'] as $collectionIndex => $collection) {
+            $statuspagegroup['statuspagegroup_collections'][$collectionIndex]['cumulatedCollectionState'] = $collectionsGlobalState[$collection['id']] ?? Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+        }
+
+        foreach ($statuspagegroup['statuspagegroup_categories'] as $categoryIndex => $category) {
+            $statuspagegroup['statuspagegroup_categories'][$categoryIndex]['cumulatedCategoryState'] = $categoriesGlobalState[$category['id']] ?? Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+        }
+
+        // List all status pages which have problems (host or service not in OK state)
+        /** @var StatuspagesMembershipTable $StatuspagesMembershipTable */
+        $StatuspagesMembershipTable = TableRegistry::getTableLocator()->get('StatuspagesMembership');
+        $problems = [];
+        $statuspageMemberships = $StatuspagesMembershipTable->getStatuspagesWithCollectionAndCategoryByStatuspagegroupId($id);
+        foreach ($statuspageMemberships as $StatuspageMembership) {
+            /** @var StatuspagesMembership $StatuspageMembership */
+            $state = $statuspagesFormated[$StatuspageMembership->statuspage_id]['cumulatedState'] ?? Statuspagegroup::CUMULATED_STATE_NOT_IN_MONITORING;
+            if ($state > Statuspagegroup::CUMULATED_STATE_OPERATIONAL) {
+                $problems[] = [
+                    'statuspage'     => $statuspagesFormated[$StatuspageMembership->statuspage_id] ?? [],
+                    'collection'     => $StatuspageMembership->statuspagegroup_collection,
+                    'category'       => $StatuspageMembership->statuspagegroup_category,
+                    'cumulatedState' => $state
+                ];
+            }
+        }
+
+        if ($worstHostState > Statuspagegroup::CUMULATED_STATE_OPERATIONAL) {
+            // Shift host status by one so that we can use the same naming pipe as we do for services
+            $worstHostState++;
+        }
+
+        $this->set('totalHosts', $totalHosts);
+        $this->set('totalServices', $totalServices);
+        $this->set('worstHostState', $worstHostState);
+        $this->set('worstServiceState', $worstServiceState);
+        $this->set('statuspagegroup', $statuspagegroup);
+        $this->set('statuspages', array_values($statuspagesFormated));
+        $this->set('cumulatedStategroupState', $cumulatedStategroupState);
+        $this->set('problems', $problems);
+        $this->set('matrix', $matrix);
+
+        $this->viewBuilder()->setOption('serialize', [
+            'totalHosts',
+            'totalServices',
+            'worstHostState',
+            'worstServiceState',
+            'statuspagegroup',
+            'statuspages',
+            'cumulatedStategroupState',
+            'problems',
+            'matrix'
+        ]);
+    }
+
+    /**
+     * Add method
+     *
+     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
+     */
+    public function add() {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        if ($this->request->is('post')) {
+            $statuspagegroup = $StatuspagegroupsTable->newEmptyEntity();
+            $statuspagegroup->setAccess('id', false);
+            $statuspagegroup->setAccess('statuspages_membership', false);
+
+            $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
+
+            $StatuspagegroupsTable->save($statuspagegroup);
+            if ($statuspagegroup->hasErrors()) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', $statuspagegroup->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            } else {
+
+                if ($this->isJsonRequest()) {
+                    $this->serializeCake4Id($statuspagegroup); // REST API ID serialization
+                    return;
+                }
+            }
+            $this->set('statuspagegroup', $statuspagegroup);
+            $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
+        }
+    }
+
+    /**
+     * Edit method
+     *
+     * @param string|null $id Statuspagegroup id.
+     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function edit($id = null) {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        /** @var ContainersTable $ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+
+        $id = (int)$id;
+        if (!$StatuspagegroupsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid status page group'));
+        }
+
+        $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForEdit($id);
+        if (!$this->allowedByContainerId($statuspagegroup->container_id)) {
+            $this->render403();
+            return;
+        }
+
+        $oldContainerId = $statuspagegroup->container_id; // Save old container_id to check if container was changed -> necessary for status page cleanup
+        if ($this->request->is('post')) {
+            $statuspagegroup->setAccess('id', false);
+            $statuspagegroup->setAccess('statuspages_membership', false);
+            $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
+
+            $newContainerId = $statuspagegroup->container_id;
+
+            if ($oldContainerId != $newContainerId) {
+                $oldContainerIds = $ContainersTable->resolveChildrenOfContainerIds(
+                    $oldContainerId,
+                    true,
+                    [
+                        CT_GLOBAL,
+                        CT_TENANT,
+                        CT_LOCATION,
+                        CT_NODE
+                    ]
+                );
+                $newContainerIds = $ContainersTable->resolveChildrenOfContainerIds(
+                    $newContainerId,
+                    true,
+                    [
+                        CT_GLOBAL,
+                        CT_TENANT,
+                        CT_LOCATION,
+                        CT_NODE
+                    ]
+                );
+
+                $containersToRemove = array_diff($oldContainerIds, $newContainerIds);
+                if (!empty($containersToRemove)) {
+                    $StatuspagegroupsTable->_cleanupStatuspagesMembershipsByRemovedContainerIds(
+                        $statuspagegroup->id,
+                        $containersToRemove
+                    );
+                }
+            }
+
+            $StatuspagegroupsTable->save($statuspagegroup);
+            if ($statuspagegroup->hasErrors()) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', $statuspagegroup->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            } else {
+                if ($this->isJsonRequest()) {
+                    $this->serializeCake4Id($statuspagegroup); // REST API ID serialization
+                    return;
+                }
+            }
+        }
+        $this->set('statuspagegroup', $statuspagegroup);
+        $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
+
+    }
+
+    /**
+     * editStepTwo method
+     * In this step, the user can only assign status pages to the group
+     *
+     * @param string|null $id Statuspagegroup id.
+     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function editStepTwo($id = null) {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        $id = (int)$id;
+        if (!$StatuspagegroupsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid status page group'));
+        }
+
+        if ($this->request->is('get')) {
+            $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForEdit($id);
+            if (!$this->allowedByContainerId($statuspagegroup->container_id)) {
+                $this->render403();
+                return;
+            }
+
+            /** @var StatuspagesTable $StatuspagesTable */
+            $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+            /** @var ContainersTable $ContainersTable */
+            $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+
+            if ($statuspagegroup->container_id == ROOT_CONTAINER) {
+                //Don't panic! Only root users can edit /root objects ;)s
+                $containerIds = $ContainersTable->resolveChildrenOfContainerIds(ROOT_CONTAINER, true, [
+                    CT_GLOBAL,
+                    CT_TENANT,
+                    CT_LOCATION,
+                    CT_NODE
+                ]);
+            } else {
+                $containerIds = $ContainersTable->resolveChildrenOfContainerIds($statuspagegroup->container_id, false, [
+                    CT_GLOBAL,
+                    CT_TENANT,
+                    CT_LOCATION,
+                    CT_NODE
+                ]);
+            }
+
+            $statuspages = Api::makeItJavaScriptAble(
+                $StatuspagesTable->getStatuspagesList($containerIds)
+            );
+
+            $this->set('statuspagegroup', $statuspagegroup);
+            $this->set('statuspages', $statuspages);
+            $this->viewBuilder()->setOption('serialize', ['statuspagegroup', 'statuspages']);
+            return;
+        }
+
+        if ($this->request->is('post')) {
+            $statuspagegroup = $StatuspagegroupsTable->get($id, contain: [
+                'StatuspagesMemberships'
+            ]);
+            if (!$this->allowedByContainerId($statuspagegroup->container_id)) {
+                $this->render403();
+                return;
+            }
+
+            $statuspagegroup->setAccess('statuspages_membership', true);
+            $statuspagegroup->setAccess('statuspagegroup_categories', false);
+            $statuspagegroup->setAccess('statuspagegroup_collections', false);
+            $statuspagegroup = $StatuspagegroupsTable->patchEntity($statuspagegroup, $this->request->getData(null, []));
+
+            $StatuspagegroupsTable->save($statuspagegroup);
+            if ($statuspagegroup->hasErrors()) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', $statuspagegroup->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            } else {
+                if ($this->isJsonRequest()) {
+                    $this->serializeCake4Id($statuspagegroup); // REST API ID serialization
+                    return;
+                }
+            }
+
+            $this->set('statuspagegroup', $statuspagegroup);
+            $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
+        }
+
+
+    }
+
+    /**
+     * @param int|null $id
+     */
+    public function delete($id = null): void {
+        if (!$this->request->is('post')) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        $id = (int)$id;
+        if (!$StatuspagegroupsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid status page group'));
+        }
+
+        $statuspagegroup = $StatuspagegroupsTable->get($id, contain: [
+            'StatuspagegroupCategories',
+            'StatuspagegroupCollections',
+            'StatuspagesMemberships'
+        ]);
+        if (!$this->allowedByContainerId($statuspagegroup['container_id'])) {
+            $this->render403();
+            return;
+        }
+        if ($StatuspagegroupsTable->delete($statuspagegroup)) {
+            $this->set('success', true);
+            $this->set('message', __('Status page group deleted successfully'));
+            $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+            return;
+        }
+
+        $this->response = $this->response->withStatus(400);
+        $this->set('success', false);
+        $this->set('message', __('Issue while deleting Status page group'));
+        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+    }
+
+    public function statuspagegroupWidget() {
+        if (!$this->isAngularJsRequest()) {
+            //Only ship template
+            return;
+        }
+        /** @var WidgetsTable $WidgetsTable */
+        $WidgetsTable = TableRegistry::getTableLocator()->get('Widgets');
+
+        $widgetId = (int)$this->request->getQuery('widgetId');
+        if (!$WidgetsTable->existsById($widgetId)) {
+            throw new NotFoundException('Widget not found');
+        }
+
+        $StatuspagegroupJson = new StatuspagegroupJson();
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        $widget = $WidgetsTable->get($widgetId);
+
+        if ($this->request->is('get')) {
+            $widgetId = (int)$this->request->getQuery('widgetId');
+            if (!$WidgetsTable->existsById($widgetId)) {
+                throw new NotFoundException('Invalid widget id');
+            }
+            $widgetEntity = $WidgetsTable->get($widgetId);
+            $widget = $widgetEntity->toArray();
+            $config = [
+                'statuspagegroup_id' => null
+            ];
+            if ($widget['json_data'] !== null && $widget['json_data'] !== '') {
+                $config = json_decode($widget['json_data'], true);
+                if (!isset($config['statuspagegroup_id'])) {
+                    $config['statuspagegroup_id'] = null;
+                }
+            }
+            //Check statuspage group permissions
+            if ($config['statuspagegroup_id'] !== null) {
+                $id = (int)$config['statuspagegroup_id'];
+                if (!$StatuspagegroupsTable->existsById($id)) {
+                    throw new NotFoundException(__('Statuspage group not found'));
+                }
+                $statuspagegroup = $StatuspagegroupsTable->get($id);
+                $statuspagegroup = $statuspagegroup->toArray();
+                //Check statuspage group permissions
+                if (!empty($statuspagegroup) && isset($statuspagegroup[0])) {
+                    if (!$this->allowedByContainerId($statuspagegroup['container_id'], false)) {
+                        $config['statuspagegroup_id'] = null;
+                    }
+                }
+            }
+
+            $this->set('config', $config);
+            $this->viewBuilder()->setOption('serialize', ['config']);
+            return;
+        }
+
+        if ($this->request->is('post')) {
+            /** @var DashboardTabsTable $DashboardTabsTable */
+            $DashboardTabsTable = TableRegistry::getTableLocator()->get('DashboardTabs');
+
+            $User = new User($this->getUser());
+
+            if (!$DashboardTabsTable->isOwnedByUser($widget->dashboard_tab_id, $User->getId())) {
+                throw new ForbiddenException();
+            }
+
+            $config = $StatuspagegroupJson->standardizedData($this->request->getData());
+            $widget = $WidgetsTable->patchEntity($widget, [
+                'json_data' => json_encode($config)
+            ]);
+            $WidgetsTable->save($widget);
+
+            $this->set('config', $config);
+            $this->viewBuilder()->setOption('serialize', ['config']);
+            return;
+        }
+        throw new MethodNotAllowedException();
+    }
+
+
+    /****************************
+     *       AJAX METHODS       *
+     ****************************/
+
+    /**
+     * @return void
+     * @throws \Exception
+     */
+    public function loadContainers() {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var ContainersTable $ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+        if ($this->hasRootPrivileges === true) {
+            $containers = $ContainersTable->easyPath($this->MY_RIGHTS, OBJECT_HOST, [], $this->hasRootPrivileges, [CT_HOSTGROUP]);
+        } else {
+            $containers = $ContainersTable->easyPath($this->getWriteContainers(), OBJECT_HOST, [], false, [CT_HOSTGROUP]);
+        }
+        $containers = Api::makeItJavaScriptAble($containers);
+        $this->set('containers', $containers);
+        $this->viewBuilder()->setOption('serialize', ['containers']);
+    }
+
+    public function loadStatuspagesByString() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $statuspagesFilter = new StatuspagesFilter($this->request);
+
+
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+        $selected = $this->request->getQuery('selected');
+
+        $MY_RIGHTS = [];
+        if (!$this->hasRootPrivileges) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $statuspages = Api::makeItJavaScriptAble(
+            $StatuspagesTable->getStatuspagesForAngular($selected, $statuspagesFilter, $MY_RIGHTS)
+        );
+
+        $this->set('statuspages', $statuspages);
+        $this->viewBuilder()->setOption('serialize', ['statuspages']);
+    }
+
+    /**
+     * Get details about the status page group such as the ID and name.
+     * This is used by the view to show the correct title.
+     *
+     * @param string|null $id Statuspagegroup id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function getDetails($id = null) {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $id = (int)$id;
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        if (!$StatuspagegroupsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid status page group'));
+        }
+
+        $statuspagegroup = $StatuspagegroupsTable->getStatuspagegroupForViewById($id);
+        if (!$this->allowedByContainerId($statuspagegroup['container_id'], false)) {
+            $this->render403();
+            return;
+        }
+
+        $this->set('statuspagegroup', $statuspagegroup);
+        $this->viewBuilder()->setOption('serialize', ['statuspagegroup']);
+    }
+
+    public function loadStatuspagegroupsByString(): void {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $GenericFilter = new GenericFilter($this->request);
+        $GenericFilter->setFilters([
+            'like' => [
+                'Statuspagegroups.name'
+            ]
+        ]);
+
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+        $selected = $this->request->getQuery('selected');
+
+        $MY_RIGHTS = $this->MY_RIGHTS;
+        if ($this->hasRootPrivileges) {
+            $MY_RIGHTS = [];
+        }
+
+        $statuspagegroups = Api::makeItJavaScriptAble(
+            $StatuspagegroupsTable->getStatuspagegroupsForAngular($selected, $GenericFilter, $MY_RIGHTS)
+        );
+
+        $this->set('statuspagegroups', $statuspagegroups);
+        $this->viewBuilder()->setOption('serialize', ['statuspagegroups']);
+    }
+
+}

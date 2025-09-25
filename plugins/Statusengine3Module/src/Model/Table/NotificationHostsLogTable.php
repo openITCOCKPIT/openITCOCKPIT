@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -31,6 +32,7 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Core\HostNotificationConditions;
+use itnovum\openITCOCKPIT\Database\PaginateOMat;
 
 /**
  * NotificationHostsLog Model
@@ -120,7 +122,7 @@ class NotificationHostsLogTable extends Table implements NotificationHostsLogTab
         return $validator;
     }
 
-    public function getNotifications(HostNotificationConditions $HostNotificationConditions, $PaginateOMat = null) {
+    public function getNotifications(HostNotificationConditions $HostNotificationConditions, ?PaginateOMat $PaginateOMat = null) {
         $query = $this->find()
             ->select([
                 'NotificationHostsLog.hostname',

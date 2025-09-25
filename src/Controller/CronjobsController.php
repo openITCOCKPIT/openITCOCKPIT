@@ -43,7 +43,7 @@ class CronjobsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var CronjobsTable $CronjobsTable */
@@ -95,7 +95,7 @@ class CronjobsController extends AppController {
 
     public function edit($id = null) {
         if (!$this->isAngularJsRequest() || !$this->request->is('post')) {
-            throw new MethodNotAllowedException();
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var CronjobsTable $CronjobsTable */

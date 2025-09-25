@@ -36,7 +36,6 @@ namespace App\Controller;
 use App\Model\Table\SystemfailuresTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\I18n\DateTime;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -50,8 +49,7 @@ class SystemfailuresController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $SystemfailuresTable SystemfailuresTable */
@@ -88,9 +86,7 @@ class SystemfailuresController extends AppController {
         $User = new User($this->getUser());
 
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            $this->set('User', $User);
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {

@@ -89,13 +89,13 @@ class SmsNotificationCommand extends Command {
         $parser = parent::buildOptionParser($parser);
 
         $parser->addOptions([
-            'address'          => ['help' => __d('oitc_console', 'IP address of the SMS gateway')],
-            'type'             => ['short' => 't', 'help' => __d('oitc_console', 'Type of the notification host or service')],
-            'notificationtype' => ['help' => __d('oitc_console', 'Notification type of monitoring engine')],
-            'method'           => ['short' => 'm', 'help' => __d('oitc_console', 'Transport method for example NRPE')],
-            'hostname'         => ['help' => __d('oitc_console', 'Host uuid you want to send a notification')],
-            'contactpager'     => ['help' => __d('oitc_console', 'recivers mail address')],
-            'servicedesc'      => ['help' => __d('oitc_console', 'Service uuid you want to notify')],
+            'address'          => ['help' => __d('oitc_console', 'IP address of the SMS gateway'), 'default' => ''],
+            'type'             => ['short' => 't', 'help' => __d('oitc_console', 'Type of the notification host or service'), 'default' => ''],
+            'notificationtype' => ['help' => __d('oitc_console', 'Notification type of monitoring engine'), 'default' => ''],
+            'method'           => ['short' => 'm', 'help' => __d('oitc_console', 'Transport method for example NRPE'), 'default' => ''],
+            'hostname'         => ['help' => __d('oitc_console', 'Host uuid you want to send a notification'), 'default' => ''],
+            'contactpager'     => ['help' => __d('oitc_console', 'recivers mail address'), 'default' => ''],
+            'servicedesc'      => ['help' => __d('oitc_console', 'Service uuid you want to notify'), 'default' => ''],
         ]);
 
 

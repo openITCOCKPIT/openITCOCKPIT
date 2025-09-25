@@ -27,10 +27,14 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\itnovum\openITCOCKPIT\Core\Dashboards\OrganizationalchartJson;
 use App\Model\Table\ContainersTable;
+use App\Model\Table\DashboardTabsTable;
 use App\Model\Table\OrganizationalChartConnectionsTable;
 use App\Model\Table\OrganizationalChartsTable;
+use App\Model\Table\WidgetsTable;
 use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\NotImplementedException;
@@ -56,8 +60,7 @@ class OrganizationalChartsController extends AppController {
      */
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $User = new User($this->getUser());
         $UserTime = $User->getUserTime();
@@ -97,8 +100,7 @@ class OrganizationalChartsController extends AppController {
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -296,8 +298,7 @@ class OrganizationalChartsController extends AppController {
      */
     public function view($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         throw new NotImplementedException();
@@ -340,6 +341,85 @@ class OrganizationalChartsController extends AppController {
         $this->set('success', false);
         $this->set('message', __('Issue while deleting Organizational chart'));
         $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+    }
+
+    public function organizationalchartWidget() {
+        if (!$this->isAngularJsRequest()) {
+            //Only ship template
+            return;
+        }
+        /** @var WidgetsTable $WidgetsTable */
+        $WidgetsTable = TableRegistry::getTableLocator()->get('Widgets');
+
+        $widgetId = (int)$this->request->getQuery('widgetId');
+        if (!$WidgetsTable->existsById($widgetId)) {
+            throw new NotFoundException('Widget not found');
+        }
+
+        $OrganizationalchartJson = new OrganizationalchartJson();
+        /** @var OrganizationalChartsTable $OrganizationalChartsTable */
+        $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+
+        $widget = $WidgetsTable->get($widgetId);
+
+        if ($this->request->is('get')) {
+            $widgetId = (int)$this->request->getQuery('widgetId');
+            if (!$WidgetsTable->existsById($widgetId)) {
+                throw new NotFoundException('Invalid widget id');
+            }
+            $widgetEntity = $WidgetsTable->get($widgetId);
+            $widget = $widgetEntity->toArray();
+            $config = [
+                'organizationalchart_id' => null
+            ];
+            if ($widget['json_data'] !== null && $widget['json_data'] !== '') {
+                $config = json_decode($widget['json_data'], true);
+                if (!isset($config['organizationalchart_id'])) {
+                    $config['organizationalchart_id'] = null;
+                }
+            }
+            //Check organizational chart permissions
+            if ($config['organizationalchart_id'] !== null) {
+                $id = (int)$config['organizationalchart_id'];
+                if (!$OrganizationalChartsTable->existsById($id)) {
+                    throw new NotFoundException(__('Organizationalchart not found'));
+                }
+                $organizationalchart = $OrganizationalChartsTable->get($id);
+                $organizationalchart = $organizationalchart->toArray();
+                //Check organizational chart permissions
+                if (!empty($organizationalchart) && isset($organizationalchart[0])) {
+                    if (!$this->allowedByContainerId($organizationalchart['container_id'], false)) {
+                        $config['organizationalchart_id'] = null;
+                    }
+                }
+            }
+
+            $this->set('config', $config);
+            $this->viewBuilder()->setOption('serialize', ['config']);
+            return;
+        }
+
+        if ($this->request->is('post')) {
+            /** @var DashboardTabsTable $DashboardTabsTable */
+            $DashboardTabsTable = TableRegistry::getTableLocator()->get('DashboardTabs');
+
+            $User = new User($this->getUser());
+
+            if (!$DashboardTabsTable->isOwnedByUser($widget->dashboard_tab_id, $User->getId())) {
+                throw new ForbiddenException();
+            }
+
+            $config = $OrganizationalchartJson->standardizedData($this->request->getData());
+            $widget = $WidgetsTable->patchEntity($widget, [
+                'json_data' => json_encode($config)
+            ]);
+            $WidgetsTable->save($widget);
+
+            $this->set('config', $config);
+            $this->viewBuilder()->setOption('serialize', ['config']);
+            return;
+        }
+        throw new MethodNotAllowedException();
     }
 
 
@@ -450,5 +530,35 @@ class OrganizationalChartsController extends AppController {
         $this->set('containers', $containers);
         $this->set('allowEdit', $allowEdit);
         $this->viewBuilder()->setOption('serialize', ['organizationalChart', 'containers', 'allowEdit']);
+    }
+
+    public function loadOrganizationalChartsByString() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $GenericFilter = new GenericFilter($this->request);
+        $GenericFilter->setFilters([
+            'like' => [
+                'OrganizationalCharts.name'
+            ]
+        ]);
+
+
+        /** @var OrganizationalChartsTable $OrganizationalChartsTable */
+        $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
+        $selected = $this->request->getQuery('selected');
+
+        $MY_RIGHTS = $this->MY_RIGHTS;
+        if ($this->hasRootPrivileges) {
+            $MY_RIGHTS = [];
+        }
+
+        $organizationalCharts = Api::makeItJavaScriptAble(
+            $OrganizationalChartsTable->getOrganizationalChartsForAngular($selected, $GenericFilter, $MY_RIGHTS)
+        );
+
+        $this->set('organizationalCharts', $organizationalCharts);
+        $this->viewBuilder()->setOption('serialize', ['organizationalCharts']);
     }
 }

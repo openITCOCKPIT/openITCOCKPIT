@@ -67,8 +67,7 @@ class TimeperiodsController extends AppController {
 
     function index() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -138,8 +137,7 @@ class TimeperiodsController extends AppController {
      */
     public function viewDetails($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -167,8 +165,7 @@ class TimeperiodsController extends AppController {
      */
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -207,8 +204,7 @@ class TimeperiodsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -337,8 +333,7 @@ class TimeperiodsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $MY_RIGHTS = $this->MY_RIGHTS;
@@ -451,8 +446,7 @@ class TimeperiodsController extends AppController {
      */
     public function usedBy($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */

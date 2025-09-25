@@ -68,11 +68,6 @@ class StatisticsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['settings', 'statistics', 'IS_CONTAINER']);
     }
 
-    public function ask_anonymous_statistics() {
-        //Only ship HTML template
-        return;
-    }
-
     public function saveStatisticDecision() {
         if (!$this->isApiRequest()) {
             throw new MethodNotAllowedException();

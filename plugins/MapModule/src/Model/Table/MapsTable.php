@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -85,7 +86,7 @@ use Statusengine\PerfdataParser;
  * @property MapsummaryitemsTable&HasMany $Mapsummaryitems
  * @property MaptextsTable&HasMany $Maptexts
  *
- * @method Map get($primaryKey, $options = [])
+ * @method Map get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method Map newEntity($data = null, array $options = [])
  * @method Map[] newEntities(array $data, array $options = [])
  * @method Map|false save(EntityInterface $entity, $options = [])

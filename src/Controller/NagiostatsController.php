@@ -43,8 +43,7 @@ class NagiostatsController extends AppController {
 
     public function index() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $MonitoringEngine = new MonitoringEngine();

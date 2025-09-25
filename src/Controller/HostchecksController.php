@@ -52,8 +52,7 @@ class HostchecksController extends AppController {
 
     public function index($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $session = $this->request->getSession();
@@ -76,18 +75,18 @@ class HostchecksController extends AppController {
         $HostchecksControllerRequest = new HostchecksControllerRequest($this->request);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $HostchecksControllerRequest->getPage());
 
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
         //Process conditions
         $Conditions = new HostcheckConditions();
-        $Conditions->setFrom($HostchecksControllerRequest->getFrom());
-        $Conditions->setTo($HostchecksControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($HostchecksControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($HostchecksControllerRequest->getTo()));
         $Conditions->setStates($HostchecksControllerRequest->getHostStates());
         $Conditions->setStateTypes($HostchecksControllerRequest->getHostStateTypes());
         $Conditions->setOrder($HostchecksControllerRequest->getOrderForPaginator('Hostchecks.start_time', 'desc'));
         $Conditions->setHostUuid($host->get('uuid'));
         $Conditions->setConditions($HostchecksControllerRequest->getIndexFilters());
-
-        $User = new User($this->getUser());
-        $UserTime = $User->getUserTime();
 
         $HostchecksTable = $this->DbBackend->getHostchecksTable();
 

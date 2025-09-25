@@ -39,7 +39,6 @@ use App\Model\Table\ServicesTable;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\AngularJS\Request\ServicechecksControllerRequest;
-use itnovum\openITCOCKPIT\Core\DbBackend;
 use itnovum\openITCOCKPIT\Core\ServicechecksConditions;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Core\Views\BBCodeParser;
@@ -58,8 +57,7 @@ class ServicechecksController extends AppController {
      */
     public function index($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $session = $this->request->getSession();
@@ -82,20 +80,19 @@ class ServicechecksController extends AppController {
         $ServicechecksControllerRequest = new ServicechecksControllerRequest($this->request);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $ServicechecksControllerRequest->getPage());
 
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
         //Process conditions
         $Conditions = new ServicechecksConditions();
         $Conditions->setHostUuid($service->host->uuid);
-        $Conditions->setFrom($ServicechecksControllerRequest->getFrom());
-        $Conditions->setTo($ServicechecksControllerRequest->getTo());
+        $Conditions->setFrom($UserTime->toServerTime($ServicechecksControllerRequest->getFrom()));
+        $Conditions->setTo($UserTime->toServerTime($ServicechecksControllerRequest->getTo()));
         $Conditions->setOrder($ServicechecksControllerRequest->getOrderForPaginator('Servicecheck.start_time', 'desc'));
         $Conditions->setStates($ServicechecksControllerRequest->getServiceStates());
         $Conditions->setStateTypes($ServicechecksControllerRequest->getServiceStateTypes());
         $Conditions->setServiceUuid($service->get('uuid'));
         $Conditions->setConditions($ServicechecksControllerRequest->getIndexFilters());
-
-
-        $User = new User($this->getUser());
-        $UserTime = $User->getUserTime();
 
         $ServicechecksTable = $this->DbBackend->getServicechecksTable();
 

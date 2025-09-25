@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -133,11 +134,11 @@ class GrafanaUserdashboardsTable extends Table {
             ->maxLength('range', 255)
             ->notEmptyString('range');
 
-        $validator
-            ->integer('configuration_id')
-            ->greaterThan('configuration_id', -1)
-            ->lessThan('configuration_id', 3)
-            ->notEmptyString('configuration_id');
+        //$validator
+        //    ->integer('configuration_id')
+        //    ->greaterThan('configuration_id', -1)
+        //    ->lessThan('configuration_id', 3)
+        //    ->notEmptyString('configuration_id');
 
         return $validator;
     }

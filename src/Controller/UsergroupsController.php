@@ -60,8 +60,7 @@ class UsergroupsController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $GenericFilter = new GenericFilter($this->request);
@@ -107,8 +106,7 @@ class UsergroupsController extends AppController {
      */
     public function add() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var AcosTable $AcosTable */
@@ -204,9 +202,7 @@ class UsergroupsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isJsonRequest()) {
-            $this->set('systemname', $this->getSystemname());
-            //Only ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var UsergroupsTable $UsergroupsTable */
@@ -371,8 +367,7 @@ class UsergroupsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var UsergroupsTable $UsergroupsTable */

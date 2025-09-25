@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today Allgeier IT Services GmbH
 //
 // This file is dual licensed
 //
@@ -89,8 +90,7 @@ class MapeditorsController extends AppController {
      */
     public function view($id = null) {
         if (!$this->isApiRequest() && $id === null) {
-            //Only ship html template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var MapsTable $MapsTable */
@@ -517,31 +517,6 @@ class MapeditorsController extends AppController {
         return $allRelatedMapIdsOfParent;
     }
 
-    public function mapline() {
-        //Only ship template
-        return;
-    }
-
-    public function mapicon() {
-        //Only ship template
-        return;
-    }
-
-    public function maptext() {
-        //Only ship template
-        return;
-    }
-
-    public function perfdatatext() {
-        //Only ship template
-        return;
-    }
-
-    public function serviceOutput() {
-        //Only ship template
-        return;
-    }
-
     /**
      * @throws MissingDbBackendException
      */
@@ -854,26 +829,6 @@ class MapeditorsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['allowView', 'host', 'service']);
     }
 
-    public function tacho() {
-        //Only ship template
-        return;
-    }
-
-    public function cylinder() {
-        //Only ship template
-        return;
-    }
-
-    public function trafficlight() {
-        //Only ship template
-        return;
-    }
-
-    public function temperature() {
-        //Only ship template
-        return;
-    }
-
     /**
      * @throws MissingDbBackendException
      */
@@ -912,7 +867,7 @@ class MapeditorsController extends AppController {
 
                 $host = $HostsTable->get($objectId, contain: [
                     'HostsToContainersSharing'
-                ], fields:[
+                ], fields: [
                     'Hosts.id',
                     'Hosts.uuid',
                     'Hosts.name',
@@ -960,7 +915,7 @@ class MapeditorsController extends AppController {
                             'Servicetemplates.name'
                         ]
                     ]
-                ], fields:[
+                ], fields: [
                     'Services.id',
                     'Services.name',
                     'Services.uuid',
@@ -2109,16 +2064,9 @@ class MapeditorsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['map']);
     }
 
-    public function viewDirective() {
-        //Ship template of Mapeditors view directive.
-        //It is a directive be able to also use the maps as an widget
-        return;
-    }
-
     public function mapWidget() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var MapsTable $MapsTable */

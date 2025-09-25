@@ -149,12 +149,9 @@ class HostsController extends AppController {
             $satellites = $SatellitesTable->getSatellitesAsListWithDescription($this->MY_RIGHTS);
             $satellites[0] = $masterInstanceName;
         }
+
         if (!$this->isApiRequest()) {
-            $this->set('username', $User->getFullName());
-            $this->set('satellites', $satellites);
-            $this->set('types', $HostsTable->getHostTypes());
-            //Only ship HTML template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $ContainersTable ContainersTable */
@@ -324,16 +321,6 @@ class HostsController extends AppController {
         $this->set('all_hosts', $all_hosts);
         $this->set('username', $User->getFullName());
         $this->viewBuilder()->setOption('serialize', ['all_hosts', 'username']);
-    }
-
-    public function icon() {
-        //Only ship HTML Template
-        return;
-    }
-
-    public function hostservicelist() {
-        //Only ship HTML Template
-        return;
     }
 
     /**
@@ -511,8 +498,7 @@ class HostsController extends AppController {
      */
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -631,8 +617,7 @@ class HostsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */
@@ -865,8 +850,7 @@ class HostsController extends AppController {
 
     public function sharing($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */
@@ -986,8 +970,7 @@ class HostsController extends AppController {
 
     public function edit_details($host_id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $User = new User($this->getUser());
         /** @var HostsTable $HostsTable */
@@ -1452,8 +1435,7 @@ class HostsController extends AppController {
      */
     public function deactivate($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */
@@ -1517,8 +1499,7 @@ class HostsController extends AppController {
      */
     public function enable($id = null) {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */
@@ -1673,8 +1654,7 @@ class HostsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         $User = new User($this->getUser());
@@ -2411,6 +2391,11 @@ class HostsController extends AppController {
         ]);
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToPdf() {
         $User = new User($this->getUser());
 
@@ -2520,6 +2505,11 @@ class HostsController extends AppController {
         );
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToCsv() {
         $User = new User($this->getUser());
 
@@ -3626,8 +3616,7 @@ class HostsController extends AppController {
      */
     public function usedBy($id = null): void {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostsTable HostsTable */

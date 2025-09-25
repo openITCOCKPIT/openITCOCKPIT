@@ -41,6 +41,7 @@ use Cake\Cache\Cache;
 use Cake\Core\Plugin;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\ServerRequest;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use ImportModule\Model\Table\ImportedHostgroupsTable;
@@ -73,8 +74,7 @@ class HostgroupsController extends AppController {
 
     public function index() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostgroupsTable HostgroupsTable */
@@ -151,17 +151,14 @@ class HostgroupsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['hostgroup']);
     }
 
+    //Only for ACLs
     public function extended() {
-        if (!$this->isApiRequest()) {
-            $User = new User($this->getUser());
-            $this->set('username', $User->getFullName());
-        }
+
     }
 
     public function add() {
         if (!$this->isApiRequest()) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
 
@@ -210,8 +207,7 @@ class HostgroupsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest() && $id === null) {
-            //Only ship HTML template for angular
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var $HostgroupsTable HostgroupsTable */
@@ -508,6 +504,7 @@ class HostgroupsController extends AppController {
 
 
     /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
      * @throws MissingDbBackendException
      */
     public function listToPdf() {
@@ -588,6 +585,11 @@ class HostgroupsController extends AppController {
         );
     }
 
+    /**
+     * USED BY THE NEW ANGULAR FRONTEND !!
+     * @return void
+     * @throws MissingDbBackendException
+     */
     public function listToCsv() {
         /** @var $HostgroupsTable HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
@@ -605,15 +607,16 @@ class HostgroupsController extends AppController {
         $hostgroups = $HostgroupsTable->getHostgroupsIndex($HostgroupFilter, null, $MY_RIGHTS);
         $User = new User($this->getUser());
         $UserTime = new UserTime($User->getTimezone(), $User->getDateformat());
-
+        $requestData = $this->request;
 
         $all_hostgroups = [];
         foreach ($hostgroups as $hostgroup) {
             /** @var Hostgroup $hostgroup */
 
             $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroup->get('id'));
+            $requestData->withoutData('query');
 
-            $HostFilter = new HostFilter($this->request);
+            $HostFilter = new HostFilter(new ServerRequest());
             $HostConditions = new HostConditions();
 
             $HostConditions->setIncludeDisabled(false);
@@ -718,15 +721,9 @@ class HostgroupsController extends AppController {
             ]);
     }
 
-    public function addHostsToHostgroup() {
-        //Only ship template
-        return;
-    }
-
     public function append() {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         if ($this->request->is('post')) {
@@ -860,8 +857,7 @@ class HostgroupsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            //Only ship HTML Template
-            return;
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
         /** @var HostgroupsTable $HostgroupsTable */
@@ -901,6 +897,7 @@ class HostgroupsController extends AppController {
                     $newHostgroupData = [
                         'description'   => $hostgroupData['Hostgroup']['description'],
                         'hostgroup_url' => $sourceHostgroup['hostgroup_url'],
+                        'tags'          => $sourceHostgroup['tags'],
                         'uuid'          => UUID::v4(),
                         'container'     => [
                             'name'             => $hostgroupData['Hostgroup']['container']['name'],

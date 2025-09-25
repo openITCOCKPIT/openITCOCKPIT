@@ -36,5 +36,5 @@ interface NotificationServicesTableInterface {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getNotifications(ServiceNotificationConditions $ServiceNotificationConditions, $PaginateOMat = null);
+    public function getNotifications(ServiceNotificationConditions $ServiceNotificationConditions, ?PaginateOMat $PaginateOMat = null);
 }

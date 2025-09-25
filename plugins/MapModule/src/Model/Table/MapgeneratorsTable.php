@@ -33,7 +33,7 @@ declare(strict_types=1);
 
 namespace MapModule\Model\Table;
 
-use App\Lib\Traits\Cake2ResultTableTrait;
+use App\itnovum\openITCOCKPIT\Filter\MapgeneratorFilter;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Table\ContainersTable;
 use Cake\Datasource\EntityInterface;
@@ -53,7 +53,8 @@ use MapModule\Model\Entity\Mapgenerator;
  * @property ContainersTable&HasMany $MapgeneratorsToContainers
  * @property ContainersTable&HasMany $MapgeneratorLevels
  *
- * @method Mapgenerator get($primaryKey, $options = [])
+ *
+ * @method Mapgenerator get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
  * @method Mapgenerator newEntity($data = null, array $options = [])
  * @method Mapgenerator[] newEntities(array $data, array $options = [])
  * @method Mapgenerator|false save(EntityInterface $entity, $options = [])
@@ -67,7 +68,6 @@ use MapModule\Model\Entity\Mapgenerator;
 class MapgeneratorsTable extends Table {
 
     use PaginationAndScrollIndexTrait;
-    use Cake2ResultTableTrait;
 
     /**
      * Initialize method
@@ -258,6 +258,80 @@ class MapgeneratorsTable extends Table {
     public function existsById($id) {
         return $this->exists(['Mapgenerators.id' => $id]);
     }
+
+
+    /**
+     * @param MapgeneratorFilter $MapgeneratorFilter
+     * @param $PaginateOMat
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getMapgeneratorsIndex(MapgeneratorFilter $MapgeneratorFilter, $PaginateOMat = null, array $MY_RIGHTS = []) {
+        $query = $this->find('all')
+            ->select([
+                'Mapgenerators.id',
+                'Mapgenerators.name',
+                'Mapgenerators.description',
+                'Mapgenerators.type',
+                'Mapgenerators.map_refresh_interval',
+                'Mapgenerators.items_per_line'
+            ])->contain([
+                'Containers' => function ($q) {
+                    return $q->select([
+                        'Containers.id',
+                        'Containers.name'
+                    ]);
+                }
+            ]);
+        $query->where($MapgeneratorFilter->indexFilter());
+
+        if (!empty($MY_RIGHTS)) {
+            $query->select([
+                'permission_status' => $query->newExpr(
+                    'IF(
+                        COUNT(`Containers`.`id`) > 0,
+                        IF(
+                          NOT EXISTS (
+                            SELECT mcs.mapgenerator_id
+                            FROM `mapgenerators_to_containers` mcs
+                            WHERE mcs.mapgenerator_id = `Mapgenerators`.`id`
+                              AND mcs.container_id IN (' . implode(',', $MY_RIGHTS) . ')
+                          ),
+                          "not_permitted",
+                          "permitted"
+                        ),
+                        "permitted"
+                      )'
+                ),
+            ])->join([
+                [
+                    'table'      => 'mapgenerators_to_containers',
+                    'alias'      => 'Containers',
+                    'type'       => 'LEFT',
+                    'conditions' => [
+                        'Mapgenerators.id = Containers.mapgenerator_id',
+                    ],
+                ]
+            ])->having([
+                'permission_status' => 'permitted'
+            ])->groupBy(['Mapgenerators.id']);
+        }
+        $query->orderBy($MapgeneratorFilter->getOrderForPaginator('Mapgenerators.name', 'asc'));
+
+        if ($PaginateOMat === null) {
+            //Just execute query
+            $result = $this->emptyArrayIfNull($query->toArray());
+        } else {
+            if ($PaginateOMat->useScroll()) {
+                $result = $this->scrollCake4($query, $PaginateOMat->getHandler());
+            } else {
+                $result = $this->paginateCake4($query, $PaginateOMat->getHandler());
+            }
+        }
+
+        return $result;
+    }
+
 
     /**
      * @param array $indexFilter

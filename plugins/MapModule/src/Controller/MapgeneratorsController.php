@@ -59,34 +59,30 @@ class MapgeneratorsController extends AppController {
         $MapgeneratorFilter = new MapgeneratorFilter($this->request);
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $MapgeneratorFilter->getPage());
 
-        $limit = $PaginateOMat->getHandler()->getLimit();
-        $Paginator = null;
-        if ($this->isApiRequest() && !$this->isAngularJsRequest()) {
-            $limit = null;
-        } else {
-            $Paginator = $PaginateOMat;
+        $MY_RIGHTS = $this->MY_RIGHTS;
+        if ($this->hasRootPrivileges) {
+            $MY_RIGHTS = [];
         }
 
-        $all_mapgenerators = $MapgeneratorsTable->getAll(
-            $MapgeneratorFilter->indexFilter(),
-            $MapgeneratorFilter->getOrderForPaginator('Mapgenerators.name', 'asc'),
-            $limit,
-            $Paginator,
-            $this->hasRootPrivileges ? [] : $this->MY_RIGHTS);
+        $all_mapgenerators = $MapgeneratorsTable->getMapgeneratorsIndex($MapgeneratorFilter, $PaginateOMat, $MY_RIGHTS);
+
+
         foreach ($all_mapgenerators as $key => $mapgenerator) {
-            $mapgenerator['maps'] = Hash::extract($mapgenerator, 'maps.{n}.id');
-            $all_mapgenerators[$key]['allowEdit'] = false;
-            if ($this->hasRootPrivileges == true || empty($mapgenerator['containers'])) {
+            $containerIds = Hash::extract($mapgenerator, 'containers.{n}.id');
+            if ($mapgenerator['type'] == Mapgenerator::TYPE_GENERATE_BY_HOSTNAME_SPLITTING) {
                 $all_mapgenerators[$key]['allowEdit'] = true;
-                continue;
             }
-            foreach ($mapgenerator['containers'] as $cKey => $container) {
-                if (array_key_exists($container['id'], $this->MY_RIGHTS_LEVEL) && $this->MY_RIGHTS_LEVEL[$container['id']] == WRITE_RIGHT) {
-                    $all_mapgenerators[$key]['allowEdit'] = true;
-                    break;
+            if ($mapgenerator['type'] == Mapgenerator::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
+                $all_mapgenerators[$key]['allowEdit'] = true;
+                if ($this->hasRootPrivileges === false && !empty($containerIds)) {
+                    $all_mapgenerators[$key]['allowEdit'] = false;
+                    if (!empty(array_intersect($containerIds, $this->getWriteContainers()))) {
+                        $all_mapgenerators[$key]['allowEdit'] = true;
+                    }
                 }
             }
         }
+
 
         $this->set('all_mapgenerators', $all_mapgenerators);
         $this->viewBuilder()->setOption('serialize', ['all_mapgenerators', 'paging']);

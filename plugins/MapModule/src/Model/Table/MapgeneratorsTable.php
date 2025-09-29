@@ -39,19 +39,18 @@ use App\Model\Table\ContainersTable;
 use Cake\Datasource\EntityInterface;
 use Cake\ORM\Association\HasMany;
 use Cake\ORM\Behavior\TimestampBehavior;
-use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
+use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
-use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use MapModule\Model\Entity\Mapgenerator;
 
 /**
  * Mapgenerators Model
  *
- * @property MapgeneratorsTable&HasMany $MapgeneratorsToMaps
+ * @property MapsTable&HasMany $MapgeneratorsToMaps
  * @property ContainersTable&HasMany $MapgeneratorsToContainers
- * @property ContainersTable&HasMany $MapgeneratorLevels
+ * @property MapgeneratorLevelsTable&HasMany $MapgeneratorLevels
  *
  *
  * @method Mapgenerator get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
@@ -103,7 +102,8 @@ class MapgeneratorsTable extends Table {
 
         $this->hasMany('MapgeneratorLevels', [
             'foreignKey'   => 'mapgenerator_id',
-            'saveStrategy' => 'replace'
+            'saveStrategy' => 'replace',
+            'className'    => 'MapModule.MapgeneratorLevels'
         ])->setDependent(true);
 
     }
@@ -115,8 +115,6 @@ class MapgeneratorsTable extends Table {
      * @return Validator
      */
     public function validationDefault(Validator $validator): Validator {
-
-        $intervalStep = 5;
 
         $validator
             ->integer('id')
@@ -170,29 +168,29 @@ class MapgeneratorsTable extends Table {
      * @return \Cake\ORM\RulesChecker
      */
     public function buildRules(RulesChecker $rules): RulesChecker {
+
+        /**
+         *
+         * this rule validates the mapgenerator levels by the following criteria:
+         * - at least one level must be set as container
+         * - the name of each level must be unique in context of the mapgenerator
+         * - the divider must be set for each level except the last one
+         *
+         */
+
         $rules->add(function ($entity, $options) {
             $levels = $entity->mapgenerator_levels;
             $levelPartErrors = [];
             $isContainerErrors = [];
-            $levelErrors = [];
 
-            if (($entity->type === 1 && empty($levels)) || $levels === null) {
+            if (($entity->type === \App\itnovum\openITCOCKPIT\Maps\Mapgenerator::TYPE_GENERATE_BY_CONTAINER_STRUCTURE && empty($levels)) || $levels === null) {
                 return true;
-            }
-
-            // check if there are at least 2 levels
-            if (count($levels) < 2) {
-                $levelErrors['min'] = __('There must be at least 2 levels.');
             }
 
             $names = [];
             $isContainerCount = 0;
 
             foreach ($levels as $index => $level) {
-                // checks if the level has a name
-                if (empty($level['name'])) {
-                    $levelPartErrors[$index]['name']['empty'] = __('The name cannot be empty.');
-                }
 
                 // check if the name is unique
                 if (in_array($level['name'], $names)) {
@@ -209,11 +207,6 @@ class MapgeneratorsTable extends Table {
                 if (!empty($level['is_container']) && boolval($level['is_container']) === true) {
                     $isContainerCount++;
                 }
-            }
-
-            if ($isContainerCount > 1) {
-                $isContainerErrors['unique'] = __('Only one level can be the container level.');
-                return false;
             }
 
             if ($isContainerCount === 0) {
@@ -234,14 +227,7 @@ class MapgeneratorsTable extends Table {
                 ]);
             }
 
-            if (!empty($levelErrors)) {
-                $entity->setInvalidField('mapgenerator_levels', false);
-                $entity->setErrors([
-                    'mapgenerator_levels' => $levelErrors
-                ]);
-            }
-
-            if (!empty($levelPartErrors) || !empty($isContainerErrors) || !empty($levelErrors)) {
+            if (!empty($levelPartErrors) || !empty($isContainerErrors)) {
                 return false;
             }
 
@@ -276,6 +262,7 @@ class MapgeneratorsTable extends Table {
                 'Mapgenerators.map_refresh_interval',
                 'Mapgenerators.items_per_line'
             ])->contain([
+                'Maps',
                 'Containers' => function ($q) {
                     return $q->select([
                         'Containers.id',
@@ -283,7 +270,24 @@ class MapgeneratorsTable extends Table {
                     ]);
                 }
             ]);
-        $query->where($MapgeneratorFilter->indexFilter());
+        $where = $MapgeneratorFilter->indexFilter();
+
+        if (isset($where['has_generated_maps'])) {
+            if ($where['has_generated_maps'] === 1) {
+                $query->leftJoin(
+                    ['MapgeneratorsToMaps' => 'mapgenerators_to_maps'],
+                    ['MapgeneratorsToMaps.mapgenerator_id = Mapgenerators.id']
+                )->where(['MapgeneratorsToMaps.map_id IS NOT NULL']);
+            } else if ($where['has_generated_maps'] === 0) {
+                $query->leftJoin(
+                    ['MapgeneratorsToMaps' => 'mapgenerators_to_maps'],
+                    ['MapgeneratorsToMaps.mapgenerator_id = Mapgenerators.id']
+                )->where(['MapgeneratorsToMaps.map_id IS NULL']);
+            }
+            unset($where['has_generated_maps']);
+        }
+
+        $query->where($where)->groupBy(['Mapgenerators.id']);
 
         if (!empty($MY_RIGHTS)) {
             $query->select([
@@ -332,79 +336,221 @@ class MapgeneratorsTable extends Table {
         return $result;
     }
 
-
     /**
-     * @param array $indexFilter
-     * @param array $orderForPaginator
-     * @param int|null $limit
-     * @param PaginateOMat|null $PaginateOMat
+     * gets the hosts and name splitting by mapgenerator levels
+     * - the last part of the hostname is always the hostname itself and not a map level
+     * - the part that is marked as container must be the same as the tenant container of the host
+     *
+     * @param array $hosts
+     * @param array $mapGeneratorLevels
+     * @param bool $hasRootPrivileges
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getAll(array $indexFilter, array $orderForPaginator, int $limit = null, PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
-        if (!is_array($MY_RIGHTS)) {
-            $MY_RIGHTS = [$MY_RIGHTS];
+    public function getHostsByNameSplitting($hosts, $mapGeneratorLevels, $hasRootPrivileges, $MY_RIGHTS = []) {
+
+        $hostsAndMaps = [];
+
+        // gets the container structure for the hosts to find the container for the new map
+        // run this for all hosts to avoid multiple database calls
+        $hostsWithContainerStructure = $this->getContainersForMapgeneratorByContainerStructure($hosts, $hasRootPrivileges, $MY_RIGHTS, []);
+        $containerStructureByHostId = [];
+        foreach ($hostsWithContainerStructure as $entry) {
+            $containerStructureByHostId[$entry['hostId']] = $entry;
         }
 
-        $where = $indexFilter;
+        foreach ($hosts as $host) {
 
-        $query = $this->find()
-            ->contain([
-                'Maps',
-                'Containers'
-            ])
-            ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS, $where) {
-                if (!empty($MY_RIGHTS) && isset($where['type']) && $where['type'] === \App\itnovum\openITCOCKPIT\Maps\Mapgenerator::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
-                    return $query->where(['Containers.id IN' => $MY_RIGHTS]);
-                }
-                return $query;
-            });
+            $hostNameParts = [];
+            $restofHostName = $host['name'];
+            $containerIdForNewMap = 0;
+            $previousPartsAsString = ''; // to build unique names, which can be assigned to a map hierarchy
 
-        if (!isset($where['type']) || $where['type'] !== \App\itnovum\openITCOCKPIT\Maps\Mapgenerator::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
-            $query->leftJoinWith('Containers');
-        }
-
-        if (isset($where['has_generated_maps'])) {
-            if ($where['has_generated_maps'] === 1) {
-                $query->leftJoin(
-                    ['MapgeneratorsToMaps' => 'mapgenerators_to_maps'],
-                    ['MapgeneratorsToMaps.mapgenerator_id = Mapgenerators.id']
-                )->where(['MapgeneratorsToMaps.map_id IS NOT NULL']);
-            } else if ($where['has_generated_maps'] === 0) {
-                $query->leftJoin(
-                    ['MapgeneratorsToMaps' => 'mapgenerators_to_maps'],
-                    ['MapgeneratorsToMaps.mapgenerator_id = Mapgenerators.id']
-                )->where(['MapgeneratorsToMaps.map_id IS NULL']);
-            }
-            unset($where['has_generated_maps']);
-        }
-
-        $query->where($where);
-
-        if ($limit !== null) {
-            $query->limit($limit);
-        }
-
-        $queryResult = $query->orderBy($orderForPaginator)
-            ->groupBy(['Mapgenerators.id'])
-            ->enableAutoFields(true)
-            ->all();
-
-        if (empty($queryResult)) {
-            $result = [];
-        } else {
-            if ($PaginateOMat === null) {
-                $result = $query->toArray();
-            } else {
-                if ($PaginateOMat->useScroll()) {
-                    $result = $this->scrollCake4($query, $PaginateOMat->getHandler());
+            //split by the defined levels
+            foreach ($mapGeneratorLevels as $mapGeneratorLevel) {
+                if (!empty($mapGeneratorLevel['divider'])) {
+                    $divider = $mapGeneratorLevel['divider'];
+                    $pos = strpos($restofHostName, $divider);
+                    if ($pos !== false) {
+                        $part = substr($restofHostName, 0, $pos);
+                        if ($previousPartsAsString !== '') {
+                            $nameToSave = $previousPartsAsString . '/' . $part;
+                        } else {
+                            $nameToSave = $part;
+                        }
+                        $hostNameParts[] = $nameToSave;
+                        $previousPartsAsString = $nameToSave;
+                        $restofHostName = substr($restofHostName, $pos + strlen($divider));
+                    } else {
+                        // No more dividers found, take the rest of the hostname
+                        $part = $restofHostName;
+                        $hostNameParts[] = $part;
+                        break;
+                    }
                 } else {
-                    $result = $this->paginateCake4($query, $PaginateOMat->getHandler());
+                    // No divider defined, take the whole rest of the hostname
+                    $part = $restofHostName;
+                    $hostNameParts[] = $part;
+                    break;
                 }
+
+                // find the container for the new map
+                if ($mapGeneratorLevel['is_container']) {
+
+                    if (empty($containerStructureByHostId[$host['id']])) {
+                        // No container found for this level, skip this host
+                        continue;
+                    }
+
+                    // container has to be the same as the tenant container of the host
+                    $tenantContainer = $containerStructureByHostId[$host['id']]['containerHierarchy'][0];
+
+                    if ($tenantContainer['name'] === $part && ((!empty($MY_RIGHTS) && in_array($tenantContainer['id'], $MY_RIGHTS)) || (empty($MY_RIGHTS) && $hasRootPrivileges))) {
+                        // Found the container for the new map
+                        $containerIdForNewMap = $tenantContainer['id'];
+                    }
+
+                }
+
             }
+
+            if ($containerIdForNewMap === 0 || count($hostNameParts) !== count($mapGeneratorLevels)) {
+                // Not enough parts for the defined levels, skip this host
+                continue;
+            }
+
+            // remove hostname from the parts
+            array_pop($hostNameParts);
+
+            $hostsAndMaps[] = [
+                'hostId'               => $host['id'],
+                'hostName'             => $host['name'],
+                'containerIdForNewMap' => $containerIdForNewMap,
+                'mapNames'             => $hostNameParts
+            ];
+
         }
 
-        return $result;
+        return $hostsAndMaps;
+
+    }
+
+    /**
+     *
+     * gets the container structure/ hierarchy for the given hosts up to the tenant container
+     * - the container parameter can be used to filter the hosts and container structure by the selected containers
+     *
+     * @param array $hosts
+     * @param bool $hasRootPrivileges
+     * @param array $MY_RIGHTS
+     * @param array $containers filter by these containers
+     * @return array
+     */
+    public function getContainersForMapgeneratorByContainerStructure($hosts, $hasRootPrivileges, $MY_RIGHTS, $containers) {
+
+        $containersAndHosts = [];
+        $containerCache = []; // cache for containers to avoid multiple database calls
+
+        foreach ($hosts as $host) {
+
+            // skip hosts without container_id or id or name
+            if (!isset($host['container_id'], $host['id'], $host['name'])) {
+                continue;
+            }
+
+            $containerHierarchyForHost = [];
+            $startContainerId = 0; // this is the first container in the hierarchy and gets checked for rights
+            $currentContainerId = $host['container_id'];
+            $skipHost = false;
+
+            // skip host if container is root
+            if ($currentContainerId === ROOT_CONTAINER) {
+                continue;
+            }
+
+            while ($startContainerId === 0) {
+
+                // load container by id from cache or database
+                if (!isset($containerCache[$currentContainerId])) {
+
+                    /** @var $ContainersTable ContainersTable */
+                    $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+
+                    $containerCache[$currentContainerId] = $ContainersTable->getContainerById($currentContainerId);
+                }
+                $currentContainer = $containerCache[$currentContainerId];
+
+                if (empty($currentContainer)) {
+                    // Container not found, skip this host
+                    $skipHost = true;
+                    break;
+                }
+
+                // check if container is mandant
+                if ($currentContainer['containertype_id'] === 2) {
+                    // check for rights
+                    if (!empty($MY_RIGHTS) && !in_array($currentContainer['id'], $MY_RIGHTS, true)) {
+                        $skipHost = true;
+                        break;
+                    }
+                    $startContainerId = $currentContainer['id'];
+                }
+
+                $containerForHost = [
+                    'id'   => $currentContainer['id'],
+                    'name' => $currentContainer['name']
+                ];
+
+                $containerHierarchyForHost[] = $containerForHost;
+                $currentContainerId = $currentContainer['parent_id'] ?? null;
+
+                // if next element is root break the loop
+                if ($currentContainerId === null) {
+                    break;
+                }
+
+            }
+
+            // reverse array to have higher containers first
+            $containerHierarchyForHost = array_reverse($containerHierarchyForHost);
+
+            // filter hosts and container structure by selected containers
+            if (!empty($containers)) {
+
+                $startContainerFound = false;
+                foreach ($containers as $containerId) {
+                    foreach ($containerHierarchyForHost as $containerKey => $containerHierarchyContainer) {
+                        // also check for rights
+                        if ($containerId === $containerHierarchyContainer['id']
+                            && ((!empty($MY_RIGHTS) && in_array($containerHierarchyContainer['id'], $MY_RIGHTS, true)) || (empty($MY_RIGHTS) && $hasRootPrivileges))) {
+                            $startContainerFound = true;
+                            break;
+                        }
+                    }
+                }
+
+                // if start container is not found, skip this host
+                if (!$startContainerFound) {
+                    $skipHost = true;
+                }
+
+            }
+
+            if (!$skipHost) {
+
+                $hostObject = [
+                    'hostId'             => $host['id'],
+                    'hostName'           => $host['name'],
+                    'containerHierarchy' => $containerHierarchyForHost,
+                ];
+
+                $containersAndHosts[] = $hostObject;
+            }
+
+        }
+
+        return $containersAndHosts;
+
     }
 
 }

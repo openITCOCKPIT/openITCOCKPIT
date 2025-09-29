@@ -73,7 +73,7 @@ class UpdateHost {
                     'name'          => $hostCustomvariableName,
                     'value'         => $postData[$postDataKey],
                     'objecttype_id' => OBJECT_HOST,
-                    'password'      => (preg_match('/(?i)(password|pass)/', $hostCustomvariableName)) ? 1 : 0
+                    'password'      => (preg_match('/(?i)(password|pass|pw)/', $hostCustomvariableName)) ? 1 : 0
                 ];
             }
         }

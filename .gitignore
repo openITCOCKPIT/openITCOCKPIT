@@ -133,6 +133,7 @@ plugins/ScmModule
 plugins/JiraModule
 plugins/DellModule
 plugins/ProxmoxModule
+plugins/MSHyperVModule
 
 # NFS mounts
 .nfs.*

@@ -440,6 +440,14 @@ class WizardAssignmentsTable extends Table {
                 'image'       => 'proxmox-logo-stacked-color.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
+            ],
+            'mshyperv'               => [
+                'type_id'     => 'mshyperv',
+                'title'       => __('Hyper-V'),
+                'description' => __('Monitor your Hyper-V machines.'),
+                'image'       => 'Windows.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
             ]
         ];
 

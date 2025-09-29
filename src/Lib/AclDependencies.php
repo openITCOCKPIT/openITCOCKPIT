@@ -221,6 +221,14 @@ class AclDependencies {
             ->allow('Users', 'getUserPermissions')
             ->allow('Users', 'loadDateformats');
 
+        $this
+            ->allow('Statuspagegroups', 'loadStatuspagegroupsByString')
+            ->allow('Statuspagegroups', 'statuspagegroupWidget');
+
+
+        $this
+            ->allow('OrganizationalCharts', 'organizationalchartWidget');
+
 
         ///////////////////////////////
         //    Add dependencies       //
@@ -513,6 +521,15 @@ class AclDependencies {
             ->dependency('Statuspages', 'edit', 'Statuspages', 'loadContainers');
 
         $this
+            ->dependency('Statuspagegroups', 'add', 'Statuspagegroups', 'loadContainers')
+            ->dependency('Statuspagegroups', 'add', 'Statuspagegroups', 'editStepTwo')
+            ->dependency('Statuspagegroups', 'add', 'Statuspagegroups', 'loadStatuspagesByString')
+            ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'loadContainers')
+            ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'editStepTwo')
+            ->dependency('Statuspagegroups', 'edit', 'Statuspagegroups', 'loadStatuspagesByString')
+            ->dependency('Statuspagegroups', 'view', 'Statuspagegroups', 'getDetails');
+
+        $this
             ->dependency('Users', 'index', 'Users', 'view')
             ->dependency('Users', 'index', 'Users', 'loadUsersByContainerId')
             ->dependency('Users', 'index', 'Users', 'loadUsergroups')
@@ -635,7 +652,8 @@ class AclDependencies {
             ->dependency('OrganizationalCharts', 'add', 'OrganizationalChartNodes', 'loadUsers')
             ->dependency('OrganizationalCharts', 'edit', 'OrganizationalChartNodes', 'loadUsers')
             ->dependency('OrganizationalCharts', 'view', 'OrganizationalCharts', 'loadOrganizationalChartsByContainerId')
-            ->dependency('OrganizationalCharts', 'view', 'OrganizationalCharts', 'loadOrganizationalChartById');
+            ->dependency('OrganizationalCharts', 'view', 'OrganizationalCharts', 'loadOrganizationalChartById')
+            ->dependency('OrganizationalCharts', 'view', 'OrganizationalCharts', 'loadOrganizationalChartsByString');
 
 
         //Load Plugin ALC Dependencies

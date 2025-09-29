@@ -23,8 +23,20 @@
 //     License agreement and license key will be shipped with the order
 //     confirmation.
 
-if (!defined('OPENITCOCKPIT_VERSION')) {
-    define('OPENITCOCKPIT_VERSION', '5.1.1');
-}
+namespace App\itnovum\openITCOCKPIT\Core\Dashboards;
 
-return [];
+
+use itnovum\openITCOCKPIT\Core\Dashboards\DashboardJsonStandardizer;
+
+class OrganizationalchartJson extends DashboardJsonStandardizer {
+
+    /**
+     * @var array
+     * Add new fields to this list
+     * oITC will take care of the rest of the work
+     */
+    protected $fields = [
+        'organizationalchart_id' => null,
+        'refresh_key'            => 0 // interval in seconds / 0 = refresh disabled
+    ];
+}

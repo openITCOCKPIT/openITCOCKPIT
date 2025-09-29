@@ -23,8 +23,38 @@
 //     License agreement and license key will be shipped with the order
 //     confirmation.
 
-if (!defined('OPENITCOCKPIT_VERSION')) {
-    define('OPENITCOCKPIT_VERSION', '5.1.1');
-}
+declare(strict_types=1);
 
-return [];
+namespace App\Model\Entity;
+
+use Cake\ORM\Entity;
+
+/**
+ * StatuspagegroupCategory Entity
+ *
+ * @property int $id
+ * @property int $statuspagegroup_id
+ * @property string $name
+ * @property \Cake\I18n\DateTime $modified
+ * @property \Cake\I18n\DateTime $created
+ *
+ * @property \App\Model\Entity\Statuspagegroup $statuspagegroup
+ */
+class StatuspagegroupCategory extends Entity {
+    /**
+     * Fields that can be mass assigned using newEntity() or patchEntity().
+     *
+     * Note that when '*' is set to true, this allows all unspecified fields to
+     * be mass assigned. For security purposes, it is advised to set '*' to false
+     * (or remove it), and explicitly make individual fields accessible as needed.
+     *
+     * @var array<string, bool>
+     */
+    protected array $_accessible = [
+        'statuspagegroup_id' => true,
+        'name'               => true,
+        'modified'           => true,
+        'created'            => true,
+        'statuspagegroup'    => true,
+    ];
+}

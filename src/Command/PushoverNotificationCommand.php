@@ -95,16 +95,16 @@ class PushoverNotificationCommand extends Command {
         $parser = parent::buildOptionParser($parser);
 
         $parser->addOptions([
-            'type'                => ['short' => 't', 'help' => __d('oitc_console', 'Type of the notification host or service')],
-            'notificationtype'    => ['help' => __d('oitc_console', 'Notification type of monitoring engine => $NOTIFICATIONTYPE$ ')],
-            'hostuuid'            => ['help' => __d('oitc_console', 'Host uuid you want to send a notification => $HOSTNAME$')],
-            'serviceuuid'         => ['help' => __d('oitc_console', 'Service uuid you want to send a notification => $SERVICEDESC$')],
-            'state'               => ['help' => __d('oitc_console', 'current host state => $HOSTSTATEID$/$SERVICESTATEID$')],
-            'output'              => ['help' => __d('oitc_console', 'host output => $HOSTOUTPUT$/$SERVICEOUTPUT$')],
-            'ackauthor'           => ['help' => __d('oitc_console', 'host acknowledgement author => $NOTIFICATIONAUTHOR$')],
-            'ackcomment'          => ['help' => __d('oitc_console', 'host acknowledgement comment => $NOTIFICATIONCOMMENT$')],
-            'pushover-api-token'  => ['help' => __d('oitc_console', 'API Token of your Pushover Application => $_CONTACTPUSHOVERAPP$')],
-            'pushover-user-token' => ['help' => __d('oitc_console', 'Your Pushover User Key => $_CONTACTPUSHOVERUSER$')],
+            'type'                => ['short' => 't', 'help' => __d('oitc_console', 'Type of the notification host or service'), 'default' => ''],
+            'notificationtype'    => ['help' => __d('oitc_console', 'Notification type of monitoring engine => $NOTIFICATIONTYPE$ '), 'default' => ''],
+            'hostuuid'            => ['help' => __d('oitc_console', 'Host uuid you want to send a notification => $HOSTNAME$'), 'default' => ''],
+            'serviceuuid'         => ['help' => __d('oitc_console', 'Service uuid you want to send a notification => $SERVICEDESC$'), 'default' => ''],
+            'state'               => ['help' => __d('oitc_console', 'current host state => $HOSTSTATEID$/$SERVICESTATEID$'), 'default' => ''],
+            'output'              => ['help' => __d('oitc_console', 'host output => $HOSTOUTPUT$/$SERVICEOUTPUT$'), 'default' => ''],
+            'ackauthor'           => ['help' => __d('oitc_console', 'host acknowledgement author => $NOTIFICATIONAUTHOR$'), 'default' => ''],
+            'ackcomment'          => ['help' => __d('oitc_console', 'host acknowledgement comment => $NOTIFICATIONCOMMENT$'), 'default' => ''],
+            'pushover-api-token'  => ['help' => __d('oitc_console', 'API Token of your Pushover Application => $_CONTACTPUSHOVERAPP$'), 'default' => ''],
+            'pushover-user-token' => ['help' => __d('oitc_console', 'Your Pushover User Key => $_CONTACTPUSHOVERUSER$'), 'default' => ''],
             'proxy'               => ['help' => __d('oitc_console', 'If set, connection will be established using the proxy server defined in openITCOCKPIT interface.'), 'boolean' => true, 'default' => false]
         ]);
 

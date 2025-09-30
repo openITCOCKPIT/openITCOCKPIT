@@ -64,6 +64,7 @@ use itnovum\openITCOCKPIT\CakePHP\Folder;
 use itnovum\openITCOCKPIT\Core\MonitoringEngine\NagiosConfigDefaults;
 use itnovum\openITCOCKPIT\Core\MonitoringEngine\NagiosConfigGenerator;
 use itnovum\openITCOCKPIT\Core\System\Health\LsbRelease;
+use MS365Module\itnovum\openITCOCKPIT\MS365Service\MS365ServiceScan;
 use NWCModule\itnovum\openITCOCKPIT\SNMP\SNMPScanNwc;
 use Symfony\Component\Filesystem\Filesystem;
 use ProxmoxModule\itnovum\openITCOCKPIT\ProxmoxStorage\ProxmoxStorageScan;
@@ -1088,6 +1089,24 @@ class GearmanWorkerCommand extends Command {
                 $DatastoreScan = new ProxmoxStorageScan($payload['data']);
                 try {
                     $services = $DatastoreScan->executeStorageDiscovery();
+                    $return = [
+                        'success'  => $services['success'],
+                        'error'    => $services['errormsg'],
+                        'services' => $services
+                    ];
+                } catch (\RuntimeException $e) {
+                    $return = [
+                        'success'   => false,
+                        'error'     => $e->getMessage(),
+                        'exception' => 'ProcessFailedException'
+                    ];
+                }
+                break;
+
+            case 'WizardMS365ServiceDiscovery':
+                $ServiceDiscovery = new MS365ServiceScan($payload['data']);
+                try {
+                    $services = $ServiceDiscovery->executeServiceDiscovery();
                     $return = [
                         'success'  => $services['success'],
                         'error'    => $services['errormsg'],

@@ -265,7 +265,7 @@ class WizardAssignmentsTable extends Table {
     public function getPossibleWizardsOfModules($availableWizards = []) {
         // placeholder wizards if a module is not installed
         $possibleWizards = [
-            'checkmk'                => [
+            'checkmk'                      => [
                 'type_id'     => 'checkmk',
                 'title'       => __('Checkmk'),
                 'description' => __('Monitoring for your server with checkmk'),
@@ -273,7 +273,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['checkmk', 'linux', 'windows', 'macos'],
                 'active'      => true
             ],
-            'prometheus'             => [
+            'prometheus'                   => [
                 'type_id'     => 'prometheus',
                 'title'       => __('Prometheus'),
                 'description' => __('Metrics based monitoring using Prometheus'),
@@ -281,7 +281,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['network', 'linux', 'windows', 'macos'],
                 'active'      => true
             ],
-            'network'                => [
+            'network'                      => [
                 'type_id'     => 'network',
                 'title'       => __('Network'),
                 'description' => __('Used to check any kind of network devices and interfaces like: Switch, Router, Firewall, Access Point, ...'),
@@ -289,7 +289,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['linux', 'network'],
                 'active'      => true
             ],
-            'sap'                    => [
+            'sap'                          => [
                 'type_id'     => 'sap',
                 'title'       => __('SAP'),
                 'description' => __('Monitoring SAP Systems'),
@@ -297,7 +297,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['sap', 'linux', 'database'],
                 'active'      => true
             ],
-            'sap-hana-system'        => [
+            'sap-hana-system'              => [
                 'type_id'     => 'sap-hana-system',
                 'title'       => __('SAP HANA (System)'),
                 'description' => __('Monitoring for your SAP Hana System Database'),
@@ -305,7 +305,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['sap', 'linux', 'database'],
                 'active'      => true
             ],
-            'sap-hana-tenant'        => [
+            'sap-hana-tenant'              => [
                 'type_id'     => 'sap-hana-tenant',
                 'title'       => __('SAP HANA (Tenant)'),
                 'description' => __('Monitoring for your SAP Hana Tenant Database'),
@@ -313,7 +313,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['sap', 'linux', 'database'],
                 'active'      => true
             ],
-            'vmware-through-vcenter' => [
+            'vmware-through-vcenter'       => [
                 'type_id'     => 'vmware-through-vcenter',
                 'title'       => __('VMware (through vCenter)'),
                 'description' => __('Check everything regarding VMware. vCenter, virtual machines...'),
@@ -321,7 +321,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => false
             ],
-            'vmware-esx-directly'    => [
+            'vmware-esx-directly'          => [
                 'type_id'     => 'vmware-esx-directly',
                 'title'       => __('VMware (esx directly)'),
                 'description' => __('Check everything regarding VMware. ESX Hosts, virtual machines...'),
@@ -329,7 +329,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => false
             ],
-            'vmware-horizon'         => [
+            'vmware-horizon'               => [
                 'type_id'     => 'vmware-horizon',
                 'title'       => __('VMware Horizon'),
                 'description' => __('Monitor your VMware Horizon Virtual Desktop Infrastructure'),
@@ -337,7 +337,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
-            'vmware-snapshot'        => [
+            'vmware-snapshot'              => [
                 'type_id'     => 'vmware-snapshot',
                 'title'       => __('VMware Snapshot'),
                 'description' => __('Monitor your VMware snapshots to avoid performance issues'),
@@ -345,7 +345,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => false
             ],
-            'db2'                    => [
+            'db2'                          => [
                 'type_id'     => 'db2',
                 'title'       => __('DB2 Monitoring'),
                 'description' => __('Monitor your DB2 server'),
@@ -353,7 +353,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['database'],
                 'active'      => true
             ],
-            'oracle'                 => [
+            'oracle'                       => [
                 'type_id'     => 'oracle',
                 'title'       => __('Oracle'),
                 'description' => __('Track connection time, connected users, session and process usage, ....'),
@@ -361,7 +361,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['linux', 'database'],
                 'active'      => true
             ],
-            'ups'                    => [
+            'ups'                          => [
                 'type_id'     => 'ups',
                 'title'       => __('Uninterruptible Power Supply'),
                 'description' => __('Add your UPS for monitoring by specifying the device details'),
@@ -369,7 +369,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['hardware'],
                 'active'      => true
             ],
-            'printer'                => [
+            'printer'                      => [
                 'type_id'     => 'printer',
                 'title'       => __('Printer'),
                 'description' => __('Add your printers for monitoring by specifying the device details'),
@@ -377,7 +377,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['hardware'],
                 'active'      => true
             ],
-            'mssql'                  => [
+            'mssql'                        => [
                 'type_id'     => 'mssql',
                 'title'       => __('MSSQL Monitoring'),
                 'description' => __('Monitor your Microsoft SQL Server'),
@@ -385,7 +385,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['database'],
                 'active'      => true
             ],
-            'hp-server-hardware'     => [
+            'hp-server-hardware'           => [
                 'type_id'     => 'hp-server-hardware',
                 'title'       => __('HP Server Hardware'),
                 'description' => __('These checks will allow you to monitor your HP server'),
@@ -393,7 +393,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['hardware'],
                 'active'      => true
             ],
-            'dell-idrac'             => [
+            'dell-idrac'                   => [
                 'type_id'     => 'dell-idrac',
                 'title'       => __('Dell iDrac'),
                 'description' => __('Used to check Dell iDrac devices.'),
@@ -401,7 +401,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['linux', 'network'],
                 'active'      => true
             ],
-            'vmware-esx'             => [
+            'vmware-esx'                   => [
                 'type_id'     => 'vmware-esx',
                 'title'       => __('VMWare ESX'),
                 'description' => __('Check everything regarding VMware. ESX Hosts, vCenter, virtual machines...'),
@@ -409,7 +409,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
-            'vmware-datastores'      => [
+            'vmware-datastores'            => [
                 'type_id'     => 'vmware-datastores',
                 'title'       => __('VMWare Datastores'),
                 'description' => __('Monitor your VMware Datastores...'),
@@ -417,7 +417,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
-            'vmware-snapshots'       => [
+            'vmware-snapshots'             => [
                 'type_id'     => 'vmware-snapshots',
                 'title'       => __('VMWare Snapshots'),
                 'description' => __('Monitor your VMware snapshots to avoid performance issues'),
@@ -438,6 +438,38 @@ class WizardAssignmentsTable extends Table {
                 'title'       => __('Proxmox Storage'),
                 'description' => __('Used to monitor Proxmox Storages.'),
                 'image'       => 'proxmox-logo-stacked-color.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
+            ],
+            'microsoft-m365-ServiceStatus' => [
+                'type_id'     => 'microsoft-m365-ServiceStatus',
+                'title'       => __('Microsoft 365 (Service Status)'),
+                'description' => __('Microsoft 365 (Service Status)'),
+                'image'       => 'Windows.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
+            ],
+            'microsoft-m365-OneDrive'      => [
+                'type_id'     => 'microsoft-m365-OneDrive',
+                'title'       => __('Microsoft 365 (OneDrive)'),
+                'description' => __('Microsoft 365 (OneDrive)'),
+                'image'       => 'Windows.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
+            ],
+            'microsoft-m365-Mailbox'       => [
+                'type_id'     => 'microsoft-m365-Mailbox',
+                'title'       => __('Microsoft 365 (Mailbox)'),
+                'description' => __('Microsoft 365 (Mailbox)'),
+                'image'       => 'Windows.svg',
+                'category'    => ['virtualization', 'cloud', 'mail'],
+                'active'      => true
+            ],
+            'microsoft-m365-SharePoint'    => [
+                'type_id'     => 'microsoft-m365-SharePoint',
+                'title'       => __('Microsoft 365 (SharePoint)'),
+                'description' => __('Microsoft 365 (SharePoint)'),
+                'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],

@@ -67,6 +67,7 @@ use itnovum\openITCOCKPIT\Core\System\Health\LsbRelease;
 use MS365Module\itnovum\openITCOCKPIT\MS365Service\MS365ServiceScan;
 use NWCModule\itnovum\openITCOCKPIT\SNMP\SNMPScanNwc;
 use Symfony\Component\Filesystem\Filesystem;
+use VMWAREModule\itnovum\openITCOCKPIT\Datastore\DatastoreScan;
 use ProxmoxModule\itnovum\openITCOCKPIT\ProxmoxStorage\ProxmoxStorageScan;
 
 /**

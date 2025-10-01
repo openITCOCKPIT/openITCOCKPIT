@@ -472,6 +472,14 @@ class WizardAssignmentsTable extends Table {
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
+            ],
+            'broadcom-proxy'               => [
+                'type_id'     => 'broadcom-proxy',
+                'title'       => __('Broadcom Proxy'),
+                'description' => __('Broadcom Proxy'),
+                'image'       => 'Windows.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
             ]
         ];
 

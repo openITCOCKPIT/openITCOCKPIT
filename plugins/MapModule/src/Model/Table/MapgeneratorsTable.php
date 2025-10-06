@@ -42,6 +42,7 @@ use Cake\ORM\Behavior\TimestampBehavior;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
+use Cake\Utility\Hash;
 use Cake\Validation\Validator;
 use MapModule\Model\Entity\Mapgenerator;
 
@@ -337,219 +338,210 @@ class MapgeneratorsTable extends Table {
     }
 
     /**
-     * gets the hosts and name splitting by mapgenerator levels
-     * - the last part of the hostname is always the hostname itself and not a map level
-     * - the part that is marked as container must be the same as the tenant container of the host
      *
-     * @param array $hosts
-     * @param array $mapGeneratorLevels
-     * @param bool $hasRootPrivileges
-     * @param array $MY_RIGHTS
+     *  gets the maps annd hosts by name splitting of the host names
+     *  - the last part of the hostname is always the hostname itself and not a map level
+     *  - the part that is marked as container must be the same as the tenant container of the host
+     *
+     * @param $mapGeneratorLevels
+     * @param $MY_RIGHTS
+     * @param $hasRootPrivileges
      * @return array
      */
-    public function getHostsByNameSplitting($hosts, $mapGeneratorLevels, $hasRootPrivileges, $MY_RIGHTS = []) {
+    public function getMapsAndHostsByHostsNameSplitting($mapGeneratorLevels, $MY_RIGHTS, $hasRootPrivileges) {
 
-        $hostsAndMaps = [];
+        /** @var $ContainersTable ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
-        // gets the container structure for the hosts to find the container for the new map
-        // run this for all hosts to avoid multiple database calls
-        $hostsWithContainerStructure = $this->getContainersForMapgeneratorByContainerStructure($hosts, $hasRootPrivileges, $MY_RIGHTS, []);
-        $containerStructureByHostId = [];
-        foreach ($hostsWithContainerStructure as $entry) {
-            $containerStructureByHostId[$entry['hostId']] = $entry;
+        $containersWithChildsAndHostsForEachGivenContainerId = [];
+        $mapsAndHosts = [];
+        $containerParentIdToContainerArray = [];
+
+        $containers = $MY_RIGHTS;
+        if (empty($containers) && $hasRootPrivileges) {
+            $containers = [ROOT_CONTAINER];
         }
 
-        foreach ($hosts as $host) {
+        foreach ($containers as $id) {
 
-            $hostNameParts = [];
-            $restofHostName = $host['name'];
-            $containerIdForNewMap = 0;
-            $previousPartsAsString = ''; // to build unique names, which can be assigned to a map hierarchy
+            // get container with all children
+            $subContainers = $ContainersTable->getContainerWithAllChildrenAndHosts($id, $MY_RIGHTS);
+            $containersWithChildsAndHostsForEachGivenContainerId[] = Hash::filter($subContainers);
+        }
 
-            //split by the defined levels
-            foreach ($mapGeneratorLevels as $mapGeneratorLevel) {
-                if (!empty($mapGeneratorLevel['divider'])) {
-                    $divider = $mapGeneratorLevel['divider'];
-                    $pos = strpos($restofHostName, $divider);
-                    if ($pos !== false) {
-                        $part = substr($restofHostName, 0, $pos);
-                        if ($previousPartsAsString !== '') {
-                            $nameToSave = $previousPartsAsString . '/' . $part;
-                        } else {
-                            $nameToSave = $part;
+        foreach ($containersWithChildsAndHostsForEachGivenContainerId as $containersWithChildsAndHosts) {
+            foreach ($containersWithChildsAndHosts as $containerWithChildsAndHosts) {
+                if (!empty($containerWithChildsAndHosts['parent_id'])) {
+                    $containerParentIdToContainerArray[$containerWithChildsAndHosts['parent_id']] = $containerWithChildsAndHosts;
+                }
+
+                if (!empty($containerWithChildsAndHosts['childsElements']['hosts'])) {
+                    foreach ($containerWithChildsAndHosts['childsElements']['hosts'] as $hostId => $hostName) {
+
+                        $hostNameParts = [];
+                        $restofHostName = $hostName;
+                        $containerIdForNewMap = 0;
+                        $previousPartsAsString = ''; // to build unique names, which can be assigned to a map hierarchy
+
+                        //split by the defined levels
+                        foreach ($mapGeneratorLevels as $mapGeneratorLevel) {
+                            if (!empty($mapGeneratorLevel['divider'])) {
+                                $divider = $mapGeneratorLevel['divider'];
+                                $pos = strpos($restofHostName, $divider);
+                                if ($pos !== false) {
+                                    $part = substr($restofHostName, 0, $pos);
+                                    if ($previousPartsAsString !== '') {
+                                        $nameToSave = $previousPartsAsString . '/' . $part;
+                                    } else {
+                                        $nameToSave = $part;
+                                    }
+                                    $hostNameParts[] = $nameToSave;
+                                    $previousPartsAsString = $nameToSave;
+                                    $restofHostName = substr($restofHostName, $pos + strlen($divider));
+                                } else {
+                                    // No more dividers found, take the rest of the hostname
+                                    $part = $restofHostName;
+                                    $hostNameParts[] = $part;
+                                    break;
+                                }
+                            } else {
+                                // No divider defined, take the whole rest of the hostname
+                                $part = $restofHostName;
+                                $hostNameParts[] = $part;
+                                break;
+                            }
+
+                            // find the container for the new map
+                            if ($mapGeneratorLevel['is_container']) {
+
+                                // container has to be the same as the tenant container of the host
+                                $tentantContainer = $this->findParentContainerByNameAndType($containerWithChildsAndHosts['parent_id'], $part, $containerParentIdToContainerArray);
+
+                                if (!empty($tentantContainer)) {
+                                    // Found the container for the new map
+                                    $containerIdForNewMap = $tentantContainer['id'];
+                                }
+
+                            }
+
                         }
-                        $hostNameParts[] = $nameToSave;
-                        $previousPartsAsString = $nameToSave;
-                        $restofHostName = substr($restofHostName, $pos + strlen($divider));
-                    } else {
-                        // No more dividers found, take the rest of the hostname
-                        $part = $restofHostName;
-                        $hostNameParts[] = $part;
-                        break;
+
+                        if ($containerIdForNewMap === 0 || count($hostNameParts) !== count($mapGeneratorLevels)) {
+                            // Not enough parts for the defined levels, skip this host
+                            continue;
+                        }
+
+                        // remove hostname from the parts
+                        array_pop($hostNameParts);
+
+                        foreach ($hostNameParts as $index => $hostNamePart) {
+                            $mapsAndHosts[] = [
+                                'name'                 => $hostNamePart,
+                                'containerIdForNewMap' => $containerIdForNewMap,
+                                'hosts'                => []
+                            ];
+
+                            $lastElementIndex = array_key_last($mapsAndHosts);
+
+                            if ($index > 0) {
+                                $mapsAndHosts[$lastElementIndex]['parentIndex'] = $lastElementIndex - 1;
+                            }
+
+                            if ($index === count($hostNameParts) - 1) {
+                                $mapsAndHosts[$lastElementIndex]['hosts'] = [
+                                    [
+                                        'id'   => $hostId,
+                                        'name' => $hostName
+                                    ]
+                                ];
+                            }
+                        }
                     }
-                } else {
-                    // No divider defined, take the whole rest of the hostname
-                    $part = $restofHostName;
-                    $hostNameParts[] = $part;
-                    break;
                 }
 
-                // find the container for the new map
-                if ($mapGeneratorLevel['is_container']) {
-
-                    if (empty($containerStructureByHostId[$host['id']])) {
-                        // No container found for this level, skip this host
-                        continue;
-                    }
-
-                    // container has to be the same as the tenant container of the host
-                    $tenantContainer = $containerStructureByHostId[$host['id']]['containerHierarchy'][0];
-
-                    if ($tenantContainer['name'] === $part && ((!empty($MY_RIGHTS) && in_array($tenantContainer['id'], $MY_RIGHTS)) || (empty($MY_RIGHTS) && $hasRootPrivileges))) {
-                        // Found the container for the new map
-                        $containerIdForNewMap = $tenantContainer['id'];
-                    }
-
-                }
 
             }
-
-            if ($containerIdForNewMap === 0 || count($hostNameParts) !== count($mapGeneratorLevels)) {
-                // Not enough parts for the defined levels, skip this host
-                continue;
-            }
-
-            // remove hostname from the parts
-            array_pop($hostNameParts);
-
-            $hostsAndMaps[] = [
-                'hostId'               => $host['id'],
-                'hostName'             => $host['name'],
-                'containerIdForNewMap' => $containerIdForNewMap,
-                'mapNames'             => $hostNameParts
-            ];
-
         }
 
-        return $hostsAndMaps;
+        return $mapsAndHosts;
 
     }
 
     /**
+     *  finds the parent container by name and type
      *
-     * gets the container structure/ hierarchy for the given hosts up to the tenant container
-     * - the container parameter can be used to filter the hosts and container structure by the selected containers
-     *
-     * @param array $hosts
-     * @param bool $hasRootPrivileges
-     * @param array $MY_RIGHTS
-     * @param array $containers filter by these containers
-     * @return array
+     * @param $containerId
+     * @param $part
+     * @param $containerParentIdToContainerArray
+     * @return null
      */
-    public function getContainersForMapgeneratorByContainerStructure($hosts, $hasRootPrivileges, $MY_RIGHTS, $containers) {
+    private function findParentContainerByNameAndType($containerId, $part, $containerParentIdToContainerArray) {
+        while (isset($containerParentIdToContainerArray[$containerId])) {
+            $container = $containerParentIdToContainerArray[$containerId];
 
-        $containersAndHosts = [];
-        $containerCache = []; // cache for containers to avoid multiple database calls
-
-        foreach ($hosts as $host) {
-
-            // skip hosts without container_id or id or name
-            if (!isset($host['container_id'], $host['id'], $host['name'])) {
-                continue;
+            if ($container['name'] === $part && $container['containertype_id'] === 2) {
+                return $container;
             }
 
-            $containerHierarchyForHost = [];
-            $startContainerId = 0; // this is the first container in the hierarchy and gets checked for rights
-            $currentContainerId = $host['container_id'];
-            $skipHost = false;
-
-            // skip host if container is root
-            if ($currentContainerId === ROOT_CONTAINER) {
-                continue;
-            }
-
-            while ($startContainerId === 0) {
-
-                // load container by id from cache or database
-                if (!isset($containerCache[$currentContainerId])) {
-
-                    /** @var $ContainersTable ContainersTable */
-                    $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-
-                    $containerCache[$currentContainerId] = $ContainersTable->getContainerById($currentContainerId);
-                }
-                $currentContainer = $containerCache[$currentContainerId];
-
-                if (empty($currentContainer)) {
-                    // Container not found, skip this host
-                    $skipHost = true;
-                    break;
-                }
-
-                // check if container is mandant
-                if ($currentContainer['containertype_id'] === 2) {
-                    // check for rights
-                    if (!empty($MY_RIGHTS) && !in_array($currentContainer['id'], $MY_RIGHTS, true)) {
-                        $skipHost = true;
-                        break;
-                    }
-                    $startContainerId = $currentContainer['id'];
-                }
-
-                $containerForHost = [
-                    'id'   => $currentContainer['id'],
-                    'name' => $currentContainer['name']
-                ];
-
-                $containerHierarchyForHost[] = $containerForHost;
-                $currentContainerId = $currentContainer['parent_id'] ?? null;
-
-                // if next element is root break the loop
-                if ($currentContainerId === null) {
-                    break;
-                }
-
-            }
-
-            // reverse array to have higher containers first
-            $containerHierarchyForHost = array_reverse($containerHierarchyForHost);
-
-            // filter hosts and container structure by selected containers
-            if (!empty($containers)) {
-
-                $startContainerFound = false;
-                foreach ($containers as $containerId) {
-                    foreach ($containerHierarchyForHost as $containerKey => $containerHierarchyContainer) {
-                        // also check for rights
-                        if ($containerId === $containerHierarchyContainer['id']
-                            && ((!empty($MY_RIGHTS) && in_array($containerHierarchyContainer['id'], $MY_RIGHTS, true)) || (empty($MY_RIGHTS) && $hasRootPrivileges))) {
-                            $startContainerFound = true;
-                            break;
-                        }
-                    }
-                }
-
-                // if start container is not found, skip this host
-                if (!$startContainerFound) {
-                    $skipHost = true;
-                }
-
-            }
-
-            if (!$skipHost) {
-
-                $hostObject = [
-                    'hostId'             => $host['id'],
-                    'hostName'           => $host['name'],
-                    'containerHierarchy' => $containerHierarchyForHost,
-                ];
-
-                $containersAndHosts[] = $hostObject;
-            }
-
+            $containerId = $container['parent_id'];
         }
 
-        return $containersAndHosts;
+        return null;
+    }
+
+    /**
+     *
+     * gets the maps and host data by container structure/ hierarchy for the given containers
+     * - only containers with hosts are returned
+     *
+     * @param array $containerIds
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getMapsAndHostsDataByContainerStructure($containerIds, $MY_RIGHTS) {
+
+        /** @var $ContainersTable ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+
+        $containersWithChildsAndHostsForEachGivenContainerId = [];
+        $mapsAndHosts = [];
+        $containerIdToIndexArray = [];
+
+        foreach ($containerIds as $id) {
+
+            // get container with all children
+            $subContainers = $ContainersTable->getContainerWithAllChildrenAndHosts($id, $MY_RIGHTS);
+            $containersWithChildsAndHostsForEachGivenContainerId[] = Hash::filter($subContainers);
+        }
+
+        foreach ($containersWithChildsAndHostsForEachGivenContainerId as $containersWithChildsAndHosts) {
+            foreach ($containersWithChildsAndHosts as $containerWithChildsAndHosts) {
+                $hosts = [];
+                if (!empty($containerWithChildsAndHosts['childsElements']['hosts'])) {
+                    foreach ($containerWithChildsAndHosts['childsElements']['hosts'] as $hostId => $hostName) {
+                        $hosts[] = [
+                            'id'   => $hostId,
+                            'name' => $hostName
+                        ];
+                    }
+                }
+                $mapsAndHosts[] = [
+                    'name'                 => $containerWithChildsAndHosts['name'],
+                    'containerIdForNewMap' => $containerWithChildsAndHosts['id'],
+                    'hosts'                => $hosts
+                ];
+                $lastElementIndex = array_key_last($mapsAndHosts);
+                $containerIdToIndexArray[$containerWithChildsAndHosts['id']] = $lastElementIndex;
+
+                // do not use empty to allow 0 as index
+                if (array_key_exists($containerWithChildsAndHosts['parent_id'], $containerIdToIndexArray)) {
+                    $mapsAndHosts[$lastElementIndex]['parentIndex'] = $containerIdToIndexArray[$containerWithChildsAndHosts['parent_id']];
+                }
+
+            }
+        }
+
+        return $mapsAndHosts;
 
     }
 

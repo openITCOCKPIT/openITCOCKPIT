@@ -134,6 +134,7 @@ plugins/JiraModule
 plugins/DellModule
 plugins/ProxmoxModule
 plugins/MS365Module
+plugins/CiscoNetworkModule
 
 # NFS mounts
 .nfs.*

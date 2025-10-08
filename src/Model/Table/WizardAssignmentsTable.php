@@ -472,6 +472,14 @@ class WizardAssignmentsTable extends Table {
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
+            ],
+            'cisco-network'                => [
+                'type_id'     => 'cisco-network',
+                'title'       => __('Cisco Network'),
+                'description' => __('Monitor your Cisco network devices via SNMP.'),
+                'image'       => 'network.png',
+                'category'    => ['network', 'hardware'],
+                'active'      => true
             ]
         ];
 

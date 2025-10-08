@@ -350,17 +350,21 @@ class MapgeneratorsTable extends Table {
      */
     public function getMapsAndHostsByHostsNameSplitting($mapGeneratorLevels, $MY_RIGHTS, $hasRootPrivileges) {
 
+        if (empty($MY_RIGHTS) && !$hasRootPrivileges) {
+            return [];
+        }
+
+        $containers = $MY_RIGHTS;
+        if (empty($containers) && $hasRootPrivileges) {
+            $containers = [ROOT_CONTAINER];
+        }
+
         /** @var $ContainersTable ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $containersWithChildsAndHostsForEachGivenContainerId = [];
         $mapsAndHosts = [];
         $containerParentIdToContainerArray = []; // array to find parent containers by id
-
-        $containers = $MY_RIGHTS;
-        if (empty($containers) && $hasRootPrivileges) {
-            $containers = [ROOT_CONTAINER];
-        }
 
         foreach ($containers as $id) {
 
@@ -480,7 +484,16 @@ class MapgeneratorsTable extends Table {
      * @return null
      */
     private function findParentContainerByNameAndType($containerId, $part, $containerParentIdToContainerArray) {
+        $containerIdsFromLoop = [];
         while (isset($containerParentIdToContainerArray[$containerId])) {
+
+            // to avoid endless loops
+            if (in_array($containerId, $containerIdsFromLoop, true)) {
+                return null;
+            }
+
+            $containerIdsFromLoop[] = $containerId;
+
             $container = $containerParentIdToContainerArray[$containerId];
 
             if ($container['name'] === $part && $container['containertype_id'] === 2) {
@@ -500,9 +513,14 @@ class MapgeneratorsTable extends Table {
      *
      * @param array $containerIds
      * @param array $MY_RIGHTS
+     * @param $hasRootPrivileges
      * @return array
      */
-    public function getMapsAndHostsDataByContainerStructure($containerIds, $MY_RIGHTS) {
+    public function getMapsAndHostsDataByContainerStructure($containerIds, $MY_RIGHTS, $hasRootPrivileges) {
+
+        if (empty($MY_RIGHTS) && !$hasRootPrivileges) {
+            return [];
+        }
 
         /** @var $ContainersTable ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');

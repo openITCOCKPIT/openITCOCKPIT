@@ -280,12 +280,13 @@ class MapgeneratorsController extends AppController {
 
         if (($this->request->is('post') || $this->request->is('put')) && $this->isAngularJsRequest()) {
 
+            $containerIds = Hash::extract($mapgenerator, 'containers.{n}.id');
+
             $MY_RIGHTS = [];
             if ($this->hasRootPrivileges === false) {
-                $MY_RIGHTS = $this->MY_RIGHTS;
+                $MY_RIGHTS = $this->getWriteContainers();
+                $containerIds = array_intersect($containerIds, $MY_RIGHTS);
             }
-
-            $containerIds = Hash::extract($mapgenerator, 'containers.{n}.id');
 
             $type = $mapgenerator['type'];
 
@@ -306,7 +307,7 @@ class MapgeneratorsController extends AppController {
                     break;
                 //generate by container structure
                 default:
-                    $mapsAndHostsData = $MapgeneratorsTable->getMapsAndHostsDataByContainerStructure($containerIds, $MY_RIGHTS);
+                    $mapsAndHostsData = $MapgeneratorsTable->getMapsAndHostsDataByContainerStructure($containerIds, $MY_RIGHTS, $this->hasRootPrivileges);
                     break;
             }
 

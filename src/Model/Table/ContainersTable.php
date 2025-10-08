@@ -995,7 +995,7 @@ class ContainersTable extends Table {
      * @return array
      */
     public function getContainerWithAllChildrenAndHosts($containerId, $MY_RIGHTS = []) {
-        $parentContainer = $this->getContainerById($containerId);
+        $parentContainer = $this->getContainerById($containerId, $MY_RIGHTS);
 
         $query = $this->find('children', for: $containerId);
 
@@ -1012,7 +1012,9 @@ class ContainersTable extends Table {
             ])
             ->disableHydration();
         $containers = $query->toArray();
-        $containers[] = $parentContainer;
+        if (!empty($parentContainer)) {
+            $containers[] = $parentContainer;
+        }
         $containers = Hash::sort($containers, '{n}.id', 'asc');
 
 

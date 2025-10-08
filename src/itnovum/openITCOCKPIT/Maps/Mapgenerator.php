@@ -27,7 +27,6 @@ namespace App\itnovum\openITCOCKPIT\Maps;
 
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
-use itnovum\openITCOCKPIT\Maps\MapForAngular;
 use MapModule\Model\Table\MapsTable;
 use MapModule\Model\Table\MapsummaryitemsTable;
 
@@ -37,39 +36,58 @@ class Mapgenerator {
     public const TYPE_GENERATE_BY_HOSTNAME_SPLITTING = 2;
 
     /**
+     * configuration data of the mapgenerator
+     *
      * @var array
      */
     private $mapgeneratorData;
 
     /**
+     * maps and hosts data to generate the maps and items
+     *
+     * format of the array:
+     * [
+     * 'name' => 'Name of the map or container',
+     * 'containerIdForNewMap' => 1, // container id to assign the new map to
+     * 'parentIndex' => 0, // index of the parent container or map in this array
+     * 'hosts' => [ // array of hosts to add to this map
+     *   [
+     *    'id' => 1, // id of the host
+     *   'name' => 'Name of the host'
+     *  ],
+     * ]
+     *
      * @var array
      */
     private $mapsAndHostsData;
 
     /**
+     * type of the generator
+     *
      * @var int
      */
     private $type;
 
     /**
+     * all generated maps (including the maps that are already existing)
+     *
      * @var array
      */
     private $allGeneratedMaps;
 
     /**
+     * all new generated items (maps and host summary items)
+     *
      * @var array
      */
     private $generatedItems;
 
     /**
+     * the new generated maps in this run
+     *
      * @var array
      */
     private $newGeneratedMaps;
-
-    /**
-     * @var array
-     */
-    private $cachedMapsWithItems = [];
 
 
     /**
@@ -85,20 +103,11 @@ class Mapgenerator {
         $this->allGeneratedMaps = $generatedMaps;
         $this->generatedItems = [];
         $this->newGeneratedMaps = [];
-        $this->cachedMapsWithItems = [];
     }
 
     public function generate() {
 
-        if ($this->type === self::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
-
-            $generatedMapsAndItems = $this->generateByContainerHierarchy($this->mapsAndHostsData);
-
-        } else if ($this->type === self::TYPE_GENERATE_BY_HOSTNAME_SPLITTING) {
-
-            $generatedMapsAndItems = $this->generateByHostname($this->mapsAndHostsData);
-
-        }
+        $generatedMapsAndItems = $this->generateMapsAndItems($this->mapsAndHostsData);
 
         if (array_key_exists("error", $generatedMapsAndItems)) {
             return $generatedMapsAndItems;
@@ -109,32 +118,36 @@ class Mapgenerator {
         return $generatedMapsAndItems;
     }
 
-    private function generateByContainerHierarchy(array $mapsAndHostsData) {
+    private function generateMapsAndItems(array $mapsAndHostsData) {
 
-        $higherMap = []; // this is the map that is generated for the container that is higher in the hierarchy
+        $higherMap = []; // this is the map that is generated for the map that is higher in the hierarchy
         $generatedMapsAndItems = [
             'maps'  => [],
             'items' => []
         ];
 
         // create maps
-        foreach ($mapsAndHostsData as $containerKey => $container) {
+        foreach ($mapsAndHostsData as $mapKey => $mapAndHosts) {
 
             // check if container is already generated
-            $containerName = $this->buildMapName($container, $mapsAndHostsData);
+            $mapName = $mapAndHosts['name'];
+            if ($this->type === $this::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
+                $mapName = $this->buildMapName($mapAndHosts, $mapsAndHostsData);
+            }
             $map = null;
 
-            if (in_array($containerName, Hash::extract($this->allGeneratedMaps, '{n}.name'), true)) {
+            if (in_array($mapName, Hash::extract($this->allGeneratedMaps, '{n}.name'), true)) {
                 foreach ($this->allGeneratedMaps as $generatedMap) {
-                    if ($containerName === $generatedMap['name']) {
+                    if ($mapName === $generatedMap['name']) {
                         $map = $generatedMap;
+                        break;
                     }
                 }
 
             } else {
 
                 // create new map for this container
-                $map = $this->createNewMap($containerName, $this->mapgeneratorData['map_refresh_interval'], $container['containerIdForNewMap']);
+                $map = $this->createNewMap($mapName, $this->mapgeneratorData['map_refresh_interval'], $mapAndHosts['containerIdForNewMap']);
 
                 if (array_key_exists("error", $map)) {
                     return $map;
@@ -145,15 +158,19 @@ class Mapgenerator {
                 $generatedMapsAndItems['maps'][] = $map;
 
                 // add map as mapsummaryitem to the previously generated map
-                if (array_key_exists("parentIndex", $container) && !empty($mapsAndHostsData[$container['parentIndex']]) && $containerKey > 0) {
+                if (array_key_exists("parentIndex", $mapAndHosts) && !empty($mapsAndHostsData[$mapAndHosts['parentIndex']]) && $mapKey > 0) {
 
-                    $higherMapAndHostsData = $mapsAndHostsData[$container['parentIndex']];
-                    $higherMapContainerName = $this->buildMapName($higherMapAndHostsData, $mapsAndHostsData);
+                    $higherMapAndHosts = $mapsAndHostsData[$mapAndHosts['parentIndex']];
+                    $higherMapName = $higherMapAndHosts['name'];
+                    if ($this->type === $this::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
+                        $higherMapName = $this->buildMapName($higherMapAndHosts, $mapsAndHostsData);
+                    }
 
-                    if (in_array($higherMapContainerName, Hash::extract($this->allGeneratedMaps, '{n}.name'), true)) {
+                    if (in_array($higherMapName, Hash::extract($this->allGeneratedMaps, '{n}.name'), true)) {
                         foreach ($this->allGeneratedMaps as $generatedMap) {
-                            if ($higherMapContainerName === $generatedMap['name']) {
+                            if ($higherMapName === $generatedMap['name']) {
                                 $higherMap = $generatedMap;
+                                break;
                             }
                         }
                     }
@@ -175,8 +192,8 @@ class Mapgenerator {
             }
 
             // create Hosts
-            if (!empty($container['hosts'])) {
-                foreach ($container['hosts'] as $host) {
+            if (!empty($mapAndHosts['hosts'])) {
+                foreach ($mapAndHosts['hosts'] as $host) {
                     $newHostItem = $this->createNewMapSummaryItem($map, $host['id'], 'host');
 
                     if (array_key_exists("error", $newHostItem)) {
@@ -184,6 +201,10 @@ class Mapgenerator {
                     }
 
                     if (!empty($newHostItem)) {
+
+                        // add new host item to the current map to keep the state for calculating the position of the next item
+                        $map['mapsummaryitems'][] = $newHostItem;
+
                         $this->generatedItems[] = $newHostItem;
                         $generatedMapsAndItems['items'][] = $newHostItem;
                     }
@@ -216,92 +237,6 @@ class Mapgenerator {
         }
 
         return implode('/', array_reverse($mapNameParts));
-    }
-
-    private function generateByHostname(array $mapsAndHostsData) {
-
-        $generatedMapsAndItems = [
-            'maps'  => [],
-            'items' => []
-        ];
-
-        // create maps
-        foreach ($mapsAndHostsData as $mapKey => $mapAndHosts) {
-
-            // check if map is already generated
-            $map = null;
-
-            if (in_array($mapAndHosts['name'], Hash::extract($this->allGeneratedMaps, '{n}.name'), true)) {
-                foreach ($this->allGeneratedMaps as $generatedMap) {
-                    if ($mapAndHosts['name'] === $generatedMap['name']) {
-                        $map = $generatedMap;
-                    }
-                }
-            } else {
-
-                // create new map for this mapName
-                $map = $this->createNewMap($mapAndHosts['name'], $this->mapgeneratorData['map_refresh_interval'], $mapAndHosts['containerIdForNewMap']);
-
-                if (array_key_exists("error", $map)) {
-                    return $map;
-                }
-
-                $this->allGeneratedMaps[] = $map;
-                $this->newGeneratedMaps[] = $map;
-                $generatedMapsAndItems['maps'][] = $map;
-
-
-                // add map as mapsummaryitem to the previously generated map
-                if (array_key_exists("parentIndex", $mapAndHosts) && !empty($mapsAndHostsData[$mapAndHosts['parentIndex']]) && $mapKey > 0) {
-
-                    $higherMapAndHostsData = $mapsAndHostsData[$mapAndHosts['parentIndex']];
-
-                    if (in_array($higherMapAndHostsData['name'], Hash::extract($this->allGeneratedMaps, '{n}.name'), true)) {
-                        foreach ($this->allGeneratedMaps as $generatedMap) {
-                            if ($higherMapAndHostsData['name'] === $generatedMap['name']) {
-                                $higherMap = $generatedMap;
-                            }
-                        }
-                    }
-
-                    if (!empty($higherMap)) {
-
-                        $mapsummaryitem = $this->createNewMapSummaryItem($higherMap, $map["id"], 'map');
-
-
-                        if (array_key_exists("error", $mapsummaryitem)) {
-                            return $mapsummaryitem;
-                        }
-
-                        $this->generatedItems[] = $mapsummaryitem;
-                        $generatedMapsAndItems['items'][] = $mapsummaryitem;
-
-                    }
-                }
-
-            }
-
-
-            // create Hosts
-            if (!empty($mapAndHosts['hosts'])) {
-                foreach ($mapAndHosts['hosts'] as $host) {
-                    $newHostItem = $this->createNewMapSummaryItem($map, $host['id'], 'host');
-
-                    if (array_key_exists("error", $newHostItem)) {
-                        return $newHostItem;
-                    }
-
-                    if (!empty($newHostItem)) {
-                        $this->generatedItems[] = $newHostItem;
-                        $generatedMapsAndItems['items'][] = $newHostItem;
-                    }
-                }
-            }
-
-        }
-
-        return $generatedMapsAndItems;
-
     }
 
     private function createNewMap(string $name, int $refreshInterval, int $containerId) {
@@ -337,27 +272,6 @@ class Mapgenerator {
 
     private function createNewMapSummaryItem(array $mapToAddItems, int $objectId, string $type) {
 
-        /** @var MapsTable $MapsTable */
-        $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
-
-        // load map with items from cache or database
-        if (!isset($this->cachedMapsWithItems[$mapToAddItems["id"]])) {
-            //get all items of the map to add the new item
-            $this->cachedMapsWithItems[$mapToAddItems["id"]] = $MapsTable->get($mapToAddItems["id"], contain: [
-                'Containers',
-                'Mapgadgets',
-                'Mapicons',
-                'Mapitems',
-                'Maplines',
-                'Maptexts',
-                'Mapsummaryitems'
-            ])->toArray();
-        }
-        $mapToAddItemsWithItems = $this->cachedMapsWithItems[$mapToAddItems["id"]];
-
-        $MapForAngular = new MapForAngular($mapToAddItemsWithItems);
-        $mapToAddItemsWithItems = $MapForAngular->toArray();
-
         /**
          * calculate new x and y position for the new mapsummaryitem
          * by searching for the previous item and its position in the existing items
@@ -375,18 +289,18 @@ class Mapgenerator {
         $itemsPerLineCounter = 0; // counter for items per line
 
         // searching for the previous item and its position in the existing items
-        foreach (['Mapgadgets', 'Mapicons', 'Mapitems', 'Maplines', 'Maptexts', 'Mapsummaryitems'] as $itemType) {
-            if (isset($mapToAddItemsWithItems[$itemType])) {
+        foreach (['mapgadgets', 'mapicons', 'mapitems', 'maplines', 'maptexts', 'mapsummaryitems'] as $itemType) {
+            if (isset($mapToAddItems[$itemType])) {
                 $mapHasItems = true;
-                foreach ($mapToAddItemsWithItems[$itemType] as $item) {
+                foreach ($mapToAddItems[$itemType] as $item) {
 
                     // check if mapsummaryitem is already on the map and break if so
-                    if ($itemType === "Mapsummaryitems" && $item['object_id'] === $objectId && $item['type'] === $type) {
+                    if ($itemType === "mapsummaryitems" && $item['object_id'] === $objectId && $item['type'] === $type) {
                         return [];
                     }
 
-                    $itemX = ($itemType === 'Maplines') ? $item['endX'] : $item['x'];
-                    $itemY = ($itemType === 'Maplines') ? $item['endY'] : $item['y'];
+                    $itemX = ($itemType === 'maplines') ? $item['endX'] : $item['x'];
+                    $itemY = ($itemType === 'maplines') ? $item['endY'] : $item['y'];
 
                     // start new line
                     if ($itemY > $y) {
@@ -458,8 +372,12 @@ class Mapgenerator {
             ];
         }
 
-        // add mapsummaryitem to the cached maps with items
-        $this->cachedMapsWithItems[$mapToAddItems["id"]]['mapsummaryitems'][] = $mapsummaryitemEntity->toArray();
+        // add mapsummaryitem to the already generated maps to keep the state for calculating the position of the next item
+        foreach ($this->allGeneratedMaps as $key => $generatedMap) {
+            if ($generatedMap['id'] === $mapToAddItems["id"]) {
+                $this->allGeneratedMaps[$key]['mapsummaryitems'][] = $mapsummaryitemEntity->toArray();
+            }
+        }
 
         return $mapsummaryitemEntity->toArray();
 

@@ -355,7 +355,7 @@ class MapgeneratorsTable extends Table {
 
         $containersWithChildsAndHostsForEachGivenContainerId = [];
         $mapsAndHosts = [];
-        $containerParentIdToContainerArray = [];
+        $containerParentIdToContainerArray = []; // array to find parent containers by id
 
         $containers = $MY_RIGHTS;
         if (empty($containers) && $hasRootPrivileges) {
@@ -375,6 +375,7 @@ class MapgeneratorsTable extends Table {
                     $containerParentIdToContainerArray[$containerWithChildsAndHosts['parent_id']] = $containerWithChildsAndHosts;
                 }
 
+                // run through all hosts and split the names by the defined levels and build the maps and hosts array
                 if (!empty($containerWithChildsAndHosts['childsElements']['hosts'])) {
                     foreach ($containerWithChildsAndHosts['childsElements']['hosts'] as $hostId => $hostName) {
 
@@ -434,6 +435,7 @@ class MapgeneratorsTable extends Table {
                         // remove hostname from the parts
                         array_pop($hostNameParts);
 
+                        // build the maps and hosts array
                         foreach ($hostNameParts as $index => $hostNamePart) {
                             $mapsAndHosts[] = [
                                 'name'                 => $hostNamePart,
@@ -443,10 +445,12 @@ class MapgeneratorsTable extends Table {
 
                             $lastElementIndex = array_key_last($mapsAndHosts);
 
+                            // parent Index is used to find the higher level map during generation
                             if ($index > 0) {
                                 $mapsAndHosts[$lastElementIndex]['parentIndex'] = $lastElementIndex - 1;
                             }
 
+                            // add host to the last level
                             if ($index === count($hostNameParts) - 1) {
                                 $mapsAndHosts[$lastElementIndex]['hosts'] = [
                                     [
@@ -505,7 +509,7 @@ class MapgeneratorsTable extends Table {
 
         $containersWithChildsAndHostsForEachGivenContainerId = [];
         $mapsAndHosts = [];
-        $containerIdToIndexArray = [];
+        $containerIdToIndexArray = []; // array to find parent containers index by id
 
         foreach ($containerIds as $id) {
 
@@ -515,6 +519,7 @@ class MapgeneratorsTable extends Table {
         }
 
         foreach ($containersWithChildsAndHostsForEachGivenContainerId as $containersWithChildsAndHosts) {
+            // build the maps and hosts array
             foreach ($containersWithChildsAndHosts as $containerWithChildsAndHosts) {
                 $hosts = [];
                 if (!empty($containerWithChildsAndHosts['childsElements']['hosts'])) {
@@ -533,6 +538,7 @@ class MapgeneratorsTable extends Table {
                 $lastElementIndex = array_key_last($mapsAndHosts);
                 $containerIdToIndexArray[$containerWithChildsAndHosts['id']] = $lastElementIndex;
 
+                // parent Index is used to find the higher level map during generation
                 // do not use empty to allow 0 as index
                 if (array_key_exists($containerWithChildsAndHosts['parent_id'], $containerIdToIndexArray)) {
                     $mapsAndHosts[$lastElementIndex]['parentIndex'] = $containerIdToIndexArray[$containerWithChildsAndHosts['parent_id']];

@@ -319,7 +319,7 @@ class MapgeneratorsController extends AppController {
                 /** @var MapsTable $MapsTable */
                 $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
 
-                $generatedMaps = $MapsTable->getMapsByIds($mapIds);
+                $generatedMaps = $MapsTable->getMapsAndItemsByIds($mapIds);
 
             }
 

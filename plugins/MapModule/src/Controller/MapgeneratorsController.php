@@ -31,6 +31,7 @@
 
 namespace MapModule\Controller;
 
+use App\itnovum\openITCOCKPIT\Core\Permissions\MapgeneratorContainersPermissions;
 use App\itnovum\openITCOCKPIT\Filter\MapgeneratorFilter;
 use App\itnovum\openITCOCKPIT\Maps\Mapgenerator;
 use App\Model\Table\ContainersTable;
@@ -177,8 +178,15 @@ class MapgeneratorsController extends AppController {
             }
         }
 
-        $this->viewBuilder()->setOption('serialize', ['mapgenerator']);
+        $MapgeneratorContainersPermissions = new MapgeneratorContainersPermissions(
+            $containerIds,
+            $this->getWriteContainers(),
+            $this->hasRootPrivileges
+        );
+
+        $this->set('areContainersChangeable', $MapgeneratorContainersPermissions->areContainersChangeable());
         $this->set(compact('mapgenerator'));
+        $this->viewBuilder()->setOption('serialize', ['mapgenerator', 'areContainersChangeable']);
 
         if (($this->request->is('post') || $this->request->is('put')) && $this->isAngularJsRequest()) {
             $data = $this->request->getData(null, []);

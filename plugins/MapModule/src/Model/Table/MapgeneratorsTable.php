@@ -565,6 +565,29 @@ class MapgeneratorsTable extends Table {
             }
         }
 
+        // remove containers without hosts and that are not needed as parent container (last container in hierarchy without hosts)
+        for ($i = count($mapsAndHosts) - 1; $i >= 0; $i--) {
+            $container = $mapsAndHosts[$i];
+
+            // check if container has hosts
+            if (empty($container['hosts'])) {
+                $isUsedAsParent = false;
+
+                // check if container is needed as parent container for other containers
+                foreach ($mapsAndHosts as $otherContainer) {
+                    if (isset($otherContainer['parentIndex']) && $otherContainer['parentIndex'] === $i) {
+                        $isUsedAsParent = true;
+                        break;
+                    }
+                }
+
+                if (!$isUsedAsParent) {
+                    unset($mapsAndHosts[$i]);
+                }
+            }
+        }
+
+
         return $mapsAndHosts;
 
     }

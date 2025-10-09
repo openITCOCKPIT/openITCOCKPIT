@@ -528,6 +528,24 @@ class MapgeneratorsTable extends Table {
         $containersWithChildsAndHostsForEachGivenContainerId = [];
         $mapsAndHosts = [];
         $containerIdToIndexArray = []; // array to find parent containers index by id
+        $containerIdsToChildrenIds = []; // array to find all children of a container
+
+        foreach ($containerIds as $containerId) {
+            $containerIdsToChildrenIds[$containerId] = $ContainersTable->resolveChildrenOfContainerIds($containerId);
+        }
+
+        // remove container ids that have the same children as another container id to avoid duplicate maps and hierarchies
+        foreach ($containerIdsToChildrenIds as $key1 => $array1) {
+            foreach ($containerIdsToChildrenIds as $key2 => $array2) {
+                if ($key1 !== $key2 && empty(array_diff($array1, $array2))) {
+                    unset($containerIdsToChildrenIds[$key1]);
+                }else if ($key1 !== $key2 && empty(array_diff($array2, $array1))) {
+                    unset($containerIdsToChildrenIds[$key2]);
+                }
+            }
+        }
+
+        $containerIds = array_keys($containerIdsToChildrenIds);
 
         foreach ($containerIds as $id) {
 

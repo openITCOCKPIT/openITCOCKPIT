@@ -477,7 +477,7 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'nutanix',
                 'title'       => __('Nutanix'),
                 'description' => __('Nutanix'),
-                'image'       => 'Windows.svg',
+                'image'       => 'nutanix-logo-charcoal-gray.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ]

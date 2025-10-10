@@ -339,7 +339,7 @@ class MapgeneratorsTable extends Table {
 
     /**
      *
-     *  gets the maps annd hosts by name splitting of the host names
+     *  gets the maps and hosts by name splitting of the host names
      *  - the last part of the hostname is always the hostname itself and not a map level
      *  - the part that is marked as container must be the same as the tenant container of the host
      *
@@ -366,13 +366,14 @@ class MapgeneratorsTable extends Table {
         $mapsAndHosts = [];
         $containerParentIdToContainerArray = []; // array to find parent containers by id
 
+        // get container with all children
         foreach ($containers as $id) {
 
-            // get container with all children
             $subContainers = $ContainersTable->getContainerWithAllChildrenAndHosts($id, $MY_RIGHTS);
             $containersWithChildsAndHostsForEachGivenContainerId[] = Hash::filter($subContainers);
         }
 
+        // build the maps and hosts array
         foreach ($containersWithChildsAndHostsForEachGivenContainerId as $containersWithChildsAndHosts) {
             foreach ($containersWithChildsAndHosts as $containerWithChildsAndHosts) {
                 if (!empty($containerWithChildsAndHosts['parent_id'])) {
@@ -476,7 +477,7 @@ class MapgeneratorsTable extends Table {
     }
 
     /**
-     *  finds the parent container by name and type
+     *  finds the parent tenant container by name and type
      *
      * @param $containerId
      * @param $part
@@ -528,34 +529,30 @@ class MapgeneratorsTable extends Table {
         $containersWithChildsAndHostsForEachGivenContainerId = [];
         $mapsAndHosts = [];
         $containerIdToIndexArray = []; // array to find parent containers index by id
-        $containerIdsToChildrenIds = []; // array to find all children of a container
-
-        foreach ($containerIds as $containerId) {
-            $containerIdsToChildrenIds[$containerId] = $ContainersTable->resolveChildrenOfContainerIds($containerId);
-        }
 
         // remove container ids that have the same children as another container id to avoid duplicate maps and hierarchies
-        foreach ($containerIdsToChildrenIds as $key1 => $array1) {
-            foreach ($containerIdsToChildrenIds as $key2 => $array2) {
-                if ($key1 !== $key2 && empty(array_diff($array1, $array2))) {
-                    unset($containerIdsToChildrenIds[$key1]);
-                }else if ($key1 !== $key2 && empty(array_diff($array2, $array1))) {
-                    unset($containerIdsToChildrenIds[$key2]);
+        $containersAsPath = $ContainersTable->easyPath($containerIds, CT_TENANT, [], false, [CT_GLOBAL]);
+
+        foreach ($containersAsPath as $containerKey => $containerAsPath) {
+            foreach ($containersAsPath as $otherContainerKey => $otherContainerAsPath) {
+                if ($containerKey !== $otherContainerKey && str_starts_with($otherContainerAsPath, $containerAsPath) && strlen($otherContainerAsPath) > strlen($containerAsPath)) {
+                    // other container is a child of the current container, remove it
+                    $idKey = array_search($otherContainerKey, $containerIds, true);
+                    unset($containerIds[$idKey]);
                 }
             }
         }
 
-        $containerIds = array_keys($containerIdsToChildrenIds);
-
+        // get container with all children and hosts
         foreach ($containerIds as $id) {
 
-            // get container with all children
             $subContainers = $ContainersTable->getContainerWithAllChildrenAndHosts($id, $MY_RIGHTS);
             $containersWithChildsAndHostsForEachGivenContainerId[] = Hash::filter($subContainers);
         }
 
+        // build the maps and hosts array
         foreach ($containersWithChildsAndHostsForEachGivenContainerId as $containersWithChildsAndHosts) {
-            // build the maps and hosts array
+
             foreach ($containersWithChildsAndHosts as $containerWithChildsAndHosts) {
                 $hosts = [];
                 if (!empty($containerWithChildsAndHosts['childsElements']['hosts'])) {
@@ -566,8 +563,15 @@ class MapgeneratorsTable extends Table {
                         ];
                     }
                 }
+
+                // get start container name from easyPath, to generate the map names correct if someone has not rights to all parent containers
+                $mapName = $containerWithChildsAndHosts['name'];
+                if (!array_key_exists($containerWithChildsAndHosts['parent_id'], $containerIdToIndexArray)) {
+                    $mapName = str_replace("/root/", "", $containersAsPath[$containerWithChildsAndHosts['id']]);
+                }
+
                 $mapsAndHosts[] = [
-                    'name'                 => $containerWithChildsAndHosts['name'],
+                    'name'                 => $mapName,
                     'containerIdForNewMap' => $containerWithChildsAndHosts['id'],
                     'hosts'                => $hosts
                 ];

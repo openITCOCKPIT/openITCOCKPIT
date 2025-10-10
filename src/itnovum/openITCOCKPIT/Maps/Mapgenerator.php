@@ -118,6 +118,15 @@ class Mapgenerator {
         return $generatedMapsAndItems;
     }
 
+    /**
+     * generate maps and items based on the given data
+     * - first generate the map
+     * - than add the map to the higher map as mapsummaryitem (if there is a higher map)
+     * - than add the hosts as mapsummaryitems to the generated map
+     *
+     * @param array $mapsAndHostsData
+     * @return array|array[]|mixed[]
+     */
     private function generateMapsAndItems(array $mapsAndHostsData) {
 
         $higherMap = []; // this is the map that is generated for the map that is higher in the hierarchy
@@ -128,6 +137,8 @@ class Mapgenerator {
 
         // create maps
         foreach ($mapsAndHostsData as $mapKey => $mapAndHosts) {
+
+            $mapAddedToHigherMap = false;
 
             // check if container is already generated
             $mapName = $mapAndHosts['name'];
@@ -144,6 +155,20 @@ class Mapgenerator {
                     }
                 }
 
+                //check if map has a mapsummaryitem in the higher map (to add it if someone deletes the higher map)
+                foreach ($this->allGeneratedMaps as $generatedMap) {
+                    if (!empty($generatedMap['mapsummaryitems'])) {
+                        foreach ($generatedMap['mapsummaryitems'] as $generatedItem) {
+                            if ($generatedItem['type'] === 'map' && $generatedItem['object_id'] === $map['id']) {
+                                // mapsummaryitem already exists
+                                $mapAddedToHigherMap = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+
             } else {
 
                 // create new map for this container
@@ -157,37 +182,39 @@ class Mapgenerator {
                 $this->newGeneratedMaps[] = $map;
                 $generatedMapsAndItems['maps'][] = $map;
 
-                // add map as mapsummaryitem to the previously generated map
-                if (array_key_exists("parentIndex", $mapAndHosts) && !empty($mapsAndHostsData[$mapAndHosts['parentIndex']]) && $mapKey > 0) {
+            }
 
-                    $higherMapAndHosts = $mapsAndHostsData[$mapAndHosts['parentIndex']];
-                    $higherMapName = $higherMapAndHosts['name'];
-                    if ($this->type === $this::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
-                        $higherMapName = $this->buildMapName($higherMapAndHosts, $mapsAndHostsData);
-                    }
+            // add map as mapsummaryitem to the previously generated map
+            if (!$mapAddedToHigherMap && array_key_exists("parentIndex", $mapAndHosts) && !empty($mapsAndHostsData[$mapAndHosts['parentIndex']]) && $mapKey > 0) {
 
-                    if (in_array($higherMapName, Hash::extract($this->allGeneratedMaps, '{n}.name'), true)) {
-                        foreach ($this->allGeneratedMaps as $generatedMap) {
-                            if ($higherMapName === $generatedMap['name']) {
-                                $higherMap = $generatedMap;
-                                break;
-                            }
+                $higherMapAndHosts = $mapsAndHostsData[$mapAndHosts['parentIndex']];
+                $higherMapName = $higherMapAndHosts['name'];
+                if ($this->type === $this::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
+                    $higherMapName = $this->buildMapName($higherMapAndHosts, $mapsAndHostsData);
+                }
+
+                if (in_array($higherMapName, Hash::extract($this->allGeneratedMaps, '{n}.name'), true)) {
+                    foreach ($this->allGeneratedMaps as $generatedMap) {
+                        if ($higherMapName === $generatedMap['name']) {
+                            $higherMap = $generatedMap;
+                            break;
                         }
-                    }
-
-                    if (!empty($higherMap)) {
-
-                        $mapsummaryitem = $this->createNewMapSummaryItem($higherMap, $map["id"], 'map');
-
-                        if (array_key_exists("error", $mapsummaryitem)) {
-                            return $mapsummaryitem;
-                        }
-
-                        $this->generatedItems[] = $mapsummaryitem;
-                        $generatedMapsAndItems['items'][] = $mapsummaryitem;
-
                     }
                 }
+
+                if (!empty($higherMap)) {
+
+                    $mapsummaryitem = $this->createNewMapSummaryItem($higherMap, $map["id"], 'map');
+
+                    if (array_key_exists("error", $mapsummaryitem)) {
+                        return $mapsummaryitem;
+                    }
+
+                    $this->generatedItems[] = $mapsummaryitem;
+                    $generatedMapsAndItems['items'][] = $mapsummaryitem;
+
+                }
+
 
             }
 
@@ -400,6 +427,11 @@ class Mapgenerator {
         return $width;
     }
 
+    /**
+     * convert the generated maps and items to an array to have a clean output besides error output
+     *
+     * @return array|array[]
+     */
     private function convertToArray() {
 
         $generatedMapsAndItems = [

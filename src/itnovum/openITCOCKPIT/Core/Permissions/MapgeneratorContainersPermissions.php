@@ -71,6 +71,10 @@ class MapgeneratorContainersPermissions extends ContainersPermissions {
             return false;
         }
 
+        if (empty($this->containerIds)) {
+            return true;
+        }
+
         $hasPermissionsToAllContainers = false;
         foreach ($this->containerIds as $containerId) {
             //Has the user write permissions to all containers of the rotation?

@@ -1467,6 +1467,7 @@ class DashboardsController extends AppController {
             $service = $this->getServicestatusByServiceId($serviceId);
             $data = [];
             $metrics = array_keys($service['Perfdata']);
+            $newPerfdata = [];
             foreach ($metrics as $metric) {
                 if (Plugin::isLoaded('PrometheusModule') && $service['Service']['serviceType'] === PROMETHEUS_SERVICE) {
                     $PrometheusPerfdataLoader = new \PrometheusModule\Lib\PrometheusPerfdataLoader();
@@ -1474,15 +1475,24 @@ class DashboardsController extends AppController {
                     $perfdata = $PrometheusPerfdataLoader->getAvailableMetricsByService($Service, false, true);
                     // Query Prometheus to get all metrics
                     $adapter = new PrometheusAdapter();
-                    $service['Perfdata'][$metric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata[$metric])->toArray();
+                    $indexMetric = $metric;
+                    if ($metric !== $perfdata[$metric]) {
+                        $indexMetric = $perfdata[$metric]['metric'];
+                    }
+                    $newPerfdata['Perfdata'][$indexMetric] = $service['Perfdata'][$metric];
+                    $newPerfdata['Perfdata'][$indexMetric]['metric'] = $indexMetric;
+                    $newPerfdata['Perfdata'][$indexMetric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata[$metric])->toArray();
                 } else {
                     $PerfdataParser = new PerfdataParser($service['Servicestatus']['perfdata']);
                     $perfdata = $PerfdataParser->parse();
                     $perfdata = $perfdata[$metric] ?? [];
                     $adapter = new NagiosAdapter();
-                    $service['Perfdata'][$metric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata)->toArray();
+                    $newPerfdata['Perfdata'][$metric] = $service['Perfdata'][$metric];
+                    $newPerfdata['Perfdata'][$metric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata)->toArray();
                 }
             }
+
+            $service['Perfdata'] = $newPerfdata['Perfdata'];
 
             if ($widget->get('json_data') !== null && $widget->get('json_data') !== '') {
                 $data = json_decode($widget->get('json_data'), true);

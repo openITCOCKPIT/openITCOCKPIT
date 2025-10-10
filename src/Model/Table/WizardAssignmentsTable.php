@@ -472,6 +472,14 @@ class WizardAssignmentsTable extends Table {
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
+            ],
+            'apache_http'                  => [
+                'type_id'     => 'apache_http',
+                'title'       => __('Apache WebServer'),
+                'description' => __('Monitor your Apache web server'),
+                'image'       => 'apache_http.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
             ]
         ];
 

@@ -133,7 +133,8 @@ plugins/ScmModule
 plugins/JiraModule
 plugins/DellModule
 plugins/ProxmoxModule
-plugins/MS365Module
+plugins/MS365Modul
+plugins/ApacheModule
 
 # NFS mounts
 .nfs.*

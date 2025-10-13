@@ -454,7 +454,7 @@ class WizardAssignmentsTable extends Table {
                 'title'       => __('Microsoft 365 (OneDrive)'),
                 'description' => __('Microsoft 365 (OneDrive)'),
                 'image'       => 'Windows.svg',
-                'category'    => ['virtualization', 'cloud'],
+                'category'    => ['windows', 'cloud'],
                 'active'      => true
             ],
             'microsoft-m365-Mailbox'       => [
@@ -462,7 +462,7 @@ class WizardAssignmentsTable extends Table {
                 'title'       => __('Microsoft 365 (Mailbox)'),
                 'description' => __('Microsoft 365 (Mailbox)'),
                 'image'       => 'Windows.svg',
-                'category'    => ['virtualization', 'cloud', 'mail'],
+                'category'    => ['windows', 'cloud', 'mail'],
                 'active'      => true
             ],
             'microsoft-m365-SharePoint'    => [
@@ -470,15 +470,15 @@ class WizardAssignmentsTable extends Table {
                 'title'       => __('Microsoft 365 (SharePoint)'),
                 'description' => __('Microsoft 365 (SharePoint)'),
                 'image'       => 'Windows.svg',
-                'category'    => ['virtualization', 'cloud'],
+                'category'    => ['windows', 'cloud'],
                 'active'      => true
             ],
-            'apache_http'                  => [
-                'type_id'     => 'apache_http',
-                'title'       => __('Apache WebServer'),
-                'description' => __('Monitor your Apache web server'),
+            'apache'                       => [
+                'type_id'     => 'apache',
+                'title'       => __('Apache WebServer Status'),
+                'description' => __('Monitor the status of your Apache web server'),
                 'image'       => 'apache_http.svg',
-                'category'    => ['virtualization', 'cloud'],
+                'category'    => ['webserver'],
                 'active'      => true
             ]
         ];

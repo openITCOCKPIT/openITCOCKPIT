@@ -475,8 +475,8 @@ class WizardAssignmentsTable extends Table {
             ],
             'nginx'                        => [
                 'type_id'     => 'nginx',
-                'title'       => __('nginx'),
-                'description' => __('Monitor your nginx web server'),
+                'title'       => __('nginx Status'),
+                'description' => __('Monitor your nginx web server status'),
                 'image'       => 'nginx_logo.svg',
                 'category'    => ['webserver', 'cloud'],
                 'active'      => true

@@ -728,6 +728,15 @@ class HostgroupsController extends AppController {
 
         if ($this->request->is('post')) {
             $id = $this->request->getData('Hostgroup.id');
+            if (!$id) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', true);
+                $this->set('message', 'You have to select a host group');
+                $this->set('success', false);
+                $this->viewBuilder()->setOption('serialize', ['error', 'success', 'message']);
+                return;
+            }
+
             $hostIds = $this->request->getData('Hostgroup.hosts._ids');
             if (!is_array($hostIds)) {
                 $hostIds = [$hostIds];

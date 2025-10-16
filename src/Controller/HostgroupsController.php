@@ -1115,7 +1115,12 @@ class HostgroupsController extends AppController {
 
         /** @var $ContainersTable ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [CT_HOSTGROUP]);
+        $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [
+            CT_GLOBAL,
+            CT_TENANT,
+            CT_LOCATION,
+            CT_NODE
+        ]);
 
         $tenantContainerIds = [];
 
@@ -1167,15 +1172,32 @@ class HostgroupsController extends AppController {
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         if ($containerId == ROOT_CONTAINER) {
-            $containerIds = $ContainersTable->resolveChildrenOfContainerIds(ROOT_CONTAINER, true, [CT_HOSTGROUP]);
+            $containerIds = $ContainersTable->resolveChildrenOfContainerIds(ROOT_CONTAINER, true, [
+                CT_GLOBAL,
+                CT_TENANT,
+                CT_LOCATION,
+                CT_NODE
+            ]);
         } else {
             if ($resolveContainerIds) {
-                $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [CT_HOSTGROUP]);
+                $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [
+                    CT_GLOBAL,
+                    CT_TENANT,
+                    CT_LOCATION,
+                    CT_NODE
+                ]);
                 $containerIds = array_merge($containerIds, [ROOT_CONTAINER, $containerId]);
             } else {
-                $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, false, [CT_HOSTGROUP]);
+                $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, false, [
+                    CT_GLOBAL,
+                    CT_TENANT,
+                    CT_LOCATION,
+                    CT_NODE
+                ]);
             }
         }
+        $containerIds = array_unique($containerIds);
+        
         $HostgroupCondition = new HostgroupConditions($HostgroupFilter->indexFilter());
         $HostgroupCondition->setContainerIds($containerIds);
 

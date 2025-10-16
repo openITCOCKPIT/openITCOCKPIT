@@ -1180,12 +1180,23 @@ class ServicegroupsController extends AppController {
 
         $containerIds = [ROOT_CONTAINER, $containerId];
         if ($containerId == ROOT_CONTAINER) {
-            $containerIds = $ContainersTable->resolveChildrenOfContainerIds(ROOT_CONTAINER, true, [CT_SERVICEGROUP]);
+            $containerIds = $ContainersTable->resolveChildrenOfContainerIds(ROOT_CONTAINER, true, [
+                CT_GLOBAL,
+                CT_TENANT,
+                CT_LOCATION,
+                CT_NODE
+            ]);
         } else if ($containerId !== ROOT_CONTAINER && $resolveContainerIds) {
-            $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [CT_SERVICEGROUP]);
+            $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [
+                CT_GLOBAL,
+                CT_TENANT,
+                CT_LOCATION,
+                CT_NODE
+            ]);
             $containerIds = array_merge($containerIds, [ROOT_CONTAINER, $containerId]);
         }
 
+        $containerIds = array_unique($containerIds);
         $servicegroups = $ServicegroupsTable->getServicegroupsByContainerId($containerIds, 'list');
         $servicegroups = Api::makeItJavaScriptAble($servicegroups);
 
@@ -1228,7 +1239,12 @@ class ServicegroupsController extends AppController {
 
         /** @var $ContainersTable ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [CT_SERVICEGROUP]);
+        $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [
+            CT_GLOBAL,
+            CT_TENANT,
+            CT_LOCATION,
+            CT_NODE
+        ]);
 
         $tenantContainerIds = [];
 

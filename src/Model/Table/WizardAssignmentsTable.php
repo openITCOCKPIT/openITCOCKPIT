@@ -472,6 +472,14 @@ class WizardAssignmentsTable extends Table {
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
+            ],
+            'network-interfaces'    => [
+                'type_id'     => 'network-interfaces',
+                'title'       => __('Network Interfaces'),
+                'description' => __('Network Interfaces'),
+                'image'       => 'network.png',
+                'category'    => ['linux', 'network'],
+                'active'      => true
             ]
         ];
 

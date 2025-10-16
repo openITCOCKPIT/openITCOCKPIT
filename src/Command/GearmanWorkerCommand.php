@@ -65,10 +65,11 @@ use itnovum\openITCOCKPIT\Core\MonitoringEngine\NagiosConfigDefaults;
 use itnovum\openITCOCKPIT\Core\MonitoringEngine\NagiosConfigGenerator;
 use itnovum\openITCOCKPIT\Core\System\Health\LsbRelease;
 use MS365Module\itnovum\openITCOCKPIT\MS365Service\MS365ServiceScan;
+use NetworkModule\itnovum\openITCOCKPIT\NetworkInterfaces\NetworkInterfacesScan;
 use NWCModule\itnovum\openITCOCKPIT\SNMP\SNMPScanNwc;
+use ProxmoxModule\itnovum\openITCOCKPIT\ProxmoxStorage\ProxmoxStorageScan;
 use Symfony\Component\Filesystem\Filesystem;
 use VMWAREModule\itnovum\openITCOCKPIT\Datastore\DatastoreScan;
-use ProxmoxModule\itnovum\openITCOCKPIT\ProxmoxStorage\ProxmoxStorageScan;
 
 /**
  * GearmanWorker command.
@@ -1076,6 +1077,24 @@ class GearmanWorkerCommand extends Command {
                         'success'  => $services['success'],
                         'error'    => $services['errormsg'],
                         'services' => $services
+                    ];
+                } catch (\RuntimeException $e) {
+                    $return = [
+                        'success'   => false,
+                        'error'     => $e->getMessage(),
+                        'exception' => 'ProcessFailedException'
+                    ];
+                }
+                break;
+
+            case 'WizardNetworkInterfaceList':
+                $DatastoreScan = new NetworkInterfacesScan($payload['data']);
+                try {
+                    $interfaces = $DatastoreScan->executeNetworkInterfacesDiscovery($payload['host_address']);
+                    $return = [
+                        'success'  => $interfaces['success'],
+                        'error'    => $interfaces['errormsg'],
+                        'services' => $interfaces
                     ];
                 } catch (\RuntimeException $e) {
                     $return = [

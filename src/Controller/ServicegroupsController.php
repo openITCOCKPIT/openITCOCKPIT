@@ -345,6 +345,15 @@ class ServicegroupsController extends AppController {
 
         if ($this->request->is('post')) {
             $id = $this->request->getData('Servicegroup.id');
+            if (!$id) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', true);
+                $this->set('message', 'You have to select a service group');
+                $this->set('success', false);
+                $this->viewBuilder()->setOption('serialize', ['error', 'success', 'message']);
+                return;
+            }
+
             $serviceIds = $this->request->getData('Servicegroup.services._ids');
             if (!is_array($serviceIds)) {
                 $serviceIds = [$serviceIds];

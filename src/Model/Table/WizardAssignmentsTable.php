@@ -473,11 +473,19 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['windows', 'cloud'],
                 'active'      => true
             ],
-            'apache'                       => [
-                'type_id'     => 'apache',
-                'title'       => __('Apache WebServer Status'),
+            'apache-http'                  => [
+                'type_id'     => 'apache-http',
+                'title'       => __('Apache HTTP Status'),
                 'description' => __('Monitor the status of your Apache web server'),
-                'image'       => 'apache_http.svg',
+                'image'       => 'network.png',
+                'category'    => ['webserver'],
+                'active'      => true
+            ],
+            'apache-tomcat'                => [
+                'type_id'     => 'apache-tomcat',
+                'title'       => __('Apache Tomcat'),
+                'description' => __('Monitor the status of your Apache Tomcat web server'),
+                'image'       => 'network.png',
                 'category'    => ['webserver'],
                 'active'      => true
             ]

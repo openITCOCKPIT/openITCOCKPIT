@@ -1092,9 +1092,9 @@ class GearmanWorkerCommand extends Command {
                 try {
                     $interfaces = $DatastoreScan->executeNetworkInterfacesDiscovery($payload['host_address']);
                     $return = [
-                        'success'  => $interfaces['success'],
-                        'error'    => $interfaces['errormsg'],
-                        'services' => $interfaces
+                        'success'    => $interfaces['success'],
+                        'error'      => $interfaces['errormsg'],
+                        'interfaces' => $interfaces
                     ];
                 } catch (\RuntimeException $e) {
                     $return = [

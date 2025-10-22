@@ -480,6 +480,14 @@ class WizardAssignmentsTable extends Table {
                 'image'       => 'network.png',
                 'category'    => ['network', 'hardware'],
                 'active'      => true
+            ],
+            'cisco-wlc'                    => [
+                'type_id'     => 'cisco-wlc',
+                'title'       => __('Cisco WLC'),
+                'description' => __('Cisco WLC'),
+                'image'       => 'network.png',
+                'category'    => ['network', 'hardware'],
+                'active'      => true
             ]
         ];
 

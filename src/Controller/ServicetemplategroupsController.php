@@ -587,6 +587,14 @@ class ServicetemplategroupsController extends AppController {
             //Return list of services that will be created by the system
 
             $hostId = $this->request->getQuery('hostId');
+            if (!$hostId) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', true);
+                $this->set('message', 'You have to select a host');
+                $this->set('success', false);
+                $this->viewBuilder()->setOption('serialize', ['error', 'success', 'message']);
+                return;
+            }
             if (!$HostsTable->existsById($hostId)) {
                 throw new NotFoundException('Invalid host');
             }
@@ -641,6 +649,14 @@ class ServicetemplategroupsController extends AppController {
             //Create the services out of the service template group on the selected host
 
             $hostId = $this->request->getData('Host.id');
+            if (!$hostId) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', true);
+                $this->set('message', 'You have to select a host');
+                $this->set('success', false);
+                $this->viewBuilder()->setOption('serialize', ['error', 'success', 'message']);
+                return;
+            }
             if (!$HostsTable->existsById($hostId)) {
                 throw new NotFoundException('Invalid host');
             }
@@ -679,7 +695,6 @@ class ServicetemplategroupsController extends AppController {
         if (!$this->isAngularJsRequest()) {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
-
         /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
         /** @var $HostsTable HostsTable */
@@ -695,6 +710,15 @@ class ServicetemplategroupsController extends AppController {
             //Return list of services that will be created by the system
 
             $hostgroupId = $this->request->getQuery('hostgroupId');
+            if (!$hostgroupId) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', true);
+                $this->set('message', 'You have to select a host group');
+                $this->set('success', false);
+                $this->viewBuilder()->setOption('serialize', ['error', 'success', 'message']);
+                return;
+            }
+
             if (!$HostgroupsTable->existsById($hostgroupId)) {
                 throw new NotFoundException('Invalid host group');
             }
@@ -730,7 +754,6 @@ class ServicetemplategroupsController extends AppController {
                 $servicetemplatesForDeploy = [];
                 $areAllCreateServiceOnTargetHostTrue = true;
                 foreach ($servicetemplategroup['servicetemplates'] as $servicetemplate) {
-                    $doesServicetemplateExistsOnTargetHost = false;
                     $doesServicetemplateExistsOnTargetHostAndIsDisabled = false;
                     $createServiceOnTargetHost = true;
 

@@ -115,6 +115,12 @@ class TenantsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
+        if (!$this->hasRootPrivileges) {
+            // Tenants are always create in the root container so only root users are allowed to create tenants
+            $this->render403();
+            return;
+        }
+
         /** @var $TenantsTable TenantsTable */
         $TenantsTable = TableRegistry::getTableLocator()->get('Tenants');
 

@@ -5774,16 +5774,18 @@ class ServicesTable extends Table {
      * @return array
      */
     public function getNotDisabledServicesByHostId($hostId, $enableHydration = false) {
-        $query = $this->find()
-            ->select([
-                'Services.id',
-                'Services.uuid'
-            ])
+        $query = $this->find();
+        $query->select([
+            'Services.id',
+            'Services.uuid',
+            'name' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+        ])
+            ->innerJoinWith('Servicetemplates')
             ->where([
                 'Services.host_id'  => $hostId,
                 'Services.disabled' => 0
             ])
-            ->enableAutoFields()
+            ->disableAutoFields()
             ->enableHydration($enableHydration)
             ->all();
 

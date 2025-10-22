@@ -1,27 +1,17 @@
 <?php
-// Copyright (C) 2015-2025  it-novum GmbH
-// Copyright (C) 2025-today Allgeier IT Services GmbH
-//
-// This file is dual licensed
-//
-// 1.
-//     This program is free software: you can redistribute it and/or modify
-//     it under the terms of the GNU General Public License as published by
-//     the Free Software Foundation, version 3 of the License.
-//
-//     This program is distributed in the hope that it will be useful,
-//     but WITHOUT ANY WARRANTY; without even the implied warranty of
-//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//     GNU General Public License for more details.
-//
-//     You should have received a copy of the GNU General Public License
-//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
-// 2.
-//     If you purchased an openITCOCKPIT Enterprise Edition you can use this file
-//     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
-//     License agreement and license key will be shipped with the order
-//     confirmation.
+
+/**
+ * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
+ * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ * @since         3.1.0
+ * @license       https://opensource.org/licenses/mit-license.php MIT License
+ */
 
 namespace App\Command\Helper;
 

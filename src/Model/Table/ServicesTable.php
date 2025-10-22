@@ -5767,4 +5767,28 @@ class ServicesTable extends Table {
         $query->groupBy(['Servicestatus.current_state']);
         return $this->emptyArrayIfNull($query->toArray());
     }
+
+    /**
+     * @param $hostId
+     * @param false $enableHydration
+     * @return array
+     */
+    public function getNotDisabledServicesByHostId($hostId, $enableHydration = false) {
+        $query = $this->find()
+            ->select([
+                'Services.id',
+                'Services.uuid'
+            ])
+            ->where([
+                'Services.host_id'  => $hostId,
+                'Services.disabled' => 0
+            ])
+            ->enableAutoFields()
+            ->enableHydration($enableHydration)
+            ->all();
+
+        return $query->toArray();
+
+    }
+
 }

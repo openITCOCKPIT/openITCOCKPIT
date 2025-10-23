@@ -41,7 +41,7 @@ class AgentConfiguration {
      *
      * @var string
      */
-    private $config_version = '3.0.0';
+    private $config_version = '3.1.0';
 
     /**
      * This defines all agent configuration options with the corresponding default values
@@ -81,6 +81,7 @@ class AgentConfiguration {
             'push_enable_webserver'          => false, // Do not enable the webserver if the agent is running in PUSH mode
             'push_webserver_use_https'       => true,  // Start the webserver on the Agent in Push mode with HTTPS (requires ssl_certfile and ssl_keyfile to be set)
             'use_autossl'                    => true,  // Use autossl Pull mode only
+            'verify_autossl_expiry'          => false, // Verify autossl certificate expiry date (only if use_autossl=true)
             'use_https'                      => false, // This sets use_autossl=false and requires ssl_certfile and ssl_keyfile to start the agent with HTTPS and custom certs (e.g from Let's Encrypt)
             'use_https_verify'               => false, // Disable certificate validation when use_https=true (Requires valid certificates like Let's Encrypt)
 
@@ -137,6 +138,13 @@ class AgentConfiguration {
         //        $json['int']['bind_port'] = 3333;
         //    }
         //}
+
+        // Add new field "verify_autossl_expiry" if not exists (added in config version 3.1.0)
+        if (isset($json) && isset($json['bool'])) {
+            if (!array_key_exists('verify_autossl_expiry', $json['bool'])) {
+                $json['bool']['verify_autossl_expiry'] = false;
+            }
+        }
 
         return $json;
     }

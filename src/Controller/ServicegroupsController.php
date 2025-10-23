@@ -345,6 +345,15 @@ class ServicegroupsController extends AppController {
 
         if ($this->request->is('post')) {
             $id = $this->request->getData('Servicegroup.id');
+            if (!$id) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', true);
+                $this->set('message', 'You have to select a service group');
+                $this->set('success', false);
+                $this->viewBuilder()->setOption('serialize', ['error', 'success', 'message']);
+                return;
+            }
+
             $serviceIds = $this->request->getData('Servicegroup.services._ids');
             if (!is_array($serviceIds)) {
                 $serviceIds = [$serviceIds];
@@ -1180,12 +1189,23 @@ class ServicegroupsController extends AppController {
 
         $containerIds = [ROOT_CONTAINER, $containerId];
         if ($containerId == ROOT_CONTAINER) {
-            $containerIds = $ContainersTable->resolveChildrenOfContainerIds(ROOT_CONTAINER, true, [CT_SERVICEGROUP]);
+            $containerIds = $ContainersTable->resolveChildrenOfContainerIds(ROOT_CONTAINER, true, [
+                CT_GLOBAL,
+                CT_TENANT,
+                CT_LOCATION,
+                CT_NODE
+            ]);
         } else if ($containerId !== ROOT_CONTAINER && $resolveContainerIds) {
-            $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [CT_SERVICEGROUP]);
+            $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [
+                CT_GLOBAL,
+                CT_TENANT,
+                CT_LOCATION,
+                CT_NODE
+            ]);
             $containerIds = array_merge($containerIds, [ROOT_CONTAINER, $containerId]);
         }
 
+        $containerIds = array_unique($containerIds);
         $servicegroups = $ServicegroupsTable->getServicegroupsByContainerId($containerIds, 'list');
         $servicegroups = Api::makeItJavaScriptAble($servicegroups);
 
@@ -1228,7 +1248,12 @@ class ServicegroupsController extends AppController {
 
         /** @var $ContainersTable ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [CT_SERVICEGROUP]);
+        $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [
+            CT_GLOBAL,
+            CT_TENANT,
+            CT_LOCATION,
+            CT_NODE
+        ]);
 
         $tenantContainerIds = [];
 

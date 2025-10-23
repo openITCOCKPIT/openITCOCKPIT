@@ -45,6 +45,7 @@ nbproject/*
 .vscode
 # Sass preprocessor
 .sass-cache/
+licenses.csv
 
 # openITCOCKPIT files #
 #######################

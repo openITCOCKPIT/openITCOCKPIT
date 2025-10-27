@@ -45,6 +45,7 @@ nbproject/*
 .vscode
 # Sass preprocessor
 .sass-cache/
+licenses.csv
 
 # openITCOCKPIT files #
 #######################
@@ -134,6 +135,7 @@ plugins/JiraModule
 plugins/DellModule
 plugins/ProxmoxModule
 plugins/MS365Module
+plugins/BroadcomProxyModule
 
 # NFS mounts
 .nfs.*

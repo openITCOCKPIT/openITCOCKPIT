@@ -488,6 +488,14 @@ class WizardAssignmentsTable extends Table {
                 'image'       => 'network.png',
                 'category'    => ['network', 'hardware'],
                 'active'      => true
+            ],
+            'broadcom-proxy'               => [
+                'type_id'     => 'broadcom-proxy',
+                'title'       => __('Broadcom Proxy'),
+                'description' => __('Monitor your Broadcom Web Gateway via SNMP'),
+                'image'       => 'network.png',
+                'category'    => ['network', 'hardware'],
+                'active'      => true
             ]
         ];
 

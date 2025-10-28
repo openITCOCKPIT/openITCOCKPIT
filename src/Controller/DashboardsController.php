@@ -1492,7 +1492,7 @@ class DashboardsController extends AppController {
                 }
             }
 
-            $service['Perfdata'] = $newPerfdata['Perfdata'];
+            $service['Perfdata'] = $newPerfdata['Perfdata'] ?? [];
 
             if ($widget->get('json_data') !== null && $widget->get('json_data') !== '') {
                 $data = json_decode($widget->get('json_data'), true);

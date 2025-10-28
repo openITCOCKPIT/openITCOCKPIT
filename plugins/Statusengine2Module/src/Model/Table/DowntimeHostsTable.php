@@ -387,10 +387,10 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
     /**
      * @param $uuids
      * @param int $startTimestamp
-     * @param int $endTimestamp
+     * @param int|null $endTimestamp
      * @return array
      */
-    public function getPlannedDowntimes($uuids, int $startTimestamp, int $endTimestamp) {
+    public function getPlannedDowntimes($uuids, int $startTimestamp, ?int $endTimestamp = null): array {
         throw new NotImplementedException();
     }
 }

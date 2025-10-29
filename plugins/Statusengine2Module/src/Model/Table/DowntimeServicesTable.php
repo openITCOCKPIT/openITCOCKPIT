@@ -487,10 +487,10 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
     /**
      * @param $uuids
      * @param int $startTimestamp
-     * @param int $endTimestamp
+     * @param int|null $endTimestamp
      * @return array
      */
-    public function getPlannedDowntimes($uuids, int $startTimestamp, int $endTimestamp) {
+    public function getPlannedDowntimes($uuids, int $startTimestamp, ?int $endTimestamp = null): array {
         throw new NotImplementedException();
     }
 }

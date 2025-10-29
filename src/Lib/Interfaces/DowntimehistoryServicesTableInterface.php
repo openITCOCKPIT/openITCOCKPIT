@@ -75,11 +75,13 @@ interface DowntimehistoryServicesTableInterface {
     public function byUuidsNoJoins($uuids, $isRunning = false);
 
     /**
+     * Get all upcoming downtimes for a host starting from a given time range
+     *
      * @param $uuids
      * @param int $startTimestamp
-     * @param int $endTimestamp
+     * @param int|null $endTimestamp
      * @return array
      */
-    public function getPlannedDowntimes($uuids, int $startTimestamp, int $endTimestamp);
+    public function getPlannedDowntimes($uuids, int $startTimestamp, ?int $endTimestamp = null): array;
 
 }

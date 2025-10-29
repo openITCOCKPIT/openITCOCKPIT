@@ -486,7 +486,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
         }
 
         $query->orderBy([
-            'DowntimeHosts.scheduled_start_time' => 'DESC'
+            'DowntimeHosts.scheduled_start_time' => 'ASC'
         ]);
 
         $query->disableHydration();

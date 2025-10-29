@@ -580,7 +580,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
         }
 
         $query->orderBy([
-            'DowntimeServices.scheduled_start_time' => 'DESC'
+            'DowntimeServices.scheduled_start_time' => 'ASC'
         ]);
 
         $query->disableHydration();

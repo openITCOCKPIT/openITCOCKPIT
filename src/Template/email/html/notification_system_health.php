@@ -93,7 +93,7 @@ echo $this->element('emails/style');
                                     <a href="<?php printf('https://%s/a/administrators/debug', $systemAddress); ?>"
                                        style="text-decoration:none"
                                        class="<?= strtoupper($StatusIcon->getTextColor()) ?>">
-                                            <?= __('System health') ?>
+                                        <?= __('System health') ?>
                                     </a>
                                     <?= __(' is {0}', $StatusIcon->getHumanState()); ?>
                                 </span>
@@ -121,172 +121,173 @@ echo $this->element('emails/style');
                                     style="width: 100%;">
                                     <?php if (!$systemHealth['isNagiosRunning']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning down"></i>
-                                    <?php echo __('Critical'); ?>
-                                </h6>
-                                <i><?php echo __('Monitoring engine is not running!'); ?></i>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning down"></i>
+                                                        <?php echo __('Critical'); ?>
+                                                    </h6>
+                                                    <i><?php echo __('Monitoring engine is not running!'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if (!$systemHealth['gearman_reachable']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning down"></i>
-                                    <?php echo __('Critical'); ?>
-                                </h6>
-                                <i><?php echo __('Gearman job server not reachable!'); ?></i>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning down"></i>
+                                                        <?php echo __('Critical'); ?>
+                                                    </h6>
+                                                    <i><?php echo __('Gearman job server not reachable!'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if (!$systemHealth['gearman_worker_running']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning down"></i>
-                                    <?php echo __('Critical'); ?>
-                                </h6>
-                                <i><?php echo __('Service gearman_worker is not running!'); ?></i>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning down"></i>
+                                                        <?php echo __('Critical'); ?>
+                                                    </h6>
+                                                    <i><?php echo __('Service gearman_worker is not running!'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if ($systemHealth['isNdoInstalled'] && !$systemHealth['isNdoRunning']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning down"></i>
-                                    <?php echo __('Critical'); ?>
-                                </h6>
-                                <i><?php echo __('Database connector NDOUtils is not running!'); ?></i>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning down"></i>
+                                                        <?php echo __('Critical'); ?>
+                                                    </h6>
+                                                    <i><?php echo __('Database connector NDOUtils is not running!'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if ($systemHealth['isStatusengineInstalled'] && !$systemHealth['isStatusengineRunning']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning down"></i>
-                                    <?php echo __('Critical'); ?>
-                                </h6>
-                                <i><?php echo __('Database connector Statusengine is not running!'); ?></i>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning down"></i>
+                                                        <?php echo __('Critical'); ?>
+                                                    </h6>
+                                                    <i><?php echo __('Database connector Statusengine is not running!'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if ($systemHealth['isStatusenginePerfdataProcessor'] && !$systemHealth['isStatusengineRunning']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning warning"></i>
-                                    <?php echo __('Warning'); ?>
-                                </h6>
-                                <i><?php echo __('Performance data processer Statusengine is not running!'); ?></i>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning warning"></i>
+                                                        <?php echo __('Warning'); ?>
+                                                    </h6>
+                                                    <i><?php echo __('Performance data processer Statusengine is not running!'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if (!$systemHealth['isStatusenginePerfdataProcessor'] && !$systemHealth['isNpcdRunning']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning warning"></i>
-                                    <?php echo __('Warning'); ?>
-                                </h6>
-                                <i><?php echo __('Performance data processer NPCD is not running!'); ?></i>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning warning"></i>
+                                                        <?php echo __('Warning'); ?>
+                                                    </h6>
+                                                    <i><?php echo __('Performance data processer NPCD is not running!'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if (!$systemHealth['isSudoServerRunning']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning warning"></i>
-                                    <?php echo __('Warning'); ?>
-                                </h6>
-                                <i><?php echo __('Service sudo_server is not running!'); ?></i>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning warning"></i>
+                                                        <?php echo __('Warning'); ?>
+                                                    </h6>
+                                                    <i><?php echo __('Service sudo_server is not running!'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if (!$systemHealth['isOitcCmdRunning']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning warning"></i>
-                                    <?php echo __('Warning'); ?>
-                                </h6>
-                                <i><?php echo __('Service oitc_cmd is not running!'); ?></i>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning warning"></i>
+                                                        <?php echo __('Warning'); ?>
+                                                    </h6>
+                                                    <i><?php echo __('Service oitc_cmd is not running!'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if (!$systemHealth['isPushNotificationRunning']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning warning"></i>
-                                    <?php echo __('Warning'); ?>
-                                </h6>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning warning"></i>
+                                                        <?php echo __('Warning'); ?>
+                                                    </h6>
 
-                                <i><?php echo __('Service push_notification is not running!'); ?></i>
-                            </div>
-                        </span>
+                                                    <i><?php echo __('Service push_notification is not running!'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if (!$systemHealth['isNodeJsServerRunning']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning warning"></i>
-                                    <?php echo __('Warning'); ?>
-                                </h6>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning warning"></i>
+                                                        <?php echo __('Warning'); ?>
+                                                    </h6>
 
-                                <i><?php echo __('Nodejs backend is not running'); ?></i>
-                            </div>
-                        </span>
+                                                    <i><?php echo __('Nodejs backend is not running'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if ($systemHealth['load']['state'] !== 'ok'): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <p class="margin-bottom-5">
-                                    <i><?php echo __('Current CPU load is too high!'); ?></i>
-                                    <br/>
-                                    <i><?= h($systemHealth['load']['load1']); ?>, <?= h($systemHealth['load']['load5']); ?>, <?= h(
-                                            $systemHealth['load']['load15']); ?></i>
-                                </p>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <p class="margin-bottom-5">
+                                                        <i><?php echo __('Current CPU load is too high!'); ?></i>
+                                                        <br/>
+                                                        <i><?= h($systemHealth['load']['load1']); ?>
+                                                            , <?= h($systemHealth['load']['load5']); ?>, <?= h(
+                                                                $systemHealth['load']['load15']); ?></i>
+                                                    </p>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
@@ -294,91 +295,94 @@ echo $this->element('emails/style');
                                     <?php foreach ($systemHealth['satellites'] as $satellite): ?>
                                         <?php if ($satellite['satellite_status']['status'] !== 1): ?>
                                             <li>
-                        <span>
-                            <div class="padding-5">
-                                <p class="margin-bottom-5">
-                                    <i><?php echo __('Sync status'); ?><?php echo __('failed') ?></i>
-                                    <br/>
-                                    <i><?= h($satellite['name']); ?>, <?php echo __('last seen') ?> <?= h($satellite['satellite_status']['last_seen']); ?></i>
-                                </p>
-                            </div>
-                        </span>
+                                                <span>
+                                                    <div class="padding-5">
+                                                        <p class="margin-bottom-5">
+                                                            <i><?php echo __('Sync status'); ?><?php echo __('failed') ?></i>
+                                                            <br/>
+                                                            <i><?= h($satellite['name']); ?>
+                                                                , <?php echo __('last seen') ?> <?= h($satellite['satellite_status']['last_seen']); ?></i>
+                                                        </p>
+                                                    </div>
+                                                </span>
                                             </li>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
 
                                     <?php if ($systemHealth['memory_usage']['memory']['state'] !== 'ok'): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <p class="margin-bottom-5">
-                                    <i><?php echo __('High memory usage.'); ?></i>
-                                    <span class="pull-right semi-bold text-muted">
-                                        <?= h($systemHealth['memory_usage']['memory']['percentage']); ?>%
-                                    </span>
-                                </p>
-                                <div class="progress progress-sm">
-                                    <div class="progress-bar bg-color-darken"
-                                         style="width: <?= h($systemHealth['memory_usage']['memory']['percentage']); ?>%;"></div>
-                                </div>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <p class="margin-bottom-5">
+                                                        <i><?php echo __('High memory usage.'); ?></i>
+                                                        <span class="pull-right semi-bold text-muted">
+                                                            <?= h($systemHealth['memory_usage']['memory']['percentage']); ?>
+                                                            %
+                                                        </span>
+                                                    </p>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar bg-color-darken"
+                                                             style="width: <?= h($systemHealth['memory_usage']['memory']['percentage']); ?>%;"></div>
+                                                    </div>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php if ($systemHealth['memory_usage']['swap']['state'] !== 'ok'): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <p class="margin-bottom-5">
-                                    <i><?php echo __('High Swap usage'); ?></i>
-                                    <span class="pull-right semi-bold text-muted">
-                                        <?= h($systemHealth['memory_usage']['swap']['percentage']); ?>%
-                                    </span>
-                                </p>
-                                <div class="progress progress-sm">
-                                    <div class="progress-bar bg-color-darken"
-                                         style="width: <?= h($systemHealth['memory_usage']['swap']['percentage']); ?>%;"></div>
-                                </div>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <p class="margin-bottom-5">
+                                                        <i><?php echo __('High Swap usage'); ?></i>
+                                                        <span class="pull-right semi-bold text-muted">
+                                                            <?= h($systemHealth['memory_usage']['swap']['percentage']); ?>
+                                                            %
+                                                        </span>
+                                                    </p>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar bg-color-darken"
+                                                             style="width: <?= h($systemHealth['memory_usage']['swap']['percentage']); ?>%;"></div>
+                                                    </div>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
 
                                     <?php foreach ($systemHealth['disk_usage'] as $disk): ?>
                                         <?php if ($disk['state'] !== 'ok'): ?>
                                             <li>
-                        <span>
-                            <div class="padding-5">
-                                <p class="margin-bottom-5">
-                                    <i><?php echo __('Low disk space left for mountpoint:'); ?></i>
-                                    <br/>
-                                    <i>"<?= h($disk['mountpoint']); ?>"</i>
-                                    <span class="pull-right semi-bold text-muted">
-                                        <?= h($disk['use_percentage']); ?>%
-                                    </span>
-                                </p>
-                                <div class="progress progress-sm">
-                                    <div class="progress-bar bg-color-darken"
-                                         style="width: <?= h($disk['use_percentage']); ?>%;"></div>
-                                </div>
-                            </div>
-                        </span>
+                                                <span>
+                                                    <div class="padding-5">
+                                                        <p class="margin-bottom-5">
+                                                            <i><?php echo __('Low disk space left for mountpoint:'); ?></i>
+                                                            <br/>
+                                                            <i>"<?= h($disk['mountpoint']); ?>"</i>
+                                                            <span class="pull-right semi-bold text-muted">
+                                                                <?= h($disk['use_percentage']); ?>%
+                                                            </span>
+                                                        </p>
+                                                        <div class="progress progress-sm">
+                                                            <div class="progress-bar bg-color-darken"
+                                                                 style="width: <?= h($disk['use_percentage']); ?>%;"></div>
+                                                        </div>
+                                                    </div>
+                                                </span>
                                             </li>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
 
                                     <?php if ($systemHealth['isDistributeModuleInstalled'] && !$systemHealth['isNstaRunning']): ?>
                                         <li>
-                        <span>
-                            <div class="padding-5">
-                                <h6>
-                                    <i class="fa fa-warning warning"></i>
-                                    <?php echo __('Warning'); ?>
-                                </h6>
-                                <i><?php echo __('Service NSTA is not running!'); ?></i>
-                            </div>
-                        </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning warning"></i>
+                                                        <?php echo __('Warning'); ?>
+                                                    </h6>
+                                                    <i><?php echo __('Service NSTA is not running!'); ?></i>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
                                 </ul>
@@ -389,16 +393,16 @@ echo $this->element('emails/style');
                                     style="width: 100%;">
                                     <?php if (!$systemHealth['isNagiosRunning']): ?>
                                         <li>
-                                <span>
-                                    <div class="padding-5">
-                                        <p class="margin-bottom-5">
-                                            <i class="fa fa-question-circle text-primary"></i>
-                                            <strong><?php echo __('Unknown'); ?></strong>
-                                            <br/>
-                                            <i><?php echo __('Could not detect system health status.'); ?></i>
-                                        </p>
-                                    </div>
-                                </span>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <p class="margin-bottom-5">
+                                                        <i class="fa fa-question-circle text-primary"></i>
+                                                        <strong><?php echo __('Unknown'); ?></strong>
+                                                        <br/>
+                                                        <i><?php echo __('Could not detect system health status.'); ?></i>
+                                                    </p>
+                                                </div>
+                                            </span>
                                         </li>
                                     <?php endif; ?>
                                 </ul>
@@ -425,8 +429,7 @@ echo $this->element('emails/style');
                         <br>
                         <td align="center">
                             <p>
-                                <a href="https://openitcockpit.io/"><?php echo __('openITCOCKPIT'); ?></a> |
-                                <a href="https://it-novum.com/"><?php echo __('it-novum'); ?></a>
+                                <a href="https://openitcockpit.io/"><?php echo __('openITCOCKPIT'); ?></a>
                             </p>
                         </td>
                     </tr>

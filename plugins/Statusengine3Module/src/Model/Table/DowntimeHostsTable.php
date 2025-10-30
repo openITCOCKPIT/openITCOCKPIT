@@ -441,12 +441,15 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
 
 
     /**
+     * Maybe we should refactor this in the future to query the statusengine_host_scheduleddowntimes table instead
+     * The statusengine_host_scheduleddowntimes only contains planed or currently running downtimes
+     *
      * @param $uuids
      * @param int $startTimestamp
-     * @param int $endTimestamp
+     * @param int|null $endTimestamp
      * @return array
      */
-    public function getPlannedDowntimes($uuids, int $startTimestamp, int $endTimestamp) {
+    public function getPlannedDowntimes($uuids, int $startTimestamp, ?int $endTimestamp = null): array {
         if (empty($uuids)) {
             return [];
         }
@@ -471,14 +474,20 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
             ])
             ->where([
                 'DowntimeHosts.scheduled_start_time >' => $startTimestamp,
-                'DowntimeHosts.scheduled_start_time <' => $endTimestamp,
                 'DowntimeHosts.was_started'            => 0,
                 'DowntimeHosts.was_cancelled'          => 0,
                 'DowntimeHosts.hostname IN'            => $uuids
-            ])
-            ->orderBy([
-                'DowntimeHosts.scheduled_start_time' => 'DESC'
             ]);
+
+        if ($endTimestamp !== null) {
+            $query->andWhere([
+                'DowntimeHosts.scheduled_start_time <' => $endTimestamp,
+            ]);
+        }
+
+        $query->orderBy([
+            'DowntimeHosts.scheduled_start_time' => 'ASC'
+        ]);
 
         $query->disableHydration();
         $downtimes = $query->all();
@@ -489,5 +498,4 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
 
         return $result;
     }
-
 }

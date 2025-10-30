@@ -33,6 +33,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\itnovum\openITCOCKPIT\Core\Angular\BackendWhitelist;
 use App\itnovum\openITCOCKPIT\Core\Permissions\MyRightsFactory;
 use App\Model\Table\SystemsettingsTable;
 use Authentication\Controller\Component\AuthenticationComponent;
@@ -311,24 +312,15 @@ class AppController extends Controller {
     protected function isLegacyHtmlTemplateRequest(): bool {
         // Some actions actually need to render HTML (phpinfo for example).
         // In this case, we create a whitelist for now
-        $controller = strtolower($this->request->getParam('controller'));
-        $action = strtolower($this->request->getParam('action'));
+        $controller = strtolower($this->request->getParam('controller', ''));
+        $action = strtolower($this->request->getParam('action', ''));
+        $plugin = strtolower($this->request->getParam('plugin', ''));
 
-        $whitelist = [
-            'administrators.php_info' => 'administrators.php_info',
-            'eventlogs.listtocsv'     => 'eventlogs.listtocsv',
-            'hosts.listtocsv'         => 'hosts.listtocsv',
-            'services.listtocsv'      => 'services.listtocsv',
-            'hostgroups.listtocsv'    => 'hostgroups.listtocsv',
-            'servicegroups.listtocsv' => 'servicegroups.listtocsv',
-            'users.listtocsv'         => 'users.listtocsv',
-            'users.login'             => 'users.login',
-            'users.logout'            => 'users.logout',
-            'statuspages.publicview'  => 'statuspages.publicview',
-        ];
-
-        $key = $controller . '.' . $action;
-        if (isset($whitelist[$key])) {
+        // First check if this controller.action is whitelisted
+        // File downloads and exports for example are whitelisted
+        $Whitelist = new BackendWhitelist();
+        $isWhitelisted = $Whitelist->isWhitelisted($controller, $action, $plugin);
+        if ($isWhitelisted) {
             // We hit a whitelist controller.action
             return false;
         }

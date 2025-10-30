@@ -473,6 +473,30 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
+            'cisco-network'                => [
+                'type_id'     => 'cisco-network',
+                'title'       => __('Cisco Network'),
+                'description' => __('Monitor your Cisco network devices via SNMP.'),
+                'image'       => 'network.png',
+                'category'    => ['network', 'hardware'],
+                'active'      => true
+            ],
+            'cisco-wlc'                    => [
+                'type_id'     => 'cisco-wlc',
+                'title'       => __('Cisco WLC'),
+                'description' => __('Cisco WLC'),
+                'image'       => 'network.png',
+                'category'    => ['network', 'hardware'],
+                'active'      => true
+            ],
+            'broadcom-proxy'               => [
+                'type_id'     => 'broadcom-proxy',
+                'title'       => __('Broadcom Proxy'),
+                'description' => __('Monitor your Broadcom Web Gateway via SNMP'),
+                'image'       => 'network.png',
+                'category'    => ['network', 'hardware'],
+                'active'      => true
+            ],
             'nutanix'                      => [
                 'type_id'     => 'nutanix',
                 'title'       => __('Nutanix'),

@@ -990,6 +990,63 @@ class ContainersTable extends Table {
     }
 
     /**
+     * @param int $containerId
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getContainerWithAllChildrenAndHosts($containerId, $MY_RIGHTS = []) {
+        $parentContainer = $this->getContainerById($containerId, $MY_RIGHTS);
+
+        $query = $this->find('children', for: $containerId);
+
+        $query->select([
+            'Containers.id',
+            'Containers.parent_id',
+            'Containers.name',
+            'Containers.containertype_id',
+            'Containers.lft',
+            'Containers.rght'
+        ])
+            ->where([
+                'Containers.containertype_id IN ' => [CT_GLOBAL, CT_TENANT, CT_LOCATION, CT_NODE]
+            ])
+            ->disableHydration();
+        $containers = $query->toArray();
+        if (!empty($parentContainer)) {
+            $containers[] = $parentContainer;
+        }
+        $containers = Hash::sort($containers, '{n}.id', 'asc');
+
+
+        /** Monitoring Objects */
+        /** @var HostsTable $HostsTable */
+        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+
+        /**
+         * 'CT_GLOBAL'               => 1,
+         * 'CT_TENANT'               => 2,
+         * 'CT_LOCATION'             => 3,
+         * 'CT_NODE'                 => 5,
+         * 'CT_CONTACTGROUP'         => 6,
+         * 'CT_HOSTGROUP'            => 7,
+         * 'CT_SERVICEGROUP'         => 8,
+         * 'CT_SERVICETEMPLATEGROUP' => 9,
+         */
+
+        foreach ($containers as $index => $container) {
+            switch ($container['containertype_id']) {
+                case CT_GLOBAL:
+                case CT_TENANT:
+                case CT_LOCATION:
+                case CT_NODE:
+                    $containers[$index]['childsElements']['hosts'] = $HostsTable->getHostsByContainerIdExact($container['id'], 'list', 'id', $MY_RIGHTS, ['Hosts.disabled IN' => [0, 1]]);
+                    break;
+            }
+        }
+        return $containers;
+    }
+
+    /**
      * @param array $rootContainer
      * @param array $subContainers
      * @return array
@@ -1582,154 +1639,6 @@ class ContainersTable extends Table {
         $MY_WRITE_RIGHTS = array_keys($MY_WRITE_RIGHTS);
 
         return $MY_WRITE_RIGHTS;
-    }
-
-    /**
-     * @param array $hosts
-     * @param array $MY_RIGHTS
-     * @param array $containers
-     * @return array
-     */
-    public function getContainersForMapgeneratorByContainerStructure($hosts, $MY_RIGHTS, $containers) {
-
-        $containersAndHosts = [];
-        $containerCache = []; // cache for containers to avoid multiple database calls
-
-        foreach ($hosts as $host) {
-
-            // skip hosts without container_id or id or name
-            if (!isset($host['container_id'], $host['id'], $host['name'])) {
-                continue;
-            }
-
-            $containerHierarchyForHost = [];
-            $startContainerId = 0; // this is the first container in the hierarchy and gets checked for rights
-            $currentContainerId = $host['container_id'];
-            $skipHost = false;
-
-            // skip host if container is root
-            if ($currentContainerId === ROOT_CONTAINER) {
-                continue;
-            }
-
-            while ($startContainerId === 0) {
-
-                // load container by id from cache or database
-                if (!isset($containerCache[$currentContainerId])) {
-                    $containerCache[$currentContainerId] = $this->getContainerById($currentContainerId);
-                }
-                $currentContainer = $containerCache[$currentContainerId];
-
-                if (empty($currentContainer)) {
-                    // Container not found, skip this host
-                    $skipHost = true;
-                    break;
-                }
-
-                // check if container is mandant
-                if ($currentContainer['containertype_id'] === 2) {
-                    // check for rights
-                    if (!empty($MY_RIGHTS) && !in_array($currentContainer['id'], $MY_RIGHTS, true)) {
-                        $skipHost = true;
-                        break;
-                    }
-                    $startContainerId = $currentContainer['id'];
-                }
-
-                $containerForHost = [
-                    'id'   => $currentContainer['id'],
-                    'name' => $currentContainer['name']
-                ];
-
-                $containerHierarchyForHost[] = $containerForHost;
-                $currentContainerId = $currentContainer['parent_id'] ?? null;
-
-                // if next element is root break the loop
-                if ($currentContainerId === null) {
-                    break;
-                }
-
-            }
-
-            // reverse array to have higher containers first
-            $containerHierarchyForHost = array_reverse($containerHierarchyForHost);
-
-            // filter hosts and container structure by selected containers
-            if (!empty($containers)) {
-
-                $startContainerFound = false;
-                foreach ($containers as $containerId) {
-                    foreach ($containerHierarchyForHost as $containerKey => $container) {
-                        // also check for rights
-                        if ($containerId === $container['id']
-                            && ((!empty($MY_RIGHTS) && in_array($container['id'], $MY_RIGHTS, true)) || empty($MY_RIGHTS))) {
-                            $startContainerFound = true;
-                            break;
-                        }
-                    }
-                }
-
-                // if start container is not found, skip this host
-                if (!$startContainerFound) {
-                    $skipHost = true;
-                }
-
-            }
-
-            if (!$skipHost) {
-
-                $hostObject = [
-                    'hostId'             => $host['id'],
-                    'hostName'           => $host['name'],
-                    'containerHierarchy' => $containerHierarchyForHost,
-                ];
-
-                $containersAndHosts[] = $hostObject;
-            }
-
-        }
-
-        return $containersAndHosts;
-
-    }
-
-    /**
-     * @param $id
-     * @param array $MY_RIGHTS
-     * @return array
-     */
-    public function getContainersByName($name, $MY_RIGHTS = [], $containers = []): array {
-        $query = $this->find()
-            ->select([
-                'Containers.id',
-                'Containers.parent_id',
-                'Containers.name',
-                'Containers.containertype_id',
-                'Containers.lft',
-                'Containers.rght'
-            ])
-            ->where([
-                'Containers.name' => $name
-            ]);
-
-        if (!empty($MY_RIGHTS)) {
-            $query->andWhere([
-                'Containers.id IN' => $MY_RIGHTS
-            ]);
-        }
-
-        // if containers are specified, filter by them
-        if (!empty($containers)) {
-            $query->andWhere([
-                'Containers.id IN' => $containers
-            ]);
-        }
-
-        $result = $query->all();
-        if (empty($result)) {
-            return [];
-        }
-        return $result->toArray();
     }
 
     /**

@@ -2532,14 +2532,22 @@ class MapsTable extends Table {
      * @param array $mapIds
      * @return array
      */
-    public function getMapsByIds($mapIds) {
+    public function getMapsAndItemsByIds($mapIds) {
 
         if (empty($mapIds)) {
             return [];
         }
 
         $query = $this->find()
-            ->contain(['Containers'])
+            ->contain([
+                'Containers',
+                'Mapgadgets',
+                'Mapicons',
+                'Mapitems',
+                'Maplines',
+                'Maptexts',
+                'Mapsummaryitems'
+            ])
             ->where([
                 'Maps.id IN' => $mapIds,
             ])->disableHydration();

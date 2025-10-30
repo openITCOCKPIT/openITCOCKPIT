@@ -31,10 +31,10 @@
 
 namespace MapModule\Controller;
 
+use App\itnovum\openITCOCKPIT\Core\Permissions\MapgeneratorContainersPermissions;
 use App\itnovum\openITCOCKPIT\Filter\MapgeneratorFilter;
 use App\itnovum\openITCOCKPIT\Maps\Mapgenerator;
 use App\Model\Table\ContainersTable;
-use App\Model\Table\HostsTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
@@ -68,6 +68,7 @@ class MapgeneratorsController extends AppController {
 
 
         foreach ($all_mapgenerators as $key => $mapgenerator) {
+            $mapgenerator['maps'] = Hash::extract($mapgenerator, 'maps.{n}.id');
             $containerIds = Hash::extract($mapgenerator, 'containers.{n}.id');
             if ($mapgenerator['type'] == Mapgenerator::TYPE_GENERATE_BY_HOSTNAME_SPLITTING) {
                 $all_mapgenerators[$key]['allowEdit'] = true;
@@ -95,7 +96,7 @@ class MapgeneratorsController extends AppController {
         }
 
         if (($this->request->is('post') || $this->request->is('put')) && $this->isAngularJsRequest()) {
-            $data = $this->request->getData();
+            $data = $this->request->getData(null, []);
 
             if (empty($data['Mapgenerator']['map_refresh_interval'])) {
                 $data['Mapgenerator']['map_refresh_interval'] = 90000;
@@ -111,12 +112,6 @@ class MapgeneratorsController extends AppController {
             $MapgeneratorsTable = TableRegistry::getTableLocator()->get('MapModule.Mapgenerators');
 
             $mapgeneratorsEntity = $MapgeneratorsTable->newEmptyEntity();
-            if ($data['Mapgenerator']['mapgenerator_levels'] !== null) {
-                foreach ($data['Mapgenerator']['mapgenerator_levels'] as $levelKey => $level) {
-                    $data['Mapgenerator']['mapgenerator_levels'][$levelKey]['is_container'] = (int)$level['is_container'];
-                    $data['Mapgenerator']['mapgenerator_levels'][$levelKey]['divider'] = trim($data['Mapgenerator']['mapgenerator_levels'][$levelKey]['divider']);
-                }
-            }
             $mapgeneratorsEntity = $MapgeneratorsTable->patchEntity($mapgeneratorsEntity, $data['Mapgenerator']);
             $MapgeneratorsTable->checkRules($mapgeneratorsEntity);
 
@@ -183,11 +178,18 @@ class MapgeneratorsController extends AppController {
             }
         }
 
-        $this->viewBuilder()->setOption('serialize', ['mapgenerator']);
+        $MapgeneratorContainersPermissions = new MapgeneratorContainersPermissions(
+            $containerIds,
+            $this->getWriteContainers(),
+            $this->hasRootPrivileges
+        );
+
+        $this->set('areContainersChangeable', $MapgeneratorContainersPermissions->areContainersChangeable());
         $this->set(compact('mapgenerator'));
+        $this->viewBuilder()->setOption('serialize', ['mapgenerator', 'areContainersChangeable']);
 
         if (($this->request->is('post') || $this->request->is('put')) && $this->isAngularJsRequest()) {
-            $data = $this->request->getData();
+            $data = $this->request->getData(null, []);
 
             if (empty($data['Mapgenerator']['map_refresh_interval'])) {
                 $data['Mapgenerator']['map_refresh_interval'] = 90000;
@@ -199,10 +201,8 @@ class MapgeneratorsController extends AppController {
                 $data['Mapgenerator']['map_refresh_interval'] = ((int)$data['Mapgenerator']['map_refresh_interval'] * 1000);
             }
 
-            if ($data['Mapgenerator']['mapgenerator_levels'] !== null) {
+            if (!empty(['Mapgenerator']['mapgenerator_levels'])) {
                 foreach ($data['Mapgenerator']['mapgenerator_levels'] as $levelKey => $level) {
-                    $data['Mapgenerator']['mapgenerator_levels'][$levelKey]['is_container'] = (int)$level['is_container'];
-                    $data['Mapgenerator']['mapgenerator_levels'][$levelKey]['divider'] = trim($data['Mapgenerator']['mapgenerator_levels'][$levelKey]['divider']);
                     // remove id from level when its null (new level added), because somehow this causes an error
                     if (empty($level['id'])) {
                         unset($data['Mapgenerator']['mapgenerator_levels'][$levelKey]['id']);
@@ -261,6 +261,7 @@ class MapgeneratorsController extends AppController {
     }
 
     public function generate($id = null) {
+
         if (!$this->isApiRequest()) {
             //Only ship html template
             return;
@@ -287,32 +288,13 @@ class MapgeneratorsController extends AppController {
 
         if (($this->request->is('post') || $this->request->is('put')) && $this->isAngularJsRequest()) {
 
-            /** @var $HostsTable HostsTable */
-            $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-
-            /** @var $ContainersTable ContainersTable */
-            $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-
-            /** @var MapsTable $MapsTable */
-            $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
+            $containerIds = Hash::extract($mapgenerator, 'containers.{n}.id');
 
             $MY_RIGHTS = [];
             if ($this->hasRootPrivileges === false) {
-                $MY_RIGHTS = $this->MY_RIGHTS;
+                $MY_RIGHTS = $this->getWriteContainers();
+                $containerIds = array_intersect($containerIds, $MY_RIGHTS);
             }
-
-            $hosts = $HostsTable->getHostsForMapgenerator($MY_RIGHTS);
-
-            if (empty($hosts)) {
-                $errors = [
-                    'hosts' => __('No hosts found for map generator')
-                ];
-                $this->set('error', $errors);
-                $this->viewBuilder()->setOption('serialize', ['error']);
-                return;
-            }
-
-            $containerIds = Hash::extract($mapgenerator, 'containers.{n}.id');
 
             $type = $mapgenerator['type'];
 
@@ -329,11 +311,11 @@ class MapgeneratorsController extends AppController {
                         $this->viewBuilder()->setOption('serialize', ['error']);
                     }
 
-                    $hostsAndData = $HostsTable->getHostsByNameSplitting($hosts, $mapgeneratorLevels, $MY_RIGHTS);
+                    $mapsAndHostsData = $MapgeneratorsTable->getMapsAndHostsByHostsNameSplitting($mapgeneratorLevels, $MY_RIGHTS, $this->hasRootPrivileges);
                     break;
                 //generate by container structure
                 default:
-                    $hostsAndData = $ContainersTable->getContainersForMapgeneratorByContainerStructure($hosts, $MY_RIGHTS, $containerIds);
+                    $mapsAndHostsData = $MapgeneratorsTable->getMapsAndHostsDataByContainerStructure($containerIds, $MY_RIGHTS, $this->hasRootPrivileges);
                     break;
             }
 
@@ -343,12 +325,15 @@ class MapgeneratorsController extends AppController {
             // get already generated maps
             if (!empty($mapIds)) {
 
-                $generatedMaps = $MapsTable->getMapsByIds($mapIds);
+                /** @var MapsTable $MapsTable */
+                $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
+
+                $generatedMaps = $MapsTable->getMapsAndItemsByIds($mapIds);
 
             }
 
             // generate maps
-            $Mapgenerator = new Mapgenerator($mapgenerator->toArray(), $hostsAndData, $generatedMaps, $type);
+            $Mapgenerator = new Mapgenerator($mapgenerator->toArray(), $mapsAndHostsData, $generatedMaps, $type);
             $generatedMapsAndItems = $Mapgenerator->generate();
 
             $allGeneratedMaps = $Mapgenerator->getAllGeneratedMaps();
@@ -398,7 +383,11 @@ class MapgeneratorsController extends AppController {
 
             $this->viewBuilder()->setOption('serialize', ['generatedMapsAndItems']);
             $this->set('generatedMapsAndItems', $generatedMapsAndItems);
+
+
         }
+
+
     }
 
 }

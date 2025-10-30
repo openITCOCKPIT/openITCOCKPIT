@@ -1578,7 +1578,8 @@ class HostsTable extends Table {
         $query = $this->find();
         $query->select([
             'Hosts.' . $index,
-            'Hosts.name'
+            'Hosts.name',
+            'Hosts.container_id'
         ]);
 
         $query->where($where);
@@ -5442,131 +5443,6 @@ class HostsTable extends Table {
                 'Hosts.id IN' => $hostIds,
                 'IF(Hosts.sla_id IS NULL, Hosttemplates.sla_id, Hosts.sla_id) > 0'
             ])->count();
-    }
-
-    /**
-     * @param array $MY_RIGHTS
-     * @return array
-     */
-    public function getHostsForMapgenerator($MY_RIGHTS) {
-        $query = $this->find();
-
-        $query->select([
-            'Hosts.id',
-            'Hosts.container_id',
-            'Hosts.name',
-        ]);
-
-        if (!empty($MY_RIGHTS)) {
-            $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
-                'HostsToContainersSharing.host_id = Hosts.id'
-            ]);
-            $query->where([
-                'HostsToContainersSharing.container_id IN' => $MY_RIGHTS
-            ]);
-        }
-
-        $query->contain('HostsToContainersSharing')
-            ->disableHydration()
-            ->all();
-
-        $result = $query->toArray();
-        if (empty($result)) {
-            return [];
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param array $hosts
-     * @param array $mapGeneratorLevels
-     * @param array $MY_RIGHTS
-     * @return array
-     */
-    public function getHostsByNameSplitting($hosts, $mapGeneratorLevels, $MY_RIGHTS = []) {
-
-        $hostsAndMaps = [];
-
-        foreach ($hosts as $host) {
-
-            $hostNameParts = [];
-            $restofHostName = $host['name'];
-            $containerIdForNewMap = 0;
-            $previousPartsAsString = ''; // to build unique names, which can be assigned to a map hierarchy
-
-            //split by the defined levels
-            foreach ($mapGeneratorLevels as $mapGeneratorLevel) {
-                $part = '';
-                if (!empty($mapGeneratorLevel['divider'])) {
-                    $divider = $mapGeneratorLevel['divider'];
-                    $pos = strpos($restofHostName, $divider);
-                    if ($pos !== false) {
-                        $part = substr($restofHostName, 0, $pos);
-                        if ($previousPartsAsString !== '') {
-                            $nameToSave = $previousPartsAsString . '/' . $part;
-                        } else {
-                            $nameToSave = $part;
-                        }
-                        $hostNameParts[] = $nameToSave;
-                        $previousPartsAsString = $nameToSave;
-                        $restofHostName = substr($restofHostName, $pos + strlen($divider));
-                    } else {
-                        // No more dividers found, take the rest of the hostname
-                        $part = $restofHostName;
-                        $hostNameParts[] = $part;
-                        break;
-                    }
-                } else {
-                    // No divider defined, take the whole rest of the hostname
-                    $part = $restofHostName;
-                    $hostNameParts[] = $part;
-                    break;
-                }
-
-                // find the container for the new map
-                if ($mapGeneratorLevel['is_container']) {
-
-                    /** @var $ContainersTable ContainersTable */
-                    $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-
-                    $containerStructureFromHost = $ContainersTable->getContainersForMapgeneratorByContainerStructure([$host], $MY_RIGHTS, []);
-                    if (empty($containerStructureFromHost)) {
-                        // No container found for this level, skip this host
-                        continue;
-                    }
-
-                    // container has to be the same as the tenant container of the host
-                    $tenantContainer = $containerStructureFromHost[0]['containerHierarchy'][0];
-
-                    if ($tenantContainer['name'] === $part && ((!empty($MY_RIGHTS) && in_array($tenantContainer['id'], $MY_RIGHTS)) || empty($MY_RIGHTS))) {
-                        // Found the container for the new map
-                        $containerIdForNewMap = $tenantContainer['id'];
-                    }
-
-                }
-
-            }
-            
-            if ($containerIdForNewMap === 0 || count($hostNameParts) !== count($mapGeneratorLevels)) {
-                // Not enough parts for the defined levels, skip this host
-                continue;
-            }
-
-            // remove hostname from the parts
-            array_pop($hostNameParts);
-
-            $hostsAndMaps[] = [
-                'hostId'               => $host['id'],
-                'hostName'             => $host['name'],
-                'containerIdForNewMap' => $containerIdForNewMap,
-                'mapNames'             => $hostNameParts
-            ];
-
-        }
-
-        return $hostsAndMaps;
-
     }
 
 }

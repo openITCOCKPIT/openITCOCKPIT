@@ -3259,19 +3259,20 @@ class NagiosConfigGenerator {
                     }
 
                     $jsonConfig[$hostUuid] = [
-                        'name'        => $host['name'],
-                        'address'     => $host['address'],
-                        'uuid'        => $hostUuid,
-                        'port'        => $config['int']['bind_port'],
-                        'proxy'       => $proxy,
-                        'use_autossl' => $config['bool']['use_autossl'],
-                        'use_https'   => $config['bool']['use_https'],
-                        'insecure'    => $config['bool']['use_https_verify'] === false,
-                        'basic_auth'  => $config['bool']['use_http_basic_auth'],
-                        'username'    => $config['string']['username'],
-                        'password'    => $config['string']['password'],
-                        'mode'        => 'pull',
-                        'checks'      => []
+                        'name'                  => $host['name'],
+                        'address'               => $host['address'],
+                        'uuid'                  => $hostUuid,
+                        'port'                  => $config['int']['bind_port'],
+                        'proxy'                 => $proxy,
+                        'use_autossl'           => $config['bool']['use_autossl'],
+                        'verify_autossl_expiry' => $config['bool']['verify_autossl_expiry'] ?? false,
+                        'use_https'             => $config['bool']['use_https'],
+                        'insecure'              => $config['bool']['use_https_verify'] === false,
+                        'basic_auth'            => $config['bool']['use_http_basic_auth'],
+                        'username'              => $config['string']['username'],
+                        'password'              => $config['string']['password'],
+                        'mode'                  => 'pull',
+                        'checks'                => []
                     ];
                 }
 

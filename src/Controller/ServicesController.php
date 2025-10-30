@@ -1735,6 +1735,16 @@ class ServicesController extends AppController {
             }
         }
 
+        // Check for upcoming service downtimes
+        $plannedDowntimes = [];
+        $plannedDowntimesResult = $DowntimehistoryServicesTable->getPlannedDowntimes($serviceObj->getUuid(), time());
+        if (isset($plannedDowntimesResult[$serviceObj->getUuid()]) && is_array($plannedDowntimesResult[$serviceObj->getUuid()])) {
+            foreach ($plannedDowntimesResult[$serviceObj->getUuid()] as $plannedDowntime) {
+                $Downtime = new Downtime($plannedDowntime, $allowEdit, $UserTime);
+                $plannedDowntimes[] = $Downtime->toArray();
+            }
+        }
+
         //Check for host acknowledgements and downtimes
         $hostAcknowledgement = [];
         if ($Hoststatus->isAcknowledged()) {
@@ -1769,6 +1779,16 @@ class ServicesController extends AppController {
             if (!empty($hostDowntime)) {
                 $DowntimeHost = new Downtime($hostDowntime, $allowEdit, $UserTime);
                 $hostDowntime = $DowntimeHost->toArray();
+            }
+        }
+
+        // Check for upcoming host downtimes
+        $plannedHostDowntimes = [];
+        $plannedDowntimesResult = $DowntimehistoryHostsTable->getPlannedDowntimes($hostObj->getUuid(), time());
+        if (isset($plannedDowntimesResult[$hostObj->getUuid()]) && is_array($plannedDowntimesResult[$hostObj->getUuid()])) {
+            foreach ($plannedDowntimesResult[$hostObj->getUuid()] as $plannedDowntime) {
+                $Downtime = new Downtime($plannedDowntime, $allowEdit, $UserTime);
+                $plannedHostDowntimes[] = $Downtime->toArray();
             }
         }
 
@@ -1831,7 +1851,9 @@ class ServicesController extends AppController {
         $this->set('servicestatus', $servicestatus);
         $this->set('acknowledgement', $acknowledgement);
         $this->set('downtime', $downtime);
+        $this->set('plannedDowntimes', $plannedDowntimes);
         $this->set('hostDowntime', $hostDowntime);
+        $this->set('plannedHostDowntimes', $plannedHostDowntimes);
         $this->set('hostAcknowledgement', $hostAcknowledgement);
         $this->set('checkCommand', $checkCommand);
         $this->set('checkPeriod', $checkPeriod);
@@ -1857,7 +1879,9 @@ class ServicesController extends AppController {
             'servicestatus',
             'acknowledgement',
             'downtime',
+            'plannedDowntimes',
             'hostDowntime',
+            'plannedHostDowntimes',
             'hostAcknowledgement',
             'checkCommand',
             'checkPeriod',

@@ -135,6 +135,7 @@ plugins/JiraModule
 plugins/DellModule
 plugins/ProxmoxModule
 plugins/MS365Module
+plugins/MSHyperVModule
 plugins/CiscoModule
 plugins/BroadcomProxyModule
 plugins/NginxModule

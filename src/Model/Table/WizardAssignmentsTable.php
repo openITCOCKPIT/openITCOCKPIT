@@ -425,7 +425,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
-            'proxmox'                => [
+            'proxmox'                      => [
                 'type_id'     => 'proxmox',
                 'title'       => __('Proxmox'),
                 'description' => __('Used to monitor Proxmox (Status, Memory, CPU, ZFS, CEPH, Backup, ...)'),
@@ -433,7 +433,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
-            'proxmox_storage'        => [
+            'proxmox_storage'              => [
                 'type_id'     => 'proxmox_storage',
                 'title'       => __('Proxmox Storage'),
                 'description' => __('Used to monitor Proxmox Storages.'),
@@ -469,6 +469,14 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'microsoft-m365-SharePoint',
                 'title'       => __('Microsoft 365 (SharePoint)'),
                 'description' => __('Microsoft 365 (SharePoint)'),
+                'image'       => 'Windows.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
+            ],
+            'mshyperv'                     => [
+                'type_id'     => 'mshyperv',
+                'title'       => __('Hyper-V'),
+                'description' => __('Monitor your Hyper-V machines.'),
                 'image'       => 'Windows.svg',
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true

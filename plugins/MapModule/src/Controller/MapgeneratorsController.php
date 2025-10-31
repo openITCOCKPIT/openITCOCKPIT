@@ -118,10 +118,8 @@ class MapgeneratorsController extends AppController {
             $MapgeneratorsTable->save($mapgeneratorsEntity);
             if (!$mapgeneratorsEntity->hasErrors()) {
                 $this->serializeCake4Id($mapgeneratorsEntity);
-                return;
             } else {
                 $this->serializeCake4ErrorMessage($mapgeneratorsEntity);
-                return;
             }
         }
     }
@@ -147,7 +145,7 @@ class MapgeneratorsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['containers']);
     }
 
-    public function edit($id = null) {
+    public function edit($id = null): void {
         if (!$this->isApiRequest()) {
             //Only ship HTML template for angular
             return;

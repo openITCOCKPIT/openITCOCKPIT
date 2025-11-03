@@ -425,7 +425,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
-            'proxmox'                => [
+            'proxmox'                      => [
                 'type_id'     => 'proxmox',
                 'title'       => __('Proxmox'),
                 'description' => __('Used to monitor Proxmox (Status, Memory, CPU, ZFS, CEPH, Backup, ...)'),
@@ -433,7 +433,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
-            'proxmox_storage'        => [
+            'proxmox_storage'              => [
                 'type_id'     => 'proxmox_storage',
                 'title'       => __('Proxmox Storage'),
                 'description' => __('Used to monitor Proxmox Storages.'),
@@ -487,6 +487,14 @@ class WizardAssignmentsTable extends Table {
                 'description' => __('Monitor the status of your Apache Tomcat web server'),
                 'image'       => 'network.png',
                 'category'    => ['webserver'],
+                'active'      => true
+            ],
+            'mshyperv'                     => [
+                'type_id'     => 'mshyperv',
+                'title'       => __('Hyper-V'),
+                'description' => __('Monitor your Hyper-V machines.'),
+                'image'       => 'Windows.svg',
+                'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
             'cisco-network'                => [

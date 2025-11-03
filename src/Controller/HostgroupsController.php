@@ -728,6 +728,15 @@ class HostgroupsController extends AppController {
 
         if ($this->request->is('post')) {
             $id = $this->request->getData('Hostgroup.id');
+            if (!$id) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', true);
+                $this->set('message', 'You have to select a host group');
+                $this->set('success', false);
+                $this->viewBuilder()->setOption('serialize', ['error', 'success', 'message']);
+                return;
+            }
+
             $hostIds = $this->request->getData('Hostgroup.hosts._ids');
             if (!is_array($hostIds)) {
                 $hostIds = [$hostIds];
@@ -1115,7 +1124,12 @@ class HostgroupsController extends AppController {
 
         /** @var $ContainersTable ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [CT_HOSTGROUP]);
+        $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [
+            CT_GLOBAL,
+            CT_TENANT,
+            CT_LOCATION,
+            CT_NODE
+        ]);
 
         $tenantContainerIds = [];
 
@@ -1167,15 +1181,32 @@ class HostgroupsController extends AppController {
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         if ($containerId == ROOT_CONTAINER) {
-            $containerIds = $ContainersTable->resolveChildrenOfContainerIds(ROOT_CONTAINER, true, [CT_HOSTGROUP]);
+            $containerIds = $ContainersTable->resolveChildrenOfContainerIds(ROOT_CONTAINER, true, [
+                CT_GLOBAL,
+                CT_TENANT,
+                CT_LOCATION,
+                CT_NODE
+            ]);
         } else {
             if ($resolveContainerIds) {
-                $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [CT_HOSTGROUP]);
+                $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [
+                    CT_GLOBAL,
+                    CT_TENANT,
+                    CT_LOCATION,
+                    CT_NODE
+                ]);
                 $containerIds = array_merge($containerIds, [ROOT_CONTAINER, $containerId]);
             } else {
-                $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, false, [CT_HOSTGROUP]);
+                $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, false, [
+                    CT_GLOBAL,
+                    CT_TENANT,
+                    CT_LOCATION,
+                    CT_NODE
+                ]);
             }
         }
+        $containerIds = array_unique($containerIds);
+        
         $HostgroupCondition = new HostgroupConditions($HostgroupFilter->indexFilter());
         $HostgroupCondition->setContainerIds($containerIds);
 

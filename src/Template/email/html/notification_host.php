@@ -101,7 +101,7 @@ echo $this->element('emails/style');
                                     <a href="<?php printf('https://%s/a/hosts/browser/%s', $systemAddress, $Host->getUuid()); ?>"
                                        style="text-decoration:none"
                                        class="<?= strtoupper($HoststatusIcon->getTextColor()) ?>">
-                                            <?php echo h($Host->getHostname()); ?>
+                                        <?php echo h($Host->getHostname()); ?>
                                     </a>
                                     <?= __(' is {0}', $HoststatusIcon->getHumanState()); ?>
                                 </span>
@@ -118,8 +118,8 @@ echo $this->element('emails/style');
                                                 <?= __('The current status was acknowledged by {0} with the comment: ', h($args->getOption('hostackauthor'))); ?>
                                                 <?php if (!empty($ticketsystemUrl) && preg_match('/^(Ticket)_?(\d+);?(\d+)/', $args->getOption('hostackcomment'), $ticketDetails)): ?>
                                                     <a
-                                                            href="<?= $ticketsystemUrl . $ticketDetails[3] ?>"
-                                                            target="_blank">
+                                                        href="<?= $ticketsystemUrl . $ticketDetails[3] ?>"
+                                                        target="_blank">
                                                         <?= h($ticketDetails[1] . ' ' . $ticketDetails[2]) ?>
                                                     </a>
                                                 <?php else: ?>
@@ -210,8 +210,7 @@ echo $this->element('emails/style');
                         <br>
                         <td align="center">
                             <p>
-                                <a href="https://openitcockpit.io/"><?php echo __('openITCOCKPIT'); ?></a> |
-                                <a href="https://it-novum.com/"><?php echo __('it-novum'); ?></a>
+                                <a href="https://openitcockpit.io/"><?php echo __('openITCOCKPIT'); ?></a>
                             </p>
                         </td>
                     </tr>

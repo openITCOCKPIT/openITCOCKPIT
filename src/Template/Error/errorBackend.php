@@ -42,6 +42,10 @@ $Logo = new \itnovum\openITCOCKPIT\Core\Views\Logo();
         <img class="img-fluid" src="<?= h($Logo->getLoginLogoHtml()); ?>" style="max-height: 230px;"/>
     </div>
 
+    <div>
+        <?= $this->Flash->render() ?>
+    </div>
+
     <div class="col-12">
         <h1>You have reached the openITCOCKPIT backend API.</h1>
         <p>

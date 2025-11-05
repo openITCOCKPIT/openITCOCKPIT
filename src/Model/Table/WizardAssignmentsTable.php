@@ -485,7 +485,7 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'cisco-network',
                 'title'       => __('Cisco Network'),
                 'description' => __('Monitor your Cisco network devices via SNMP.'),
-                'image'       => 'network.png',
+                'image'       => 'cisco.svg',
                 'category'    => ['network', 'hardware'],
                 'active'      => true
             ],
@@ -493,7 +493,7 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'cisco-wlc',
                 'title'       => __('Cisco WLC'),
                 'description' => __('Cisco WLC'),
-                'image'       => 'network.png',
+                'image'       => 'cisco.svg',
                 'category'    => ['network', 'hardware'],
                 'active'      => true
             ],
@@ -501,7 +501,7 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'broadcom-proxy',
                 'title'       => __('Broadcom Proxy'),
                 'description' => __('Monitor your Broadcom Web Gateway via SNMP'),
-                'image'       => 'network.png',
+                'image'       => 'broadcom.svg',
                 'category'    => ['network', 'hardware'],
                 'active'      => true
             ]

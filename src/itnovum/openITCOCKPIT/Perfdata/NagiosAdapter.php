@@ -94,6 +94,10 @@ final class NagiosAdapter extends PerformanceDataAdapter {
                     $scaleMin = 0;
                     $scaleMax = 100;
                 }
+
+                // Ensure the scale includes the current value.
+                $scaleMin = min($current, $scaleMin);
+                $scaleMax = max($scaleMax, $current);
             }
         } else {
             $scaleMin = (float)$scaleMin;

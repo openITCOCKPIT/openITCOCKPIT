@@ -182,8 +182,12 @@ class MapgeneratorsController extends AppController {
             $this->hasRootPrivileges
         );
 
+        $mapgenerator['containers'] = [
+            '_ids' => $containerIds
+        ];
+
         $this->set('areContainersChangeable', $MapgeneratorContainersPermissions->areContainersChangeable());
-        $this->set(compact('mapgenerator'));
+        $this->set('mapgenerator', $mapgenerator);
         $this->viewBuilder()->setOption('serialize', ['mapgenerator', 'areContainersChangeable']);
 
         if (($this->request->is('post') || $this->request->is('put')) && $this->isAngularJsRequest()) {

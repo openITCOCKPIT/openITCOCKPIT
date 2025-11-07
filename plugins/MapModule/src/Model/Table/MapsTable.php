@@ -158,8 +158,20 @@ class MapsTable extends Table {
             'className'  => 'MapModule.Mapitems'
         ])->setDependent(true);
 
+        // Used to delete mapitems when a map object is deleted
+        $this->hasMany('MapitemsForDelete', [
+            'foreignKey' => 'object_id',
+            'className'  => 'MapModule.Mapitems'
+        ])->setDependent(true);
+
         $this->hasMany('Maplines', [
             'foreignKey' => 'map_id',
+            'className'  => 'MapModule.Maplines'
+        ])->setDependent(true);
+
+        // Used to delete maplines when a map object is deleted
+        $this->hasMany('MaplinesForDelete', [
+            'foreignKey' => 'object_id',
             'className'  => 'MapModule.Maplines'
         ])->setDependent(true);
 
@@ -170,6 +182,12 @@ class MapsTable extends Table {
 
         $this->hasMany('Mapsummaryitems', [
             'foreignKey' => 'map_id',
+            'className'  => 'MapModule.Mapsummaryitems'
+        ])->setDependent(true);
+
+        // Used to delete mapsummaryitems when a map object is deleted
+        $this->hasMany('MapsummaryitemsForDelete', [
+            'foreignKey' => 'object_id',
             'className'  => 'MapModule.Mapsummaryitems'
         ])->setDependent(true);
 

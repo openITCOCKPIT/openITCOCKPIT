@@ -504,6 +504,14 @@ class WizardAssignmentsTable extends Table {
                 'image'       => 'broadcom.svg',
                 'category'    => ['network', 'hardware'],
                 'active'      => true
+            ],
+            'fortigate-firewall'           => [
+                'type_id'     => 'fortigate-firewall',
+                'title'       => __('Fortigate Firewall'),
+                'description' => __('Monitor your Fortigate Firewall.'),
+                'image'       => 'fortinet.svg',
+                'category'    => ['network', 'hardware'],
+                'active'      => true
             ]
         ];
 

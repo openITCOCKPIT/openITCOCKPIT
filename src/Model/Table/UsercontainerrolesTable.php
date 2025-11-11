@@ -246,7 +246,9 @@ class UsercontainerrolesTable extends Table {
                                 ' ',
                                 'Users.lastname'  => 'literal'
                             ])
-                        ])->orderBy('full_name');
+                        ])->orderBy([
+                            'full_name' => 'ASC'
+                        ]);
                     return $q;
                 }
             ])

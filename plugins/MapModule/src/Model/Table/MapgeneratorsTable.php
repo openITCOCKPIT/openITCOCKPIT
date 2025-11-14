@@ -376,6 +376,12 @@ class MapgeneratorsTable extends Table {
         // build the maps and hosts array
         foreach ($containersWithChildsAndHostsForEachGivenContainerId as $containersWithChildsAndHosts) {
             foreach ($containersWithChildsAndHosts as $containerWithChildsAndHosts) {
+
+                if ($containerWithChildsAndHosts['containertype_id'] === 1) {
+                    // skip root containers
+                    continue;
+                }
+
                 if (!empty($containerWithChildsAndHosts['parent_id'])) {
                     $containerParentIdToContainerArray[$containerWithChildsAndHosts['parent_id']] = $containerWithChildsAndHosts;
                 }
@@ -421,11 +427,16 @@ class MapgeneratorsTable extends Table {
                             if ($mapGeneratorLevel['is_container']) {
 
                                 // container has to be the same as the tenant container of the host
-                                $tentantContainer = $this->findParentContainerByNameAndType($containerWithChildsAndHosts['parent_id'], $part, $containerParentIdToContainerArray);
 
-                                if (!empty($tentantContainer)) {
+                                if ($containerWithChildsAndHosts['containertype_id'] === 2) {
+                                    $tenantContainer = $containerWithChildsAndHosts;
+                                } else if (!empty($containerWithChildsAndHosts['parent_id'])) {
+                                    $tenantContainer = $this->findParentContainerByNameAndType($containerWithChildsAndHosts['parent_id'], $part, $containerParentIdToContainerArray);
+                                }
+
+                                if (!empty($tenantContainer)) {
                                     // Found the container for the new map
-                                    $containerIdForNewMap = $tentantContainer['id'];
+                                    $containerIdForNewMap = $tenantContainer['id'];
                                 }
 
                             }

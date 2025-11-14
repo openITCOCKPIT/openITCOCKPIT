@@ -477,7 +477,7 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'apache-http',
                 'title'       => __('Apache HTTP Status'),
                 'description' => __('Monitor the status of your Apache web server'),
-                'image'       => 'network.png',
+                'image'       => 'apache_http.svg',
                 'category'    => ['webserver'],
                 'active'      => true
             ],
@@ -485,7 +485,7 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'apache-tomcat',
                 'title'       => __('Apache Tomcat'),
                 'description' => __('Monitor the status of your Apache Tomcat web server'),
-                'image'       => 'network.png',
+                'image'       => 'apache-tomcat.svg',
                 'category'    => ['webserver'],
                 'active'      => true
             ],

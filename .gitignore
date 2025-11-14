@@ -138,6 +138,7 @@ plugins/MS365Module
 plugins/MSHyperVModule
 plugins/CiscoModule
 plugins/BroadcomProxyModule
+plugins/ApacheModule
 
 # NFS mounts
 .nfs.*

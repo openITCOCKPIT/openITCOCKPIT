@@ -108,6 +108,10 @@ class MapgeneratorsController extends AppController {
                 $data['Mapgenerator']['map_refresh_interval'] = ((int)$data['Mapgenerator']['map_refresh_interval'] * 1000);
             }
 
+            if ($data['Mapgenerator']['type'] === Mapgenerator::TYPE_GENERATE_BY_CONTAINER_STRUCTURE) {
+                unset($data['Mapgenerator']['mapgenerator_levels']);
+            }
+
             /** @var MapgeneratorsTable $MapgeneratorsTable */
             $MapgeneratorsTable = TableRegistry::getTableLocator()->get('MapModule.Mapgenerators');
 

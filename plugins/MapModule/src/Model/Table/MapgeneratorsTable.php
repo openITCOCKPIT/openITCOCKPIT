@@ -184,7 +184,7 @@ class MapgeneratorsTable extends Table {
             $levelPartErrors = [];
             $isContainerErrors = [];
 
-            if (($entity->type === \App\itnovum\openITCOCKPIT\Maps\Mapgenerator::TYPE_GENERATE_BY_CONTAINER_STRUCTURE && empty($levels)) || $levels === null) {
+            if (($entity->type === \App\itnovum\openITCOCKPIT\Maps\Mapgenerator::TYPE_GENERATE_BY_CONTAINER_STRUCTURE || empty($levels)) || $levels === null) {
                 return true;
             }
 
@@ -364,13 +364,18 @@ class MapgeneratorsTable extends Table {
 
         $containersWithChildsAndHostsForEachGivenContainerId = [];
         $mapsAndHosts = [];
-        $containerParentIdToContainerArray = []; // array to find parent containers by id
+        $containerIdToContainerArray = []; // array to find containers by id
 
         // get container with all children
         foreach ($containers as $id) {
 
             $subContainers = $ContainersTable->getContainerWithAllChildrenAndHosts($id, $MY_RIGHTS);
             $containersWithChildsAndHostsForEachGivenContainerId[] = Hash::filter($subContainers);
+
+            foreach ($subContainers as $subContainer) {
+                $containerIdToContainerArray[$subContainer['id']] = $subContainer;
+            }
+
         }
 
         // build the maps and hosts array
@@ -380,10 +385,6 @@ class MapgeneratorsTable extends Table {
                 if ($containerWithChildsAndHosts['containertype_id'] === 1) {
                     // skip root containers
                     continue;
-                }
-
-                if (!empty($containerWithChildsAndHosts['parent_id'])) {
-                    $containerParentIdToContainerArray[$containerWithChildsAndHosts['parent_id']] = $containerWithChildsAndHosts;
                 }
 
                 // run through all hosts and split the names by the defined levels and build the maps and hosts array
@@ -431,7 +432,7 @@ class MapgeneratorsTable extends Table {
                                 if ($containerWithChildsAndHosts['containertype_id'] === 2) {
                                     $tenantContainer = $containerWithChildsAndHosts;
                                 } else if (!empty($containerWithChildsAndHosts['parent_id'])) {
-                                    $tenantContainer = $this->findParentContainerByNameAndType($containerWithChildsAndHosts['parent_id'], $part, $containerParentIdToContainerArray);
+                                    $tenantContainer = $this->findParentContainerByNameAndType($containerWithChildsAndHosts['parent_id'], $part, $containerIdToContainerArray);
                                 }
 
                                 if (!empty($tenantContainer)) {
@@ -492,12 +493,12 @@ class MapgeneratorsTable extends Table {
      *
      * @param $containerId
      * @param $part
-     * @param $containerParentIdToContainerArray
+     * @param $containerIdToContainerArray
      * @return null
      */
-    private function findParentContainerByNameAndType($containerId, $part, $containerParentIdToContainerArray) {
+    private function findParentContainerByNameAndType($containerId, $part, $containerIdToContainerArray) {
         $containerIdsFromLoop = [];
-        while (isset($containerParentIdToContainerArray[$containerId])) {
+        while (isset($containerIdToContainerArray[$containerId])) {
 
             // to avoid endless loops
             if (in_array($containerId, $containerIdsFromLoop, true)) {
@@ -506,7 +507,7 @@ class MapgeneratorsTable extends Table {
 
             $containerIdsFromLoop[] = $containerId;
 
-            $container = $containerParentIdToContainerArray[$containerId];
+            $container = $containerIdToContainerArray[$containerId];
 
             if ($container['name'] === $part && $container['containertype_id'] === 2) {
                 return $container;

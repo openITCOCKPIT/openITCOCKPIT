@@ -136,6 +136,7 @@ plugins/DellModule
 plugins/ProxmoxModule
 plugins/MS365Module
 plugins/BroadcomProxyModule
+plugins/NetworkModule
 
 # NFS mounts
 .nfs.*

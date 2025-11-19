@@ -535,12 +535,15 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
     }
 
     /**
+     *  Maybe we should refactor this in the future to query the statusengine_service_scheduleddowntimes table instead
+     *  The statusengine_service_scheduleddowntimes only contains planed or currently running downtimes
+     *
      * @param $uuids
      * @param int $startTimestamp
-     * @param int $endTimestamp
+     * @param int|null $endTimestamp
      * @return array
      */
-    public function getPlannedDowntimes($uuids, int $startTimestamp, int $endTimestamp) {
+    public function getPlannedDowntimes($uuids, int $startTimestamp, ?int $endTimestamp = null): array {
         if (empty($uuids)) {
             return [];
         }
@@ -565,14 +568,20 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
             ])
             ->where([
                 'DowntimeServices.scheduled_start_time >' => $startTimestamp,
-                'DowntimeServices.scheduled_start_time <' => $endTimestamp,
                 'DowntimeServices.was_started'            => 0,
                 'DowntimeServices.was_cancelled'          => 0,
                 'DowntimeServices.service_description IN' => $uuids
-            ])
-            ->orderBy([
-                'DowntimeServices.scheduled_start_time' => 'DESC'
             ]);
+
+        if ($endTimestamp !== null) {
+            $query->andWhere([
+                'DowntimeServices.scheduled_start_time <' => $endTimestamp
+            ]);
+        }
+
+        $query->orderBy([
+            'DowntimeServices.scheduled_start_time' => 'ASC'
+        ]);
 
         $query->disableHydration();
         $downtimes = $query->all();

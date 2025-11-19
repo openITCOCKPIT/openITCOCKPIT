@@ -41,7 +41,7 @@ class AgentConfiguration {
      *
      * @var string
      */
-    private $config_version = '3.0.0';
+    private $config_version = '3.1.0';
 
     /**
      * This defines all agent configuration options with the corresponding default values
@@ -56,21 +56,22 @@ class AgentConfiguration {
      */
     private $fields = [
         'string' => [
-            'bind_address'         => '0.0.0.0', // Bind address of the Agents web server
-            'username'             => '',        // Username used for basic auth
-            'password'             => '',        // Password used for basic auth
-            'push_oitc_server_url' => '',        // Server Address of the openITCOCKPIT Server "https://demo.openitcockpit.io"
-            'push_oitc_api_key'    => '',        // API Key used by the Agent to push results
-            'operating_system'     => 'linux',   // OS of the Agent for right restart commands and path variables
-            'push_proxy_address'   => '',        // Proxy Server to use for the Agent in push mode "http://proxy.master.dns:8080"
-            'customchecks_path'    => '',        //Path to custom checks config
-            'ssl_certfile'         => '',        // Path to the certificate file the agent should use to enable HTTPS (only used if use_autossl is false)
-            'ssl_keyfile'          => '',        // Path to the key file the agent should use to enable HTTPS (only used if use_autossl is false)
-            'autossl_folder'       => '',        // If set, autossl_csr_file, autossl_crt_file, autossl_key_file and autossl_ca_file gets ignored
-            'autossl_csr_file'     => '',        // Path to Certificate Signing Request file if use_autossl is true
-            'autossl_crt_file'     => '',        // Path to certificate file if use_autossl is true
-            'autossl_key_file'     => '',        // Path to private key if use_autossl is true
-            'autossl_ca_file'      => '',        // Path to server ca file if use_autossl is true
+            'bind_address'         => '0.0.0.0',        // Bind address of the Agents web server
+            'username'             => '',               // Username used for basic auth
+            'password'             => '',               // Password used for basic auth
+            'push_oitc_server_url' => '',               // Server Address of the openITCOCKPIT Server "https://demo.openitcockpit.io"
+            'push_oitc_api_key'    => '',               // API Key used by the Agent to push results
+            'operating_system'     => 'linux',          // OS of the Agent for right restart commands and path variables
+            'push_proxy_address'   => '',               // Proxy Server to use for the Agent in push mode "http://proxy.master.dns:8080"
+            'customchecks_path'    => '',               //Path to custom checks config
+            'ssl_certfile'         => '',               // Path to the certificate file the agent should use to enable HTTPS (only used if use_autossl is false)
+            'ssl_keyfile'          => '',               // Path to the key file the agent should use to enable HTTPS (only used if use_autossl is false)
+            'autossl_folder'       => '',               // If set, autossl_csr_file, autossl_crt_file, autossl_key_file and autossl_ca_file gets ignored
+            'autossl_csr_file'     => '',               // Path to Certificate Signing Request file if use_autossl is true
+            'autossl_crt_file'     => '',               // Path to certificate file if use_autossl is true
+            'autossl_key_file'     => '',               // Path to private key if use_autossl is true
+            'autossl_ca_file'      => '',               // Path to server ca file if use_autossl is true
+            'tls_security_level'   => 'intermediate'    // TLS security level: lax, intermediate, modern
         ],
         'bool'   => [
             'enable_push_mode'               => false, // If the agent is running in push mode
@@ -81,6 +82,7 @@ class AgentConfiguration {
             'push_enable_webserver'          => false, // Do not enable the webserver if the agent is running in PUSH mode
             'push_webserver_use_https'       => true,  // Start the webserver on the Agent in Push mode with HTTPS (requires ssl_certfile and ssl_keyfile to be set)
             'use_autossl'                    => true,  // Use autossl Pull mode only
+            'verify_autossl_expiry'          => false, // Verify autossl certificate expiry date (only if use_autossl=true)
             'use_https'                      => false, // This sets use_autossl=false and requires ssl_certfile and ssl_keyfile to start the agent with HTTPS and custom certs (e.g from Let's Encrypt)
             'use_https_verify'               => false, // Disable certificate validation when use_https=true (Requires valid certificates like Let's Encrypt)
 
@@ -137,6 +139,20 @@ class AgentConfiguration {
         //        $json['int']['bind_port'] = 3333;
         //    }
         //}
+
+        // Add new field "verify_autossl_expiry" if not exists (added in config version 3.1.0)
+        if (isset($json) && isset($json['bool'])) {
+            if (!array_key_exists('verify_autossl_expiry', $json['bool'])) {
+                $json['bool']['verify_autossl_expiry'] = false;
+            }
+        }
+
+        // Add new field "tls_security_level" if not exists (added in config version 3.1.0)
+        if (isset($json) && isset($json['string'])) {
+            if (!array_key_exists('tls_security_level', $json['string'])) {
+                $json['string']['tls_security_level'] = 'intermediate';
+            }
+        }
 
         return $json;
     }

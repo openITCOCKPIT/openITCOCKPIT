@@ -247,7 +247,7 @@ class OrganizationalChartsTable extends Table {
      */
     public function getOrganizationalChartById(int $organizationalChartId, array $MY_RIGHTS = []): array {
         $query = $this->find()
-            ->innerJoinWith('OrganizationalChartNodes', function (Query $q) use ($MY_RIGHTS) {
+            ->leftJoinWith('OrganizationalChartNodes', function (Query $q) use ($MY_RIGHTS) {
                 return $q->contain([
                     'Containers' => function (Query $q) use ($MY_RIGHTS) {
                         return $q->select([
@@ -285,10 +285,9 @@ class OrganizationalChartsTable extends Table {
             ));
         }
 
-        $query->where(['OrganizationalChartNodes.organizational_chart_id' => $organizationalChartId])
+        $query->where(['OrganizationalCharts.id' => $organizationalChartId])
             ->groupBy(['OrganizationalCharts.id'])
             ->disableHydration();
-
 
         return $query->firstOrFail();
     }

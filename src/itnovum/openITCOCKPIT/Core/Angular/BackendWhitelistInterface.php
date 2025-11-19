@@ -23,8 +23,24 @@
 //     License agreement and license key will be shipped with the order
 //     confirmation.
 
-if (!defined('OPENITCOCKPIT_VERSION')) {
-    define('OPENITCOCKPIT_VERSION', '5.2.0');
+namespace App\itnovum\openITCOCKPIT\Core\Angular;
+
+
+interface BackendWhitelistInterface {
+
+
+    /**
+     * List of controller actions that should be whitelisted to return non-API responses.
+     * Such as file downloads or exports, or .html templates.
+     * This list can be extended by modules/plugins.
+     *
+     * Format: 'Controller.action' => 'Controller.action'
+     *
+     * The list gets checked by isset() so only the key is relevant.
+     *
+     * @return string[]
+     */
+    public function getWhitelistedActions(): array;
 }
 
-return [];
+

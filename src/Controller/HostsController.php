@@ -2276,6 +2276,16 @@ class HostsController extends AppController {
             }
         }
 
+        // Check for upcoming host downtimes
+        $plannedDowntimes = [];
+        $plannedDowntimesResult = $DowntimehistoryHostsTable->getPlannedDowntimes($hostObj->getUuid(), time());
+        if (isset($plannedDowntimesResult[$hostObj->getUuid()]) && is_array($plannedDowntimesResult[$hostObj->getUuid()])) {
+            foreach ($plannedDowntimesResult[$hostObj->getUuid()] as $plannedDowntime) {
+                $Downtime = new Downtime($plannedDowntime, $allowEdit, $UserTime);
+                $plannedDowntimes[] = $Downtime->toArray();
+            }
+        }
+
         //Load parent hosts and parent host status
         $parenthosts = $host['parenthosts'];
         $ParentHoststatusFields = new HoststatusFields($this->DbBackend);
@@ -2353,6 +2363,7 @@ class HostsController extends AppController {
         $this->set('parentHostStatus', $parentHostStatus);
         $this->set('acknowledgement', $acknowledgement);
         $this->set('downtime', $downtime);
+        $this->set('plannedDowntimes', $plannedDowntimes);
         $this->set('checkCommand', $checkCommand);
         $this->set('checkPeriod', $checkPeriod);
         $this->set('notifyPeriod', $notifyPeriod);
@@ -2375,6 +2386,7 @@ class HostsController extends AppController {
             'parentHostStatus',
             'acknowledgement',
             'downtime',
+            'plannedDowntimes',
             'checkCommand',
             'checkPeriod',
             'notifyPeriod',

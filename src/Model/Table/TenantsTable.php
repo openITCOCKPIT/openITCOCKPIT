@@ -350,7 +350,6 @@ class TenantsTable extends Table {
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
         $user = $UsersTable->getUserById($userId);
-
         $tenants = [];
         foreach ($user['containers'] as $_container) {
             $_container = $_container['_joinData'];
@@ -361,6 +360,19 @@ class TenantsTable extends Table {
                 }
             }
         }
+
+        foreach ($user['usercontainerroles'] as $usercontainerrole) {
+            foreach ($usercontainerrole['containers'] as $_container) {
+                $_container = $_container['_joinData'];
+                $path = $ContainersTable->getPathByIdAndCacheResult($_container['container_id'], 'UserGetTenantIds');
+                foreach ($path as $subContainer) {
+                    if ($subContainer['containertype_id'] == CT_TENANT) {
+                        $tenants[$subContainer['id']] = $subContainer['name'];
+                    }
+                }
+            }
+        }
+
 
         /** @var TenantsTable $TenantsTable */
         $TenantsTable = TableRegistry::getTableLocator()->get('Tenants');

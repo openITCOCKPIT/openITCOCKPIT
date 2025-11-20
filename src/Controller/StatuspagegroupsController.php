@@ -335,10 +335,6 @@ class StatuspagegroupsController extends AppController {
                         if ($Servicestatus->isInDowntime()) {
                             $statuspagesFormated[$statuspageId]['service_downtimes']++;
                         }
-
-                        if ($Servicestatus->currentState() > $cumulatedState) {
-                            $cumulatedState = $Servicestatus->currentState();
-                        }
                     }
 
                     continue;

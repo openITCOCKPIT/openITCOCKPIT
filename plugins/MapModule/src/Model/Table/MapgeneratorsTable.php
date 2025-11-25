@@ -397,7 +397,7 @@ class MapgeneratorsTable extends Table {
                         $previousPartsAsString = ''; // to build unique names, which can be assigned to a map hierarchy
 
                         //split by the defined levels
-                        foreach ($mapGeneratorLevels as $mapGeneratorLevel) {
+                        foreach ($mapGeneratorLevels as $mapGeneratorLevelIndex => $mapGeneratorLevel) {
                             if (!empty($mapGeneratorLevel['divider'])) {
                                 $divider = $mapGeneratorLevel['divider'];
                                 $pos = strpos($restofHostName, $divider);
@@ -427,17 +427,19 @@ class MapgeneratorsTable extends Table {
                             // find the container for the new map
                             if ($mapGeneratorLevel['is_container']) {
 
-                                // container has to be the same as the tenant container of the host
+                                // container has to be the same as the part of the host marked as container and at the same position in the container hierarchy of the host as the level
+                                $matchedContainer = null;
+                                $startContainerIdForSearch = (!empty($containerWithChildsAndHosts['parent_id'])) ? $containerWithChildsAndHosts['parent_id'] : null;
 
-                                if ($containerWithChildsAndHosts['containertype_id'] === 2) {
-                                    $tenantContainer = $containerWithChildsAndHosts;
-                                } else if (!empty($containerWithChildsAndHosts['parent_id'])) {
-                                    $tenantContainer = $this->findParentContainerByNameAndType($containerWithChildsAndHosts['parent_id'], $part, $containerIdToContainerArray);
+                                if (empty($startContainerIdForSearch) || $containerWithChildsAndHosts['parent_id'] === 1) {
+                                    $startContainerIdForSearch = $containerWithChildsAndHosts['id'];
                                 }
 
-                                if (!empty($tenantContainer)) {
+                                $matchedContainer = $this->findParentContainerByName($startContainerIdForSearch, $part, $containerIdToContainerArray);
+
+                                if (!empty($matchedContainer)) {
                                     // Found the container for the new map
-                                    $containerIdForNewMap = $tenantContainer['id'];
+                                    $containerIdForNewMap = $matchedContainer['id'];
                                 }
 
                             }
@@ -489,14 +491,16 @@ class MapgeneratorsTable extends Table {
     }
 
     /**
-     *  finds the parent tenant container by name and type
+     *  finds the container in the hierarchy by name
      *
      * @param $containerId
      * @param $part
+     * @param $positionOfContainer
+     * @param $amountOfLevels
      * @param $containerIdToContainerArray
-     * @return null
+     * @return null|array
      */
-    private function findParentContainerByNameAndType($containerId, $part, $containerIdToContainerArray) {
+    private function findParentContainerByName($containerId, $part, $containerIdToContainerArray) {
         $containerIdsFromLoop = [];
         while (isset($containerIdToContainerArray[$containerId])) {
 
@@ -509,7 +513,7 @@ class MapgeneratorsTable extends Table {
 
             $container = $containerIdToContainerArray[$containerId];
 
-            if ($container['name'] === $part && $container['containertype_id'] === 2) {
+            if ($container['name'] === $part) {
                 return $container;
             }
 

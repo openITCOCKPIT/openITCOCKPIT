@@ -35,6 +35,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\itnovum\openITCOCKPIT\Core\EmailCharacters;
+use App\Lib\Exceptions\MissingDbBackendException;
 use App\Model\Table\HostsTable;
 use App\Model\Table\ServicesTable;
 use App\Model\Table\SystemsettingsTable;
@@ -48,10 +49,13 @@ use Cake\Log\Log;
 use Cake\Mailer\Mailer;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
+use EventcorrelationModule\Model\Table\EventcorrelationSettingsTable;
+use EventcorrelationModule\Model\Table\EventcorrelationsTable;
 use GuzzleHttp\Exception\GuzzleException;
 use itnovum\openITCOCKPIT\Core\DbBackend;
 use itnovum\openITCOCKPIT\Core\NodeJS\ChartRenderClient;
 use itnovum\openITCOCKPIT\Core\PerfdataBackend;
+use itnovum\openITCOCKPIT\Core\Servicestatus;
 use itnovum\openITCOCKPIT\Core\ServicestatusFields;
 use itnovum\openITCOCKPIT\Core\Views\Host;
 use itnovum\openITCOCKPIT\Core\Views\HoststatusIcon;
@@ -337,7 +341,7 @@ class NagiosNotificationCommand extends Command {
                         ->isHardstate()
                         ->scheduledDowntimeDepth();
 
-                    /** @var \EventcorrelationModule\Model\Table\EventcorrelationSettingsTable $EventcorrelationSettingsTable */
+                    /** @var EventcorrelationSettingsTable $EventcorrelationSettingsTable */
                     $EventcorrelationSettingsTable = TableRegistry::getTableLocator()->get('EventcorrelationModule.EventcorrelationSettings');
                     $currentEventcorrelationSettings = $EventcorrelationSettingsTable->getCurrentEventcorrelationSettings();
                     $defaultEventcorrelationSettings = $EventcorrelationSettingsTable->getDefaultEventcorrelationSettings();
@@ -346,39 +350,33 @@ class NagiosNotificationCommand extends Command {
 
 
                     try {
-                        /** @var \EventcorrelationModule\Model\Table\EventcorrelationsTable $EventcorrelationsTable */
+                        /** @var EventcorrelationsTable $EventcorrelationsTable */
                         $EventcorrelationsTable = TableRegistry::getTableLocator()->get('EventcorrelationModule.Eventcorrelations');
                         $evcTree = $EventcorrelationsTable->getEvcTreeData($Service->getHostId(), []);
                         $serviceUuids = array_unique(Hash::extract($evcTree, '{n}.{*}.{n}.service.uuid'));
                         $servicestatus = $ServicestatusTable->byUuid($serviceUuids, $ServicestatusFields);
-
                     } catch (RecordNotFoundException $e) {
                         $evcTree = [];
                     }
-
                     foreach ($evcTree as $layerNumber => $layer) {
                         foreach ($layer as $parentId => $childNodes) {
                             foreach ($childNodes as $childIndex => $childNode) {
-                                $Servicestatus = new \itnovum\openITCOCKPIT\Core\Servicestatus([]);
+                                $Servicestatus = new Servicestatus([]);
                                 if (!empty($servicestatus[$childNode['service']['uuid']])) {
-                                    $Servicestatus = new \itnovum\openITCOCKPIT\Core\Servicestatus(
+                                    $Servicestatus = new Servicestatus(
                                         $servicestatus[$childNode['service']['uuid']]['Servicestatus']
                                     );
                                 }
-
                                 if ($considerStateType && !$Servicestatus->isHardState()) {
                                     $Servicestatus->setCurrentState($Servicestatus->getLastHardState());
                                 }
-
-                                $evcTree[$layerNumber][$parentId][$childIndex]['service']['servicestatus']['scheduledDowntimeDepth'] = $Servicestatus->isInDowntime();
                                 $evcTree[$layerNumber][$parentId][$childIndex]['service']['servicestatus'] = $Servicestatus->toArray();
+                                $evcTree[$layerNumber][$parentId][$childIndex]['service']['servicestatus']['scheduledDowntimeDepth'] = $Servicestatus->isInDowntime();
                             }
                         }
                     }
                 }
             }
-
-
         }
         $Mailer->viewBuilder()
             ->setTemplate($this->layout . '_' . $this->type)
@@ -540,6 +538,7 @@ class NagiosNotificationCommand extends Command {
      * @param Service $Service
      * @param ServicestatusIcon $ServicestatusIcon
      * @return string
+     * @throws MissingDbBackendException
      */
     private function getServiceSubject(Host $Host, Service $Service, ServicestatusIcon $ServicestatusIcon) {
         if ($this->isAcknowledgement()) {
@@ -637,6 +636,69 @@ class NagiosNotificationCommand extends Command {
         if ($this->noEmoji === false) {
             $title = $ServicestatusIcon->getEmoji() . ' ' . $title;
         }
+
+        if ($ServicestatusIcon->getState() > 0 && $Service->getServiceType() === EVK_SERVICE) {
+            //ITC-3645
+            //EventcorrelationModule: Notifications - add more information about failed services into the subject
+            if (Plugin::isLoaded('EventcorrelationModule')) {
+                $DbBackend = new DbBackend();
+                $ServicestatusTable = $DbBackend->getServicestatusTable();
+                $ServicestatusFields = new ServicestatusFields($DbBackend);
+                $ServicestatusFields
+                    ->currentState()
+                    ->problemHasBeenAcknowledged()
+                    ->scheduledDowntimeDepth();
+
+                /** @var EventcorrelationsTable $EventcorrelationsTable */
+                $EventcorrelationsTable = TableRegistry::getTableLocator()->get('EventcorrelationModule.Eventcorrelations');
+                $correlatedServices = $EventcorrelationsTable->getCorrelatedServices(
+                    (int)$Host->getId(),
+                    (int)$Service->getId()
+                );
+                if (!empty($correlatedServices)) {
+                    $correlatedServices = Hash::combine($correlatedServices, '{n}.uuid', '{n}');
+                    $ServicestatusCorrelatedServices = $ServicestatusTable->byUuids(array_keys($correlatedServices), $ServicestatusFields);
+                    foreach ($ServicestatusCorrelatedServices as $key => $ServicestatusCorrelatedService) {
+                        $ServicestatusCorrelatedServices[$key]['Servicestatus']['servicename'] = $correlatedServices[$key]['servicename'];
+                    }
+
+                    if (!empty($ServicestatusCorrelatedServices)) {
+                        $notOkServices = Hash::extract($ServicestatusCorrelatedServices, '{s}.Servicestatus[current_state>0]');
+                        $notOkServices = Hash::sort(
+                            $notOkServices,
+                            '{n}.current_state',
+                            'desc'
+                        );
+                        $statusColors = [
+                            0 => '🟢',
+                            1 => '🟡',
+                            2 => '🔴',
+                            3 => '⚪'
+                        ];
+                        if (!empty($notOkServices)) {
+                            $count = sizeof($notOkServices);
+                            $title .= __(' - Cause: ');
+                            foreach ($notOkServices as $notOkService) {
+                                $plusNotOkServicesMessage = __('+{0} service(s)', $count);
+                                //Technical limit: The technical limit for an email subject is 998 characters, according to RFC standards
+                                if (strlen($title . sprintf('⦿%s ', $notOkService['servicename']) . $plusNotOkServicesMessage) < 50) {
+                                    if ($this->noEmoji === false) {
+                                        $title .= sprintf('%s%s ', $statusColors[$notOkService['current_state']], $notOkService['servicename']);
+                                    } else {
+                                        $title .= sprintf('⦿%s ', $notOkService['servicename']);
+                                    }
+                                    $count--;
+                                } else {
+                                    $title .= $plusNotOkServicesMessage;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return $title;
     }
 

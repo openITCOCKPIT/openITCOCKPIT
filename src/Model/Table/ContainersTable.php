@@ -710,7 +710,7 @@ class ContainersTable extends Table {
     public function getFirstContainers($browserAsNest, $MY_RIGHTS, $containerTypes) {
         $containers = [];
         foreach ($browserAsNest as $container) {
-            if (in_array($container['id'], $MY_RIGHTS) && in_array($container['containertype_id'], $containerTypes, true)) {
+            if (in_array($container['id'], $MY_RIGHTS, true) && in_array($container['containertype_id'], $containerTypes, true)) {
                 $containers[] = $container;
                 continue;
             }

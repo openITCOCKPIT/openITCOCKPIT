@@ -267,7 +267,9 @@ class AgentchecksTable extends Table {
         $query = $this->find()
             ->contain(['Servicetemplates'])
             ->where($where)
-            ->orderBy('Agentchecks.name')
+            ->orderBy([
+                'Agentchecks.name' => 'ASC'
+            ])
             ->disableHydration()
             ->all();
 

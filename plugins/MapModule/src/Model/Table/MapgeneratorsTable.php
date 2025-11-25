@@ -428,14 +428,7 @@ class MapgeneratorsTable extends Table {
                             if ($mapGeneratorLevel['is_container']) {
 
                                 // container has to be the same as the part of the host marked as container and at the same position in the container hierarchy of the host as the level
-                                $matchedContainer = null;
-                                $startContainerIdForSearch = (!empty($containerWithChildsAndHosts['parent_id'])) ? $containerWithChildsAndHosts['parent_id'] : null;
-
-                                if (empty($startContainerIdForSearch) || $containerWithChildsAndHosts['parent_id'] === 1) {
-                                    $startContainerIdForSearch = $containerWithChildsAndHosts['id'];
-                                }
-
-                                $matchedContainer = $this->findParentContainerByName($startContainerIdForSearch, $part, $containerIdToContainerArray);
+                                $matchedContainer = $this->findParentContainerByName($containerWithChildsAndHosts['id'], $part, $containerIdToContainerArray);
 
                                 if (!empty($matchedContainer)) {
                                     // Found the container for the new map
@@ -495,8 +488,6 @@ class MapgeneratorsTable extends Table {
      *
      * @param $containerId
      * @param $part
-     * @param $positionOfContainer
-     * @param $amountOfLevels
      * @param $containerIdToContainerArray
      * @return null|array
      */
@@ -517,7 +508,7 @@ class MapgeneratorsTable extends Table {
                 return $container;
             }
 
-            $containerId = $container['parent_id'];
+            $containerId = (!empty($container['parent_id'])) ? $container['parent_id'] : null;
         }
 
         return null;

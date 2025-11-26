@@ -679,9 +679,13 @@ class NagiosNotificationCommand extends Command {
                             $count = sizeof($notOkServices);
                             $title .= __(' - Cause: ');
                             foreach ($notOkServices as $notOkService) {
+                                /** @var EventcorrelationSettingsTable $EventcorrelationSettingsTable */
+                                $EventcorrelationSettingsTable = TableRegistry::getTableLocator()->get('EventcorrelationModule.EventcorrelationSettings');
+                                $currentEventcorrelationSettings = $EventcorrelationSettingsTable->getCurrentEventcorrelationSettings();
+                                $subjectLengthLimit = $currentEventcorrelationSettings->get('subject_length_limit') ?? 78;
                                 $plusNotOkServicesMessage = __('+{0} service(s)', $count);
                                 //Technical limit: The technical limit for an email subject is 998 characters, according to RFC standards
-                                if (strlen($title . sprintf('⦿%s ', $notOkService['servicename']) . $plusNotOkServicesMessage) < 50) {
+                                if (strlen($title . sprintf('⦿%s ', $notOkService['servicename']) . $plusNotOkServicesMessage) < $subjectLengthLimit) {
                                     if ($this->noEmoji === false) {
                                         $title .= sprintf('%s%s ', $statusColors[$notOkService['current_state']], $notOkService['servicename']);
                                     } else {

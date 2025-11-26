@@ -23,29 +23,37 @@
 //     License agreement and license key will be shipped with the order
 //     confirmation.
 
-namespace itnovum\openITCOCKPIT\Filter;
+namespace MapModule\Model\Entity;
 
+use Cake\ORM\Entity;
 
-class MapFilter extends Filter {
+/**
+ * MapgeneratorLevel Entity
+ *
+ * @property int $id
+ * @property int $mapgenerator_id
+ * @property string $name
+ * @property string $divider
+ * @property int $is_container
+ *
+ * @property Mapgenerator $mapgenerator
+ */
+class MapgeneratorLevel extends Entity {
 
     /**
-     * @return array
+     * Fields that can be mass assigned using newEntity() or patchEntity().
+     *
+     * Note that when '*' is set to true, this allows all unspecified fields to
+     * be mass assigned. For security purposes, it is advised to set '*' to false
+     * (or remove it), and explicitly make individual fields accessible as needed.
+     *
+     * @var array
      */
-    public function indexFilter() {
-        $filters = [
-            'like'   => [
-                'Maps.name',
-                'Maps.title'
-            ],
-            'equals' => [
-                'Maps.id',
-            ],
-            'bool'   => [
-                'Maps.auto_generated'
-            ],
-        ];
-
-        return $this->getConditionsByFilters($filters);
-    }
-
+    protected array $_accessible = [
+        'mapgenerator_id' => true,
+        'name'            => true,
+        'divider'         => true,
+        'is_container'    => true,
+        'mapgenerator'    => true,
+    ];
 }

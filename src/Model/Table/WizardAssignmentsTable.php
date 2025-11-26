@@ -425,7 +425,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
-            'proxmox'                => [
+            'proxmox'                      => [
                 'type_id'     => 'proxmox',
                 'title'       => __('Proxmox'),
                 'description' => __('Used to monitor Proxmox (Status, Memory, CPU, ZFS, CEPH, Backup, ...)'),
@@ -433,7 +433,7 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
-            'proxmox_storage'        => [
+            'proxmox_storage'              => [
                 'type_id'     => 'proxmox_storage',
                 'title'       => __('Proxmox Storage'),
                 'description' => __('Used to monitor Proxmox Storages.'),
@@ -473,11 +473,19 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['virtualization', 'cloud'],
                 'active'      => true
             ],
+            'mshyperv'                     => [
+                'type_id'     => 'mshyperv',
+                'title'       => __('Hyper-V'),
+                'description' => __('Monitor your Hyper-V machines.'),
+                'image'       => 'Windows.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
+            ],
             'cisco-network'                => [
                 'type_id'     => 'cisco-network',
                 'title'       => __('Cisco Network'),
                 'description' => __('Monitor your Cisco network devices via SNMP.'),
-                'image'       => 'network.png',
+                'image'       => 'cisco.svg',
                 'category'    => ['network', 'hardware'],
                 'active'      => true
             ],
@@ -485,7 +493,7 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'cisco-wlc',
                 'title'       => __('Cisco WLC'),
                 'description' => __('Cisco WLC'),
-                'image'       => 'network.png',
+                'image'       => 'cisco.svg',
                 'category'    => ['network', 'hardware'],
                 'active'      => true
             ],
@@ -493,7 +501,7 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'broadcom-proxy',
                 'title'       => __('Broadcom Proxy'),
                 'description' => __('Monitor your Broadcom Web Gateway via SNMP'),
-                'image'       => 'network.png',
+                'image'       => 'broadcom.svg',
                 'category'    => ['network', 'hardware'],
                 'active'      => true
             ],
@@ -503,6 +511,14 @@ class WizardAssignmentsTable extends Table {
                 'description' => __('Monitor your Nutanix infrastructure.'),
                 'image'       => 'nutanix-logo-charcoal-gray.svg',
                 'category'    => ['virtualization', 'cloud'],
+                'active'      => true
+            ],
+            'network-interfaces'           => [
+                'type_id'     => 'network-interfaces',
+                'title'       => __('Network Interfaces'),
+                'description' => __('Used to check any kind of network devices and interfaces like: Switch, Router, Firewall, Access Point, ...'),
+                'image'       => 'network.png',
+                'category'    => ['linux', 'network'],
                 'active'      => true
             ]
         ];

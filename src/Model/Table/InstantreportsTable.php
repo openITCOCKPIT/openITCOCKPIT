@@ -910,7 +910,9 @@ class InstantreportsTable extends Table {
                 'Instantreports.container_id IN' => $MY_RIGHTS
             ]);
         }
-        $query->orderBy('Instantreports.name', 'asc');
+        $query->orderBy([
+            'Instantreports.name' => 'asc'
+        ]);
         $query->enableHydration($enableHydration);
 
         $result = $query->all();

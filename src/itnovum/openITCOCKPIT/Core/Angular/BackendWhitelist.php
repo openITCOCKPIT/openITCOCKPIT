@@ -75,16 +75,17 @@ class BackendWhitelist implements BackendWhitelistInterface {
      */
     public function getWhitelistedActions(): array {
         $whitelist = [
-            'administrators.php_info' => 'administrators.php_info',
-            'eventlogs.listtocsv'     => 'eventlogs.listtocsv',
-            'hosts.listtocsv'         => 'hosts.listtocsv',
-            'services.listtocsv'      => 'services.listtocsv',
-            'hostgroups.listtocsv'    => 'hostgroups.listtocsv',
-            'servicegroups.listtocsv' => 'servicegroups.listtocsv',
-            'users.listtocsv'         => 'users.listtocsv',
-            'users.login'             => 'users.login',
-            'users.logout'            => 'users.logout',
-            'statuspages.publicview'  => 'statuspages.publicview',
+            'administrators.php_info'    => 'administrators.php_info',
+            'eventlogs.listtocsv'        => 'eventlogs.listtocsv',
+            'hosts.listtocsv'            => 'hosts.listtocsv',
+            'services.listtocsv'         => 'services.listtocsv',
+            'hostgroups.listtocsv'       => 'hostgroups.listtocsv',
+            'servicegroups.listtocsv'    => 'servicegroups.listtocsv',
+            'users.listtocsv'            => 'users.listtocsv',
+            'users.login'                => 'users.login',
+            'users.logout'               => 'users.logout',
+            'statuspages.publicview'     => 'statuspages.publicview',
+            'backups.downloadbackupfile' => 'backups.downloadbackupfile'
         ];
 
         return $whitelist;

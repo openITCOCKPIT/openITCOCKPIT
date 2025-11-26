@@ -71,9 +71,9 @@ use Cake\ORM\Entity;
  * @property \App\Model\Entity\Tenant[] $tenants
  * @property \App\Model\Entity\Timeperiod[] $timeperiods
  * @property \App\Model\Entity\UsersToContainer[] $users_to_containers
+ * @property \App\Model\Entity\MapgeneratorsToContainer[] $mapgenrators_to_containers
  */
-class Container extends Entity
-{
+class Container extends Entity {
 
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
@@ -85,44 +85,45 @@ class Container extends Entity
      * @var array
      */
     protected array $_accessible = [
-        'containertype_id' => true,
-        'name' => true,
-        'parent_id' => true,
-        'lft' => true,
-        'rght' => true,
-        'containertype' => true,
-        'parent_container' => true,
-        'automaps' => true,
-        'autoreports' => true,
-        'calendars' => true,
-        'changelogs_to_containers' => true,
-        'contactgroups' => true,
-        'contacts_to_containers' => true,
-        'child_containers' => true,
-        'grafana_userdashboards' => true,
-        'hostdependencies' => true,
-        'hostescalations' => true,
-        'hostgroups' => true,
-        'hosts' => true,
-        'hosts_to_containers' => true,
-        'hosttemplates' => true,
-        'idoit_objects' => true,
-        'idoit_objecttypes' => true,
-        'instantreports' => true,
-        'locations' => true,
-        'map_uploads' => true,
-        'maps_to_containers' => true,
-        'mkagents' => true,
-        'nmap_configurations' => true,
-        'rotations_to_containers' => true,
-        'satellites' => true,
-        'servicedependencies' => true,
-        'serviceescalations' => true,
-        'servicegroups' => true,
-        'servicetemplategroups' => true,
-        'servicetemplates' => true,
-        'tenants' => true,
-        'timeperiods' => true,
-        'users_to_containers' => true
+        'containertype_id'            => true,
+        'name'                        => true,
+        'parent_id'                   => true,
+        'lft'                         => true,
+        'rght'                        => true,
+        'containertype'               => true,
+        'parent_container'            => true,
+        'automaps'                    => true,
+        'autoreports'                 => true,
+        'calendars'                   => true,
+        'changelogs_to_containers'    => true,
+        'contactgroups'               => true,
+        'contacts_to_containers'      => true,
+        'child_containers'            => true,
+        'grafana_userdashboards'      => true,
+        'hostdependencies'            => true,
+        'hostescalations'             => true,
+        'hostgroups'                  => true,
+        'hosts'                       => true,
+        'hosts_to_containers'         => true,
+        'hosttemplates'               => true,
+        'idoit_objects'               => true,
+        'idoit_objecttypes'           => true,
+        'instantreports'              => true,
+        'locations'                   => true,
+        'map_uploads'                 => true,
+        'maps_to_containers'          => true,
+        'mkagents'                    => true,
+        'nmap_configurations'         => true,
+        'rotations_to_containers'     => true,
+        'satellites'                  => true,
+        'servicedependencies'         => true,
+        'serviceescalations'          => true,
+        'servicegroups'               => true,
+        'servicetemplategroups'       => true,
+        'servicetemplates'            => true,
+        'tenants'                     => true,
+        'timeperiods'                 => true,
+        'users_to_containers'         => true,
+        'mapgenerators_to_containers' => true,
     ];
 }

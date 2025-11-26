@@ -180,6 +180,11 @@ class MapsTable extends Table {
             'className'  => 'MapModule.MapsToRotations'
         ])->setDependent(true);
 
+        $this->hasMany('MapgeneratorsToMaps', [
+            'foreignKey' => 'map_id',
+            'className'  => 'MapModule.MapgeneratorsToMaps'
+        ])->setDependent(true);
+
         $this->hasMany('Mapsummaryitems', [
             'foreignKey' => 'map_id',
             'className'  => 'MapModule.Mapsummaryitems'
@@ -2540,5 +2545,34 @@ class MapsTable extends Table {
             ->toArray();
         return Hash::extract($query, '{n}.Containers.id');
     }
+
+    /**
+     * @param array $mapIds
+     * @return array
+     */
+    public function getMapsAndItemsByIds($mapIds) {
+
+        if (empty($mapIds)) {
+            return [];
+        }
+
+        $query = $this->find()
+            ->contain([
+                'Containers',
+                'Mapgadgets',
+                'Mapicons',
+                'Mapitems',
+                'Maplines',
+                'Maptexts',
+                'Mapsummaryitems'
+            ])
+            ->where([
+                'Maps.id IN' => $mapIds,
+            ])->disableHydration();
+
+        return $this->emptyArrayIfNull($query->toArray());
+
+    }
+
 
 }

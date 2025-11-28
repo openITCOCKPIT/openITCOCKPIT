@@ -140,6 +140,7 @@ plugins/CiscoModule
 plugins/BroadcomProxyModule
 plugins/NutanixModule
 plugins/NetworkModule
+plugins/NginxModule
 
 # NFS mounts
 .nfs.*

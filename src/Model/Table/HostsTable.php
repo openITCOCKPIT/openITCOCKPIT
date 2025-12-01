@@ -1850,7 +1850,7 @@ class HostsTable extends Table {
             if ($Cache === null) {
                 // Legacy - no caching
                 foreach ($HosttemplatesTable->getHosttemplatesAsList($dataToParse['Host']['hosttemplate_id']) as $hosttemplateId => $hosttemplateName) {
-                    $extDataForChangelog['Hosttemplate'][] = [
+                    $extDataForChangelog['Hosttemplate'] = [
                         'id'   => $hosttemplateId,
                         'name' => $hosttemplateName
                     ];
@@ -1865,7 +1865,7 @@ class HostsTable extends Table {
                         ]);
                     }
                 }
-                $extDataForChangelog['Hosttemplate'][] = $Cache->get(OBJECT_HOSTTEMPLATE, $dataToParse['Host']['hosttemplate_id']);
+                $extDataForChangelog['Hosttemplate'] = $Cache->get(OBJECT_HOSTTEMPLATE, $dataToParse['Host']['hosttemplate_id']);
             }
         }
 

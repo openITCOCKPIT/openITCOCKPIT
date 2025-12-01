@@ -1045,7 +1045,7 @@ class ServicesTable extends Table {
             if ($Cache === null) {
                 // Legacy - no caching
                 foreach ($ServicetemplatesTable->getServicetemplatesAsList($dataToParse['Service']['servicetemplate_id']) as $servicetemplateId => $servicetemplateName) {
-                    $extDataForChangelog['Servicetemplate'][] = [
+                    $extDataForChangelog['Servicetemplate'] = [
                         'id'   => $servicetemplateId,
                         'name' => $servicetemplateName
                     ];
@@ -1060,7 +1060,7 @@ class ServicesTable extends Table {
                         ]);
                     }
                 }
-                $extDataForChangelog['Servicetemplate'][] = $Cache->get(OBJECT_SERVICETEMPLATE, $dataToParse['Service']['servicetemplate_id']);
+                $extDataForChangelog['Servicetemplate'] = $Cache->get(OBJECT_SERVICETEMPLATE, $dataToParse['Service']['servicetemplate_id']);
             }
         }
 

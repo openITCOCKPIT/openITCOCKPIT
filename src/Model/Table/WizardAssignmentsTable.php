@@ -505,6 +505,14 @@ class WizardAssignmentsTable extends Table {
                 'category'    => ['network', 'hardware'],
                 'active'      => true
             ],
+            'nutanix'                      => [
+                'type_id'     => 'nutanix',
+                'title'       => __('Nutanix'),
+                'description' => __('Monitor your Nutanix infrastructure.'),
+                'image'       => 'nutanix-logo-charcoal-gray.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
+            ],
             'network-interfaces'           => [
                 'type_id'     => 'network-interfaces',
                 'title'       => __('Network Interfaces'),

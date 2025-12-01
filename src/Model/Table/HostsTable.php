@@ -1578,7 +1578,8 @@ class HostsTable extends Table {
         $query = $this->find();
         $query->select([
             'Hosts.' . $index,
-            'Hosts.name'
+            'Hosts.name',
+            'Hosts.container_id'
         ]);
 
         $query->where($where);
@@ -5443,4 +5444,5 @@ class HostsTable extends Table {
                 'IF(Hosts.sla_id IS NULL, Hosttemplates.sla_id, Hosts.sla_id) > 0'
             ])->count();
     }
+
 }

@@ -66,6 +66,18 @@ class Menu implements MenuInterface {
                     true,
                     'map_module/rotations/index'
                 ))
+                ->addLink(new MenuLink(
+                    __('Map Generators'),
+                    'MapgeneratorsIndex',
+                    'mapgenerators',
+                    'index',
+                    'MapModule',
+                    ['fas', 'cog'],
+                    [],
+                    5,
+                    true,
+                    'map_module/mapgenerators/index'
+                ))
             );
 
         return [$Overview];

@@ -33,7 +33,6 @@ declare(strict_types=1);
 namespace MapModule\Model\Entity;
 
 use App\Model\Entity\Container;
-use Cake\I18n\DateTime;
 use Cake\ORM\Entity;
 use DistributeModule\Model\Entity\Satellite;
 
@@ -50,6 +49,7 @@ use DistributeModule\Model\Entity\Satellite;
  * @property int $background_size_y
  * @property int $refresh_interval
  * @property string|null $json_data
+ * @property int $auto_generated
  * @property \Cake\I18n\DateTime $created
  * @property \Cake\I18n\DateTime $modified
  *
@@ -84,6 +84,7 @@ class Map extends Entity {
         'background_size_y'  => true,
         'refresh_interval'   => true,
         'json_data'          => true,
+        'auto_generated'     => true,
         'created'            => true,
         'modified'           => true,
         'mapgadgets'         => true,

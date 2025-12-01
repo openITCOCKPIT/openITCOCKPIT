@@ -504,6 +504,22 @@ class WizardAssignmentsTable extends Table {
                 'image'       => 'broadcom.svg',
                 'category'    => ['network', 'hardware'],
                 'active'      => true
+            ],
+            'nutanix'                      => [
+                'type_id'     => 'nutanix',
+                'title'       => __('Nutanix'),
+                'description' => __('Monitor your Nutanix infrastructure.'),
+                'image'       => 'nutanix-logo-charcoal-gray.svg',
+                'category'    => ['virtualization', 'cloud'],
+                'active'      => true
+            ],
+            'network-interfaces'           => [
+                'type_id'     => 'network-interfaces',
+                'title'       => __('Network Interfaces'),
+                'description' => __('Used to check any kind of network devices and interfaces like: Switch, Router, Firewall, Access Point, ...'),
+                'image'       => 'network.png',
+                'category'    => ['linux', 'network'],
+                'active'      => true
             ]
         ];
 

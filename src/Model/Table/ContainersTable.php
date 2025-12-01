@@ -160,6 +160,12 @@ class ContainersTable extends Table {
             'cascadeCallbacks' => true
         ]);
 
+        $this->belongsToMany('Mapgenerators', [
+            'foreignKey'       => 'container_id',
+            'targetForeignKey' => 'mapgenerator_id',
+            'joinTable'        => 'mapgenerators_to_containers',
+        ]);
+
         $this->hasMany('Tenants', [
             'foreignKey'       => 'container_id',
             'cascadeCallbacks' => true
@@ -704,7 +710,7 @@ class ContainersTable extends Table {
     public function getFirstContainers($browserAsNest, $MY_RIGHTS, $containerTypes) {
         $containers = [];
         foreach ($browserAsNest as $container) {
-            if (in_array($container['id'], $MY_RIGHTS) && in_array($container['containertype_id'], $containerTypes, true)) {
+            if (in_array($container['id'], $MY_RIGHTS, true) && in_array($container['containertype_id'], $containerTypes, true)) {
                 $containers[] = $container;
                 continue;
             }
@@ -977,6 +983,63 @@ class ContainersTable extends Table {
                         $containers[$index]['childsElements']['grafana_userdashboards'] = $GrafanaUserdashboardsTable->getGrafanaUserDashboardsByContainerIdExact($container['id'], 'list', 'id', $MY_RIGHTS);
                     }
 
+                    break;
+            }
+        }
+        return $containers;
+    }
+
+    /**
+     * @param int $containerId
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getContainerWithAllChildrenAndHosts($containerId, $MY_RIGHTS = []) {
+        $parentContainer = $this->getContainerById($containerId, $MY_RIGHTS);
+
+        $query = $this->find('children', for: $containerId);
+
+        $query->select([
+            'Containers.id',
+            'Containers.parent_id',
+            'Containers.name',
+            'Containers.containertype_id',
+            'Containers.lft',
+            'Containers.rght'
+        ])
+            ->where([
+                'Containers.containertype_id IN ' => [CT_GLOBAL, CT_TENANT, CT_LOCATION, CT_NODE]
+            ])
+            ->disableHydration();
+        $containers = $query->toArray();
+        if (!empty($parentContainer)) {
+            $containers[] = $parentContainer;
+        }
+        $containers = Hash::sort($containers, '{n}.id', 'asc');
+
+
+        /** Monitoring Objects */
+        /** @var HostsTable $HostsTable */
+        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+
+        /**
+         * 'CT_GLOBAL'               => 1,
+         * 'CT_TENANT'               => 2,
+         * 'CT_LOCATION'             => 3,
+         * 'CT_NODE'                 => 5,
+         * 'CT_CONTACTGROUP'         => 6,
+         * 'CT_HOSTGROUP'            => 7,
+         * 'CT_SERVICEGROUP'         => 8,
+         * 'CT_SERVICETEMPLATEGROUP' => 9,
+         */
+
+        foreach ($containers as $index => $container) {
+            switch ($container['containertype_id']) {
+                case CT_GLOBAL:
+                case CT_TENANT:
+                case CT_LOCATION:
+                case CT_NODE:
+                    $containers[$index]['childsElements']['hosts'] = $HostsTable->getHostsByContainerIdExact($container['id'], 'list', 'id', $MY_RIGHTS, ['Hosts.disabled IN' => [0, 1]]);
                     break;
             }
         }
@@ -1656,4 +1719,5 @@ class ContainersTable extends Table {
 
         return $containers;
     }
+
 }

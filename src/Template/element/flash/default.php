@@ -36,4 +36,9 @@ if (!isset($params['escape']) || $params['escape'] !== false) {
     $message = h($message);
 }
 ?>
-<div class="<?= h($class) ?>" onclick="this.classList.add('hidden');"><?= $message ?></div>
+<div class="alert alert-primary alert-dismissible fade show <?= h($class) ?>" role="alert">
+    <?= $message ?>
+    <button type="button" class="btn-close" data-coreui-dismiss="alert" aria-label="Close"
+            onclick="this.parentElement.classList.add('d-none');">
+    </button>
+</div>

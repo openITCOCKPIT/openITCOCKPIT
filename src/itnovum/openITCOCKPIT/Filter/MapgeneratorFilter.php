@@ -1,6 +1,5 @@
 <?php
-// Copyright (C) 2015-2025  it-novum GmbH
-// Copyright (C) 2025-today Allgeier IT Services GmbH
+// Copyright (C) <2015-present>  <it-novum GmbH>
 //
 // This file is dual licensed
 //
@@ -23,8 +22,28 @@
 //     License agreement and license key will be shipped with the order
 //     confirmation.
 
-if (!defined('OPENITCOCKPIT_VERSION')) {
-    define('OPENITCOCKPIT_VERSION', '5.3.0');
-}
+namespace App\itnovum\openITCOCKPIT\Filter;
 
-return [];
+
+use itnovum\openITCOCKPIT\Filter\Filter;
+
+class MapgeneratorFilter extends Filter {
+
+    /**
+     * @return array
+     */
+    public function indexFilter() {
+        $filters = [
+            'like' => [
+                'Mapgenerators.name',
+                'Mapgenerators.description'
+            ],
+            'bool' => [
+                'has_generated_maps'
+            ],
+        ];
+
+        return $this->getConditionsByFilters($filters);
+    }
+
+}

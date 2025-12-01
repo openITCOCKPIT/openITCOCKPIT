@@ -33,10 +33,16 @@ class MapFilter extends Filter {
      */
     public function indexFilter() {
         $filters = [
-            'like' => [
+            'like'   => [
                 'Maps.name',
                 'Maps.title'
-            ]
+            ],
+            'equals' => [
+                'Maps.id',
+            ],
+            'bool'   => [
+                'Maps.auto_generated'
+            ],
         ];
 
         return $this->getConditionsByFilters($filters);

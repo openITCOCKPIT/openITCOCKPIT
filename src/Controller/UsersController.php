@@ -152,8 +152,7 @@ class UsersController extends AppController {
             // Check if we have any errors during the oAuth login
             $result = $this->Authentication->getResult();
             if ($result->getStatus() !== ResultInterface::SUCCESS) {
-                if ($result->getStatus() === 'FAILURE_IDENTITY_NOT_FOUND') {
-
+                if ($result->getStatus() === 'FAILURE_IDENTITY_NOT_FOUND' || $result->getStatus() === 'FAILURE_CREDENTIALS_MISSING') {
                     try {
                         $oauth_error = $SystemsettingsTable->getSystemsettingByKey('FRONTEND.SSO.NO_EMAIL_MESSAGE')->get('value');
                     } catch (RecordNotFoundException $e) {
@@ -161,6 +160,7 @@ class UsersController extends AppController {
                         $oauth_error = __('E-Mail address not found in openITCOCKPIT Database.');
                     }
                     $Session->write('oauth_user_not_found', $oauth_error);
+                    $this->Flash->error($oauth_error, ['escape' => false]);
                 }
             } else {
                 $loginData = $result->getData();

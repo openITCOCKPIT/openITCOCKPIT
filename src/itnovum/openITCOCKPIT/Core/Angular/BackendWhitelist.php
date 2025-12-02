@@ -81,6 +81,7 @@ class BackendWhitelist implements BackendWhitelistInterface {
             'services.listtocsv'         => 'services.listtocsv',
             'hostgroups.listtocsv'       => 'hostgroups.listtocsv',
             'servicegroups.listtocsv'    => 'servicegroups.listtocsv',
+            'users.listtoxlsx'           => 'users.listtoxlsx',
             'users.listtocsv'            => 'users.listtocsv',
             'users.login'                => 'users.login',
             'users.logout'               => 'users.logout',

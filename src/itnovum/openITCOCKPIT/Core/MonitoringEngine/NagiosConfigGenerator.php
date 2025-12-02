@@ -2303,8 +2303,8 @@ class NagiosConfigGenerator {
 
             $content .= $this->addContent('define timeperiod{', 0);
             $content .= $this->addContent('timeperiod_name', 1, $timeperiod['Timeperiod']['uuid']);
-            if (!empty($timeperiod['Timeperiod']['description']) && strlen($timeperiod['Timeperiod']['description']) > 0) {
-                $content .= $this->addContent('alias', 1, $this->removeNewlines($this->escapeLastBackslash($timeperiod['Timeperiod']['description'])));
+            if (!empty($timeperiod['Timeperiod']['name']) && strlen($timeperiod['Timeperiod']['name']) > 0) {
+                $content .= $this->addContent('alias', 1, $this->removeNewlines($this->escapeLastBackslash($timeperiod['Timeperiod']['name'])));
             } else {
                 //Naemon 1.0.0 fix
                 $content .= $this->addContent('alias', 1, $timeperiod['Timeperiod']['uuid']);
@@ -2339,6 +2339,11 @@ class NagiosConfigGenerator {
                         $timeperiod['Timeperiod']['calendar_id']
                     ));
                     Log::error($e->getMessage());
+                }
+            }
+            if ($timeperiod['Timeperiod']['exclude_timeperiod_id'] > 0 && !empty($timeperiod['Timeperiod']['excluded_time_period'])) {
+                if (!empty($timeperiod['Timeperiod']['excluded_time_period']['uuid'])) {
+                    $content .= $this->addContent('exclude', 1, $timeperiod['Timeperiod']['excluded_time_period']['uuid']);
                 }
             }
 
@@ -2401,8 +2406,8 @@ class NagiosConfigGenerator {
 
             $content .= $this->addContent('define timeperiod{', 0);
             $content .= $this->addContent('timeperiod_name', 1, $timeperiod['Timeperiod']['uuid']);
-            if (!empty($timeperiod['Timeperiod']['description']) && strlen($timeperiod['Timeperiod']['description']) > 0) {
-                $content .= $this->addContent('alias', 1, $this->removeNewlines($this->escapeLastBackslash($timeperiod['Timeperiod']['description'])));
+            if (!empty($timeperiod['Timeperiod']['name']) && strlen($timeperiod['Timeperiod']['name']) > 0) {
+                $content .= $this->addContent('alias', 1, $this->removeNewlines($this->escapeLastBackslash($timeperiod['Timeperiod']['name'])));
             } else {
                 //Naemon 1.0.0 fix
                 $content .= $this->addContent('alias', 1, $timeperiod['Timeperiod']['uuid']);
@@ -2455,6 +2460,12 @@ class NagiosConfigGenerator {
                         $timeperiod['Timeperiod']['calendar_id']
                     ));
                     Log::error($e->getMessage());
+                }
+            }
+
+            if ($timeperiod['Timeperiod']['exclude_timeperiod_id'] > 0 && !empty($timeperiod['Timeperiod']['excluded_time_period'])) {
+                if (!empty($timeperiod['Timeperiod']['excluded_time_period']['uuid'])) {
+                    $content .= $this->addContent('exclude', 1, $timeperiod['Timeperiod']['excluded_time_period']['uuid']);
                 }
             }
 

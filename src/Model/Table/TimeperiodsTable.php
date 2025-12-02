@@ -259,7 +259,16 @@ class TimeperiodsTable extends Table {
      */
     public function getTimeperiodWithTimeranges() {
         $query = $this->find()
-            ->contain('TimeperiodTimeranges')
+            ->contain([
+                'TimeperiodTimeranges',
+                'ExcludedTimePeriod' => function ($query) {
+                    return $query->select([
+                        'ExcludedTimePeriod.id',
+                        'ExcludedTimePeriod.uuid'
+                    ])->disableAutoFields()
+                        ->disableHydration();
+                }
+            ])
             ->disableHydration();
         return $this->formatResultAsCake2($query->toArray(), false);
     }
@@ -288,7 +297,16 @@ class TimeperiodsTable extends Table {
      */
     public function getTimeperiodWithTimerangesByUuid($uuid) {
         $query = $this->find()
-            ->contain('TimeperiodTimeranges')
+            ->contain([
+                'TimeperiodTimeranges',
+                'ExcludedTimePeriod' => function ($query) {
+                    return $query->select([
+                        'ExcludedTimePeriod.id',
+                        'ExcludedTimePeriod.uuid'
+                    ])->disableAutoFields()
+                        ->disableHydration();
+                }
+            ])
             ->where([
                 'Timeperiods.uuid' => $uuid
             ])

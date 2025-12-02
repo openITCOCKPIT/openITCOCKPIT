@@ -91,6 +91,11 @@ class TimeperiodsTable extends Table {
         $this->belongsTo('Calendars', [
             'joinType' => 'LEFT'
         ]);
+        $this->belongsTo('ExcludedTimePeriod', [
+            'className'  => 'Timeperiods',
+            'foreignKey' => 'exclude_timeperiod_id',
+            'joinType'   => 'LEFT'
+        ]);
     }
 
     /**
@@ -884,5 +889,27 @@ class TimeperiodsTable extends Table {
             ->firstOrFail();
 
         return $this->emptyArrayIfNull($query);
+    }
+
+    /**
+     * @param $excludedTimeperiodId
+     * @param $containerIds
+     * @return array
+     */
+    public function getTimeperiodByContainerIdsAndExludedTimeperiodIdAsList($excludedTimeperiodId, $containerIds = []) {
+        if (!is_array($containerIds)) {
+            $containerIds = [$containerIds];
+        }
+
+        $timeperiods = $this->find()
+            ->select([
+                'Timeperiods.id',
+                'Timeperiods.name'
+            ])
+            ->where(['Timeperiods.container_id IN' => $containerIds])
+            ->whereNotInList('Timeperiods.id', [$excludedTimeperiodId])
+            ->all();
+
+        return $this->formatListAsCake2($timeperiods->toArray());
     }
 }

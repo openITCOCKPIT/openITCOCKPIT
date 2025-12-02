@@ -25,6 +25,7 @@
 
 namespace App\Model\Entity;
 
+use Cake\I18n\DateTime;
 use Cake\ORM\Entity;
 
 /**
@@ -36,11 +37,12 @@ use Cake\ORM\Entity;
  * @property string $name
  * @property string|null $description
  * @property int|null $calendar_id
- * @property \Cake\I18n\DateTime $created
- * @property \Cake\I18n\DateTime $modified
+ * @property int|null $exclude_timeperiod_id
+ * @property DateTime $created
+ * @property DateTime $modified
  *
- * @property \App\Model\Entity\Container $container
- * @property \App\Model\Entity\TimeperiodTimerange[] $timeperiod_timeranges
+ * @property Container $container
+ * @property TimeperiodTimerange[] $timeperiod_timeranges
  */
 class Timeperiod extends Entity {
 
@@ -59,9 +61,9 @@ class Timeperiod extends Entity {
         'name'                  => true,
         'description'           => true,
         'calendar_id'           => true,
+        'exclude_timeperiod_id' => true,
         'created'               => true,
         'modified'              => true,
         'timeperiod_timeranges' => true
-
     ];
 }

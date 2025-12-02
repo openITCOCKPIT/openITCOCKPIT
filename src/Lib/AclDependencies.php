@@ -277,7 +277,9 @@ class AclDependencies {
 
         $this
             ->dependency('Timeperiods', 'index', 'Timeperiods', 'view')
-            ->dependency('Timeperiods', 'index', 'Timeperiods', 'loadTimeperiodsByContainerId');
+            ->dependency('Timeperiods', 'index', 'Timeperiods', 'loadTimeperiodsByContainerId')
+            ->dependency('Timeperiods', 'add', 'Timeperiods', 'loadTimeperiodsByContainerIdAndExludeItself')
+            ->dependency('Timeperiods', 'edit', 'Timeperiods', 'loadTimeperiodsByContainerIdAndExludeItself');
 
 
         $this

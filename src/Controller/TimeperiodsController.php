@@ -579,4 +579,27 @@ class TimeperiodsController extends AppController {
         $this->set('timeperiods', $timeperiods);
         $this->viewBuilder()->setOption('serialize', ['timeperiods']);
     }
+
+    public function loadTimeperiodsByContainerIdAndExludeItself() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $containerId = $this->request->getQuery('containerId');
+        $excludeTimperiodId = $this->request->getQuery('timeperiodId');
+
+        /** @var TimeperiodsTable $TimeperiodsTable */
+        $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
+        $timeperiods = $TimeperiodsTable->getTimeperiodByContainerIdsAndExludedTimeperiodIdAsList(
+            $excludeTimperiodId,
+            [ROOT_CONTAINER, $containerId]
+        );
+
+        $timeperiods = Api::makeItJavaScriptAble(
+            $timeperiods
+        );
+
+        $this->set('timeperiods', $timeperiods);
+        $this->viewBuilder()->setOption('serialize', ['timeperiods']);
+    }
 }

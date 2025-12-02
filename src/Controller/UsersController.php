@@ -43,6 +43,7 @@ use App\Model\Table\SystemsettingsTable;
 use App\Model\Table\UsercontainerrolesTable;
 use App\Model\Table\UsergroupsTable;
 use App\Model\Table\UsersTable;
+use App\Template\Users\UsersXlsxExport;
 use Authentication\Authenticator\ResultInterface;
 use Authentication\Controller\Component\AuthenticationComponent;
 use Cake\Cache\Cache;
@@ -1328,5 +1329,24 @@ class UsersController extends AppController {
         $this->set('permissions', $this->PERMISSIONS);
         $this->set('modules', $modules);
         $this->viewBuilder()->setOption('serialize', ['permissions', 'modules']);
+    }
+
+    public function listToXlsx() {
+        try {
+            $UXE = new UsersXlsxExport();
+
+            $filePath = TMP . 'Users_Export_Info_' . date('Y_m_d_H_i_s') . '.xlsx';
+
+            $UXE->export($filePath);
+            // Download
+            return $this->response->withFile($filePath, [
+                'download' => true,
+                'name'     => 'Users_Export_Info_' . date('Y_m_d_H_i_s') . '.xlsx',
+            ]);
+        } catch (\Exception $e) {
+            $this->response = $this->response->withStatus(500);
+            $this->set('error', $e->getMessage());
+            $this->viewBuilder()->setOption('serialize', ['error']);
+        }
     }
 }

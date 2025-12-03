@@ -1333,7 +1333,7 @@ class UsersController extends AppController {
 
     public function listToXlsx() {
         try {
-            $UXE = new UsersXlsxExport();
+            $UXE = new UsersXlsxExport($this->MY_RIGHTS, $this->hasRootPrivileges);
 
             $filePath = TMP . 'Users_Export_Info_' . date('Y_m_d_H_i_s') . '.xlsx';
 

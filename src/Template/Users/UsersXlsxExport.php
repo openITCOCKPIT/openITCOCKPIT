@@ -283,9 +283,9 @@ final class UsersXlsxExport {
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['firstname']}");
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['lastname']}");
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['email']}");
-            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['user_role_id']}");
-            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['user_role']}");
-            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['is_ldap_user']}");
+            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['usergroup']['id']}");
+            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['usergroup']['name']}");
+            $sheet->setCellValue(self::getCellPosition($col++, $row), $User['samaccountname'] ? 'YES' : 'NO');
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['UserRoleThroughLdapID']}");
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['UserRoleThroughLdap']}");
         }

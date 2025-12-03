@@ -160,6 +160,7 @@ class Constants {
         define('OBJECT_IMPORTEDHOSTGROUP', 1 << 30);         // Changelog only ImportModule
         define('OBJECT_RESOURCE', 1 << 31);                  // ScmModule
         define('OBJECT_RESOURCEGROUP', 1 << 32);             // ScmModule
+        define('OBJECT_CALENDAR', 1 << 33);
     }
 
     private function defineHosttemplateTypes(): void {
@@ -264,5 +265,5 @@ class Constants {
     public function defineAjaxLimit(): void {
         define('ITN_AJAX_LIMIT', 150);
     }
-    
+
 }

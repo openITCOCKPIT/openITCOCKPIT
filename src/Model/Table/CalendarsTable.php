@@ -278,4 +278,27 @@ class CalendarsTable extends Table {
             ->disableHydration();
         return $this->emptyArrayIfNull($query->toArray());
     }
+
+    /**
+     * @param string $uuid
+     * @return bool
+     */
+    public function existsByUuid(string $uuid): bool {
+        return $this->exists(['Calendars.uuid' => $uuid]);
+    }
+
+
+    /**
+     * @param $uuid
+     * @return array
+     */
+    public function getCalendarByUuidForImportDiff($uuid) {
+        $query = $this->find('all')
+            ->contain('CalendarHolidays')
+            ->where(['Calendars.uuid' => $uuid])
+            ->disableHydration()
+            ->firstOrFail();
+
+        return $this->emptyArrayIfNull($query);
+    }
 }

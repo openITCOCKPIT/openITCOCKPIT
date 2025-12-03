@@ -258,4 +258,24 @@ class CalendarsTable extends Table {
 
         return $result;
     }
+
+    /**
+     * @param $ids
+     * @return array
+     */
+    public function getCalendarsByIdsForExport($ids) {
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+        $query = $this->find()
+            ->contain([
+                'CalendarHolidays'
+            ])
+            ->where([
+                'Calendars.id IN'        => $ids,
+                'Calendars.container_id' => ROOT_CONTAINER
+            ])
+            ->disableHydration();
+        return $this->emptyArrayIfNull($query->toArray());
+    }
 }

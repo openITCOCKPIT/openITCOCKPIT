@@ -769,11 +769,43 @@ class TimeperiodsTable extends Table {
             $ids = [$ids];
         }
         $query = $this->find()
-            ->contain(['TimeperiodTimeranges'])
+            ->contain([
+                'TimeperiodTimeranges',
+                'Calendars',
+                'ExcludedTimePeriod' => function ($query) {
+                    return $query->select([
+                        'ExcludedTimePeriod.uuid',
+                        'ExcludedTimePeriod.name'
+                    ])
+                        ->disableAutoFields()
+                        ->disableHydration();
+                }
+            ])
             ->where([
                 'Timeperiods.id IN'        => $ids,
                 'Timeperiods.container_id' => ROOT_CONTAINER
             ])
+            ->disableHydration();
+        return $this->emptyArrayIfNull($query->toArray());
+    }
+
+    /**
+     * @param $ids
+     * @return array
+     */
+    public function getExcludedTimeperiodIdsForExport($ids) {
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+        $query = $this->find()
+            ->select([
+                'Timeperiods.exclude_timeperiod_id'
+            ])
+            ->where([
+                'Timeperiods.id IN'        => $ids,
+                'Timeperiods.container_id' => ROOT_CONTAINER
+            ])
+            ->whereNotNull('Timeperiods.exclude_timeperiod_id')
             ->disableHydration();
         return $this->emptyArrayIfNull($query->toArray());
     }

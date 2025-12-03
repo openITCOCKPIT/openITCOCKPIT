@@ -27,6 +27,7 @@ namespace App\Model\Entity;
 
 use App\Model\Table\ContainersTable;
 use App\Model\Table\TimeperiodsTable;
+use Cake\I18n\DateTime;
 use Cake\ORM\Entity;
 use Cake\ORM\TableRegistry;
 
@@ -34,13 +35,14 @@ use Cake\ORM\TableRegistry;
  * Calendar Entity
  *
  * @property int $id
+ * @property string $uuid
  * @property string $name
  * @property string $description
  * @property int $container_id
- * @property \Cake\I18n\DateTime $created
- * @property \Cake\I18n\DateTime $modified
+ * @property DateTime $created
+ * @property DateTime $modified
  *
- * @property \App\Model\Entity\CalendarHoliday[] $calendar_holidays
+ * @property CalendarHoliday[] $calendar_holidays
  */
 class Calendar extends Entity {
     /**
@@ -53,6 +55,7 @@ class Calendar extends Entity {
      * @var array
      */
     protected array $_accessible = [
+        'uuid'              => true,
         'name'              => true,
         'description'       => true,
         'container_id'      => true,

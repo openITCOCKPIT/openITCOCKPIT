@@ -62,6 +62,12 @@ class DependencyCollector {
      */
     private $servicetemplates = [];
 
+    /**
+     * @var array
+     * [id]=>uuid
+     */
+    private $calendars = [];
+
     public function addCommand(int $id, string $uuid) {
         $this->commands[$id] = $uuid;
     }
@@ -80,6 +86,10 @@ class DependencyCollector {
 
     public function addServicetemplate(int $id, string $uuid) {
         $this->servicetemplates[$id] = $uuid;
+    }
+
+    public function addCalendar(int $id, string $uuid) {
+        $this->calendars[$id] = $uuid;
     }
 
     /**
@@ -115,5 +125,12 @@ class DependencyCollector {
      */
     public function getServicetemplates(): array {
         return $this->servicetemplates;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCalendars(): array {
+        return $this->calendars;
     }
 }

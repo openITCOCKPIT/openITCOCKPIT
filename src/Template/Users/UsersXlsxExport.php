@@ -87,36 +87,22 @@ final class UsersXlsxExport {
      * @throws MissingEntityException
      */
     private function fetchData(): void {
-        // Till now this is mock data.
+        /** @var UsersTable $UsersTable */
+        $UsersTable = TableRegistry::getTableLocator()->get('Users');
 
-        $this->Users = [
-            1 => [
-                'name'                  => 'Administrator',
-                'firstname'             => 'Super',
-                'lastname'              => 'User',
-                'email'                 => 'root@localhost',
-                'user_role_id'          => 1123455,
-                'user_role'             => 'Administrator',
-                'is_ldap_user'          => true,
-                'UserRoleThroughLdapID' => 1,
-                'UserRoleThroughLdap'   => 'Administrator'
-            ],
-            2 => [
-                'name' => 'Foo Bar'
-            ],
-            3 => [
-                'name' => 'Foo Baz'
-            ],
-            4 => [
-                'name' => 'Corey Tailor'
-            ],
-            5 => [
-                'name' => 'Jane Doe'
-            ],
-            6 => [
-                'name' => 'John Doe'
-            ]
-        ];
+        $all_tmp_users = $UsersTable->getUsersExport($this->MY_RIGHTS);
+
+        foreach ($all_tmp_users as $_user) {
+            /** @var User $_user */
+            $user = $_user->toArray();
+            if (!empty($user['samaccountname'])) {
+                // Hier LDAP QUERY MACHEN!
+            }
+            $this->Users[] = $user;
+        }
+
+
+        // Till now this is mock data.
 
         $this->Containers = [
             1 => [

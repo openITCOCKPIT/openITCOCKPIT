@@ -1939,4 +1939,48 @@ class UsersTable extends Table {
         }
         return $return;
     }
+
+    /**
+     * @param $MY_RIGHTS
+     * @return array
+     */
+    public function getUsersExport($MY_RIGHTS = []) {
+
+        $query = $this->find();
+        $query->select([
+            'Users.id',
+            'Users.email',
+            'Users.company',
+            'Users.phone',
+            'Users.firstname',
+            'Users.lastname',
+            'Users.is_active',
+            'Users.samaccountname',
+            'Users.is_oauth',
+            'Users.last_login',
+            'Usergroups.id',
+            'Usergroups.name',
+            'full_name' => $query->func()->concat([
+                'Users.firstname' => 'literal',
+                ' ',
+                'Users.lastname'  => 'literal'
+            ])
+        ])
+            ->contain([
+                'Usergroups',
+                'Containers',
+                'Usercontainerroles' => [
+                    'Containers'
+                ]
+            ]);
+
+        $query->orderBy(
+            ['Users.id' => 'asc']
+        );
+        $query->groupBy([
+            'Users.id'
+        ]);
+
+        return $query->toArray();
+    }
 }

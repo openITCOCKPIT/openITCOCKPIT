@@ -274,8 +274,8 @@ final class UsersXlsxExport {
     private function UsersSheet(): void {
         $sheet = $this->Spreadsheet->getActiveSheet();
         $sheet->setTitle('Users');
-        $row = 1;
-        $col = 1;
+        $row = 0;
+        $col = 0;
 
         // Header Row
         $sheet->setCellValue(self::getCellPosition($col++, $row), 'User ID');
@@ -312,8 +312,8 @@ final class UsersXlsxExport {
     private function UserRolesSheet(): void {
         $sheet = $this->Spreadsheet->createSheet();
         $sheet->setTitle('User Roles');
-        $row = 1;
-        $col = 1;
+        $row = 0;
+        $col = 0;
 
         // Header Row
         $sheet->setCellValue(self::getCellPosition($col++, $row), '(Module) + Controller');
@@ -325,7 +325,7 @@ final class UsersXlsxExport {
         // Body Rows
         foreach ($this->Permissions as $Permission) {
             $row++;
-            $col = 1;
+            $col = 0;
 
             $moduleControllerString = $Permission['controller'];
             if ($Permission['module']) {
@@ -351,8 +351,8 @@ final class UsersXlsxExport {
     private function ContainersSheet(): void {
         $sheet = $this->Spreadsheet->createSheet();
         $sheet->setTitle('Containers');
-        $row = 1;
-        $col = 1;
+        $row = 0;
+        $col = 0;
 
         // Header Row
         $sheet->setCellValue(self::getCellPosition($col++, $row), 'Container ID');
@@ -364,7 +364,7 @@ final class UsersXlsxExport {
         // Body Rows
         foreach ($this->Containers as $ContainerID => $Container) {
             $row++;
-            $col = 1;
+            $col = 0;
 
             $sheet->setCellValue(self::getCellPosition($col++, $row), "$ContainerID");
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$Container['name']}");
@@ -387,6 +387,6 @@ final class UsersXlsxExport {
             $letters = chr(($col % 26) + 65) . $letters;
             $col = (int)($col / 26) - 1;
         }
-        return $letters . $row;
+        return $letters . $row + 1;
     }
 }

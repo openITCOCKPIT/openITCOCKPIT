@@ -25,6 +25,7 @@
 
 namespace App\Template\Users;
 
+use App\Model\Entity\User;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\UsergroupsTable;
 use App\Model\Table\UsersTable;
@@ -46,8 +47,12 @@ final class UsersXlsxExport {
     private array $UserRoles;
 
     private array $Permissions;
+    private array $MY_RIGHTS;
+    private bool $hasRootPrivileges;
 
-    public function __construct() {
+    public function __construct(array $MY_RIGHTS, bool $hasRootPrivileges) {
+        $this->MY_RIGHTS = $MY_RIGHTS;
+        $this->hasRootPrivileges = $hasRootPrivileges;
         $this->Spreadsheet = new Spreadsheet();
         $this->UsersTable = TableRegistry::getTableLocator()->get('Users');
         $this->ContainersTable = TableRegistry::getTableLocator()->get('Containers');

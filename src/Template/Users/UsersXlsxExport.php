@@ -277,7 +277,7 @@ final class UsersXlsxExport {
         // Body Rows
         foreach ($this->Users as $UserId => $User) {
             $row++;
-            $col = 1;
+            $col = 0;
 
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$UserId}");
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['firstname']}");

@@ -334,7 +334,30 @@ class MapgeneratorsController extends AppController {
                 /** @var MapsTable $MapsTable */
                 $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
 
-                $generatedMaps = $MapsTable->getMapsAndItemsByIds($mapIds);
+                // order by y coordinate ascending to avoid problems with items placement
+                $contain = [
+                    'Containers',
+                    'Mapsummaryitems' => [
+                        'sort' => ['Mapsummaryitems.y' => 'ASC']
+                    ],
+                    'Mapgadgets'      => [
+                        'sort' => ['Mapgadgets.y' => 'ASC']
+                    ],
+                    'Mapicons'        => [
+                        'sort' => ['Mapicons.y' => 'ASC']
+                    ],
+                    'Mapitems'        => [
+                        'sort' => ['Mapitems.y' => 'ASC']
+                    ],
+                    'Maplines'        => [
+                        'sort' => ['Maplines.endY' => 'ASC']
+                    ],
+                    'Maptexts'        => [
+                        'sort' => ['Maptexts.y' => 'ASC']
+                    ],
+                ];
+
+                $generatedMaps = $MapsTable->getMapsAndItemsByIds($mapIds, $contain);
 
             }
 

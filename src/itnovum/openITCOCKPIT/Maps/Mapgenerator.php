@@ -310,9 +310,13 @@ class Mapgenerator {
         $ITEMS_PER_LINE = $this->mapgeneratorData['items_per_line']; // number of items per line
         $mapHasItems = false; // if map has only one item, calculate position based on this item
         $itemsPerLineCounter = 0; // counter for items per line
+        $DEFAULT_ICON_WIDTH = 100;
+        $iconWidth = $DEFAULT_ICON_WIDTH; // default with of mapsummaryitem icon
+        $iconHeight = $DEFAULT_ICON_WIDTH; // default height of mapsummaryitem icon
+        $lineHeightAlreadyIncreased = false; // flag to check if line height was already increased
 
         // searching for the previous item and its position in the existing items
-        foreach (['mapgadgets', 'mapicons', 'mapitems', 'maplines', 'maptexts', 'mapsummaryitems'] as $itemType) {
+        foreach (['mapsummaryitems', 'mapgadgets', 'mapicons', 'mapitems', 'maplines', 'maptexts'] as $itemType) {
             if (isset($mapToAddItems[$itemType])) {
                 $mapHasItems = true;
                 foreach ($mapToAddItems[$itemType] as $item) {
@@ -322,36 +326,85 @@ class Mapgenerator {
                         return [];
                     }
 
-                    $itemX = ($itemType === 'maplines') ? $item['endX'] : $item['x'];
-                    $itemY = ($itemType === 'maplines') ? $item['endY'] : $item['y'];
+                    if ($itemType === 'maplines') {
+                        $itemX = max($item['startX'], $item['endX']);
+                        $itemY = max($item['startY'], $item['endY']);
+                    } else {
+                        $itemX = $item['x'];
+                        $itemY = $item['y'];
+                    }
+
+                    // skip items that are above the current y position (higher row)
+                    if ($itemY < $y) {
+                        continue;
+                    }
 
                     // start new line
                     if ($itemY > $y) {
                         $y = $itemY;
                         $x = 0;
                         $itemsPerLineCounter = 1;
-                    } else if ($itemY === $y) {
+
+                        $iconWidth = $DEFAULT_ICON_WIDTH;
+                        $iconHeight = $DEFAULT_ICON_WIDTH;
+
+                        if (!empty($item['size_x'])) {
+                            $iconWidth = $item['size_x'];
+                        }
+
+                        if (!empty($item['size_y'])) {
+                            $iconHeight = $item['size_y'];
+                        }
+
+                        // if icon is higher than line height, increase y position
+                        if ($iconHeight > $LINE_HEIGHT) {
+                            // cause mapsummaryitems have same height and width and height is in DB wrongly set, we use width for mapsummaryitems
+                            if ($itemType === 'mapsummaryitems') {
+                                $y += $iconWidth;
+                            } else {
+                                $y += $iconHeight;
+                            }
+                        }
+
+                        if ($itemType !== 'mapsummaryitems') {
+                            $iconWidth = $DEFAULT_ICON_WIDTH;
+                            $itemsPerLineCounter = $ITEMS_PER_LINE + 1; // force new line for next item to continue grid
+                        }
+
+                    } else if ($itemY === $y && $itemType === 'mapsummaryitems') {
                         $itemsPerLineCounter++;
                         if ($itemX > $x || ($itemX === $x && $itemX === 0 && $itemY === 0)) {
+
+                            $iconWidth = $DEFAULT_ICON_WIDTH; // default width of mapsummaryitem icon
+
+                            if (!empty($item['size_x'])) {
+                                $iconWidth = $item['size_x'];
+                            }
+
                             $x = $itemX;
+
                         }
                     }
                 }
             }
         }
 
-        // if y does not fit the line height (130px), add some space to the top
+        // if y does not fit the line height (140px)
         if ($y > 0 && $y % $LINE_HEIGHT !== 0) {
-            $y += ($y % $LINE_HEIGHT); // add some space to the top
+            $y += $LINE_HEIGHT - ($y % $LINE_HEIGHT); // calculate next line start
+            $itemsPerLineCounter = $ITEMS_PER_LINE + 1; // force new line for next item to continue grid
+            $lineHeightAlreadyIncreased = true;
         }
 
         if ($x > 0 || $mapHasItems) {
-            $x += $WIDTH; // add some space to the right
+            $x += $WIDTH + ($iconWidth / 2); // add some space to the right
         }
         // if item is too far to the right, move it to the next line
         if ($itemsPerLineCounter >= $ITEMS_PER_LINE) {
             $x = 0; // reset x position to start
-            $y += $LINE_HEIGHT; // add some space to the bottom
+            if (!$lineHeightAlreadyIncreased) {
+                $y += $LINE_HEIGHT; // add some space to the bottom
+            }
         }
 
         /** @var MapsummaryitemsTable $MapsummaryitemsTable */

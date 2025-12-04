@@ -67,7 +67,7 @@ class TimeperiodsController extends AppController {
 
     function index() {
         if (!$this->isApiRequest()) {
-            throw new \Cake\Http\Exception\MethodNotAllowedException();
+            throw new MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -137,7 +137,7 @@ class TimeperiodsController extends AppController {
      */
     public function viewDetails($id = null) {
         if (!$this->isApiRequest()) {
-            throw new \Cake\Http\Exception\MethodNotAllowedException();
+            throw new MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -165,7 +165,7 @@ class TimeperiodsController extends AppController {
      */
     public function add() {
         if (!$this->isApiRequest()) {
-            throw new \Cake\Http\Exception\MethodNotAllowedException();
+            throw new MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -204,7 +204,7 @@ class TimeperiodsController extends AppController {
      */
     public function edit($id = null) {
         if (!$this->isApiRequest()) {
-            throw new \Cake\Http\Exception\MethodNotAllowedException();
+            throw new MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */
@@ -334,7 +334,7 @@ class TimeperiodsController extends AppController {
      */
     public function copy($id = null) {
         if (!$this->isAngularJsRequest()) {
-            throw new \Cake\Http\Exception\MethodNotAllowedException();
+            throw new MethodNotAllowedException();
         }
 
         $MY_RIGHTS = $this->MY_RIGHTS;
@@ -353,6 +353,7 @@ class TimeperiodsController extends AppController {
         }
 
         $hasErrors = false;
+        $newTimeperiodEntity = null;
         $postData = [];
 
         if ($this->request->is('post')) {
@@ -454,7 +455,7 @@ class TimeperiodsController extends AppController {
      */
     public function usedBy($id = null) {
         if (!$this->isApiRequest()) {
-            throw new \Cake\Http\Exception\MethodNotAllowedException();
+            throw new MethodNotAllowedException();
         }
 
         /** @var TimeperiodsTable $TimeperiodsTable */

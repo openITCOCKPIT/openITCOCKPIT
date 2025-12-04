@@ -983,8 +983,7 @@ class TimeperiodsTable extends Table {
             'ExcludedTimePeriod' => []
         ];
 
-
-        if ($dataToParse['Timeperiod']['calendar_id']) {
+        if (!empty($dataToParse['Timeperiod']['calendar_id'])) {
             /** @var CalendarsTable $CalendarsTable */
             $CalendarsTable = TableRegistry::getTableLocator()->get('Calendars');
 
@@ -997,7 +996,7 @@ class TimeperiodsTable extends Table {
             }
         }
 
-        if ($dataToParse['Timeperiod']['exclude_timeperiod_id']) {
+        if (!empty($dataToParse['Timeperiod']['exclude_timeperiod_id'])) {
             $excludedTimePeriod = $this->getTimeperiodById($dataToParse['Timeperiod']['exclude_timeperiod_id']);
             if (!empty($excludedTimePeriod)) {
                 $extDataForChangelog['ExcludedTimePeriod'] = [

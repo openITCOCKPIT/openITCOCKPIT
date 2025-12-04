@@ -213,6 +213,7 @@ class TimeperiodsController extends AppController {
             throw new NotFoundException('Time period not found');
         }
         $timeperiod = $TimeperiodsTable->getTimeperiodForEdit($id);
+        $timeperiod->setAccess('calendar', false);
         $timeperiodForChangeLog['Timeperiod'] = $timeperiod->toArray();
 
         if (!$this->allowedByContainerId($timeperiod->get('container_id'))) {
@@ -352,6 +353,7 @@ class TimeperiodsController extends AppController {
         }
 
         $hasErrors = false;
+        $postData = [];
 
         if ($this->request->is('post')) {
             $Cache = new KeyValueStore();
@@ -382,6 +384,7 @@ class TimeperiodsController extends AppController {
                         'description'           => $timeperiodData['Timeperiod']['description'],
                         'container_id'          => $sourceTimeperiod['container_id'],
                         'calendar_id'           => $sourceTimeperiod['calendar_id'],
+                        'exclude_timeperiod_id' => $sourceTimeperiod['exclude_timeperiod_id'],
                         'uuid'                  => UUID::v4(),
                         'timeperiod_timeranges' => $sourceTimeperiod['timeperiod_timeranges']
                     ];
@@ -402,33 +405,38 @@ class TimeperiodsController extends AppController {
                     $newTimeperiodData = $newTimeperiodEntity->toArray();
                     $action = 'edit';
                 }
-                $TimeperiodsTable->save($newTimeperiodEntity);
+                if ($newTimeperiodEntity) {
+                    $TimeperiodsTable->save($newTimeperiodEntity);
 
-                $postData[$index]['Error'] = [];
-                if ($newTimeperiodEntity->hasErrors()) {
-                    $hasErrors = true;
-                    $postData[$index]['Error'] = $newTimeperiodEntity->getErrors();
-                } else {
-                    //No errors
-                    $postData[$index]['Timeperiod']['id'] = $newTimeperiodEntity->get('id');
+                    $postData[$index]['Error'] = [];
+                    if ($newTimeperiodEntity->hasErrors()) {
+                        $hasErrors = true;
+                        $postData[$index]['Error'] = $newTimeperiodEntity->getErrors();
+                    } else {
+                        //No errors
+                        $postData[$index]['Timeperiod']['id'] = $newTimeperiodEntity->get('id');
 
-                    /** @var ChangelogsTable $ChangelogsTable */
-                    $ChangelogsTable = TableRegistry::getTableLocator()->get('Changelogs');
+                        /** @var ChangelogsTable $ChangelogsTable */
+                        $ChangelogsTable = TableRegistry::getTableLocator()->get('Changelogs');
 
-                    $changelog_data = $ChangelogsTable->parseDataForChangelog(
-                        $action,
-                        'timeperiods',
-                        $postData[$index]['Timeperiod']['id'],
-                        OBJECT_TIMEPERIOD,
-                        [ROOT_CONTAINER],
-                        $User->getId(),
-                        $newTimeperiodEntity->get('name'),
-                        ['Timeperiod' => $newTimeperiodData]
-                    );
-                    if ($changelog_data) {
-                        /** @var Changelog $changelogEntry */
-                        $changelogEntry = $ChangelogsTable->newEntity($changelog_data);
-                        $ChangelogsTable->save($changelogEntry);
+                        $changelog_data = $ChangelogsTable->parseDataForChangelog(
+                            $action,
+                            'timeperiods',
+                            $postData[$index]['Timeperiod']['id'],
+                            OBJECT_TIMEPERIOD,
+                            [ROOT_CONTAINER],
+                            $User->getId(),
+                            $newTimeperiodEntity->get('name'),
+                            array_merge(
+                                $TimeperiodsTable->resolveDataForChangelog(['Timeperiod' => $newTimeperiodData]),
+                                ['Timeperiod' => $newTimeperiodData]
+                            )
+                        );
+                        if ($changelog_data) {
+                            /** @var Changelog $changelogEntry */
+                            $changelogEntry = $ChangelogsTable->newEntity($changelog_data);
+                            $ChangelogsTable->save($changelogEntry);
+                        }
                     }
                 }
             }

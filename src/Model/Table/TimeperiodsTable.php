@@ -388,7 +388,9 @@ class TimeperiodsTable extends Table {
             ->select([
                 'Timeperiods.id',
                 'Timeperiods.name',
-                'Timeperiods.description'
+                'Timeperiods.description',
+                'Timeperiods.calendar_id',
+                'Timeperiods.exclude_timeperiod_id'
             ])
             ->where([
                 'Timeperiods.id IN' => $ids
@@ -839,7 +841,11 @@ class TimeperiodsTable extends Table {
     private function getTimeperiodForEditByWhere(array $where) {
         return $this->find()
             ->where($where)
-            ->contain(['TimeperiodTimeranges'])
+            ->contain([
+                'TimeperiodTimeranges',
+                'Calendars',
+                'ExcludedTimePeriod'
+            ])
             ->firstOrFail();
     }
 
@@ -863,6 +869,7 @@ class TimeperiodsTable extends Table {
         //No errors
         /** @var ChangelogsTable $ChangelogsTable */
         $ChangelogsTable = TableRegistry::getTableLocator()->get('Changelogs');
+        $extDataForChangelog = $this->resolveDataForChangelog($timeperiod);
 
         $changelog_data = $ChangelogsTable->parseDataForChangelog(
             'add',
@@ -872,10 +879,9 @@ class TimeperiodsTable extends Table {
             [ROOT_CONTAINER],
             $userId,
             $entity->get('name'),
-            $timeperiod
+            array_merge($extDataForChangelog, $timeperiod)
         );
         if ($changelog_data) {
-            /** @var Changelog $changelogEntry */
             $changelogEntry = $ChangelogsTable->newEntity($changelog_data);
             $ChangelogsTable->save($changelogEntry);
         }
@@ -914,8 +920,8 @@ class TimeperiodsTable extends Table {
             [$entity->get('container_id')],
             $userId,
             $entity->get('name'),
-            $newTimeperiod,
-            $oldTimeperiod
+            array_merge($this->resolveDataForChangelog($newTimeperiod), $newTimeperiod),
+            array_merge($this->resolveDataForChangelog($oldTimeperiod), $oldTimeperiod)
         );
 
         if ($changelog_data) {
@@ -933,7 +939,11 @@ class TimeperiodsTable extends Table {
      */
     public function getTimeperiodByUuidForImportDiff($uuid) {
         $query = $this->find('all')
-            ->contain('TimeperiodTimeranges')
+            ->contain([
+                'TimeperiodTimeranges',
+                'Calendars',
+                'ExcludedTimePeriod'
+            ])
             ->where(['Timeperiods.uuid' => $uuid])
             ->disableHydration()
             ->firstOrFail();
@@ -961,5 +971,42 @@ class TimeperiodsTable extends Table {
             ->all();
 
         return $this->formatListAsCake2($timeperiods->toArray());
+    }
+
+    /**
+     * @param array $dataToParse
+     * @return array
+     */
+    public function resolveDataForChangelog($dataToParse = []) {
+        $extDataForChangelog = [
+            'Calendar'           => [],
+            'ExcludedTimePeriod' => []
+        ];
+
+
+        if ($dataToParse['Timeperiod']['calendar_id']) {
+            /** @var CalendarsTable $CalendarsTable */
+            $CalendarsTable = TableRegistry::getTableLocator()->get('Calendars');
+
+            $calendar = $CalendarsTable->getCalendarById($dataToParse['Timeperiod']['calendar_id']);
+            if (!empty($calendar)) {
+                $extDataForChangelog['Calendar'] = [
+                    'id'   => $calendar['id'],
+                    'name' => $calendar['name']
+                ];
+            }
+        }
+
+        if ($dataToParse['Timeperiod']['exclude_timeperiod_id']) {
+            $excludedTimePeriod = $this->getTimeperiodById($dataToParse['Timeperiod']['exclude_timeperiod_id']);
+            if (!empty($excludedTimePeriod)) {
+                $extDataForChangelog['ExcludedTimePeriod'] = [
+                    'id'   => $excludedTimePeriod['Timeperiod']['id'],
+                    'name' => $excludedTimePeriod['Timeperiod']['name']
+                ];
+            }
+        }
+
+        return $extDataForChangelog;
     }
 }

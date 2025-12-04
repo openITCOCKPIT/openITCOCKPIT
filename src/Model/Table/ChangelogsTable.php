@@ -252,6 +252,8 @@ class ChangelogsTable extends Table {
             'timeperiod'           => [
                 'Timeperiod'                       => '{(name|description)}',
                 'Timeperiod.timeperiod_timeranges' => '{n}.{(id|day|start|end)}',
+                'Calendar'                         => '{(id|name)}',
+                'ExcludedTimePeriod'               => '{(id|name)}',
             ],
             'contact'              => [
                 'Contact'                 => '{(name|description|email|phone|notify_).*}',
@@ -633,7 +635,6 @@ class ChangelogsTable extends Table {
     }
 
     public function replaceFieldValues($dataUnserialized) {
-        $newDataUnserialized = [];
 
         /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
@@ -730,6 +731,11 @@ class ChangelogsTable extends Table {
             'tenant.container' => __('Container'),
 
             'Timeperiod.timeperiod_timeranges' => __('Time ranges'),
+            'Timeperiod.calendar'              => __('Calendar'),
+            'Timeperiod.excluded_time_period'  => __('Excluded time period'),
+
+            'Calendar.calendar_holidays' => __('Calendar holidays'),
+            'ExcludedTimePeriod'         => __('Excluded time period'),
 
             'location.container' => __('Container'),
         ];

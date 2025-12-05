@@ -40,6 +40,8 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 final class UsersXlsxExport {
+    private array $MY_RIGHTS;
+    private bool $hasRootPrivileges;
     private Spreadsheet $Spreadsheet;
     private UsersTable $UsersTable;
     private UsercontainerrolesTable $UsercontainerrolesTable;
@@ -55,8 +57,6 @@ final class UsersXlsxExport {
     private array $UserRoles;
 
     private array $Permissions;
-    private array $MY_RIGHTS;
-    private bool $hasRootPrivileges;
 
     public function __construct(array $MY_RIGHTS, bool $hasRootPrivileges) {
         $this->MY_RIGHTS = $MY_RIGHTS;
@@ -321,7 +321,7 @@ final class UsersXlsxExport {
             $sheet->setCellValue(self::getCellPosition($col++, $row), "$moduleControllerString");
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$Permission['action']}");
             foreach ($this->UserRoles as $UserRole) {
-                $cellValue = 'dont know';
+                $cellValue = $this->userRoleHasPermission($UserRole, $Permission) ? 'YES' : 'NO';
                 $sheet->setCellValue(self::getCellPosition($col++, $row), $cellValue);
             }
         }
@@ -411,5 +411,20 @@ final class UsersXlsxExport {
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * I will check, if the given UserRole has the given Permission.
+     * @param $UserRole
+     * @param $Permission
+     * @return bool
+     */
+    private function userRoleHasPermission($UserRole, $Permission): bool {
+        foreach ($UserRole['aro']['acos'] as $Aco) {
+            if ($Aco['id'] === $Permission['id']) {
+                return true;
+            }
+        }
+        return false;
     }
 }

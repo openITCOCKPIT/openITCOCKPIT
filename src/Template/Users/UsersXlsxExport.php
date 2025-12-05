@@ -25,6 +25,8 @@
 
 namespace App\Template\Users;
 
+use Acl\Model\Table\AcosTable;
+use App\Lib\AclDependencies;
 use App\Model\Entity\User;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\SystemsettingsTable;
@@ -40,8 +42,11 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 final class UsersXlsxExport {
     private Spreadsheet $Spreadsheet;
     private UsersTable $UsersTable;
+    private UsercontainerrolesTable $UsercontainerrolesTable;
     private ContainersTable $ContainersTable;
     private UsergroupsTable $UsergroupsTable;
+    private AcosTable $AcosTable;
+    private SystemsettingsTable $SystemsettingsTable;
 
     private array $Users;
 
@@ -57,9 +62,13 @@ final class UsersXlsxExport {
         $this->MY_RIGHTS = $MY_RIGHTS;
         $this->hasRootPrivileges = $hasRootPrivileges;
         $this->Spreadsheet = new Spreadsheet();
+
+        $this->SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
+        $this->UsercontainerrolesTable = TableRegistry::getTableLocator()->get('Usercontainerroles');
         $this->UsersTable = TableRegistry::getTableLocator()->get('Users');
         $this->ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $this->UsergroupsTable = TableRegistry::getTableLocator()->get('Usergroups');
+        $this->AcosTable = TableRegistry::getTableLocator()->get('Acl.Acos');
     }
 
     /**
@@ -74,8 +83,6 @@ final class UsersXlsxExport {
      * @throws MissingEntityException
      */
     public function export(string $fileName): void {
-        $this->fetchData();
-
         $this->UsersSheet();
         $this->UserRolesSheet();
         $this->ContainersSheet();
@@ -85,19 +92,37 @@ final class UsersXlsxExport {
         $writer->save($fileName);
     }
 
-    /**
-     * @return void
-     * @throws MissingEntityException
-     */
-    private function fetchData(): void {
-        /** @var UsersTable $UsersTable */
-        $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        /** @var UsergroupsTable $UsergroupsTable */
-        $UsergroupsTable = TableRegistry::getTableLocator()->get('Usergroups');
+    private function buildUserRolesData(): void {
+        // Till now this is mock data.
+
+        $this->UserRoles = $this->UsergroupsTable->find()
+            ->contain([
+                'Aros'       => [
+                    'Acos'
+                ],
+                'Ldapgroups' => [
+                    'fields' => [
+                        'Ldapgroups.id'
+                    ]
+                ]
+            ])
+            ->all()->toArray();
+
+        $acos = $this->AcosTable->find('threaded')
+            ->disableHydration()
+            ->all();
+        $AclDependencies = new AclDependencies();
+        $AclDList = $AclDependencies->filterAcosForFrontend($acos->toArray());
+        foreach ($AclDList as $AclD) {
+            if ($AclD['children']) {
+                $this->addPermissionRow($AclD);
+            }
+        }
+    }
+
+    private function buildUserData(): void {
+        $all_tmp_users = $this->UsersTable->getUsersExport($this->MY_RIGHTS);
         $LdapClient = $this->getLdapClient();
-
-        $all_tmp_users = $UsersTable->getUsersExport($this->MY_RIGHTS);
-
         foreach ($all_tmp_users as $_user) {
             /** @var User $_user */
             $user = $_user->toArray();
@@ -109,10 +134,8 @@ final class UsersXlsxExport {
                     continue;
                 }
 
-                /** @var UsercontainerrolesTable $UsercontainerrolesTable */
-                $UsercontainerrolesTable = TableRegistry::getTableLocator()->get('Usercontainerroles');
 
-                $ldapUser['userContainerRoleContainerPermissionsLdap'] = $UsercontainerrolesTable->getContainerPermissionsByLdapUserMemberOf(
+                $ldapUser['userContainerRoleContainerPermissionsLdap'] = $this->UsercontainerrolesTable->getContainerPermissionsByLdapUserMemberOf(
                     $ldapUser['memberof']
                 );
 
@@ -137,16 +160,15 @@ final class UsersXlsxExport {
                 }
                 $ldapUser['userContainerRoleContainerPermissionsLdap'] = $permissions;
                 // Load matching user role (Adminisgtrator, Viewer, etc...)
-                $ldapUser['UserRoleThroughLdap'] = $UsergroupsTable->getUsergroupByLdapUserMemberOf($ldapUser['memberof']);
+                $ldapUser['UserRoleThroughLdap'] = $this->UsergroupsTable->getUsergroupByLdapUserMemberOf($ldapUser['memberof']);
 
                 $user = array_merge($user, $ldapUser);
             }
             $this->Users[] = $user;
         }
+    }
 
-
-        // Till now this is mock data.
-
+    private function buildContainersData(): void {
         $this->Containers = [
             1 => [
                 'name'  => '/root',
@@ -219,81 +241,6 @@ final class UsersXlsxExport {
                 ]
             ]
         ];
-
-        $this->UserRoles = [
-            1 => [
-                'name' => 'Administrator'
-            ],
-            2 => [
-                'name' => 'Administrator_light'
-            ],
-            3 => [
-                'name' => 'Viewer'
-            ],
-        ];
-
-        $this->Permissions = [
-            [
-                'module'      => '',
-                'controller'  => 'Servicetemplates',
-                'action'      => 'index',
-                'permissions' => [
-                    1 => true,
-                    2 => false,
-                    3 => true
-                ]
-            ],
-            [
-                'module'      => '',
-                'controller'  => 'Servicetemplates',
-                'action'      => 'view',
-                'permissions' => [
-                    1 => true,
-                    2 => true,
-                    3 => true
-                ]
-            ],
-            [
-                'module'      => '',
-                'controller'  => 'Servicetemplates',
-                'action'      => 'add',
-                'permissions' => [
-                    1 => true,
-                    2 => true,
-                    3 => false
-                ]
-            ],
-            [
-                'module'      => '',
-                'controller'  => 'Servicetemplates',
-                'action'      => 'edit',
-                'permissions' => [
-                    1 => true,
-                    2 => true,
-                    3 => false
-                ]
-            ],
-            [
-                'module'      => '',
-                'controller'  => 'Servicetemplates',
-                'action'      => 'delete',
-                'permissions' => [
-                    1 => true,
-                    2 => false,
-                    3 => false
-                ]
-            ],
-            [
-                'module'      => 'Eventcorrelation',
-                'controller'  => 'Eventcorrelation',
-                'action'      => 'index',
-                'permissions' => [
-                    1 => true,
-                    2 => true,
-                    3 => true
-                ]
-            ],
-        ];
     }
 
     /**
@@ -301,6 +248,7 @@ final class UsersXlsxExport {
      * @return void
      */
     private function UsersSheet(): void {
+        $this->buildUserData();
         $sheet = $this->Spreadsheet->getActiveSheet();
         $sheet->setTitle('Users');
         $row = 0;
@@ -339,6 +287,7 @@ final class UsersXlsxExport {
      * @return void
      */
     private function UserRolesSheet(): void {
+        $this->buildUserRolesData();
         $sheet = $this->Spreadsheet->createSheet();
         $sheet->setTitle('User Roles');
         $row = 0;
@@ -347,8 +296,8 @@ final class UsersXlsxExport {
         // Header Row
         $sheet->setCellValue(self::getCellPosition($col++, $row), '(Module) + Controller');
         $sheet->setCellValue(self::getCellPosition($col++, $row), 'Action');
-        foreach ($this->UserRoles as $UserRoleId => $UserRole) {
-            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$UserRole['name']} [ID $UserRoleId]");
+        foreach ($this->UserRoles as $UserRole) {
+            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$UserRole['name']} [ID {$UserRole['id']}]");
         }
 
         // Body Rows
@@ -363,14 +312,37 @@ final class UsersXlsxExport {
 
             $sheet->setCellValue(self::getCellPosition($col++, $row), "$moduleControllerString");
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$Permission['action']}");
-            foreach ($this->UserRoles as $UserRoleId => $UserRole) {
-                $cellValue = 'YES';
-                if ($Permission['permissions'][$UserRoleId] === false) {
-                    $cellValue = 'NO';
-                }
+            foreach ($this->UserRoles as $UserRole) {
+                $cellValue = 'dont know';
                 $sheet->setCellValue(self::getCellPosition($col++, $row), $cellValue);
             }
         }
+    }
+
+    private function addPermissionRow(array $Permission, string $controller = ''): void {
+        if ($Permission['alias'] === 'controllers') {
+            foreach ($Permission['children'] as $Child) {
+                $this->addPermissionRow($Child);
+            }
+            return;
+        }
+        if ($Permission['children']) {
+            foreach ($Permission['children'] as $Child) {
+                $this->addPermissionRow($Child, $Permission['alias']);
+            }
+            return;
+        }
+        $this->Permissions [] = [
+            'module'      => '',
+            'id'          => $Permission['id'],
+            'controller'  => $controller,
+            'action'      => $Permission['alias'],
+            'permissions' => [
+                1 => true,
+                2 => false,
+                3 => true
+            ]
+        ];
     }
 
     /**
@@ -378,6 +350,7 @@ final class UsersXlsxExport {
      * @return void
      */
     private function ContainersSheet(): void {
+        $this->buildContainersData();
         $sheet = $this->Spreadsheet->createSheet();
         $sheet->setTitle('Containers');
         $row = 0;
@@ -419,11 +392,14 @@ final class UsersXlsxExport {
         return $letters . $row + 1;
     }
 
+
+    /**
+     * If openITCOCKPIT is configured to use LDAP, I will return an instance of LdapClient.
+     * @return LdapClient|null
+     */
     private function getLdapClient(): LdapClient|null {
         try {
-            $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
-            return LdapClient::fromSystemsettings($SystemsettingsTable->findAsArraySection('FRONTEND'));
-            /** @var SystemsettingsTable $SystemsettingsTable */
+            return LdapClient::fromSystemsettings($this->SystemsettingsTable->findAsArraySection('FRONTEND'));
         } catch (\Exception $e) {
             return null;
         }

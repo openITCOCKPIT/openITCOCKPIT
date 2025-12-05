@@ -961,16 +961,14 @@ class TimeperiodsTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $timeperiods = $this->find()
-            ->select([
-                'Timeperiods.id',
-                'Timeperiods.name'
-            ])
+        $query = $this->find('list',
+            keyField: 'id',
+            valueField: 'name')
             ->where(['Timeperiods.container_id IN' => $containerIds])
             ->whereNotInList('Timeperiods.id', [$excludedTimeperiodId])
-            ->all();
-
-        return $this->formatListAsCake2($timeperiods->toArray());
+            ->where(['Timeperiods.exclude_timeperiod_id !=' => $excludedTimeperiodId])
+            ->disableHydration();
+        return $this->emptyArrayIfNull($query->toArray());
     }
 
     /**

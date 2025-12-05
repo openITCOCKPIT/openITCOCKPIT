@@ -164,6 +164,7 @@ final class UsersXlsxExport {
 
                 $user = array_merge($user, $ldapUser);
             }
+            $user['name'] = "{$user['firstname']} {$user['lastname']}";
             $this->Users[] = $user;
         }
     }
@@ -172,6 +173,7 @@ final class UsersXlsxExport {
         $this->Containers = [
             1 => [
                 'name'  => '/root',
+                'id'    => 12,
                 'Users' => [
                     1 => 'RW',
                     2 => 'R',
@@ -182,6 +184,7 @@ final class UsersXlsxExport {
             ],
             2 => [
                 'name'  => '/root/openITCOCKPIT',
+                'id'    => 12,
                 'Users' => [
                     1 => 'RW',
                     2 => 'R',
@@ -192,6 +195,7 @@ final class UsersXlsxExport {
             ],
             3 => [
                 'name'  => '/root/openITCOCKPIT/Berlin',
+                'id'    => 12,
                 'Users' => [
                     1 => 'RW',
                     2 => 'R',
@@ -202,6 +206,7 @@ final class UsersXlsxExport {
             ],
             4 => [
                 'name'  => '/root/openITCOCKPIT/Frankfurt',
+                'id'    => 12,
                 'Users' => [
                     1 => 'RW',
                     2 => 'R',
@@ -212,6 +217,7 @@ final class UsersXlsxExport {
             ],
             5 => [
                 'name'  => '/root/openITCOCKPIT/Fulda',
+                'id'    => 12,
                 'Users' => [
                     1 => 'RW',
                     2 => 'R',
@@ -222,6 +228,7 @@ final class UsersXlsxExport {
             ],
             6 => [
                 'name'  => '/root/openITCOCKPIT/Fulda/Demo',
+                'id'    => 12,
                 'Users' => [
                     1 => 'RW',
                     2 => 'R',
@@ -232,6 +239,7 @@ final class UsersXlsxExport {
             ],
             7 => [
                 'name'  => '/root/openITCOCKPIT/Hamburg',
+                'id'    => 12,
                 'Users' => [
                     1 => 'RW',
                     2 => 'R',
@@ -359,19 +367,19 @@ final class UsersXlsxExport {
         // Header Row
         $sheet->setCellValue(self::getCellPosition($col++, $row), 'Container ID');
         $sheet->setCellValue(self::getCellPosition($col++, $row), 'Container');
-        foreach ($this->Users as $UserRoleID => $UserRole) {
-            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$UserRole['name']} [ID $UserRoleID]");
+        foreach ($this->Users as $User) {
+            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['name']} [ID {$User['id']}]");
         }
 
         // Body Rows
-        foreach ($this->Containers as $ContainerID => $Container) {
+        foreach ($this->Containers as $Container) {
             $row++;
             $col = 0;
 
-            $sheet->setCellValue(self::getCellPosition($col++, $row), "$ContainerID");
-            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$Container['name']}");
-            foreach ($this->Users as $UserId => $User) {
-                $permission = $Container['Users'][$UserId] ?? '';
+            $sheet->setCellValue(self::getCellPosition($col++, $row), $Container['id']);
+            $sheet->setCellValue(self::getCellPosition($col++, $row), $Container['name']);
+            foreach ($this->Users as $User) {
+                $permission = $Container['Users'][$User['id']] ?? '';
                 $sheet->setCellValue(self::getCellPosition($col++, $row), $permission);
             }
         }

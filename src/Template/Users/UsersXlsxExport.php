@@ -27,10 +27,13 @@ namespace App\Template\Users;
 
 use App\Model\Entity\User;
 use App\Model\Table\ContainersTable;
+use App\Model\Table\SystemsettingsTable;
+use App\Model\Table\UsercontainerrolesTable;
 use App\Model\Table\UsergroupsTable;
 use App\Model\Table\UsersTable;
 use Cake\ORM\Exception\MissingEntityException;
 use Cake\ORM\TableRegistry;
+use itnovum\openITCOCKPIT\Ldap\LdapClient;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -89,14 +92,54 @@ final class UsersXlsxExport {
     private function fetchData(): void {
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
+        /** @var UsergroupsTable $UsergroupsTable */
+        $UsergroupsTable = TableRegistry::getTableLocator()->get('Usergroups');
+        $LdapClient = $this->getLdapClient();
 
         $all_tmp_users = $UsersTable->getUsersExport($this->MY_RIGHTS);
 
         foreach ($all_tmp_users as $_user) {
             /** @var User $_user */
             $user = $_user->toArray();
-            if (!empty($user['samaccountname'])) {
-                // Hier LDAP QUERY MACHEN!
+
+
+            if ($LdapClient && !empty($user['samaccountname'])) {
+                $ldapUser = $LdapClient->getUser($user['samaccountname'], true);
+                if (!$ldapUser) {
+                    continue;
+                }
+
+                /** @var UsercontainerrolesTable $UsercontainerrolesTable */
+                $UsercontainerrolesTable = TableRegistry::getTableLocator()->get('Usercontainerroles');
+
+                $ldapUser['userContainerRoleContainerPermissionsLdap'] = $UsercontainerrolesTable->getContainerPermissionsByLdapUserMemberOf(
+                    $ldapUser['memberof']
+                );
+
+                $permissions = [];
+                foreach ($ldapUser['userContainerRoleContainerPermissionsLdap'] as $userContainerRole) {
+                    foreach ($userContainerRole['containers'] as $container) {
+                        if (isset($permissions[$container['id']])) {
+                            //Container permission is already set.
+                            //Only overwrite it, if it is a WRITE_RIGHT
+                            if ($container['_joinData']['permission_level'] === WRITE_RIGHT) {
+                                $permissions[$container['id']] = $container;
+                            }
+                        } else {
+                            //Container is not yet in permissions - add it
+                            $permissions[$container['id']] = $container;
+                        }
+                        $permissions[$container['id']]['user_roles'][$userContainerRole['id']] = [
+                            'id'   => $userContainerRole['id'],
+                            'name' => $userContainerRole['name']
+                        ];
+                    }
+                }
+                $ldapUser['userContainerRoleContainerPermissionsLdap'] = $permissions;
+                // Load matching user role (Adminisgtrator, Viewer, etc...)
+                $ldapUser['UserRoleThroughLdap'] = $UsergroupsTable->getUsergroupByLdapUserMemberOf($ldapUser['memberof']);
+
+                $user = array_merge($user, $ldapUser);
             }
             $this->Users[] = $user;
         }
@@ -286,8 +329,8 @@ final class UsersXlsxExport {
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['usergroup']['id']}");
             $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['usergroup']['name']}");
             $sheet->setCellValue(self::getCellPosition($col++, $row), $User['samaccountname'] ? 'YES' : 'NO');
-            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['UserRoleThroughLdapID']}");
-            $sheet->setCellValue(self::getCellPosition($col++, $row), "{$User['UserRoleThroughLdap']}");
+            $sheet->setCellValue(self::getCellPosition($col++, $row), $User['UserRoleThroughLdap']['id'] ?? '');
+            $sheet->setCellValue(self::getCellPosition($col++, $row), $User['UserRoleThroughLdap']['name'] ?? '');
         }
     }
 
@@ -374,5 +417,15 @@ final class UsersXlsxExport {
             $col = (int)($col / 26) - 1;
         }
         return $letters . $row + 1;
+    }
+
+    private function getLdapClient(): LdapClient|null {
+        try {
+            $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
+            return LdapClient::fromSystemsettings($SystemsettingsTable->findAsArraySection('FRONTEND'));
+            /** @var SystemsettingsTable $SystemsettingsTable */
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }

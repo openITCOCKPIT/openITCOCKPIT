@@ -39,6 +39,9 @@ use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Ldap\LdapClient;
 use OpenSpout\Common\Entity\Cell\StringCell;
 use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\CellAlignment;
+use OpenSpout\Common\Entity\Style\Color;
+use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\Common\Creator\WriterEntityFactory;
 use OpenSpout\Writer\XLSX\Writer;
 
@@ -232,6 +235,12 @@ final class UsersXlsxExport {
             $header[] = new StringCell((string)($UserRole['name']) . '[ID ' . ($UserRole['id']) . ']');
         }
 
+
+        $Style = new Style();
+        $CenterStyle = $Style->withCellAlignment(CellAlignment::CENTER);
+        $YesStyle = $CenterStyle->withFontColor(Color::GREEN);
+        $NoStyle = $CenterStyle->withFontColor(Color::RED);
+
         $lines = [
             $header
         ];
@@ -248,10 +257,10 @@ final class UsersXlsxExport {
             ];
             foreach ($this->UserRoles as $UserRole) {
                 if ($this->userRoleHasPermission($UserRole, $Permission['id'])) {
-                    $line[] = new StringCell('YES');
+                    $line[] = new StringCell('YES', $YesStyle);
                     continue;
                 }
-                $line[] = new StringCell('NO');
+                $line[] = new StringCell('NO', $NoStyle);
             }
 
             $lines[] = $line;

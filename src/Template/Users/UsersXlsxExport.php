@@ -36,15 +36,16 @@ use App\Model\Table\UsergroupsTable;
 use App\Model\Table\UsersTable;
 use Cake\ORM\Exception\MissingEntityException;
 use Cake\ORM\TableRegistry;
-use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Ldap\LdapClient;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use OpenSpout\Common\Entity\Cell\StringCell;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Writer\Common\Creator\WriterEntityFactory;
+use OpenSpout\Writer\XLSX\Writer;
 
 final class UsersXlsxExport {
     private array $MY_RIGHTS;
     private bool $hasRootPrivileges;
-    private Spreadsheet $Spreadsheet;
+    private Writer $Spreadsheet;
     private UsercontainerrolesTable $UsercontainerrolesTable;
     private UsergroupsTable $UsergroupsTable;
     private array $Users = [];
@@ -71,7 +72,6 @@ final class UsersXlsxExport {
     public function __construct(array $MY_RIGHTS, bool $hasRootPrivileges) {
         $this->MY_RIGHTS = $MY_RIGHTS;
         $this->hasRootPrivileges = $hasRootPrivileges;
-        $this->Spreadsheet = new Spreadsheet();
 
         $this->UsercontainerrolesTable = TableRegistry::getTableLocator()->get('Usercontainerroles');
         $this->UsergroupsTable = TableRegistry::getTableLocator()->get('Usergroups');
@@ -89,12 +89,15 @@ final class UsersXlsxExport {
      * @throws MissingEntityException
      */
     public function export(string $fileName): void {
+        $this->Spreadsheet = new Writer();
+        $this->Spreadsheet->openToFile($fileName);
+
+
         $this->UsersSheet();
         $this->UserRolesSheet();
         $this->ContainersSheet();
 
-        $writer = new Xlsx($this->Spreadsheet);
-        $writer->save($fileName);
+        $this->Spreadsheet->close();
     }
 
     /**
@@ -103,38 +106,42 @@ final class UsersXlsxExport {
      */
     private function UsersSheet(): void {
         $this->buildUserData();
-        $sheet = $this->Spreadsheet->getActiveSheet();
-        $sheet->setTitle('Users');
+        // First sheet is created automatically
+        $sheet = $this->Spreadsheet->getCurrentSheet();
+        $sheet->setName('Users');
 
         // Header Row
         $lines = [
             [
-                'User ID',
-                'First name',
-                'Last name',
-                'Mail',
-                'User role ID',
-                'User role / Fallback User role',
-                'LDAP User',
-                'User role through LDAP ID',
-                'User role through LDAP',
+                new StringCell('User ID'),
+                new StringCell('First name'),
+                new StringCell('Last name'),
+                new StringCell('Mail'),
+                new StringCell('User role ID'),
+                new StringCell('User role / Fallback User role'),
+                new StringCell('LDAP User'),
+                new StringCell('User role through LDAP ID'),
+                new StringCell('User role through LDAP'),
             ]
         ];
         // Body Rows
         foreach ($this->Users as $User) {
             $lines[] = [
-                h($User['id']),
-                h($User['firstname']),
-                h($User['lastname']),
-                h($User['email']),
-                h($User['usergroup']['id']),
-                h($User['usergroup']['name']),
-                ($User['samaccountname'] ? 'YES' : 'NO'),
-                h($User['UserRoleThroughLdap']['id'] ?? ''),
-                h($User['UserRoleThroughLdap']['name'] ?? ''),
+                new StringCell((string)($User['id'])),
+                new StringCell((string)($User['firstname'])),
+                new StringCell((string)($User['lastname'])),
+                new StringCell((string)($User['email'])),
+                new StringCell((string)($User['usergroup']['id'])),
+                new StringCell((string)($User['usergroup']['name'])),
+                new StringCell($User['samaccountname'] ? 'YES' : 'NO'),
+                new StringCell((string)($User['UserRoleThroughLdap']['id'] ?? '')),
+                new StringCell((string)($User['UserRoleThroughLdap']['name'] ?? '')),
             ];
         }
-        $sheet->fromArray($lines, null, 'A1', false);
+
+        foreach ($lines as $line) {
+            $this->Spreadsheet->addRow(new Row($line));
+        }
     }
 
     /**
@@ -213,16 +220,16 @@ final class UsersXlsxExport {
      */
     private function UserRolesSheet(): void {
         $this->buildUserRolesData();
-        $sheet = $this->Spreadsheet->createSheet();
-        $sheet->setTitle('User Roles');
+        $sheet = $this->Spreadsheet->addNewSheetAndMakeItCurrent();
+        $sheet->setName('User Roles');
 
         // Header Row
         $header = [
-            '(Module) + Controller',
-            'Action'
+            new StringCell('(Module) + Controller'),
+            new StringCell('Action'),
         ];
         foreach ($this->UserRoles as $UserRole) {
-            $header[] = h($UserRole['name']) . '[ID ' . h($UserRole['id']) . ']';
+            $header[] = new StringCell((string)($UserRole['name']) . '[ID ' . ($UserRole['id']) . ']');
         }
 
         $lines = [
@@ -230,26 +237,28 @@ final class UsersXlsxExport {
         ];
         // Body Rows
         foreach ($this->Permissions as $Permission) {
-            $moduleControllerString = h($Permission['controller']);
+            $moduleControllerString = ($Permission['controller']);
             if ($Permission['module']) {
-                $moduleControllerString = '(' . h($Permission['module']) . ') / ' . h($Permission['controller']);
+                $moduleControllerString = '(' . ($Permission['module']) . ') / ' . ($Permission['controller']);
             }
 
             $line = [
-                $moduleControllerString,
-                h($Permission['action'])
+                new StringCell((string)$moduleControllerString),
+                new StringCell((string)($Permission['action'])),
             ];
             foreach ($this->UserRoles as $UserRole) {
                 if ($this->userRoleHasPermission($UserRole, $Permission['id'])) {
-                    $line[] = 'YES';
+                    $line[] = new StringCell('YES');
                     continue;
                 }
-                $line[] = 'NO';
+                $line[] = new StringCell('NO');
             }
 
             $lines[] = $line;
         }
-        $sheet->fromArray($lines, null, 'A1', false);
+        foreach ($lines as $line) {
+            $this->Spreadsheet->addRow(new Row($line));
+        }
     }
 
     /**
@@ -271,8 +280,16 @@ final class UsersXlsxExport {
             ->disableHydration()
             ->all()
             ->toArray();
-        foreach ($this->UserRoles as $UserRole) {
-            $this->UserRoleAcos[$UserRole['id']] = array_unique(Hash::extract($UserRole, 'aro.acos.{n}.id'));
+        foreach ($this->UserRoles as $userRole) {
+            $ids = [];
+
+            if (!empty($userRole['aro']['acos'])) {
+                foreach ($userRole['aro']['acos'] as $aco) {
+                    $ids[$aco['id']] = true; // dedupe for free
+                }
+            }
+
+            $this->UserRoleAcos[$userRole['id']] = array_keys($ids);
         }
 
         /** @var AcosTable $AcosTable */
@@ -299,35 +316,36 @@ final class UsersXlsxExport {
      */
     private function ContainersSheet(): void {
         $this->buildContainersData();
-        $sheet = $this->Spreadsheet->createSheet();
-        $sheet->setTitle('Containers');
+        $sheet = $this->Spreadsheet->addNewSheetAndMakeItCurrent();
+        $sheet->setName('Containers');
 
         $lines = [
             [
-                h('Container ID'),
-                h('Container'),
+                new StringCell('Container ID'),
+                new StringCell('Container'),
             ]
         ];
 
         // Header Row
         foreach ($this->Users as $User) {
-            $lines[0][] = h($User['name']) . ' [ID ' . h($User['id']) . ']';
+            $lines[0][] = new StringCell((string)($User['name']) . ' [ID ' . ($User['id']) . ']');
         }
 
         // Body Rows
         foreach ($this->Containers as $Container) {
             $line = [
-                h($Container['id']),
-                h($Container['name']),
+                new StringCell((string)($Container['id'])),
+                new StringCell((string)($Container['name'])),
             ];
 
             foreach ($this->Users as $User) {
-                $permissionText = $this->getPermissionLevel($Container, $User);
-                $line[] = $permissionText;
+                $line[] = new StringCell($this->getPermissionLevel($Container, $User));
             }
             $lines[] = $line;
         }
-        $sheet->fromArray($lines, null, 'A1', false);
+        foreach ($lines as $line) {
+            $this->Spreadsheet->addRow(new Row($line));
+        }
     }
 
     private function getPermissionLevel(array|null $Container, array $User): string {
@@ -451,7 +469,7 @@ final class UsersXlsxExport {
             }
         }
     }
-    
+
     /**
      * If openITCOCKPIT is configured to use LDAP, I will return an instance of LdapClient.
      * @return LdapClient|null

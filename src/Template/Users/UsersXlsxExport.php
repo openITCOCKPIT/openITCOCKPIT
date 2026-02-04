@@ -39,7 +39,6 @@ use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Ldap\LdapClient;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 final class UsersXlsxExport {
@@ -106,37 +105,36 @@ final class UsersXlsxExport {
         $this->buildUserData();
         $sheet = $this->Spreadsheet->getActiveSheet();
         $sheet->setTitle('Users');
-        $row = 0;
-        $col = 0;
 
         // Header Row
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'User ID');
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'First name');
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'Last name');
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'Mail');
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'User role ID');
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'User role / Fallback User role');
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'LDAP User');
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'User role through LDAP ID');
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'User role through LDAP');
-
+        $lines = [
+            [
+                'User ID',
+                'First name',
+                'Last name',
+                'Mail',
+                'User role ID',
+                'User role / Fallback User role',
+                'LDAP User',
+                'User role through LDAP ID',
+                'User role through LDAP',
+            ]
+        ];
         // Body Rows
         foreach ($this->Users as $User) {
-            $row++;
-            $col = 0;
-
-            $sheet->setCellValue(self::getCellPosition($col++, $row), h($User['id']));
-            $sheet->setCellValue(self::getCellPosition($col++, $row), h($User['firstname']));
-            $sheet->setCellValue(self::getCellPosition($col++, $row), h($User['lastname']));
-            $sheet->setCellValue(self::getCellPosition($col, $row), h($User['email']));
-            $sheet->getCell(self::getCellPosition($col++, $row))->getHyperlink()->setUrl('mailto:' . $User['email']);
-            $sheet->setCellValue(self::getCellPosition($col++, $row), h($User['usergroup']['id']));
-            $sheet->setCellValue(self::getCellPosition($col++, $row), h($User['usergroup']['name']));
-            $sheet->setCellValue(self::getCellPosition($col, $row), $User['samaccountname'] ? 'YES' : 'NO');
-            $sheet->getStyle(self::getCellPosition($col++, $row))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->setCellValue(self::getCellPosition($col++, $row), h($User['UserRoleThroughLdap']['id'] ?? ''));
-            $sheet->setCellValue(self::getCellPosition($col++, $row), h($User['UserRoleThroughLdap']['name'] ?? ''));
+            $lines[] = [
+                h($User['id']),
+                h($User['firstname']),
+                h($User['lastname']),
+                h($User['email']),
+                h($User['usergroup']['id']),
+                h($User['usergroup']['name']),
+                ($User['samaccountname'] ? 'YES' : 'NO'),
+                h($User['UserRoleThroughLdap']['id'] ?? ''),
+                h($User['UserRoleThroughLdap']['name'] ?? ''),
+            ];
         }
+        $sheet->fromArray($lines, null, 'A1', false);
     }
 
     /**
@@ -149,15 +147,20 @@ final class UsersXlsxExport {
         $all_tmp_users = $UsersTable->getUsersExport($this->MY_RIGHTS);
 
         // Initialized later, so it only connects on demand, but ONCE.
-        $LdapClient = null;
+        $LdapClient = false;
         foreach ($all_tmp_users as $_user) {
             /** @var User $_user */
             $user = $_user->toArray();
 
-            if (!empty($user['samaccountname'])) {
+            if ($LdapClient !== false && !empty($user['samaccountname'])) {
                 // If not already done, get LdapClient, we need it now.
                 if (!$LdapClient) {
                     $LdapClient = $this->getLdapClient();
+                    if ($LdapClient === null) {
+                        // LDAP CLIENT CANNOT BE LOADED, Skip on this case by setting the ldapClient to a dummy value.
+                        $LdapClient = false;
+                        continue;
+                    }
                 }
                 $ldapUser = $LdapClient->getUser($user['samaccountname'], true);
                 if (!$ldapUser) {
@@ -212,41 +215,41 @@ final class UsersXlsxExport {
         $this->buildUserRolesData();
         $sheet = $this->Spreadsheet->createSheet();
         $sheet->setTitle('User Roles');
-        $row = 0;
-        $col = 0;
 
         // Header Row
-        $sheet->setCellValue(self::getCellPosition($col++, $row), '(Module) + Controller');
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'Action');
+        $header = [
+            '(Module) + Controller',
+            'Action'
+        ];
         foreach ($this->UserRoles as $UserRole) {
-            $sheet->setCellValue(self::getCellPosition($col++, $row), h($UserRole['name']) . '[ID ' . h($UserRole['id']) . ']');
+            $header[] = h($UserRole['name']) . '[ID ' . h($UserRole['id']) . ']';
         }
 
+        $lines = [
+            $header
+        ];
         // Body Rows
         foreach ($this->Permissions as $Permission) {
-            $row++;
-            $col = 0;
-
             $moduleControllerString = h($Permission['controller']);
             if ($Permission['module']) {
                 $moduleControllerString = '(' . h($Permission['module']) . ') / ' . h($Permission['controller']);
             }
 
-            $sheet->setCellValue(self::getCellPosition($col++, $row), $moduleControllerString);
-            $sheet->setCellValue(self::getCellPosition($col++, $row), h($Permission['action']));
+            $line = [
+                $moduleControllerString,
+                h($Permission['action'])
+            ];
             foreach ($this->UserRoles as $UserRole) {
-                $colour = 'FFFF0000';
-                $cellValue = 'NO';
                 if ($this->userRoleHasPermission($UserRole, $Permission['id'])) {
-                    $colour = 'FF00CC00';
-                    $cellValue = 'YES';
+                    $line[] = 'YES';
+                    continue;
                 }
-                $sheet->setCellValue(self::getCellPosition($col, $row), $cellValue);
-                $style = $sheet->getStyle(self::getCellPosition($col++, $row));
-                $style->getFont()->getColor()->setARGB($colour);
-                $style->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $line[] = 'NO';
             }
+
+            $lines[] = $line;
         }
+        $sheet->fromArray($lines, null, 'A1', false);
     }
 
     /**
@@ -265,7 +268,9 @@ final class UsersXlsxExport {
                     ]
                 ]
             ])
-            ->all()->toArray();
+            ->disableHydration()
+            ->all()
+            ->toArray();
         foreach ($this->UserRoles as $UserRole) {
             $this->UserRoleAcos[$UserRole['id']] = array_unique(Hash::extract($UserRole, 'aro.acos.{n}.id'));
         }
@@ -296,30 +301,33 @@ final class UsersXlsxExport {
         $this->buildContainersData();
         $sheet = $this->Spreadsheet->createSheet();
         $sheet->setTitle('Containers');
-        $row = 0;
-        $col = 0;
+
+        $lines = [
+            [
+                h('Container ID'),
+                h('Container'),
+            ]
+        ];
 
         // Header Row
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'Container ID');
-        $sheet->setCellValue(self::getCellPosition($col++, $row), 'Container');
         foreach ($this->Users as $User) {
-            $sheet->setCellValue(self::getCellPosition($col++, $row), h($User['name']) . ' [ID ' . h($User['id']) . ']');
+            $lines[0][] = h($User['name']) . ' [ID ' . h($User['id']) . ']';
         }
 
         // Body Rows
         foreach ($this->Containers as $Container) {
-            $row++;
-            $col = 0;
+            $line = [
+                h($Container['id']),
+                h($Container['name']),
+            ];
 
-            $sheet->setCellValue(self::getCellPosition($col++, $row), $Container['id']);
-            $sheet->setCellValue(self::getCellPosition($col++, $row), $Container['name']);
             foreach ($this->Users as $User) {
                 $permissionText = $this->getPermissionLevel($Container, $User);
-
-                $sheet->setCellValue(self::getCellPosition($col, $row), $permissionText);
-                $sheet->getStyle(self::getCellPosition($col++, $row))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $line[] = $permissionText;
             }
+            $lines[] = $line;
         }
+        $sheet->fromArray($lines, null, 'A1', false);
     }
 
     private function getPermissionLevel(array|null $Container, array $User): string {
@@ -377,6 +385,7 @@ final class UsersXlsxExport {
             ->UsercontainerrolesTable
             ->find()
             ->contain(['Containers', 'Users'])
+            ->disableHydration()
             ->toArray();
 
         $this->buildPermissionsMatrix();
@@ -442,23 +451,7 @@ final class UsersXlsxExport {
             }
         }
     }
-
-    /**
-     * I will return the Excel Cell Position like A1, B2, C3, ...
-     * @param int $col
-     * @param int $row
-     * @return string
-     */
-    private static function getCellPosition(int $col, int $row): string {
-        $letters = '';
-        while ($col >= 0) {
-            $letters = chr(($col % 26) + 65) . $letters;
-            $col = (int)($col / 26) - 1;
-        }
-        return $letters . $row + 1;
-    }
-
-
+    
     /**
      * If openITCOCKPIT is configured to use LDAP, I will return an instance of LdapClient.
      * @return LdapClient|null
@@ -479,8 +472,8 @@ final class UsersXlsxExport {
      * @param int $permissionId
      * @return bool
      */
-    private function userRoleHasPermission(Usergroup $UserRole, int $permissionId): bool {
-        return in_array($permissionId, $this->UserRoleAcos[$UserRole->id], true);
+    private function userRoleHasPermission(array $UserRole, int $permissionId): bool {
+        return in_array($permissionId, $this->UserRoleAcos[$UserRole['id']], true);
     }
 
     /**

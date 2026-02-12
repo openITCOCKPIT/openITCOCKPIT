@@ -910,6 +910,38 @@ class Systemsetting extends Importer {
                 'created'  => '2025-03-26 15:17:17',
                 'modified' => '2025-03-26 15:17:17'
             ],
+            (int)107 => [
+                'key'      => 'MONITORING.ESCAPE_HOSTADDRESS_IN_COMMANDLINE',
+                'value'    => '1',
+                'info'     => 'If enabled, the $HOSTADDRESS$ macro will get escaped in the configuration file. This has a low potential to break existing setups but can improve the security of the system by preventing command injection via specially crafted arguments.',
+                'section'  => 'MONITORING',
+                'created'  => '2026-02-12 09:28:17',
+                'modified' => '2026-02-12 09:28:17'
+            ],
+            (int)108 => [
+                'key'      => 'MONITORING.ESCAPE_NAMES_IN_COMMANDLINE',
+                'value'    => '1',
+                'info'     => 'If enabled, the $HOSTDISPLAYNAME$, $HOSTALIAS$, $HOSTNOTES$, $SERVICEDISPLAYNAME$, $SERVICENOTES$ and $...ALIAS$ macros will get escaped in the configuration file.',
+                'section'  => 'MONITORING',
+                'created'  => '2026-02-12 09:28:17',
+                'modified' => '2026-02-12 09:28:17'
+            ],
+            (int)109 => [
+                'key'      => 'MONITORING.ESCAPE_ARGUMENTS_IN_COMMANDLINE',
+                'value'    => '0',
+                'info'     => 'If enabled, the $ARGn$ macros will get escaped in the configuration file. This has the potential to break existing setups but can improve the security of the system by preventing command injection via specially crafted arguments.',
+                'section'  => 'MONITORING',
+                'created'  => '2026-02-12 09:28:17',
+                'modified' => '2026-02-12 09:28:17'
+            ],
+            (int)110 => [
+                'key'      => 'MONITORING.ESCAPE_MACROS_IN_COMMANDLINE',
+                'value'    => '0',
+                'info'     => 'If enabled, custom variables such as $_HOST...$, $_SERVICE...$ or $_CONTACT...$ will get escaped in the configuration file. This has the potential to break existing setups but can improve the security of the system by preventing command injection via specially crafted arguments.',
+                'section'  => 'MONITORING',
+                'created'  => '2026-02-12 09:28:17',
+                'modified' => '2026-02-12 09:28:17'
+            ],
         ];
 
         return $data;

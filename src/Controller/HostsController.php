@@ -33,6 +33,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\itnovum\openITCOCKPIT\Core\MonitoringMacroEscaper;
 use App\Lib\Exceptions\MissingDbBackendException;
 use App\Lib\Interfaces\AcknowledgementHostsTableInterface;
 use App\Lib\Interfaces\DowntimehistoryHostsTableInterface;
@@ -2152,6 +2153,7 @@ class HostsController extends AppController {
         }
 
         //Replace macros in host url
+        //Do not escape in URLs
         $HostMacroReplacer = new HostMacroReplacer($mergedHost);
         $HostCustomMacroReplacer = new CustomMacroReplacer($mergedHost['customvariables'], OBJECT_HOST, $replacePasswordInObjectMacros);
         $mergedHost['host_url_replaced'] =
@@ -2165,14 +2167,20 @@ class HostsController extends AppController {
         $checkPeriod = $TimeperiodsTable->getTimeperiodByIdCake4($mergedHost['check_period_id']);
         $notifyPeriod = $TimeperiodsTable->getTimeperiodByIdCake4($mergedHost['notify_period_id']);
 
+        $MonitoringMacroEscaper = MonitoringMacroEscaper::fromSystemsettings(
+            $SystemsettingsTable->getEscapingSettingsForMonitoringConfig()
+        );
+
         // Replace $ARGn$
-        $ArgnReplacer = new CommandArgReplacer($mergedHost['hostcommandargumentvalues']);
+        $ArgnReplacer = new CommandArgReplacer($mergedHost['hostcommandargumentvalues'], $MonitoringMacroEscaper);
         $hostCommandLine = $ArgnReplacer->replace($checkCommand['Command']['command_line']);
 
         // Replace $_HOSTFOOBAR$
+        $HostCustomMacroReplacer = new CustomMacroReplacer($mergedHost['customvariables'], OBJECT_HOST, $replacePasswordInObjectMacros, $MonitoringMacroEscaper);
         $hostCommandLine = $HostCustomMacroReplacer->replaceAllMacros($hostCommandLine);
 
         // Replace $HOSTNAME$
+        $HostMacroReplacer = new HostMacroReplacer($mergedHost, [], $MonitoringMacroEscaper);
         $hostCommandLine = $HostMacroReplacer->replaceBasicMacros($hostCommandLine);
 
         // Replace $USERn$ Macros (if enabled)

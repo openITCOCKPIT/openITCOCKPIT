@@ -26,6 +26,8 @@
 namespace itnovum\openITCOCKPIT\Core;
 
 
+use App\itnovum\openITCOCKPIT\Core\MonitoringMacroEscaper;
+
 class ServiceMacroReplacer {
 
     /**
@@ -37,6 +39,11 @@ class ServiceMacroReplacer {
      * @var array
      */
     private $servicestatus;
+
+    /**
+     * @var MonitoringMacroEscaper|null
+     */
+    private $MacroEscaper;
 
     /**
      * @var array
@@ -61,15 +68,15 @@ class ServiceMacroReplacer {
      * @param array $servicestatus result of CakePHPs find()
      */
 
-    public function __construct($service, $servicestatus = []) {
+    public function __construct($service, $servicestatus = [], ?MonitoringMacroEscaper $MacroEscaper = null) {
         if (isset($service['id']) && isset($service['uuid'])) {
             //Cake4 result...
             $service = [
                 'Service' => $service
             ];
 
-            if(isset($service['Service']['servicetemplate']['name'])){
-                if($service['Service']['name'] === null || $service['Service']['name'] === ''){
+            if (isset($service['Service']['servicetemplate']['name'])) {
+                if ($service['Service']['name'] === null || $service['Service']['name'] === '') {
                     $service['Service']['name'] = $service['Service']['servicetemplate']['name'];
                 }
             }
@@ -77,6 +84,7 @@ class ServiceMacroReplacer {
 
         $this->service = $service;
         $this->servicestatus = $servicestatus;
+        $this->MacroEscaper = $MacroEscaper;
     }
 
     /**
@@ -88,7 +96,7 @@ class ServiceMacroReplacer {
      * @param string $msg
      */
     public function replaceBasicMacros($msg) {
-        if(is_null($msg)){
+        if (is_null($msg)) {
             return $msg;
         }
 
@@ -106,7 +114,7 @@ class ServiceMacroReplacer {
      * @param string $msg
      */
     public function replaceStatusMacros($msg) {
-        if(is_null($msg)){
+        if (is_null($msg)) {
             return $msg;
         }
 
@@ -155,16 +163,30 @@ class ServiceMacroReplacer {
                 if ($servicename === null) {
                     $servicename = '$SERVICEDISPLAYNAME$';
                 }
-                $mapping['replace'][] = $servicename;
+                if ($this->MacroEscaper !== null) {
+                    $mapping['replace'][] = $this->MacroEscaper->escape($macroName, $servicename);
+                } else {
+                    $mapping['replace'][] = $servicename;
+                }
             } else {
                 if (isset($this->service['Service'][$databaseField])) {
-                    $mapping['replace'][] = $this->service['Service'][$databaseField];
+                    if ($this->MacroEscaper !== null) {
+                        $mapping['replace'][] = $this->MacroEscaper->escape($macroName, $this->service['Service'][$databaseField]);
+                    } else {
+                        $mapping['replace'][] = $this->service['Service'][$databaseField];
+
+                    }
                     $findReplacement = true;
                 }
 
                 //Check if this is a status field
                 if (isset($this->servicestatus['Servicestatus'][$databaseField])) {
-                    $mapping['replace'][] = $this->servicestatus['Servicestatus'][$databaseField];
+                    if ($this->MacroEscaper !== null) {
+                        $mapping['replace'][] = $this->MacroEscaper->escape($macroName, $this->servicestatus['Servicestatus'][$databaseField]);
+                    } else {
+                        $mapping['replace'][] = $this->servicestatus['Servicestatus'][$databaseField];
+                    }
+
                     $findReplacement = true;
                 }
 

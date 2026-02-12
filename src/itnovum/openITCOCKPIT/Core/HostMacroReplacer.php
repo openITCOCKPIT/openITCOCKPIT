@@ -26,6 +26,8 @@
 namespace itnovum\openITCOCKPIT\Core;
 
 
+use App\itnovum\openITCOCKPIT\Core\MonitoringMacroEscaper;
+
 class HostMacroReplacer {
 
     /**
@@ -37,6 +39,11 @@ class HostMacroReplacer {
      * @var array
      */
     private $hoststatus;
+
+    /**
+     * @var MonitoringMacroEscaper|null
+     */
+    private $MacroEscaper;
 
     /**
      * @var array
@@ -57,12 +64,11 @@ class HostMacroReplacer {
 
     /**
      * HostMacroReplacer constructor.
-     *
-     * @param array $host result of CakePHPs find()
-     * @param array $hoststatus result of CakePHPs find()
+     * @param $host
+     * @param array $hoststatus
+     * @param MonitoringMacroEscaper|null $MacroEscaper
      */
-
-    public function __construct($host, $hoststatus = []) {
+    public function __construct($host, array $hoststatus = [], ?MonitoringMacroEscaper $MacroEscaper = null) {
         if (isset($host['id']) && isset($host['uuid'])) {
             //Cake4 result...
             $host = [
@@ -71,6 +77,7 @@ class HostMacroReplacer {
         }
         $this->host = $host;
         $this->hoststatus = $hoststatus;
+        $this->MacroEscaper = $MacroEscaper;
     }
 
     /**
@@ -83,7 +90,7 @@ class HostMacroReplacer {
      * @param string $msg
      */
     public function replaceBasicMacros($msg) {
-        if(is_null($msg)){
+        if (is_null($msg)) {
             return $msg;
         }
 
@@ -101,7 +108,7 @@ class HostMacroReplacer {
      * @param string $msg
      */
     public function replaceStatusMacros($msg) {
-        if(is_null($msg)){
+        if (is_null($msg)) {
             return $msg;
         }
 
@@ -137,13 +144,21 @@ class HostMacroReplacer {
             $mapping['search'][] = $macroName;
             $findReplacement = false;
             if (isset($this->host['Host'][$databaseField])) {
-                $mapping['replace'][] = $this->host['Host'][$databaseField];
+                if ($this->MacroEscaper !== null) {
+                    $mapping['replace'][] = $this->MacroEscaper->escape($macroName, $this->host['Host'][$databaseField]);
+                } else {
+                    $mapping['replace'][] = $this->host['Host'][$databaseField];
+                }
                 $findReplacement = true;
             }
 
             //Check if this is a status field
             if (isset($this->hoststatus['Hoststatus'][$databaseField])) {
-                $mapping['replace'][] = $this->hoststatus['Hoststatus'][$databaseField];
+                if ($this->MacroEscaper !== null) {
+                    $mapping['replace'][] = $this->MacroEscaper->escape($macroName, $this->hoststatus['Hoststatus'][$databaseField]);
+                } else {
+                    $mapping['replace'][] = $this->hoststatus['Hoststatus'][$databaseField];
+                }
                 $findReplacement = true;
             }
 

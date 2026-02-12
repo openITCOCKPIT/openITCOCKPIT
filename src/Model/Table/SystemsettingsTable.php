@@ -237,6 +237,34 @@ class SystemsettingsTable extends Table {
     }
 
     /**
+     * @return array
+     */
+    public function getEscapingSettingsForMonitoringConfig(): array {
+        if (!Cache::read('systemsettings_escape_settings_monitoring_configuration', 'permissions')) {
+            $section = $this->findAsArraySection('MONITORING');
+            $keys = [
+                'MONITORING.ESCAPE_HOSTADDRESS_IN_COMMANDLINE',
+                'MONITORING.ESCAPE_NAMES_IN_COMMANDLINE',
+                'MONITORING.ESCAPE_ARGUMENTS_IN_COMMANDLINE',
+                'MONITORING.ESCAPE_MACROS_IN_COMMANDLINE',
+            ];
+
+            $escape = [];
+            foreach ($keys as $key) {
+                if (!isset($section['MONITORING'][$key])) {
+                    $escape[$key] = false;
+                    continue;
+                }
+
+                $escape[$key] = $section['MONITORING'][$key] === '1';
+            }
+
+            Cache::write('systemsettings_escape_settings_monitoring_configuration', $escape, 'permissions');
+        }
+        return Cache::read('systemsettings_escape_settings_monitoring_configuration', 'permissions');
+    }
+
+    /**
      * @param string $key
      * @return array
      */

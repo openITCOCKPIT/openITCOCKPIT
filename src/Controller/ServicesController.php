@@ -33,6 +33,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\itnovum\openITCOCKPIT\Core\MonitoringMacroEscaper;
 use App\Lib\Exceptions\MissingDbBackendException;
 use App\Lib\Interfaces\AcknowledgementHostsTableInterface;
 use App\Lib\Interfaces\AcknowledgementServicesTableInterface;
@@ -1516,6 +1517,7 @@ class ServicesController extends AppController {
         }
 
         //Replace macros in service url
+        //Do not escape in URLs
         $HostMacroReplacer = new HostMacroReplacer($host);
         $ServiceMacroReplacer = new ServiceMacroReplacer($mergedService);
         $ServiceCustomMacroReplacer = new CustomMacroReplacer($mergedService['customvariables'], OBJECT_SERVICE, $replacePasswordInObjectMacros);
@@ -1536,20 +1538,28 @@ class ServicesController extends AppController {
         $checkPeriod = $TimeperiodsTable->getTimeperiodByIdCake4($mergedService['check_period_id']);
         $notifyPeriod = $TimeperiodsTable->getTimeperiodByIdCake4($mergedService['notify_period_id']);
 
+        $MonitoringMacroEscaper = MonitoringMacroEscaper::fromSystemsettings(
+            $SystemsettingsTable->getEscapingSettingsForMonitoringConfig()
+        );
+
         // Replace $ARGn$
-        $ArgnReplacer = new CommandArgReplacer($mergedService['servicecommandargumentvalues']);
+        $ArgnReplacer = new CommandArgReplacer($mergedService['servicecommandargumentvalues'], $MonitoringMacroEscaper);
         $serviceCommandLine = $ArgnReplacer->replace($checkCommand['Command']['command_line']);
 
         // Replace $_SERVICEFOOBAR$
+        $ServiceCustomMacroReplacer = new CustomMacroReplacer($mergedService['customvariables'], OBJECT_SERVICE, $replacePasswordInObjectMacros, $MonitoringMacroEscaper);
         $serviceCommandLine = $ServiceCustomMacroReplacer->replaceAllMacros($serviceCommandLine);
 
         // Replace $_HOSTFOOBAR$
+        $HostCustomMacroReplacer = new CustomMacroReplacer($mergedHost['customvariables'], OBJECT_HOST, $replacePasswordInObjectMacros, $MonitoringMacroEscaper);
         $serviceCommandLine = $HostCustomMacroReplacer->replaceAllMacros($serviceCommandLine);
 
         // Replace $HOSTNAME$
+        $HostMacroReplacer = new HostMacroReplacer($host, [], $MonitoringMacroEscaper);
         $serviceCommandLine = $HostMacroReplacer->replaceBasicMacros($serviceCommandLine);
 
         // Replace $SERVICEDESCRIPTION$
+        $ServiceMacroReplacer = new ServiceMacroReplacer($mergedService, [], $MonitoringMacroEscaper);
         $serviceCommandLine = $ServiceMacroReplacer->replaceBasicMacros($serviceCommandLine);
 
         // Replace $USERn$ Macros (if enabled)

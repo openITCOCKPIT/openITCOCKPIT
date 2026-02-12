@@ -26,6 +26,8 @@
 namespace itnovum\openITCOCKPIT\Core;
 
 
+use App\itnovum\openITCOCKPIT\Core\MonitoringMacroEscaper;
+
 class CommandArgReplacer {
 
     /**
@@ -34,11 +36,17 @@ class CommandArgReplacer {
     private $commandargumentvalues;
 
     /**
+     * @var MonitoringMacroEscaper|null
+     */
+    private $MacroEscaper;
+
+    /**
      * CommandArgReplacer constructor.
      * @param array $commandargumentvalues
      */
-    public function __construct($commandargumentvalues) {
+    public function __construct($commandargumentvalues, ?MonitoringMacroEscaper $MacroEscaper = null) {
         $this->commandargumentvalues = $commandargumentvalues;
+        $this->MacroEscaper = $MacroEscaper;
     }
 
     /**
@@ -74,7 +82,11 @@ class CommandArgReplacer {
             $value = $commandargumentvalue['value'];
 
             $mapping['search'][] = $argn;
-            $mapping['replace'][] = $value;
+            if ($this->MacroEscaper !== null) {
+                $mapping['replace'][] = $this->MacroEscaper->escape($argn, $value);
+            } else {
+                $mapping['replace'][] = $value;
+            }
         }
         return $mapping;
     }

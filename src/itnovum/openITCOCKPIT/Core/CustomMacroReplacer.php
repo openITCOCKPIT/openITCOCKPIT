@@ -26,6 +26,8 @@
 namespace itnovum\openITCOCKPIT\Core;
 
 
+use App\itnovum\openITCOCKPIT\Core\MonitoringMacroEscaper;
+
 class CustomMacroReplacer {
 
     /**
@@ -44,6 +46,11 @@ class CustomMacroReplacer {
     private $replace_passwords;
 
     /**
+     * @var MonitoringMacroEscaper|null
+     */
+    private $MacroEscaper;
+
+    /**
      * @var array
      */
     private $mapping = [
@@ -59,10 +66,11 @@ class CustomMacroReplacer {
      * @param $objecttype_id
      * @param $replace_passwords
      */
-    public function __construct($customvariables, $objecttype_id, $replace_passwords = true) {
+    public function __construct($customvariables, $objecttype_id, $replace_passwords = true, ?MonitoringMacroEscaper $MacroEscaper = null) {
         $this->customvariables = $customvariables;
         $this->objecttype_id = $objecttype_id;
         $this->replace_passwords = $replace_passwords;
+        $this->MacroEscaper = $MacroEscaper;
         $this->buildMapping();
     }
 
@@ -121,7 +129,12 @@ class CustomMacroReplacer {
             }
             $name = sprintf('%s%s$', $this->getMacroPrefix(), $customvariable['name']);
             $mapping['search'][] = $name;
-            $mapping['replace'][] = $customvariable['value'];
+
+            if ($this->MacroEscaper !== null) {
+                $mapping['replace'][] = $this->MacroEscaper->escape($name, $customvariable['value']);
+            } else {
+                $mapping['replace'][] = $customvariable['value'];
+            }
         }
 
         $this->mapping = $mapping;

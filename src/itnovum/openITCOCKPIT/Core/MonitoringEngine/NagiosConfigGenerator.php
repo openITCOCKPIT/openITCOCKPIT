@@ -31,6 +31,7 @@
 
 namespace itnovum\openITCOCKPIT\Core\MonitoringEngine;
 
+use App\itnovum\openITCOCKPIT\Core\MonitoringMacroEscaper;
 use App\itnovum\openITCOCKPIT\Supervisor\Supervisorctl;
 use App\Lib\ExportTasks;
 use App\Lib\PluginExportTasks;
@@ -113,6 +114,11 @@ class NagiosConfigGenerator {
     private $HosttemplateHostgroupsCache;
 
     /**
+     * @var MonitoringMacroEscaper
+     */
+    private $MacroEscaper;
+
+    /**
      * NagiosExportTask constructor.
      */
     public function __construct() {
@@ -123,6 +129,8 @@ class NagiosConfigGenerator {
         $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
         $this->_systemsettings = $SystemsettingsTable->findAsArray();
         $this->FRESHNESS_THRESHOLD_ADDITION = (int)$this->_systemsettings['MONITORING']['MONITORING.FRESHNESS_THRESHOLD_ADDITION'];
+
+        $this->MacroEscaper = MonitoringMacroEscaper::fromSystemsettings($this->_systemsettings['MONITORING']);
 
         //Loading distributed Monitoring support, if plugin is loaded
         $this->dm = Plugin::isLoaded('DistributeModule');
@@ -3133,6 +3141,18 @@ class NagiosConfigGenerator {
      */
     public function removeNewlines(string $str = '') {
         return str_replace(["\r\n", "\n", "\r"], ' ', $str);
+    }
+
+    public function escapeCli(string $str = '', $macroType = '') {
+        if ($this->MacroEscaper->escapeNames() && $macroType === 'name') {
+            // make sure we have no unescaped chars that could cause problems when executed in bash or sh
+            // only escape, if not already escaped, otherwise we would end up with double escaped strings like \\\$1 instead of \$1
+
+
+        }
+
+        // Do not escape
+        return $str;
     }
 
     private function createMissingOitcAgentActiveChecks() {

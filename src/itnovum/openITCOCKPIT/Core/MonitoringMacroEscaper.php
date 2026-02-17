@@ -125,7 +125,7 @@ class MonitoringMacroEscaper {
 
         if ($this->escapeArguments && str_starts_with($macroName, '$ARG') && str_ends_with($macroName, '$')) {
             // Escape $ARGn$ macros
-            return escapeshellarg($value);
+            return $this->escapeShell($value);
         }
 
         if ($this->escapeMacros && str_starts_with($macroName, '$_') && str_ends_with($macroName, '$')) {
@@ -135,6 +135,18 @@ class MonitoringMacroEscaper {
 
         // Do not escape if not cached above
         return $value;
+    }
+
+    /**
+     * Escapes dangerous shell characters in a string for bash/sh using a state machine.
+     * Only escapes characters outside quotes or inside double quotes.
+     * Characters inside single quotes are not escaped.
+     *
+     * @param string $value
+     * @return string
+     */
+    public function escapeShell(string $value): string {
+
     }
 
 }

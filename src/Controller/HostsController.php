@@ -2133,6 +2133,8 @@ class HostsController extends AppController {
         $User = new User($this->getUser());
         $UserTime = $User->getUserTime();
 
+        $this->loadComponent('StatusMap');
+
         $canUserSeeCheckCommand = isset($this->PERMISSIONS['hosts']['checkcommand']);
 
         /** @var SystemsettingsTable $SystemsettingsTable */
@@ -2472,6 +2474,62 @@ class HostsController extends AppController {
             $objects['Maps'] = $MapsTable->getMapsByHostId((int)$id, $MY_RIGHTS);
         }
 
+        // Add Parents <- Host -> Children relations
+        $parentChildRelations = [
+            'edges' => [],
+            'nodes' => [
+                [
+                    'id'     => 'Host_' . $host['id'],
+                    'hostId' => $host['id'],
+                    'label'  => $host['name'],
+                    'title'  => $host['name'] . ' (' . $host['address'] . ')',
+                    'uuid'   => $host['uuid'],
+                    'group'  => $this->StatusMap->getNodeGroupName($host['disabled'], $Hoststatus)
+                ]
+            ]
+        ];
+
+        foreach ($host['parenthosts'] as $parentHost) {
+            $parentChildRelations['nodes'][] = [
+                'id'     => 'Host_' . $parentHost['id'],
+                'hostId' => $parentHost['id'],
+                'label'  => $parentHost['name'],
+                'title'  => $parentHost['name'] . ' (' . $parentHost['address'] . ')',
+                'uuid'   => $parentHost['uuid'],
+                'group'  => $this->StatusMap->getNodeGroupName($parentHost['disabled'], $Hoststatus)
+            ];
+            $parentChildRelations['edges'][] = [
+                'from'   => 'Host_' . $id,
+                'to'     => 'Host_' . $parentHost['id'],
+                'coment' => "{$parentHost['name']} is parent to {$host['name']}",
+                'color'  => [
+                    'inherit' => 'to',
+                ],
+                'arrows' => 'to'
+            ];
+        }
+
+        foreach ($host['child_hosts'] as $childHost) {
+            $parentChildRelations['nodes'][] = [
+                'id'     => 'Host_' . $childHost['id'],
+                'hostId' => $childHost['id'],
+                'label'  => $childHost['name'],
+                'title'  => $childHost['name'] . ' (' . $childHost['address'] . ')',
+                'uuid'   => $childHost['uuid'],
+                'group'  => $this->StatusMap->getNodeGroupName($childHost['disabled'], $Hoststatus)
+            ];
+            $parentChildRelations['edges'][] = [
+                'from'   => 'Host_' . $childHost['id'],
+                'to'     => 'Host_' . $id,
+                'coment' => "{$childHost['name']} is child to {$host['name']}",
+                'color'  => [
+                    'inherit' => 'to',
+                ],
+                'arrows' => 'to'
+            ];
+        }
+
+
         // Set data to fronend
         $this->set('mergedHost', $mergedHost);
         $this->set('docuExists', $DocumentationsTable->existsByUuid($hostObj->getUuid()));
@@ -2494,6 +2552,7 @@ class HostsController extends AppController {
         $this->set('username', $User->getFullName());
         $this->set('blurryCommandLine', $blurryCommandLine);
         $this->set('masterInstanceName', $masterInstanceName);
+        $this->set('parentChildRelations', $parentChildRelations);
 
         $this->viewBuilder()->setOption('serialize', [
             'mergedHost',
@@ -2517,7 +2576,8 @@ class HostsController extends AppController {
             'mapModule',
             'username',
             'blurryCommandLine',
-            'masterInstanceName'
+            'masterInstanceName',
+            'parentChildRelations'
         ]);
     }
 

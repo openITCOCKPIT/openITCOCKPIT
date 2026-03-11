@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -2479,24 +2480,48 @@ class HostsController extends AppController {
             'edges' => [],
             'nodes' => [
                 [
-                    'id'     => 'Host_' . $host['id'],
-                    'hostId' => $host['id'],
-                    'label'  => $host['name'],
-                    'title'  => $host['name'] . ' (' . $host['address'] . ')',
-                    'uuid'   => $host['uuid'],
-                    'group'  => $this->StatusMap->getNodeGroupName($host['disabled'], $Hoststatus)
+                    'id'               => 'Host_' . $host['id'],
+                    'hostId'           => $host['id'],
+                    'label'            => $host['name'],
+                    'title'            => $host['name'] . ' (' . $host['address'] . ')',
+                    'uuid'             => $host['uuid'],
+                    'font'             => [
+                        'align' => 'left'
+                    ],
+                    'shape'            => 'box',
+                    'heightConstraint' => [
+                        'minimum' => 20,
+                        'maximum' => 20,
+                    ],
+                    'widthConstraint'  => [
+                        'minimum' => 200,
+                        'maximum' => 200,
+                    ],
+                    'group'            => $this->StatusMap->getNodeGroupName($host['disabled'], $Hoststatus)
                 ]
             ]
         ];
 
         foreach ($host['parenthosts'] as $parentHost) {
             $parentChildRelations['nodes'][] = [
-                'id'     => 'Host_' . $parentHost['id'],
-                'hostId' => $parentHost['id'],
-                'label'  => $parentHost['name'],
-                'title'  => $parentHost['name'] . ' (' . $parentHost['address'] . ')',
-                'uuid'   => $parentHost['uuid'],
-                'group'  => $this->StatusMap->getNodeGroupName($parentHost['disabled'], $Hoststatus)
+                'id'               => 'Host_' . $parentHost['id'],
+                'hostId'           => $parentHost['id'],
+                'label'            => $parentHost['name'],
+                'title'            => $parentHost['name'] . ' (' . $parentHost['address'] . ')',
+                'uuid'             => $parentHost['uuid'],
+                'font'             => [
+                    'align' => 'left'
+                ],
+                'shape'            => 'box',
+                'heightConstraint' => [
+                    'minimum' => 20,
+                    'maximum' => 20,
+                ],
+                'widthConstraint'  => [
+                    'minimum' => 200,
+                    'maximum' => 200,
+                ],
+                'group'            => $this->StatusMap->getNodeGroupName($parentHost['disabled'], $Hoststatus)
             ];
             $parentChildRelations['edges'][] = [
                 'from'   => 'Host_' . $id,
@@ -2511,12 +2536,24 @@ class HostsController extends AppController {
 
         foreach ($host['child_hosts'] as $childHost) {
             $parentChildRelations['nodes'][] = [
-                'id'     => 'Host_' . $childHost['id'],
-                'hostId' => $childHost['id'],
-                'label'  => $childHost['name'],
-                'title'  => $childHost['name'] . ' (' . $childHost['address'] . ')',
-                'uuid'   => $childHost['uuid'],
-                'group'  => $this->StatusMap->getNodeGroupName($childHost['disabled'], $Hoststatus)
+                'id'               => 'Host_' . $childHost['id'],
+                'hostId'           => $childHost['id'],
+                'label'            => $childHost['name'],
+                'title'            => $childHost['name'] . ' (' . $childHost['address'] . ')',
+                'uuid'             => $childHost['uuid'],
+                'font'             => [
+                    'align' => 'left'
+                ],
+                'shape'            => 'box',
+                'heightConstraint' => [
+                    'minimum' => 20,
+                    'maximum' => 20,
+                ],
+                'widthConstraint'  => [
+                    'minimum' => 200,
+                    'maximum' => 200,
+                ],
+                'group'            => $this->StatusMap->getNodeGroupName($childHost['disabled'], $Hoststatus)
             ];
             $parentChildRelations['edges'][] = [
                 'from'   => 'Host_' . $childHost['id'],

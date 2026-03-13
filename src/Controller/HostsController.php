@@ -2518,8 +2518,8 @@ class HostsController extends AppController {
                     'maximum' => 20,
                 ],
                 'widthConstraint'  => [
-                    'minimum' => 200,
-                    'maximum' => 200,
+                    'minimum' => 300,
+                    'maximum' => 300,
                 ],
                 'group'            => $this->StatusMap->getNodeGroupName($parentHost['disabled'], $Hoststatus)
             ];
@@ -2530,7 +2530,6 @@ class HostsController extends AppController {
                 'color'  => [
                     'inherit' => 'to',
                 ],
-                'arrows' => 'to'
             ];
         }
 
@@ -2550,8 +2549,8 @@ class HostsController extends AppController {
                     'maximum' => 20,
                 ],
                 'widthConstraint'  => [
-                    'minimum' => 200,
-                    'maximum' => 200,
+                    'minimum' => 300,
+                    'maximum' => 300,
                 ],
                 'group'            => $this->StatusMap->getNodeGroupName($childHost['disabled'], $Hoststatus)
             ];
@@ -2562,7 +2561,6 @@ class HostsController extends AppController {
                 'color'  => [
                     'inherit' => 'to',
                 ],
-                'arrows' => 'to'
             ];
         }
 

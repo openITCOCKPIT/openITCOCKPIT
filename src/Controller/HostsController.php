@@ -2480,6 +2480,7 @@ class HostsController extends AppController {
             'edges' => [],
             'nodes' => [
                 [
+                    'level'            => 1,
                     'id'               => 'Host_' . $host['id'],
                     'hostId'           => $host['id'],
                     'label'            => $host['name'],
@@ -2503,9 +2504,12 @@ class HostsController extends AppController {
         ];
 
         foreach ($host['parenthosts'] as $parentHost) {
+            $hoststatus = $HoststatusTable->byUuid($parentHost['uuid'], $HoststatusFields);
+            $myHoststatus = new Hoststatus($hoststatus['Hoststatus'], $UserTime);
             $parentChildRelations['nodes'][] = [
                 'id'               => 'Host_' . $parentHost['id'],
                 'hostId'           => $parentHost['id'],
+                'level'            => 0,
                 'label'            => $parentHost['name'],
                 'title'            => $parentHost['name'] . ' (' . $parentHost['address'] . ')',
                 'uuid'             => $parentHost['uuid'],
@@ -2521,7 +2525,7 @@ class HostsController extends AppController {
                     'minimum' => 300,
                     'maximum' => 300,
                 ],
-                'group'            => $this->StatusMap->getNodeGroupName($parentHost['disabled'], $Hoststatus)
+                'group'            => $this->StatusMap->getNodeGroupName($parentHost['disabled'], $myHoststatus)
             ];
             $parentChildRelations['edges'][] = [
                 'from'   => 'Host_' . $id,
@@ -2534,9 +2538,12 @@ class HostsController extends AppController {
         }
 
         foreach ($host['child_hosts'] as $childHost) {
+            $hoststatus = $HoststatusTable->byUuid($childHost['uuid'], $HoststatusFields);
+            $myHoststatus = new Hoststatus($hoststatus['Hoststatus'], $UserTime);
             $parentChildRelations['nodes'][] = [
                 'id'               => 'Host_' . $childHost['id'],
                 'hostId'           => $childHost['id'],
+                'level'            => 2,
                 'label'            => $childHost['name'],
                 'title'            => $childHost['name'] . ' (' . $childHost['address'] . ')',
                 'uuid'             => $childHost['uuid'],
@@ -2552,14 +2559,14 @@ class HostsController extends AppController {
                     'minimum' => 300,
                     'maximum' => 300,
                 ],
-                'group'            => $this->StatusMap->getNodeGroupName($childHost['disabled'], $Hoststatus)
+                'group'            => $this->StatusMap->getNodeGroupName($childHost['disabled'], $myHoststatus)
             ];
             $parentChildRelations['edges'][] = [
                 'from'   => 'Host_' . $childHost['id'],
                 'to'     => 'Host_' . $id,
                 'coment' => "{$childHost['name']} is child to {$host['name']}",
                 'color'  => [
-                    'inherit' => 'to',
+                    'inherit' => 'from',
                 ],
             ];
         }

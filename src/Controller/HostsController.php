@@ -22,7 +22,6 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
-//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -2479,6 +2478,7 @@ class HostsController extends AppController {
         $parentChildRelations = [
             'edges' => [],
             'nodes' => [
+                // first not headline node is the node for the host browser host
                 [
                     'level'            => 1,
                     'id'               => 'Host_' . $host['id'],
@@ -2503,9 +2503,74 @@ class HostsController extends AppController {
             ]
         ];
 
+        // add headline nodes (order is important to display headlines correctly: level 0,1,2)
+
+        // add headline for parent hosts level
+        if (!empty($host['parenthosts'])) {
+            $parentChildRelationsHeadlineNodes[] = [
+                'level'            => 0,
+                'id'               => 'headline-level-0-parent',
+                'label'            => __('Parents'),
+                'title'            => __('Parents'),
+                'group'            => 'headline',
+                'shape'            => 'box',
+                'heightConstraint' => [
+                    'minimum' => 20,
+                    'maximum' => 20,
+                ],
+                'widthConstraint'  => [
+                    'minimum' => 200,
+                    'maximum' => 200,
+                ],
+            ];
+        }
+
+        // add headline for child hosts level
+        if (!empty($host['child_hosts'])) {
+            $parentChildRelationsHeadlineNodes[] = [
+                'level'            => 2,
+                'id'               => 'headline-level-2-children',
+                'label'            => __('Children'),
+                'title'            => __('Children'),
+                'group'            => 'headline',
+                'shape'            => 'box',
+                'heightConstraint' => [
+                    'minimum' => 20,
+                    'maximum' => 20,
+                ],
+                'widthConstraint'  => [
+                    'minimum' => 200,
+                    'maximum' => 200,
+                ],
+            ];
+        }
+
+        //edge is important so the headlines will be displayed horizontally on the same level
+        if (!empty($host['parenthosts']) && !empty($host['child_hosts'])) {
+            $parentChildRelations['edges'][] = [
+                'from'   => 'headline-level-2-children',
+                'to'     => 'headline-level-0-parent',
+                'coment' => "connection between headline for level 2 (children) and level 0 (parent)",
+                'color'  => [
+                    'inherit' => 'to',
+                ],
+            ];
+            $parentChildRelations['edges'][] = [
+                'from'   => 'headline-level-0-parent',
+                'to'     => 'headline-level-2-children',
+                'coment' => "connection between headline for level 0 (parent) and level 2 (children)",
+                'color'  => [
+                    'inherit' => 'from',
+                ],
+            ];
+        }
+
+        // add headline nodes to the beginning of the nodes array
+        $parentChildRelations['nodes'] = array_merge($parentChildRelationsHeadlineNodes, $parentChildRelations['nodes']);
+
         foreach ($host['parenthosts'] as $parentHost) {
-            $hoststatus = $HoststatusTable->byUuid($parentHost['uuid'], $HoststatusFields);
-            $myHoststatus = new Hoststatus($hoststatus['Hoststatus'], $UserTime);
+            $parentHoststatus = $HoststatusTable->byUuid($parentHost['uuid'], $HoststatusFields);
+            $myHoststatus = new Hoststatus($parentHoststatus['Hoststatus'], $UserTime);
             $parentChildRelations['nodes'][] = [
                 'id'               => 'Host_' . $parentHost['id'],
                 'hostId'           => $parentHost['id'],
@@ -2538,8 +2603,8 @@ class HostsController extends AppController {
         }
 
         foreach ($host['child_hosts'] as $childHost) {
-            $hoststatus = $HoststatusTable->byUuid($childHost['uuid'], $HoststatusFields);
-            $myHoststatus = new Hoststatus($hoststatus['Hoststatus'], $UserTime);
+            $childHoststatus = $HoststatusTable->byUuid($childHost['uuid'], $HoststatusFields);
+            $myHoststatus = new Hoststatus($childHoststatus['Hoststatus'], $UserTime);
             $parentChildRelations['nodes'][] = [
                 'id'               => 'Host_' . $childHost['id'],
                 'hostId'           => $childHost['id'],

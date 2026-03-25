@@ -2504,6 +2504,7 @@ class HostsController extends AppController {
         ];
 
         // add headline nodes (order is important to display headlines correctly: level 0,1,2)
+        $parentChildRelationsHeadlineNodes = [];
 
         // add headline for parent hosts level
         if (!empty($host['parenthosts'])) {

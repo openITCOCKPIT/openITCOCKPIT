@@ -2512,7 +2512,6 @@ class HostsController extends AppController {
                 'level'            => 0,
                 'id'               => 'headline-level-0-parent',
                 'label'            => __('Parents'),
-                'title'            => __('Parents'),
                 'group'            => 'headline',
                 'shape'            => 'box',
                 'heightConstraint' => [
@@ -2532,7 +2531,6 @@ class HostsController extends AppController {
                 'level'            => 2,
                 'id'               => 'headline-level-2-children',
                 'label'            => __('Children'),
-                'title'            => __('Children'),
                 'group'            => 'headline',
                 'shape'            => 'box',
                 'heightConstraint' => [

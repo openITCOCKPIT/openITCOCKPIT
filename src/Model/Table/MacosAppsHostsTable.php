@@ -166,9 +166,11 @@ class MacosAppsHostsTable extends Table {
             $query->where($GenericFilter->genericFilters());
         }
 
-        $query->orderBy(
-            $GenericFilter->getOrderForPaginator('Hosts.name', 'asc')
-        );
+        $query
+            ->orderBy(
+                $GenericFilter->getOrderForPaginator('Hosts.name', 'asc')
+            )
+            ->groupBy(['Hosts.id']);
 
         $query->disableHydration();
 

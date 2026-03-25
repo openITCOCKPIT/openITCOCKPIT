@@ -35,7 +35,6 @@ namespace App\Command;
 use App\Model\Table\HostsTable;
 use App\Model\Table\HosttemplatesTable;
 use App\Model\Table\SystemsettingsTable;
-use AutoreportModule\Model\Table\AutoreportsTable;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
@@ -87,15 +86,6 @@ class TestingCommand extends \Cake\Command\Command {
          * Have fun :)
          */
 
-        /** @var AutoreportsTable $AutoreportsTable */
-        $AutoreportsTable = TableRegistry::getTableLocator()->get('AutoreportModule.Autoreports');
-
-
-        $autoreportConfig = $AutoreportsTable->get(3);
-        debug($autoreportConfig->get('report_start_date')->toUnixString());
-        debug($autoreportConfig->get('created')->getTimestamp());
-
-
+        //export OITC_DEBUG=1 <-- use debug option to get output in the console
     }
-
 }

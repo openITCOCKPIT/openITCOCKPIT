@@ -32,6 +32,7 @@ class ServicesTopAlertJson extends DashboardJsonStandardizer {
         'state'               => 'critical',
         'not_older_than'      => 1,
         'not_older_than_unit' => 'DAY',
+        'servicepriority'     => [],
         'scroll_interval'     => 30000,
         'useScroll'           => true
     ];

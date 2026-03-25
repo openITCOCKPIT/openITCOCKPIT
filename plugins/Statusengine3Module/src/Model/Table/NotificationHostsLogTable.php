@@ -29,6 +29,7 @@ namespace Statusengine3Module\Model\Table;
 
 use App\Lib\Interfaces\NotificationHostsLogTableInterface;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Core\HostNotificationConditions;
@@ -141,6 +142,10 @@ class NotificationHostsLogTable extends Table implements NotificationHostsLogTab
                 ['HostsToContainers' => 'hosts_to_containers'],
                 ['HostsToContainers.host_id = Hosts.id']
             )
+            ->innerJoin(
+                ['Hosttemplates' => 'hosttemplates'],
+                ['Hosttemplates.id = Hosts.Hosttemplate_id']
+            )
             ->where([
                 'NotificationHostsLog.start_time >' => $HostNotificationConditions->getFrom(),
             ])
@@ -174,7 +179,23 @@ class NotificationHostsLogTable extends Table implements NotificationHostsLogTab
         }
 
         if ($HostNotificationConditions->hasConditions()) {
-            $query->andWhere($HostNotificationConditions->getConditions());
+
+            $where = $HostNotificationConditions->getConditions();
+
+            if (isset($where['hostpriority IN'])) {
+                $where[] = new ComparisonExpression(
+                    'IF((Hosts.priority IS NULL), Hosttemplates.priority, Hosts.priority)',
+                    $where['hostpriority IN'],
+                    'integer[]',
+                    'IN'
+                );
+                unset($where['hostpriority IN']);
+            }
+
+            if (!empty($where)) {
+                $query->andWhere($where);
+            }
+
         }
         if ($PaginateOMat === null) {
             //Just execute query

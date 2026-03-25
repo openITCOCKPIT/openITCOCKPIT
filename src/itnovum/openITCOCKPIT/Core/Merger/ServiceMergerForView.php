@@ -344,7 +344,7 @@ class ServiceMergerForView {
                 return $this->servicetemplate['servicetemplatecommandargumentvalues'];
             }
         }
-        $commandArgumentValuesDiff = array_diff(
+        $commandArgumentValuesDiff = Hash::diff(
             Hash::extract($this->servicetemplate['servicetemplatecommandargumentvalues'], '{n}.commandargument_id'),
             Hash::extract($this->service['servicecommandargumentvalues'], '{n}.commandargument_id')
         );

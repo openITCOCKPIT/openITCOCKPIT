@@ -37,19 +37,19 @@ class DelayedPassiveServicesJson extends DashboardJsonStandardizer {
      */
     protected $fields = [
         'Servicestatus'   => [
-            'current_state'         => [
+            'current_state'             => [
                 'ok'       => false,
                 'warning'  => false,
                 'critical' => false,
                 'unknown'  => false,
             ],
-            'acknowledged'          => false,
-            'not_acknowledged'      => false,
-            'in_downtime'           => false,
-            'not_in_downtime'       => false,
-            'output'                => '',
-            'state_older_than'      => null,
-            'state_older_than_unit' => 'MINUTE',
+            'acknowledged'              => false,
+            'not_acknowledged'          => false,
+            'in_downtime'               => false,
+            'not_in_downtime'           => false,
+            'output'                    => '',
+            'state_older_than'          => null,
+            'state_older_than_unit'     => 'MINUTE',
             'delayed_greater_than'      => null,
             'delayed_greater_than_unit' => 'MINUTE',
         ],
@@ -65,6 +65,7 @@ class DelayedPassiveServicesJson extends DashboardJsonStandardizer {
             'keywords'     => '',
             'not_keywords' => ''
         ],
+        'servicepriority' => [],
         'sort'            => 'Servicestatus.current_state',
         'direction'       => 'desc',
         'useScroll'       => true,

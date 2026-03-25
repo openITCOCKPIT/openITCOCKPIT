@@ -36,7 +36,8 @@ class ServiceFilter extends Filter {
             'bool'           => [
                 'Servicestatus.problem_has_been_acknowledged',
                 'Servicestatus.notifications_enabled',
-                'Servicestatus.active_checks_enabled'
+                'Servicestatus.active_checks_enabled',
+                'Servicestatus.is_hardstate'
             ],
             'like'           => [
                 'Servicestatus.output',

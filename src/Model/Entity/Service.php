@@ -175,7 +175,7 @@ class Service extends Entity {
             if ($service['command_id'] === null || $service['command_id'] == $servicetemplate['command_id']) {
                 $servicecommandargumentvalues = $service['servicecommandargumentvalues'];
 
-                $commandArgumentValuesDiff = array_diff(
+                $commandArgumentValuesDiff = Hash::diff(
                     Hash::extract($servicetemplate['servicetemplatecommandargumentvalues'], '{n}.commandargument_id'),
                     Hash::extract($servicecommandargumentvalues, '{n}.commandargument_id')
                 );

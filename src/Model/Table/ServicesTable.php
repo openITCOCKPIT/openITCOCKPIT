@@ -3367,7 +3367,7 @@ class ServicesTable extends Table {
         return $result;
     }
 
-    public function getAllOitcAgentServicesByHostIdForExport($hostId) {
+    public function getAllOitcAgentServicesByHostIdForExport($hostId): array {
         /** @var $ServicetemplatesTable ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
@@ -3411,7 +3411,7 @@ class ServicesTable extends Table {
         foreach ($services as $index => $service) {
             if (!empty($service['servicecommandargumentvalues'])) {
                 //Arguments from service
-                $commandArgumentValuesDiff = array_diff(
+                $commandArgumentValuesDiff = Hash::diff(
                     Hash::extract($service['servicetemplate']['servicetemplatecommandargumentvalues'], '{n}.commandargument_id'),
                     Hash::extract($service['servicecommandargumentvalues'], '{n}.commandargument_id')
                 );
@@ -3972,7 +3972,8 @@ class ServicesTable extends Table {
         $query = $this->find();
         $query
             ->select([
-                'Services.id'
+                'Services.id',
+                'servicepriority' => $query->newExpr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
             ])
             ->innerJoinWith('Servicetemplates')
             ->innerJoin(
@@ -4157,6 +4158,16 @@ class ServicesTable extends Table {
                 )
             ]);
         }
+
+        if (!empty($conditions['servicepriority'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Services.priority IS NULL), Servicetemplates.priority, Services.priority)',
+                $conditions['servicepriority'],
+                'integer[]',
+                'IN'
+            );
+        }
+
         $query->andWhere($where)
             ->groupBy(['Services.id'])
             ->disableHydration();
@@ -5296,7 +5307,8 @@ class ServicesTable extends Table {
         $query = $this->find();
         $query
             ->select([
-                'Services.uuid'
+                'Services.uuid',
+                'servicepriority' => $query->newExpr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
             ])
             ->where([
                 'Services.disabled' => 0
@@ -5399,6 +5411,14 @@ class ServicesTable extends Table {
         if (!empty($conditions['Host']['name'])) {
             $where['Hosts.name LIKE'] = sprintf('%%%s%%', $conditions['Host']['name']);
         }
+        if (!empty($conditions['servicepriority'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Services.priority IS NULL), Servicetemplates.priority, Services.priority)',
+                $conditions['servicepriority'],
+                'integer[]',
+                'IN'
+            );
+        }
         $query->andWhere($where);
         $query->disableHydration();
         $result = $query->all();
@@ -5421,11 +5441,12 @@ class ServicesTable extends Table {
             ->select([
                 'Services.host_id',
                 'Services.id',
-                'servicename' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+                'servicename'     => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
                 'Servicestatus.current_state',
                 'Servicestatus.scheduled_downtime_depth',
                 'Servicestatus.active_checks_enabled',
-                'Servicestatus.problem_has_been_acknowledged'
+                'Servicestatus.problem_has_been_acknowledged',
+                'servicepriority' => $query->newExpr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
             ]);
         $query->where([
             'Services.disabled' => 0
@@ -5677,6 +5698,15 @@ class ServicesTable extends Table {
                     'servicename LIKE' => sprintf('%%%s%%', $conditions['Service']['servicename'])
                 ]);
             }
+        }
+
+        if (!empty($conditions['servicepriority'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Services.priority IS NULL), Servicetemplates.priority, Services.priority)',
+                $conditions['servicepriority'],
+                'integer[]',
+                'IN'
+            );
         }
 
         $query->andWhere($where);

@@ -40,7 +40,11 @@
  * @var string $systemAddress
  * @var string $ticketsystemUrl
  *
+ * @var null|array $evcTree
  */
+
+use Cake\Core\Plugin;
+use EventcorrelationModule\EvcTableRenderer;
 
 echo $this->element('emails/style');
 
@@ -155,11 +159,13 @@ echo $this->element('emails/style');
                                 </tr>
                                 <?php if ($HoststatusIcon->getState() !== 0): ?>
                                     <tr>
-                                        <td>
+                                        <td colspan="2">
+                                            <br/>
+                                            <br/>
                                             <a href="<?php printf('https://%s/a/hosts/browser/%s%s', $systemAddress, $Host->getUuid(), '#acknowledge'); ?>"
-                                               style="text-decoration:none"
-                                               class="<?= strtoupper($HoststatusIcon->getTextColor()) ?>">
-                                                <?php echo __('Acknowledge'); ?>
+                                               class="btn-primary"
+                                               style="text-decoration:none">
+                                                💬 <?php echo __('Acknowledge host status'); ?>
                                             </a>
                                         </td>
                                     </tr>
@@ -174,7 +180,18 @@ echo $this->element('emails/style');
                                 <p class="lead"> <?php echo str_replace(['\n', '\r\n', '\r'], "<br/>", h($args->getOption('hostlongoutput'))); ?> </p>
                                 <br/>
                             <?php endif; ?>
-
+                            <?php if ($noAttachments === false): ?>
+                                <?php
+                                if (Plugin::isLoaded('EventcorrelationModule') && $Host->getHostType() === EVK_HOST):
+                                    $EvcTableRenderer = new EvcTableRenderer(
+                                        $evcTree,
+                                        null,
+                                        !$noEmoji
+                                    );
+                                    echo $EvcTableRenderer->getEvcDataAsTable(true);
+                                    echo '<br>';
+                                endif; ?>
+                            <?php endif; ?>
                             <br/>
                             <?php if ($HoststatusIcon->getState() !== 0): ?>
                                 <!--

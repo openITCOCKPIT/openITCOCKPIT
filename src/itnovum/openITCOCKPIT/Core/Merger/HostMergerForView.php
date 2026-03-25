@@ -253,7 +253,7 @@ class HostMergerForView {
                 return $this->hosttemplate['hosttemplatecommandargumentvalues'];
             }
         }
-        $commandArgumentValuesDiff = array_diff(
+        $commandArgumentValuesDiff = Hash::diff(
             Hash::extract($this->hosttemplate['hosttemplatecommandargumentvalues'], '{n}.commandargument_id'),
             Hash::extract($this->host['hostcommandargumentvalues'], '{n}.commandargument_id')
         );

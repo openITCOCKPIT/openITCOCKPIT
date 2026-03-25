@@ -267,7 +267,7 @@ class Host extends Entity {
             if ($host['command_id'] === null || $host['command_id'] == $hosttemplate['command_id']) {
                 $hostcommandargumentvalues = $host['hostcommandargumentvalues'];
 
-                $commandArgumentValuesDiff = array_diff(
+                $commandArgumentValuesDiff = Hash::diff(
                     Hash::extract($hosttemplate['hosttemplatecommandargumentvalues'], '{n}.commandargument_id'),
                     Hash::extract($hostcommandargumentvalues, '{n}.commandargument_id')
                 );

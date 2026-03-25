@@ -111,6 +111,11 @@ class Host {
     private $notes;
 
     /**
+     * @var int
+     */
+    private $hostType = GENERIC_HOST;
+
+    /**
      * Host constructor.
      * @param array $host
      * @param bool $allowEdit
@@ -225,6 +230,11 @@ class Host {
                 $this->priority = $host['Host']['priority'];
             }
         }
+
+        if (isset($host['Host']['host_type'])) {
+            $this->hostType = (int)$host['Host']['host_type'];
+        }
+
     }
 
     /**
@@ -350,6 +360,13 @@ class Host {
         $arr['is_satellite_host'] = $this->isSatelliteHost();
         $arr['name'] = $this->hostname;
         return $arr;
+    }
+
+    /**
+     * @return int
+     */
+    public function getHostType() {
+        return $this->hostType;
     }
 
 }

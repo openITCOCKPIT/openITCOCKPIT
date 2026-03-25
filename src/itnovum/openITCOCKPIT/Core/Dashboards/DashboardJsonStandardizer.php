@@ -50,7 +50,19 @@ class DashboardJsonStandardizer {
         $result = [];
         foreach ($fields as $key => $value) {
             if (is_array($value) && isset($request[$key])) {
-                $result[$key] = $this->_standardizedData($fields[$key], $request[$key]);
+                // return values for default arrays without key value pairs and just values
+                $isKeyValueArray = false;
+                $result[$key] = (array)$request[$key];
+                foreach (array_keys($fields[$key]) as $childKeys) {
+                    if (is_string($childKeys)) {
+                        $isKeyValueArray = true;
+                    }
+                    break;
+                }
+                // standardize arrays with key value pairs
+                if ($isKeyValueArray) {
+                    $result[$key] = $this->_standardizedData($fields[$key], $request[$key]);
+                }
             } else {
                 if (isset($request[$key])) {
                     switch (gettype($fields[$key])) {

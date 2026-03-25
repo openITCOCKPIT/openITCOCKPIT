@@ -200,7 +200,8 @@ class MacosUpdatesHostsTable extends Table {
                 $GenericFilter->getOrderForPaginator('Hosts.name', 'asc'),
                 ['MacosUpdatesHosts.id' => 'asc']
             )
-        );
+        )
+            ->groupBy(['Hosts.id']);
 
         $query->disableHydration();
 

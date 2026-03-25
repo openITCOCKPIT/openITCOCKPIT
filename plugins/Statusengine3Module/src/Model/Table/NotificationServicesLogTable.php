@@ -29,6 +29,7 @@ namespace Statusengine3Module\Model\Table;
 
 use App\Lib\Interfaces\NotificationServicesLogTableInterface;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use Cake\Database\Expression\ComparisonExpression;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Core\ServiceNotificationConditions;
@@ -143,7 +144,8 @@ class NotificationServicesLogTable extends Table implements NotificationServices
 
             'HostsToContainers.container_id',
 
-            'servicename' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+            'servicename'     => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+            'servicepriority' => $query->newExpr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)')
         ])
             ->innerJoin(
                 ['Services' => 'services'],
@@ -201,6 +203,16 @@ class NotificationServicesLogTable extends Table implements NotificationServices
                     'servicename LIKE' => $where['servicename LIKE']
                 ];
                 unset($where['servicename LIKE']);
+            }
+
+            if (isset($where['servicepriority IN'])) {
+                $where[] = new ComparisonExpression(
+                    'IF((Services.priority IS NULL), Servicetemplates.priority, Services.priority)',
+                    $where['servicepriority IN'],
+                    'integer[]',
+                    'IN'
+                );
+                unset($where['servicepriority IN']);
             }
 
             if (!empty($where))

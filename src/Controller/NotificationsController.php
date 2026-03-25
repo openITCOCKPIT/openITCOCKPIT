@@ -174,6 +174,7 @@ class NotificationsController extends AppController {
         //Process conditions
         $Conditions = new HostNotificationConditions();
         $Conditions->setContainerIds($this->MY_RIGHTS);
+        $Conditions->setConditions($AngularNotificationsLogRequest->getServiceFilters());
         if ($this->request->getQuery('limit') !== null) {
             $Conditions->setLimit($this->request->getQuery('limit'));
         };
@@ -223,6 +224,7 @@ class NotificationsController extends AppController {
         //Process conditions
         $Conditions = new ServiceNotificationConditions();
         $Conditions->setContainerIds($this->MY_RIGHTS);
+        $Conditions->setConditions($AngularNotificationsLogRequest->getServiceFilters());
         if ($this->request->getQuery('limit') !== null) {
             $Conditions->setLimit($this->request->getQuery('limit'));
         };

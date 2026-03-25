@@ -1786,6 +1786,7 @@ class DashboardsController extends AppController {
                     }
                 }
             }
+
             $hostIds = [];
             if ($this->DbBackend->isNdoUtils()) {
                 throw new MissingDbBackendException('MissingDbBackendException');

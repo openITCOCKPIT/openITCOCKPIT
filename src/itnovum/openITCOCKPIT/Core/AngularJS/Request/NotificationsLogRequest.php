@@ -40,10 +40,14 @@ class NotificationsLogRequest extends AngularRequest {
             ]
         ],
         'service' => [
-            'like' => [
+            'like'   => [
                 'NotificationServicesLog.output',
                 'Hosts.name',
                 'servicename'
+            ],
+            'equals' => [
+                'servicepriority',
+                'hostpriority',
             ]
         ]
     ];

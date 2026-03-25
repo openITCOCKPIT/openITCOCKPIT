@@ -251,6 +251,8 @@ class NagiosNotificationCommand extends Command {
         $Mailer->setSubject($this->getHostSubject($Host, $HoststatusIcon));
         $Mailer->setEmailFormat($this->format);
 
+        $evcTree = null;
+
         if ($this->noAttachments === false && $this->format !== 'text') {
             $Mailer->setAttachments([
                 'logo.png' => [
@@ -259,6 +261,77 @@ class NagiosNotificationCommand extends Command {
                     'contentId' => '100'
                 ]
             ]);
+
+            if ($Host->getHostType() === EVK_HOST) {
+                if (Plugin::isLoaded('EventcorrelationModule')) {
+                    // The Statusengine Worker use Bulk-insert SQL statements to update multiple records in the database
+                    // at once. By default, openITCOCKPIT configures the value of "max_bulk_delay" to 1 second.
+                    // This means that the MySQL database is (worst case) 1 (+ time for processing) second behind Naemon.
+                    // Would be good if Naemon (or Statusengine) would provide an HTTP API where we could query
+                    // the current status from Naemons memory (something like Livestatus, but I do not want to load the Livestatus broker!)
+                    //
+                    // I do not like this workaround!
+                    sleep(3);
+
+                    $DbBackend = new DbBackend();
+
+                    $ServicestatusTable = $DbBackend->getServicestatusTable();
+
+                    $ServicestatusFields = new ServicestatusFields($DbBackend);
+                    $ServicestatusFields
+                        ->currentState()
+                        ->isHardstate()
+                        ->scheduledDowntimeDepth();
+
+                    /** @var EventcorrelationSettingsTable $EventcorrelationSettingsTable */
+                    $EventcorrelationSettingsTable = TableRegistry::getTableLocator()->get('EventcorrelationModule.EventcorrelationSettings');
+                    $currentEventcorrelationSettings = $EventcorrelationSettingsTable->getCurrentEventcorrelationSettings();
+                    $defaultEventcorrelationSettings = $EventcorrelationSettingsTable->getDefaultEventcorrelationSettings();
+
+                    $considerStateType = ($defaultEventcorrelationSettings['EVC_CONSIDER_STATETYPE']['value'] & $currentEventcorrelationSettings->get('configuration_option'));
+
+
+                    try {
+                        /** @var EventcorrelationsTable $EventcorrelationsTable */
+                        $EventcorrelationsTable = TableRegistry::getTableLocator()->get('EventcorrelationModule.Eventcorrelations');
+                        $evcTree = $EventcorrelationsTable->getEvcTreeData($Host->getId(), []);
+                        $serviceUuids = array_unique(Hash::extract($evcTree, '{n}.{*}.{n}.service.uuid'));
+                        $servicestatus = $ServicestatusTable->byUuid($serviceUuids, $ServicestatusFields);
+                    } catch (RecordNotFoundException $e) {
+                        $evcTree = [];
+                    }
+                    foreach ($evcTree as $layerNumber => $layer) {
+                        foreach ($layer as $parentId => $childNodes) {
+                            foreach ($childNodes as $childIndex => $childNode) {
+                                // ITC-3587 If the vService is using a scoring operator, we tell this the previous layer
+                                // This makes the rendering in the frontend easier, because we don't have to look for the operator in the parent node
+                                if ($EventcorrelationsTable->isScoringOperator($childNode['operator'])) {
+                                    $previousLayerNumber = $layerNumber - 1;
+                                    $evcId = $childNode['id'];
+                                    for ($patchIndex = 0; $patchIndex < sizeof($evcTree[$previousLayerNumber][$evcId]); $patchIndex++) {
+                                        if (isset($evcTree[$previousLayerNumber][$evcId][$patchIndex])) {
+                                            $evcTree[$previousLayerNumber][$evcId][$patchIndex]['isUsedInScoringOperator'] = true;
+                                        }
+                                    }
+                                }
+
+                                $Servicestatus = new Servicestatus([]);
+                                if (!empty($servicestatus[$childNode['service']['uuid']])) {
+                                    $Servicestatus = new Servicestatus(
+                                        $servicestatus[$childNode['service']['uuid']]['Servicestatus']
+                                    );
+                                }
+                                if ($considerStateType && !$Servicestatus->isHardState()) {
+                                    $Servicestatus->setCurrentState($Servicestatus->getLastHardState());
+                                }
+                                $evcTree[$layerNumber][$parentId][$childIndex]['service']['servicestatus'] = $Servicestatus->toArray();
+                                $evcTree[$layerNumber][$parentId][$childIndex]['service']['servicestatus']['scheduledDowntimeDepth'] = $Servicestatus->isInDowntime();
+                            }
+                        }
+                    }
+                }
+            }
+
         }
         $Mailer->viewBuilder()
             ->setTemplate($this->layout . '_' . $this->type)
@@ -269,7 +342,8 @@ class NagiosNotificationCommand extends Command {
             ->setVar('HoststatusIcon', $HoststatusIcon)
             ->setVar('args', $args)
             ->setVar('systemAddress', $this->systemAddress)
-            ->setVar('ticketsystemUrl', $this->ticketsystemUrl);
+            ->setVar('ticketsystemUrl', $this->ticketsystemUrl)
+            ->setVar('evcTree', $evcTree);
 
         $Mailer->deliver();
     }
@@ -361,6 +435,18 @@ class NagiosNotificationCommand extends Command {
                     foreach ($evcTree as $layerNumber => $layer) {
                         foreach ($layer as $parentId => $childNodes) {
                             foreach ($childNodes as $childIndex => $childNode) {
+                                // ITC-3587 If the vService is using a scoring operator, we tell this the previous layer
+                                // This makes the rendering in the frontend easier, because we don't have to look for the operator in the parent node
+                                if ($EventcorrelationsTable->isScoringOperator($childNode['operator'])) {
+                                    $previousLayerNumber = $layerNumber - 1;
+                                    $evcId = $childNode['id'];
+                                    for ($patchIndex = 0; $patchIndex < sizeof($evcTree[$previousLayerNumber][$evcId]); $patchIndex++) {
+                                        if (isset($evcTree[$previousLayerNumber][$evcId][$patchIndex])) {
+                                            $evcTree[$previousLayerNumber][$evcId][$patchIndex]['isUsedInScoringOperator'] = true;
+                                        }
+                                    }
+                                }
+
                                 $Servicestatus = new Servicestatus([]);
                                 if (!empty($servicestatus[$childNode['service']['uuid']])) {
                                     $Servicestatus = new Servicestatus(

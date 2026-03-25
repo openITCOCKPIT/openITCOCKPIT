@@ -353,7 +353,7 @@ class PackagesHostDetailsTable extends Table {
 
         $query->orderBy(
             $GenericFilter->getOrderForPaginator('Hosts.name', 'asc')
-        );
+        )->groupBy(['Hosts.id']);
 
         $query->disableHydration();
 

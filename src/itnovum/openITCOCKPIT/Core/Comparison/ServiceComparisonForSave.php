@@ -25,6 +25,7 @@
 
 namespace itnovum\openITCOCKPIT\Core\Comparison;
 
+use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\CustomVariableDiffer;
 
 /**
@@ -561,9 +562,9 @@ class ServiceComparisonForSave {
             $servicetemplateCommandArguments[$htcargv['commandargument_id']] = $htcargv['value'];
         }
 
-        $diff = array_diff($serviceCommandArguments, $servicetemplateCommandArguments);
+        $diff = Hash::diff($serviceCommandArguments, $servicetemplateCommandArguments);
         if (empty($diff)) {
-            $diff = array_diff($servicetemplateCommandArguments, $serviceCommandArguments);
+            $diff = Hash::diff($servicetemplateCommandArguments, $serviceCommandArguments);
         }
 
         if (empty($diff)) {
@@ -594,9 +595,9 @@ class ServiceComparisonForSave {
             $servicetemplateCommandArguments[$htcargv['commandargument_id']] = $htcargv['value'];
         }
 
-        $diff = array_diff($serviceCommandArguments, $servicetemplateCommandArguments);
+        $diff = Hash::diff($serviceCommandArguments, $servicetemplateCommandArguments);
         if (empty($diff)) {
-            $diff = array_diff($servicetemplateCommandArguments, $serviceCommandArguments);
+            $diff = Hash::diff($servicetemplateCommandArguments, $serviceCommandArguments);
         }
 
         if (empty($diff)) {

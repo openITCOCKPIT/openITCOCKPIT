@@ -46,6 +46,9 @@
  * @var null|array $evcTree
  */
 
+use Cake\Core\Plugin;
+use EventcorrelationModule\EvcTableRenderer;
+
 echo $this->element('emails/style');
 
 ?>
@@ -170,11 +173,14 @@ echo $this->element('emails/style');
                                 </tr>
                                 <?php if ($ServicestatusIcon->getState() !== 0): ?>
                                     <tr>
-                                        <td>
+                                        <td colspan="2">
+                                            <br/>
+                                            <br/>
+
                                             <a href="<?php printf('https://%s/a/services/browser/%s%s', $systemAddress, $Service->getUuid(), '#acknowledge'); ?>"
-                                               style="text-decoration:none"
-                                               class="<?= strtoupper($ServicestatusIcon->getTextColor()) ?>">
-                                                <?php echo __('Acknowledge'); ?>
+                                               class="btn-primary"
+                                               style="text-decoration:none">
+                                                💬 <?php echo __('Acknowledge service status'); ?>
                                             </a>
                                         </td>
                                     </tr>
@@ -199,13 +205,13 @@ echo $this->element('emails/style');
                             <?php if ($noAttachments === false): ?>
 
                                 <?php
-                                if (\Cake\Core\Plugin::isLoaded('EventcorrelationModule') && $Service->getServiceType() === EVK_SERVICE):
-                                    $EvcTableRenderer = new \EventcorrelationModule\EvcTableRenderer(
+                                if (Plugin::isLoaded('EventcorrelationModule') && $Service->getServiceType() === EVK_SERVICE):
+                                    $EvcTableRenderer = new EvcTableRenderer(
                                         $evcTree,
                                         $Service->getUuid(),
                                         !$noEmoji
                                     );
-                                    echo $EvcTableRenderer->getEvcDataAsTable();
+                                    echo $EvcTableRenderer->getEvcDataAsTable(true);
                                     echo '<br>';
                                 endif; ?>
 

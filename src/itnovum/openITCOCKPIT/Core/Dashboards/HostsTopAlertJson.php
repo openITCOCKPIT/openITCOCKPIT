@@ -32,6 +32,7 @@ class HostsTopAlertJson extends DashboardJsonStandardizer {
         'state'               => 'down',
         'not_older_than'      => 1,
         'not_older_than_unit' => 'DAY',
+        'hostpriority'        => [],
         'scroll_interval'     => 30000,
         'useScroll'           => true
     ];

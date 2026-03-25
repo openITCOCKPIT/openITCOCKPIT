@@ -216,7 +216,8 @@ class WindowsUpdatesHostsTable extends Table {
                 $GenericFilter->getOrderForPaginator('Hosts.name', 'asc'),
                 ['WindowsUpdatesHosts.id' => 'asc']
             )
-        );
+        )
+            ->groupBy(['Hosts.id']);
 
         $query->disableHydration();
 

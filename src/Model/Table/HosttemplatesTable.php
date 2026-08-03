@@ -766,6 +766,35 @@ class HosttemplatesTable extends Table {
             $hosttemplateTypes = [$hosttemplateTypes];
         }
 
+        //Lookup for the tenant container of $container_id
+        /** @var $ContainersTable ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+
+        $tenantContainerIds = [];
+
+        foreach ($containerIds as $containerId) {
+            if ($containerId != ROOT_CONTAINER) {
+
+                // Get container id of the tenant container
+                // $container_id is may be a location, devicegroup or whatever, so we need to container id of the tenant container to load service templates
+                $path = $ContainersTable->getPathByIdAndCacheResult($containerId, 'HosttemplatesByContainerId');
+
+                // Tenant host templates are available for all users of a tenant (oITC V2 legacy)
+                if (isset($path[1])) {
+                    $tenantContainerIds[] = $path[1]['id'];
+                }
+            } else {
+                $tenantContainerIds[] = ROOT_CONTAINER;
+            }
+        }
+        $tenantContainerIds = array_unique($tenantContainerIds);
+        $containerIds = array_unique(array_merge($tenantContainerIds, $containerIds));
+
+
+        if (empty($containerIds)) {
+            return [];
+        }
+
         $where = [
             'Hosttemplates.container_id IN' => $containerIds,
         ];

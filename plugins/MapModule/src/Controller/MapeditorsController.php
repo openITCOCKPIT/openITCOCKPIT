@@ -38,6 +38,7 @@ use App\Model\Table\HostgroupsTable;
 use App\Model\Table\HostsTable;
 use App\Model\Table\ServicegroupsTable;
 use App\Model\Table\ServicesTable;
+use App\Model\Table\StatuspagesTable;
 use App\Model\Table\WidgetsTable;
 use Cake\Core\Plugin;
 use Cake\Datasource\Exception\RecordNotFoundException;
@@ -57,6 +58,7 @@ use itnovum\openITCOCKPIT\Core\Views\Host;
 use itnovum\openITCOCKPIT\Core\Views\Service;
 use itnovum\openITCOCKPIT\Exceptions\NotIntException;
 use itnovum\openITCOCKPIT\Filter\MapFilter;
+use itnovum\openITCOCKPIT\Filter\StatuspagesFilter;
 use itnovum\openITCOCKPIT\Maps\MapForAngular;
 use itnovum\openITCOCKPIT\Maps\ValueObjects\Mapgadget;
 use itnovum\openITCOCKPIT\Maps\ValueObjects\Mapicon;
@@ -1337,6 +1339,31 @@ class MapeditorsController extends AppController {
 
         $this->set('maps', $maps);
         $this->viewBuilder()->setOption('serialize', ['maps']);
+    }
+
+    public function loadStatuspagesByString() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $selected = $this->request->getQuery('selected');
+
+        $StatuspagesFilter = new StatuspagesFilter($this->request);
+
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $statuspages = Api::makeItJavaScriptAble(
+            $StatuspagesTable->getStatuspagesForAngular($selected, $StatuspagesFilter, $MY_RIGHTS)
+        );
+
+        $this->set('statuspages', $statuspages);
+        $this->viewBuilder()->setOption('serialize', ['statuspages']);
     }
 
     public function saveItem() {

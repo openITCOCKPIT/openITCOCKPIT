@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -149,67 +150,106 @@ class ProfileController extends AppController {
     }
 
     public function changePassword() {
-        $User = new User($this->getUser());
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
 
-        /** @var $UsersTable UsersTable */
-        $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        $Hasher = $UsersTable->getDefaultPasswordHasher();
+        if (!$this->request->is('post')) {
+            throw new MethodNotAllowedException();
+        }
 
-        $user = $UsersTable->get($User->getId());
-        $userForLog = [
-            'User' => $UsersTable->getUserById($User->getId())
-        ];
+        if ($this->request->is('post')) {
+            $User = new User($this->getUser());
 
-        $data = $this->request->getData('Password');
+            /** @var $UsersTable UsersTable */
+            $UsersTable = TableRegistry::getTableLocator()->get('Users');
+            $Hasher = $UsersTable->getDefaultPasswordHasher();
 
-        if (!$Hasher->check($data['current_password'], $user->get('password'))) {
-            $this->response = $this->response->withStatus(400);
-            $this->set('error', [
-                'current_password' => [
-                    __('Current password is incorrect')
-                ]
+            $user = $UsersTable->get($User->getId());
+            $userForLog = [
+                'User' => $UsersTable->getUserById($User->getId())
+            ];
+
+            $data = $this->request->getData('Password', []);
+            $currentPassword = $data['current_password'] ?? null;
+            $newPassword = $data['password'] ?? null;
+            $confirmPassword = $data['confirm_password'] ?? null;
+
+            if ($currentPassword === null || $currentPassword === '') {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', [
+                    'current_password' => [
+                        'empty' => __('Current password is required')
+                    ]
+                ]);
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            }
+
+            if (!$Hasher->check($currentPassword, $user->get('password'))) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', [
+                    'current_password' => [
+                        __('Current password is incorrect')
+                    ]
+                ]);
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            }
+
+            if ($newPassword !== $confirmPassword) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', [
+                    'confirm_password' => [
+                        'compareWith' => __('Passwords not equal')
+                    ]
+                ]);
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            }
+            $data = $this->request->getData('Password');
+
+            $user = $UsersTable->patchEntity($user, [
+                'password' => $newPassword ?? ''
             ]);
-            $this->viewBuilder()->setOption('serialize', ['error']);
-            return;
+            $UsersTable->save($user);
+
+            $data = [
+                'User' => $user->toArray()
+            ];
+
+            $user = $UsersTable->updateUser(
+                $user,
+                $data,
+                $userForLog,
+                $User->getId(),
+                true
+            );
+            if ($user->hasErrors()) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', $user->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            }
+
+            /** @var EventlogsTable $EventlogsTable */
+            $EventlogsTable = TableRegistry::getTableLocator()->get('Eventlogs');
+
+            $containerIds = Hash::extract($userForLog, 'User.containers.{n}.id');
+
+            $containerRoleContainerIds = $UsersTable->getContainerIdsOfUserContainerRoles($userForLog);
+            $containerIds = array_merge($containerIds, $containerRoleContainerIds);
+
+            $eventlogData = $EventlogsTable->createDataJsonForUser($user->get('email'));
+            $fullName = $user->get('firstname') . ' ' . $user->get('lastname');
+            $EventlogsTable->saveNewEntity('user_password_change', 'User', $user->id, $fullName, $eventlogData, $containerIds);
+
+            $session = $this->request->getSession();
+            $session->write('Auth', $UsersTable->get($User->getId()));
+
+            $this->set('message', __('Password changed successfully.'));
+            $this->viewBuilder()->setOption('serialize', ['message']);
         }
-
-        $user = $UsersTable->patchEntity($user, $data);
-
-        $data = [
-            'User' => $user->toArray()
-        ];
-
-        $user = $UsersTable->updateUser(
-            $user,
-            $data,
-            $userForLog,
-            $User->getId(),
-            true
-        );
-        if ($user->hasErrors()) {
-            $this->response = $this->response->withStatus(400);
-            $this->set('error', $user->getErrors());
-            $this->viewBuilder()->setOption('serialize', ['error']);
-            return;
-        }
-
-        /** @var EventlogsTable $EventlogsTable */
-        $EventlogsTable = TableRegistry::getTableLocator()->get('Eventlogs');
-
-        $containerIds = Hash::extract($userForLog, 'User.containers.{n}.id');
-
-        $containerRoleContainerIds = $UsersTable->getContainerIdsOfUserContainerRoles($userForLog);
-        $containerIds = array_merge($containerIds, $containerRoleContainerIds);
-
-        $eventlogData = $EventlogsTable->createDataJsonForUser($user->get('email'));
-        $fullName = $user->get('firstname') . ' ' . $user->get('lastname');
-        $EventlogsTable->saveNewEntity('user_password_change', 'User', $user->id, $fullName, $eventlogData, $containerIds);
-
-        $session = $this->request->getSession();
-        $session->write('Auth', $UsersTable->get($User->getId()));
-
-        $this->set('message', __('Password changed successfully.'));
-        $this->viewBuilder()->setOption('serialize', ['message']);
     }
 
     public function upload_profile_icon() {

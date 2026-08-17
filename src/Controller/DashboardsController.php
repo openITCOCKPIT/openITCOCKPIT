@@ -58,6 +58,7 @@ use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\CalendarTime;
+use itnovum\openITCOCKPIT\Core\Dashboards\CylinderJson;
 use itnovum\openITCOCKPIT\Core\Dashboards\DowntimeHostListJson;
 use itnovum\openITCOCKPIT\Core\Dashboards\DowntimeServiceListJson;
 use itnovum\openITCOCKPIT\Core\Dashboards\HostStatusListJson;
@@ -1572,7 +1573,7 @@ class DashboardsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        $TachoJson = new TachoJson();
+        $CylinderJson = new CylinderJson();
 
         /** @var WidgetsTable $WidgetsTable */
         $WidgetsTable = TableRegistry::getTableLocator()->get('Widgets');
@@ -1623,7 +1624,7 @@ class DashboardsController extends AppController {
             if ($widget->get('json_data') !== null && $widget->get('json_data') !== '') {
                 $data = json_decode($widget->get('json_data'), true);
             }
-            $config = $TachoJson->standardizedData($data);
+            $config = $CylinderJson->standardizedData($data);
             $this->set('config', $config);
             $this->set('service', $service);
             $this->set('ACL', $this->getAcls());
@@ -1633,7 +1634,7 @@ class DashboardsController extends AppController {
 
 
         if ($this->request->is('post')) {
-            $config = $TachoJson->standardizedData($this->request->getData());
+            $config = $CylinderJson->standardizedData($this->request->getData());
             $widgetId = (int)$this->request->getData('Widget.id', 0);
             $serviceId = (int)$this->request->getData('Widget.service_id', 0);
 

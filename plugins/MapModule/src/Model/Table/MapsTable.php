@@ -1015,24 +1015,25 @@ class MapsTable extends Table {
     /**
      * @param HoststatusTableInterface $HoststatusTable
      * @param ServicestatusTableInterface $ServicestatusTable
-     * @param array $statuspage
+     * @param string $type
+     * @param array $object
      * @param array $hosts
      * @param array $services
      * @return array
      */
-    public function getStatuspageInformation(HoststatusTableInterface $HoststatusTable, ServicestatusTableInterface $ServicestatusTable, array $statuspage, array $hosts, array $services): array {
-        $statuspage = [
-            'id'          => $statuspage['id'],
-            'name'        => $statuspage['name'],
-            'description' => $statuspage['description']
+    public function getStatuspageInformation(HoststatusTableInterface $HoststatusTable, ServicestatusTableInterface $ServicestatusTable, string $type, array $object, array $hosts, array $services): array {
+        $object = [
+            'id'          => $object['id'],
+            'name'        => $object['name'],
+            'description' => $object['description']
         ];
 
         if (empty($hosts) && empty($services)) {
             return [
-                'icon'       => $this->errorIcon,
-                'color'      => 'text-primary',
-                'background' => 'bg-not-monitored',
-                'Statuspage' => $statuspage
+                'icon'                                                         => $this->errorIcon,
+                'color'                                                        => 'text-primary',
+                'background'                                                   => 'bg-not-monitored',
+                $type === 'statuspagegroup' ? 'Statuspagegroup' : 'Statuspage' => $object
             ];
         }
 
@@ -1073,11 +1074,11 @@ class MapsTable extends Table {
             }
             if ($hoststatus->currentState() > 0) {
                 return [
-                    'icon'          => $icon,
-                    'icon_property' => $iconProperty,
-                    'color'         => $color,
-                    'background'    => $background,
-                    'Statuspage'    => $statuspage
+                    'icon'                                                         => $icon,
+                    'icon_property'                                                => $iconProperty,
+                    'color'                                                        => $color,
+                    'background'                                                   => $background,
+                    $type === 'statuspagegroup' ? 'Statuspagegroup' : 'Statuspage' => $object
                 ];
             }
         }
@@ -1106,27 +1107,27 @@ class MapsTable extends Table {
             if ($servicestatus->isAcknowledged() && $servicestatus->isInDowntime()) {
                 $serviceIconProperty = $this->ackAndDowntimeIcon;
             }
-
             return [
-                'icon'           => $serviceIcon,
-                'icon_property'  => $serviceIconProperty,
-                'isAcknowledged' => $servicestatus->isAcknowledged(),
-                'isInDowntime'   => $servicestatus->isInDowntime(),
-                'color'          => $servicestatus->ServiceStatusColor(),
-                'background'     => $servicestatus->ServiceStatusBackgroundColor(),
-                'Statuspage'     => $statuspage,
+                'icon'                                                         => $serviceIcon,
+                'icon_property'                                                => $serviceIconProperty,
+                'isAcknowledged'                                               => $servicestatus->isAcknowledged(),
+                'isInDowntime'                                                 => $servicestatus->isInDowntime(),
+                'color'                                                        => $servicestatus->ServiceStatusColor(),
+                'background'                                                   => $servicestatus->ServiceStatusBackgroundColor(),
+                $type === 'statuspagegroup' ? 'Statuspagegroup' : 'Statuspage' => $object
             ];
         }
         return [
-            'icon'           => $icon,
-            'icon_property'  => $iconProperty,
-            'isAcknowledged' => $hoststatus->isAcknowledged(),
-            'isInDowntime'   => $hoststatus->isInDowntime(),
-            'color'          => $color,
-            'background'     => $background,
-            'Statuspage'     => $statuspage
+            'icon'                                                         => $icon,
+            'icon_property'                                                => $iconProperty,
+            'isAcknowledged'                                               => $hoststatus->isAcknowledged(),
+            'isInDowntime'                                                 => $hoststatus->isInDowntime(),
+            'color'                                                        => $color,
+            'background'                                                   => $background,
+            $type === 'statuspagegroup' ? 'Statuspagegroup' : 'Statuspage' => $object
         ];
     }
+
 
     /**
      * @param $dependentMapsIds
@@ -2856,14 +2857,15 @@ class MapsTable extends Table {
      * @param HostsTable $HostsTable
      * @param HoststatusTableInterface $HoststatusTable
      * @param ServicestatusTableInterface $ServicestatusTable
-     * @param array $statuspage
+     * @param string $type //statuspage | statuspagegroup
+     * @param array $object //status page or status page group
      * @param array $hosts
      * @param array $services
      * @param UserTime $UserTime
      * @param bool $summaryStateItem
      * @return array
      */
-    public function getStatuspageSummary(HostsTable $HostsTable, HoststatusTableInterface $HoststatusTable, ServicestatusTableInterface $ServicestatusTable, array $statuspage, array $hosts, array $services, UserTime $UserTime, bool $summaryStateItem): array {
+    public function getStatuspageSummary(HostsTable $HostsTable, HoststatusTableInterface $HoststatusTable, ServicestatusTableInterface $ServicestatusTable, string $type, array $object, array $hosts, array $services, UserTime $UserTime, bool $summaryStateItem): array {
         $cumulatedHostState = null;
         $cumulatedServiceState = null;
         $notOkHosts = [];
@@ -2967,22 +2969,23 @@ class MapsTable extends Table {
             $CumulatedHumanState = $CumulatedServiceStatus->toArray()['humanState'];
         }
 
-        $statuspage = [
-            'id'          => $statuspage['id'],
-            'name'        => $statuspage['name'],
-            'description' => $statuspage['description'],
-            'object_id'   => $statuspage['id']
+        $object = [
+            'id'          => $object['id'],
+            'name'        => $object['name'],
+            'description' => $object['description'],
+            'object_id'   => $object['id']
         ];
 
+
         return [
-            'Statuspage'             => $statuspage,
-            'HostSummary'            => $hostStateSummary,
-            'ServiceSummary'         => $serviceStateSummary,
-            'CumulatedHumanState'    => $CumulatedHumanState,
-            'NotOkHosts'             => $notOkHosts,
-            'NotOkServices'          => $notOkServices,
-            'HostIdsGroupByState'    => $hostIdsGroupByState,
-            'ServiceIdsGroupByState' => $serviceIdsGroupByState
+            $type === 'statuspagegroup' ? 'Statuspagegroup' : 'Statuspage' => $object,
+            'HostSummary'                                                  => $hostStateSummary,
+            'ServiceSummary'                                               => $serviceStateSummary,
+            'CumulatedHumanState'                                          => $CumulatedHumanState,
+            'NotOkHosts'                                                   => $notOkHosts,
+            'NotOkServices'                                                => $notOkServices,
+            'HostIdsGroupByState'                                          => $hostIdsGroupByState,
+            'ServiceIdsGroupByState'                                       => $serviceIdsGroupByState
         ];
     }
 }

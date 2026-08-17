@@ -511,14 +511,14 @@ class MapeditorsController extends AppController {
                             }
                         }
                     }
-                    $hostsAndServices = $StatuspagesTable->getStatuspageWithHostUuidsAndServiceUuidsByIds([$objectId], $MY_RIGHTS);
+                    $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds([$objectId], $MY_RIGHTS);
                     $allowView = true;
                     $properties = $MapsTable->getStatuspageInformation(
                         $HoststatusTable,
                         $ServicestatusTable,
                         $statuspage,
-                        $hostsAndServices['hostUuids'],
-                        $hostsAndServices['serviceUuids']
+                        $hostsAndServices['hosts'],
+                        $hostsAndServices['services']
                     );
 
 
@@ -1191,14 +1191,14 @@ class MapeditorsController extends AppController {
                                 break;
                             }
                         }
-                        $hostsAndServices = $StatuspagesTable->getStatuspageWithHostUuidsAndServiceUuidsByIds([$objectId], $MY_RIGHTS);
+                        $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds([$objectId], $MY_RIGHTS);
                         $summary = $MapsTable->getStatuspageSummary(
                             $HostsTable,
                             $HoststatusTable,
                             $ServicestatusTable,
                             $statuspage,
-                            $hostsAndServices['hostUuids'],
-                            $hostsAndServices['serviceUuids'],
+                            $hostsAndServices['hosts'],
+                            $hostsAndServices['services'],
                             $UserTime,
                             $summaryStateItem
                         );

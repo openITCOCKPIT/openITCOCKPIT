@@ -1156,6 +1156,7 @@ class StatuspagesTable extends Table {
                                     },
                                     'Hosts'            => function (Query $q) {
                                         return $q->select([
+                                            'Hosts.id',
                                             'Hosts.uuid'
                                         ])
                                             ->contain([
@@ -1417,10 +1418,10 @@ class StatuspagesTable extends Table {
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getStatuspageWithHostUuidsAndServiceUuidsByIds(array $ids, array $MY_RIGHTS = []): array {
+    public function getStatuspageWithHostsAndServicesByIds(array $ids, array $MY_RIGHTS = []): array {
         $hostAndServices = [
-            'hostUuids'    => [],
-            'serviceUuids' => []
+            'hosts'    => [],
+            'services' => []
         ];
 
         if (empty($ids)) {
@@ -1432,7 +1433,8 @@ class StatuspagesTable extends Table {
                 $q
                     ->select([
                         'Hosts.id',
-                        'Hosts.uuid'
+                        'Hosts.uuid',
+                        'Hosts.name'
                     ]);
                 if (!empty($MY_RIGHTS)) {
                     $q->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
@@ -1445,12 +1447,18 @@ class StatuspagesTable extends Table {
                 $q->contain([
                     'HostsToContainersSharing',
                     'Services' => function (Query $q) {
-                        return $q->where([
-                            'Services.disabled' => 0
+                        return $q->contain([
+                            'Servicetemplates'
                         ])
+                            ->where([
+                                'Services.disabled' => 0
+                            ])
                             ->select([
+                                'Services.id',
                                 'Services.uuid',
-                                'Services.host_id'
+                                'Services.host_id',
+                                'Services.name',
+                                'Servicetemplates.name'
                             ]);
                     }
                 ])->where([
@@ -1462,6 +1470,8 @@ class StatuspagesTable extends Table {
             ->contain('Services', function (Query $q) use ($MY_RIGHTS) {
                 return $q
                     ->select([
+                        'Services.id',
+                        'Services.name',
                         'Services.uuid',
                         'Services.host_id'
                     ])
@@ -1475,7 +1485,8 @@ class StatuspagesTable extends Table {
                         'Hosts'            => function (Query $q) {
                             return $q->select([
                                 'Hosts.id',
-                                'Hosts.uuid'
+                                'Hosts.uuid',
+                                'Hosts.name'
                             ])
                                 ->contain([
                                     'HostsToContainersSharing'
@@ -1501,6 +1512,8 @@ class StatuspagesTable extends Table {
                 return $q->contain([
                     'Hosts'         => function (Query $q) use ($MY_RIGHTS) {
                         $q->select([
+                            'Hosts.id',
+                            'Hosts.name',
                             'Hosts.uuid'
                         ]);
                         if (!empty($MY_RIGHTS)) {
@@ -1514,11 +1527,18 @@ class StatuspagesTable extends Table {
                         $q->contain([
                             'HostsToContainersSharing',
                             'Services' => function (Query $q) {
-                                return $q->where([
-                                    'Services.disabled' => 0
+                                return $q->contain([
+                                    'Servicetemplates'
                                 ])
+                                    ->where([
+                                        'Services.disabled' => 0
+                                    ])
                                     ->select([
-                                        'Services.uuid'
+                                        'Services.id',
+                                        'Services.name',
+                                        'Servicetemplates.name',
+                                        'Services.uuid',
+                                        'Services.host_id'
                                     ]);
                             }
                         ])->where([
@@ -1536,6 +1556,7 @@ class StatuspagesTable extends Table {
                                     $query->select([
                                         'Hosts.id',
                                         'Hosts.uuid',
+                                        'Hosts.name',
                                         'Hosts.hosttemplate_id'
                                     ]);
 
@@ -1551,15 +1572,23 @@ class StatuspagesTable extends Table {
                                     $query
                                         ->disableAutoFields()
                                         ->select([
-                                            'Hosts.uuid'
+                                            'Hosts.id',
+                                            'Hosts.uuid',
+                                            'Hosts.name'
                                         ])
                                         ->contain([
                                             'HostsToContainersSharing',
                                             'Services' => function (Query $q) {
-                                                return $q->select([
-                                                    'Services.uuid',
-                                                    'Services.host_id'
-                                                ]);
+                                                return $q->contain([
+                                                    'Servicetemplates'
+                                                ])
+                                                    ->select([
+                                                        'Services.id',
+                                                        'Services.name',
+                                                        'Services.uuid',
+                                                        'Services.host_id',
+                                                        'Servicetemplates.name'
+                                                    ]);
                                             }
                                         ]);
                                     $query
@@ -1582,8 +1611,11 @@ class StatuspagesTable extends Table {
                         },
                         'Services'         => function (Query $q) use ($MY_RIGHTS) {
                             $q->select([
+                                'Services.id',
+                                'Services.name',
                                 'Services.uuid',
-                                'Services.host_id'
+                                'Services.host_id',
+                                'Servicetemplates.name'
                             ])->contain([
                                 'Hosts' => function (Query $q) {
                                     return $q->select([
@@ -1594,7 +1626,8 @@ class StatuspagesTable extends Table {
                                         ->contain([
                                             'HostsToContainersSharing'
                                         ]);
-                                }
+                                },
+                                'Servicetemplates'
 
                             ])
                                 ->innerJoinWith('Hosts')
@@ -1614,13 +1647,16 @@ class StatuspagesTable extends Table {
                         'Servicetemplates' => function (Query $q) use ($MY_RIGHTS) {
                             return $q->enableAutoFields(false)
                                 ->select([
-                                    'id'
+                                    'id',
+                                    'name'
                                 ])
                                 ->contain([
                                     'Services' => function (Query $query) use ($MY_RIGHTS) {
                                         $query
                                             ->disableAutoFields()
                                             ->select([
+                                                'Services.id',
+                                                'Services.name',
                                                 'Services.uuid',
                                                 'Services.servicetemplate_id',
                                                 'Services.host_id'
@@ -1629,6 +1665,7 @@ class StatuspagesTable extends Table {
                                                 'Hosts' => function (Query $q) {
                                                     return $q->select([
                                                         'Hosts.id',
+                                                        'Hosts.name',
                                                         'Hosts.uuid'
                                                     ])
                                                         ->contain([
@@ -1667,54 +1704,97 @@ class StatuspagesTable extends Table {
         if (empty($result)) {
             return $hostAndServices;
         }
-
         foreach ($result as $value) {
             foreach ($value['hosts'] as $host) {
-                $hostAndServices['hostUuids'][$host['uuid']] = $host['uuid'];
+                $hostAndServices['hosts'][$host['uuid']] = [
+                    'id'   => $host['id'],
+                    'uuid' => $host['uuid'],
+                    'name' => $host['name']
+                ];
                 foreach ($host['services'] as $service) {
-                    $hostAndServices['serviceUuids'][$service['uuid']] = $service['uuid'];
+                    $hostAndServices['services'][$service['uuid']] = [
+                        'id'   => $service['id'],
+                        'uuid' => $service['uuid'],
+                        'name' => $service['name'] ?? $service['servicetemplate']['name']
+                    ];
                 }
             }
             foreach ($value['services'] as $service) {
-                $hostAndServices['hostUuids'][$service['host']['uuid']] = $service['host']['uuid'];
-                $hostAndServices['serviceUuids'][$service['uuid']] = $service['uuid'];
+                $hostAndServices['hosts'][$service['host']['uuid']] = [
+                    'id'   => $service['host']['id'],
+                    'uuid' => $service['host']['uuid'],
+                    'name' => $service['host']['name']
+                ];
+                $hostAndServices['services'][$service['uuid']] = [
+                    'id'   => $service['id'],
+                    'uuid' => $service['uuid'],
+                    'name' => $service['name'] ?? $service['servicetemplate']['name']
+                ];
             }
 
             foreach ($value['hostgroups'] as $hostgroup) {
                 foreach ($hostgroup['hosts'] as $host) {
-                    $hostAndServices['hostUuids'][$host['uuid']] = $host['uuid'];
+                    $hostAndServices['hosts'][$host['uuid']] = [
+                        'id'   => $host['id'],
+                        'uuid' => $host['uuid'],
+                        'name' => $host['name']
+                    ];
                     foreach ($host['services'] as $service) {
-                        $hostAndServices['serviceUuids'][$service['uuid']] = $service['uuid'];
+                        $hostAndServices['services'][$service['uuid']] = [
+                            'id'   => $service['id'],
+                            'uuid' => $service['uuid'],
+                            'name' => $service['name'] ?? $service['servicetemplate']['name']
+                        ];
                     }
                 }
 
                 foreach ($hostgroup['hosttemplates'] as $hosttemplate) {
                     foreach ($hosttemplate['hosts'] as $host) {
-                        $hostAndServices['hostUuids'][$host['uuid']] = $host['uuid'];
+                        $hostAndServices['hosts'][$host['uuid']] = [
+                            'id'   => $host['id'],
+                            'uuid' => $host['uuid'],
+                            'name' => $host['name']
+                        ];
                         foreach ($host['services'] as $service) {
-                            $hostAndServices['serviceUuids'][$service['uuid']] = $service['uuid'];
+                            $hostAndServices['services'][$service['uuid']] = [
+                                'id'   => $service['id'],
+                                'uuid' => $service['uuid'],
+                                'name' => $service['name'] ?? $service['servicetemplate']['name']
+                            ];
                         }
                     }
                 }
             }
-
             foreach ($value['servicegroups'] as $servicegroup) {
                 foreach ($servicegroup['services'] as $service) {
-                    $hostAndServices['serviceUuids'][$service['uuid']] = $service['uuid'];
-                    $hostAndServices['hostUuids'][$service['host']['uuid']] = $service['host']['uuid'];
+                    $hostAndServices['services'][$service['uuid']] = [
+                        'id'   => $service['id'],
+                        'uuid' => $service['uuid'],
+                        'name' => $service['name'] ?? $service['servicetemplate']['name']
+                    ];
+                    $hostAndServices['hosts'][$service['host']['uuid']] = [
+                        'id'   => $service['host']['id'],
+                        'uuid' => $service['host']['uuid'],
+                        'name' => $service['host']['name']
+                    ];
                 }
 
                 foreach ($servicegroup['servicetemplates'] as $servicetemplate) {
                     foreach ($servicetemplate['services'] as $service) {
-                        $hostAndServices['serviceUuids'][$service['uuid']] = $service['uuid'];
-                        $hostAndServices['hostUuids'][$service['host']['uuid']] = $service['host']['uuid'];
+                        $hostAndServices['services'][$service['uuid']] = [
+                            'id'   => $service['id'],
+                            'uuid' => $service['uuid'],
+                            'name' => $service['name'] ?? $servicetemplate['name']
+                        ];
+                        $hostAndServices['hosts'][$service['host']['uuid']] = [
+                            'id'   => $service['host']['id'],
+                            'uuid' => $service['host']['uuid'],
+                            'name' => $service['host']['name']
+                        ];
                     }
                 }
             }
-
         }
-        $hostAndServices['hostUuids'] = array_values($hostAndServices['hostUuids']);
-        $hostAndServices['serviceUuids'] = array_values($hostAndServices['serviceUuids']);
 
         return $hostAndServices;
     }

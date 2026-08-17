@@ -1526,28 +1526,34 @@ class MapsTable extends Table {
     /**
      * @param HoststatusTableInterface $HoststatusTable
      * @param ServicestatusTableInterface $ServicestatusTable
-     * @param array $map
+     * @param string $type
+     * @param array $object
      * @param array $hosts
      * @param array $services
      * @return array
      */
-    public function getMapInformationForSummaryIcon(HoststatusTableInterface $HoststatusTable, ServicestatusTableInterface $ServicestatusTable, array $map, array $hosts, array $services) {
+    public function getInformationForSummaryIcon(HoststatusTableInterface $HoststatusTable, ServicestatusTableInterface $ServicestatusTable, string $type, array $object, array $hosts, array $services): array {
         $bitMaskHostState = 0;
         $bitMaskServiceState = 0;
+        $ObjectKey = match ($type) {
+            'map' => 'Map',
+            'statuspage' => 'Statuspage',
+            'statuspagegroup' => 'Statuspagegroup'
+        };
 
         if (empty($hosts) && empty($services)) {
             return [
                 'BitMaskHostState'    => $bitMaskHostState,
                 'BitMaskServiceState' => $bitMaskServiceState,
-                'Map'                 => $map
+                $ObjectKey            => $object
             ];
         }
         $HoststatusFields = new HoststatusFields(new DbBackend());
         $HoststatusFields->currentState();
         $ServicestatusFields = new ServicestatusFields(new DbBackend());
         $ServicestatusFields->currentState();
-        $hostsUuids = Hash::extract($hosts, '{n}.Host.uuid');
-        $servicesUuids = Hash::extract($services, '{n}.Service.uuid');
+        $hostsUuids = Hash::extract($hosts, '{*}.uuid');
+        $servicesUuids = Hash::extract($services, '{*}.uuid');
         $hoststatus = $HoststatusTable->byUuid($hostsUuids, $HoststatusFields);
         $servicestatus = $ServicestatusTable->byUuid($servicesUuids, $ServicestatusFields);
 
@@ -1556,7 +1562,7 @@ class MapsTable extends Table {
             return [
                 'BitMaskHostState'    => $bitMaskHostState,
                 'BitMaskServiceState' => $bitMaskServiceState,
-                'Map'                 => $map
+                $ObjectKey            => $object
             ];
         }
         foreach ($hoststatus as $statusDetails) {
@@ -1568,7 +1574,7 @@ class MapsTable extends Table {
         return [
             'BitMaskHostState'    => $bitMaskHostState,
             'BitMaskServiceState' => $bitMaskServiceState,
-            'Map'                 => $map
+            $ObjectKey            => $object
         ];
     }
 

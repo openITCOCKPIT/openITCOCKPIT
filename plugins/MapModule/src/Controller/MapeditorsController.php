@@ -658,7 +658,14 @@ class MapeditorsController extends AppController {
         /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
-        switch ($this->request->getQuery('type')) {
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        $type = $this->request->getQuery('type');
+        switch ($type) {
             case 'host':
 
                 $host = $HostsTable->getHostsWithServicesByIdsForMapeditor($objectId, $MY_RIGHTS, true);
@@ -891,9 +898,13 @@ class MapeditorsController extends AppController {
                     }
                     $allowView = true;
 
-                    $properties = $MapsTable->getMapInformationForSummaryIcon(
+                    $hosts = Hash::extract($hosts, '{n}.Host');
+                    $services = Hash::extract($services, '{n}.Service');
+
+                    $properties = $MapsTable->getInformationForSummaryIcon(
                         $HoststatusTable,
                         $ServicestatusTable,
+                        $type,
                         $map,
                         $hosts,
                         $services
@@ -902,9 +913,59 @@ class MapeditorsController extends AppController {
                 }
                 $allowView = false;
                 break;
-            default:
-                throw new RuntimeException('Unknown map item type');
+            case 'statuspage':
+                $statuspage = $StatuspagesTable->get($objectId)->toArray();
+                if (!empty($statuspage)) {
+                    if ($this->hasRootPrivileges === false) {
+                        if (!$this->allowedByContainerId($statuspage['container_id'], false)) {
+                            break;
+                        }
+                    }
+                    $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds([$objectId], $MY_RIGHTS);
+
+                    $allowView = true;
+                    $properties = $MapsTable->getInformationForSummaryIcon(
+                        $HoststatusTable,
+                        $ServicestatusTable,
+                        $type,
+                        $statuspage,
+                        $hostsAndServices['hosts'],
+                        $hostsAndServices['services']
+                    );
+                    break;
+                }
+                $allowView = false;
                 break;
+            case 'statuspagegroup':
+                $statuspageGroup = $StatuspagegroupsTable->get($objectId, contain: [
+                    'StatuspagesMemberships'
+                ])->toArray();
+                if (!empty($statuspageGroup)) {
+                    if ($this->hasRootPrivileges === false) {
+                        if (!$this->allowedByContainerId($statuspageGroup['container_id'], false)) {
+                            break;
+                        }
+                    }
+                    $statuspageIds = Hash::extract($statuspageGroup, 'statuspages_memberships.{n}.statuspage_id');
+
+                    $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds($statuspageIds, $MY_RIGHTS);
+
+                    $allowView = true;
+                    $properties = $MapsTable->getInformationForSummaryIcon(
+                        $HoststatusTable,
+                        $ServicestatusTable,
+                        $type,
+                        $statuspageGroup,
+                        $hostsAndServices['hosts'],
+                        $hostsAndServices['services']
+                    );
+                    break;
+                }
+                $allowView = false;
+                break;
+            default:
+
+                throw new RuntimeException('Unknown map item type');
         }
 
         $this->set('type', $this->request->getQuery('type'));

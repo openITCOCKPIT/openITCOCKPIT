@@ -190,6 +190,10 @@ class StatuspagesTable extends Table {
             ->notEmptyString('public');
 
         $validator
+            ->boolean('grouped')
+            ->notEmptyString('grouped');
+
+        $validator
             ->boolean('show_downtimes')
             ->allowEmptyString('show_downtimes');
 
@@ -414,6 +418,7 @@ class StatuspagesTable extends Table {
         $HoststatusFields
             ->currentState()
             ->isHardstate()
+            ->lastStateChange()
             ->problemHasBeenAcknowledged()
             ->scheduledDowntimeDepth();
 
@@ -421,6 +426,7 @@ class StatuspagesTable extends Table {
         $ServicestatusFields
             ->currentState()
             ->isHardstate()
+            ->lastStateChange()
             ->problemHasBeenAcknowledged()
             ->scheduledDowntimeDepth();
 
@@ -485,6 +491,11 @@ class StatuspagesTable extends Table {
                             1 => 0, // Down
                             2 => 0, // Unreachable
                         ],
+                        'lastChange'               => [
+                            0 => [],
+                            1 => [],
+                            2 => []
+                        ],
                         'acknowledgements'         => 0,
                         'acknowledgement_details'  => [],
                         'downtimes'                => 0,
@@ -501,6 +512,12 @@ class StatuspagesTable extends Table {
                             1 => 0, // Warning
                             2 => 0, // Critical
                             3 => 0, // Unknown
+                        ],
+                        'lastChange'               => [
+                            0 => [],
+                            1 => [],
+                            2 => [],
+                            3 => []
                         ],
                         'acknowledgements'         => 0,
                         'acknowledgement_details'  => [],
@@ -529,6 +546,7 @@ class StatuspagesTable extends Table {
                     $statuspage[$objectType][$index]['state_summary']['hosts']['total']++;
 
                     $statuspage[$objectType][$index]['state_summary']['hosts']['state'][$Hoststatus->currentState()]++;
+                    $statuspage[$objectType][$index]['state_summary']['hosts']['lastChange'][$Hoststatus->currentState()][] = $Hoststatus->getLastStateChange();
 
                     if ($Hoststatus->currentState() > 0) {
                         $statuspage[$objectType][$index]['state_summary']['hosts']['problems']++;
@@ -570,6 +588,7 @@ class StatuspagesTable extends Table {
                     $statuspage[$objectType][$index]['state_summary']['services']['total']++;
 
                     $statuspage[$objectType][$index]['state_summary']['services']['state'][$Servicestatus->currentState()]++;
+                    $statuspage[$objectType][$index]['state_summary']['services']['lastChange'][$Servicestatus->currentState()][] = $Servicestatus->getLastStateChange();
 
                     if ($Servicestatus->currentState() > 0) {
                         $statuspage[$objectType][$index]['state_summary']['services']['problems']++;
@@ -655,16 +674,21 @@ class StatuspagesTable extends Table {
                 if (!empty($objectGroup['_joinData']['display_alias'])) {
                     $name = $objectGroup['_joinData']['display_alias'];
                 }
+                $tags = [];
+                if (!empty($objectGroup['_joinData']['group_tags'])) {
+                    $tags = explode(',', $objectGroup['_joinData']['group_tags']);
+                }
+
 
                 $item = [
                     'type'                => $itemTypes[$objectType], // Legacy at its best
                     'id'                  => $objectGroup['id'],
                     'name'                => $name,
+                    'tags'                => $tags,
                     'cumulatedStateName'  => $stateNames['hosts'][-1], // State for humans
                     'cumulatedColorId'    => -1, // Numeric state representation
                     'cumulatedColor'      => 'not-monitored', // For texts, backgrounds and shadows
                     'isAcknowledge'       => false,
-                    //'acknowledgedProblemsText' => __('State is not acknowledged'),
                     'acknowledgeComment'  => [],
                     'scheduledStartTime'  => null,
                     'scheduledEndTime'    => null,
@@ -672,6 +696,9 @@ class StatuspagesTable extends Table {
                     'isInDowntime'        => false,
                     'downtimeData'        => [],
                     'plannedDowntimeData' => [],
+                    'lastStateChange'     => null,
+                    'lastStateChangeRaw'  => null
+
 
                 ];
 
@@ -680,13 +707,19 @@ class StatuspagesTable extends Table {
                     if ($stateCount > 0) {
                         $statuspage[$objectType][$index]['state_summary']['hosts']['cumulatedStateId'] = $state;
                         $statuspage[$objectType][$index]['state_summary']['hosts']['cumulatedStateName'] = $stateNames['hosts'][$state];
+                        $statuspage[$objectType][$index]['state_summary']['hosts']['cumulatedLastChange'] = max($statuspage[$objectType][$index]['state_summary']['hosts']['lastChange'][$state]);
+
+
                     }
                 }
+
+
                 // Get the worst service state
                 foreach ($objectGroup['state_summary']['services']['state'] as $state => $stateCount) {
                     if ($stateCount > 0) {
                         $statuspage[$objectType][$index]['state_summary']['services']['cumulatedStateId'] = $state;
                         $statuspage[$objectType][$index]['state_summary']['services']['cumulatedStateName'] = $stateNames['services'][$state];
+                        $statuspage[$objectType][$index]['state_summary']['services']['cumulatedLastChange'] = max($statuspage[$objectType][$index]['state_summary']['services']['lastChange'][$state]);
                     }
                 }
 
@@ -698,9 +731,30 @@ class StatuspagesTable extends Table {
                 // Merge host state and service state into one single cumulated state
                 $cumulatedStateId = $statuspage[$objectType][$index]['state_summary']['hosts']['cumulatedStateId'];
                 $cumulatedStateName = $statuspage[$objectType][$index]['state_summary']['hosts']['cumulatedStateName'];
+                $cumulatedHostLastStateChange = $statuspage[$objectType][$index]['state_summary']['hosts']['cumulatedLastChange'] ?? null;
+                $cumulatedServiceLastStateChange = $statuspage[$objectType][$index]['state_summary']['services']['cumulatedLastChange'] ?? null;
                 $item['cumulatedStateName'] = $cumulatedStateName;
                 $item['cumulatedColorId'] = $cumulatedStateId;
                 $item['cumulatedColor'] = $stateColors['hosts'][$cumulatedStateId];
+
+
+                // Map & format based on item type
+                $itemHostLastStateChange = $cumulatedHostLastStateChange ? $UserTime->format($cumulatedHostLastStateChange) : null;
+                $itemServiceLastStateChange = $cumulatedServiceLastStateChange ? $UserTime->format($cumulatedServiceLastStateChange) : null;
+
+                if (in_array($objectType, ['hosts', 'hostgroups'], true)) {
+                    // If the host is UP, show last time UP; if down due to services, show last time services were OK
+                    $item['lastStateChange'] = ($item['cumulatedColorId'] === 0)
+                        ? $itemServiceLastStateChange
+                        : ($itemHostLastStateChange ?? $itemServiceLastStateChange);
+                    $item['lastStateChangeRaw'] = ($item['cumulatedColorId'] === 0)
+                        ? $cumulatedServiceLastStateChange
+                        : ($cumulatedHostLastStateChange ?? $cumulatedServiceLastStateChange);
+                } else {
+                    // For services and servicegroups
+                    $item['lastStateChange'] = $itemServiceLastStateChange;
+                    $item['lastStateChangeRaw'] = $cumulatedServiceLastStateChange;
+                }
 
                 //only relevant for host and host groups
                 if (in_array($objectType, ['hosts', 'hostgroups'], true)) {
@@ -890,12 +944,14 @@ class StatuspagesTable extends Table {
             return [
                 'statuspage' => [
                     'uuid'                        => $statuspage['uuid'],
+                    'id'                          => $id,
                     'name'                        => $statuspage['name'],
                     'description'                 => $statuspage['description'],
                     'public_title'                => $statuspage['public_title'],
                     'public_identifier'           => $statuspage['public_identifier'],
                     'public_refresh'              => $statuspage['public_refresh'],
                     'public'                      => $statuspage['public'],
+                    'grouped'                     => $statuspage['grouped'],
                     'showDowntimes'               => $statuspage['show_downtimes'],
                     'showDowntimeComments'        => $statuspage['show_downtime_comments'],
                     'showAcknowledgements'        => $statuspage['show_acknowledgements'],
@@ -909,11 +965,112 @@ class StatuspagesTable extends Table {
             ];
         }
 
-        $items = Hash::sort($items, '{n}.cumulatedColorId', 'desc');
+        usort($items, function ($a, $b) {
+            // primary sort with spaceship-operator descending by cumulatedColorid
+            $colorComp = ($b['cumulatedColorId'] ?? 0) <=> ($a['cumulatedColorId'] ?? 0);
+            if ($colorComp !== 0) {
+                return $colorComp;
+            }
+
+            // secondary sort ascending by timestamps
+            return ($a['lastStateChangeRaw'] ?? 0) <=> ($b['lastStateChangeRaw'] ?? 0);
+        });
+
+
+        $colorMap = [
+            -1 => 'not-monitored',
+            0  => 'ok',
+            1  => 'warning',
+            2  => 'critical',
+            3  => 'unknown'
+        ];
+
+        $groupedMap = [];
+        $fallbackPrefix = 'Ungrouped';
+
+        // 1. Items grouped by tag and status
+        foreach ($items as $item) {
+            $colorId = $item['cumulatedColorId'] ?? 0;
+            //items with tags
+            if (!empty($item['tags'])) {
+                //item can have multiple tags
+                foreach ($item['tags'] as $tag) {
+                    $tag = trim($tag);
+                    if ($tag !== '') {
+                        // Key combined tag and status (z.B. "FIOB_99" and "FIOB_0")
+                        $groupedMap[$tag . '_' . $colorId]['groupName'] = $tag;
+                        $groupedMap[$tag . '_' . $colorId]['colorId'] = $colorId;
+                        $groupedMap[$tag . '_' . $colorId]['items'][] = $item;
+                    }
+                }
+            } else {
+                // ungrouped items (without tag) sorted by status
+                $groupedMap[$fallbackPrefix . '_' . $colorId]['groupName'] = $fallbackPrefix;
+                $groupedMap[$fallbackPrefix . '_' . $colorId]['colorId'] = $colorId;
+                $groupedMap[$fallbackPrefix . '_' . $colorId]['items'][] = $item;
+            }
+        }
+        // result example
+        /* [
+            'FIOB_0' => [
+                'groupName' => 'FIOB',
+                'colorId' => 0,
+                'items' => [item1, item3, ...]
+            ],
+            'FIOB_2' => [
+                'groupName' => 'FIOB',
+                'colorId' => 2,
+                'items' => [item2, ...]
+            ],
+            'Ungrouped_0' => [
+                'groupName' => 'Ungrouped',
+                'colorId' => 0,
+                'items' => [item4, ...]
+            ],
+            ...
+        ] */
+
+        //  sort groups
+        uksort($groupedMap, function ($keyA, $keyB) use ($groupedMap, $fallbackPrefix) {
+            $groupA = $groupedMap[$keyA];
+            $groupB = $groupedMap[$keyB];
+
+            // primary sort by status
+            if ($groupA['colorId'] !== $groupB['colorId']) {
+                return ($groupA['colorId'] < $groupB['colorId']) ? 1 : -1;
+            }
+
+            // same State grouped sorted before ungrouped
+            $isFallbackA = ($groupA['groupName'] === $fallbackPrefix);
+            $isFallbackB = ($groupB['groupName'] === $fallbackPrefix);
+
+            if ($isFallbackA && !$isFallbackB) return 1;
+            if (!$isFallbackA && $isFallbackB) return -1;
+
+            // when all same(name, state) order natural by name
+            return strnatcasecmp($groupA['groupName'], $groupB['groupName']);
+
+        });
+
+        //  transform to frontrend-array
+        $groupedItems = [];
+        foreach ($groupedMap as $groupData) {
+            $colorId = $groupData['colorId'];
+
+            $groupedItems[] = [
+                'group'          => $groupData['groupName'],
+                'colorId'        => $colorId,
+                'cumulatedColor' => $colorMap[$colorId] ?? 'unknown',
+                'isUngrouped'    => ($groupData['groupName'] === $fallbackPrefix),
+                'items'          => $groupData['items']
+            ];
+        }
+
 
         $statuspageView = [
-            'statuspage' => [
+            'statuspage'   => [
                 'uuid'                        => $statuspage['uuid'],
+                'id'                          => $id,
                 'name'                        => $statuspage['name'],
                 'description'                 => $statuspage['description'],
                 'public_title'                => $statuspage['public_title'],
@@ -928,9 +1085,12 @@ class StatuspagesTable extends Table {
                 'cumulatedColor'              => $items[0]['cumulatedColor'],
                 'cumulatedHumanStatus'        => $items[0]['cumulatedStateName'],
                 'cumulatedIcon'               => $stateIcons[$items[0]['cumulatedColorId']] ?? 'fa-solid fa-eye-low-vision',
+                'lastStateChange'             => $items[0]['lastStateChange'],
             ],
-            'items'      => $items,
+            'items'        => $items,
+            'groupedItems' => $groupedItems,
         ];
+
         return $statuspageView;
     }
 

@@ -187,12 +187,14 @@ class StatuspagesController extends AppController {
             throw new NotFoundException(__('Statuspage not found'));
         }
         $this->viewBuilder()->setLayout('statuspage_public');
+        $timezone = date_default_timezone_get();
         $UserTime = new UserTime(date_default_timezone_get(), 'd.m.Y H:i:s');
         $statuspageViewData = $StatuspagesTable->getStatuspageForView((int)$id, [], $UserTime);
         $this->set('statuspage', $statuspageViewData);
         $this->set('systemname', $this->getSystemname());
         $this->set('id', $id);
-        $this->viewBuilder()->setOption('serialize', ['Statuspage']);
+        $this->set('timezone', $timezone);
+        $this->viewBuilder()->setOption('serialize', ['Statuspage', 'timezone']);
     }
 
     /**

@@ -683,7 +683,7 @@ class HostsTable extends Table {
                     ])
                     ->select([
                         'Services.id',
-                        'Services.name',
+                        'name' => $q->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
                         'Services.uuid',
                         'Services.host_id',
                         'Servicetemplates.name'

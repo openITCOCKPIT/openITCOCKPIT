@@ -927,6 +927,11 @@ class BackgroundUploadsController extends AppController {
 
                     /** @var SplFileInfo $image */
                     foreach ($finder->files()->in($unzipDirectory . DS . $uploadedIconsetDirectoryName) as $image) {
+                        // We only need that whitelist of files.
+                        if (!in_array($image->getFilename(), $MapUploadsTable->getIconsNames(), true)) {
+                            unlink($image->getPathname());
+                            continue;
+                        }
                         $iconsetIcons[$image->getFilename()] = [
                             'filename' => $image->getFilename(),
                             'path'     => $image->getPath(),
@@ -942,6 +947,11 @@ class BackgroundUploadsController extends AppController {
                     //May be inside of the zip are only icons. (Not folder with icons)
                     /** @var SplFileInfo $image */
                     foreach ($finder->files()->in($unzipDirectory) as $image) {
+                        // We only need that whitelist of files.
+                        if (!in_array($image->getFilename(), $MapUploadsTable->getIconsNames(), true)) {
+                            unlink($image->getPathname());
+                            continue;
+                        }
                         $iconsetIcons[$image->getFilename()] = [
                             'filename' => $image->getFilename(),
                             'path'     => $image->getPath(),

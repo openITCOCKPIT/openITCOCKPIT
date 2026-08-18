@@ -385,7 +385,7 @@ class StatuspagegroupsTable extends Table {
             ->innerJoinWith('StatuspagesMemberships', function (Query $q) {
                 return $q->select([
                     'StatuspagesMemberships.statuspage_id'
-                ]);
+                ])->innerJoinWith('Statuspages');
             })
             ->where([
                 'StatuspagesMemberships.statuspagegroup_id IN' => $statuspagegroupIds

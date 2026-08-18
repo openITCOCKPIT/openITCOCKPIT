@@ -1239,9 +1239,7 @@ class MapsTable extends Table {
         /** @var StatuspagesTable $StatuspagesTable */
         $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
         if (!empty($mapElementsByCategory['statuspage'])) {
-
             $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds($mapElementsByCategory['statuspage'], $MY_RIGHTS);
-
             $statuspageHostIds = Hash::extract($hostsAndServices['hosts'], '{s}.id');
             if (!empty($statuspageHostIds)) {
                 $hostIds = array_merge(

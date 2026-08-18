@@ -788,7 +788,6 @@ class MapeditorsController extends AppController {
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
                 /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-
                 $map = $MapsTable->getMapsForMapsummaryitems($objectId, $mapId, false);
                 if (!empty($map)) {
                     if ($this->hasRootPrivileges === false) {
@@ -811,7 +810,6 @@ class MapeditorsController extends AppController {
                             $dependentMapsIds = $this->getDependendMaps($mapIdGroupByMapId, $objectId);
                         }
                         $dependentMapsIds[] = $objectId;
-
                         // resolve all Elements (host and/or services of dependent map)
                         $allDependentMapElementsFromSubMaps['mapsummaryitem'] = $MapsTable->getAllDependentMapsElements(
                             $dependentMapsIds,

@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -102,6 +103,7 @@ class ProfileController extends AppController {
 
             $user = $UsersTable->get($User->getId());
             $user->setAccess('id', false);
+            $user->setAccess('usergroup_id', false);
 
             if ($isLdapUser) {
                 $data['is_ldap'] = true;
@@ -343,23 +345,25 @@ class ProfileController extends AppController {
             if (isset($data['id'])) {
                 $id = $data['id'];
 
-                if (!$ApikeysTable->existsById($id)) {
+                $apikey = $ApikeysTable->getApikeyByIdAndUserId($id, $User->getId());
+                if (empty($apikey)) {
                     throw new NotFoundException(__('Invalid API key'));
                 }
-                $apikey = $ApikeysTable->get($id);
-                $apikey = $ApikeysTable->patchEntity($apikey, $data);
+                $apikey = $ApikeysTable->patchEntity($apikey, [
+                    'description' => $data['description'],
+                ]);
 
                 $ApikeysTable->save($apikey);
                 if ($apikey->hasErrors()) {
                     $this->response = $this->response->withStatus(400);
                     $this->set('error', $apikey->getErrors());
                     $this->viewBuilder()->setOption('serialize', ['error']);
-                    return;
-                } else {
-                    $this->set('message', __('API key updated successfully'));
-                    $this->viewBuilder()->setOption('serialize', ['message']);
+
                     return;
                 }
+                $this->set('message', __('API key updated successfully'));
+                $this->viewBuilder()->setOption('serialize', ['message']);
+
             }
 
         }

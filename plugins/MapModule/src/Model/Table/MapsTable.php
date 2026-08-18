@@ -47,6 +47,8 @@ use App\Model\Table\HostgroupsTable;
 use App\Model\Table\HostsTable;
 use App\Model\Table\ServicegroupsTable;
 use App\Model\Table\ServicesTable;
+use App\Model\Table\StatuspagegroupsTable;
+use App\Model\Table\StatuspagesTable;
 use Cake\Core\Plugin;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\Exception\RecordNotFoundException;
@@ -1191,12 +1193,16 @@ class MapsTable extends Table {
             ->toArray();
 
         $mapElementsByCategory = [
-            'host'         => [],
-            'hostgroup'    => [],
-            'service'      => [],
-            'servicegroup' => []
+            'host'            => [],
+            'hostgroup'       => [],
+            'service'         => [],
+            'servicegroup'    => [],
+            'statuspage'      => [],
+            'statuspagegroup' => [],
         ];
         $allDependentMapElements = Hash::filter($allDependentMapElements);
+
+
         foreach ($allDependentMapElements as $allDependentMapElementArray) {
             foreach ($allDependentMapElementArray as $mapElementData) {
                 if (is_array($mapElementData)) {
@@ -1206,6 +1212,7 @@ class MapsTable extends Table {
                 }
             }
         }
+
 
         $hostIds = $mapElementsByCategory['host'];
         $serviceIds = $mapElementsByCategory['service'];
@@ -1229,10 +1236,56 @@ class MapsTable extends Table {
                 );
             }
         }
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+        if (!empty($mapElementsByCategory['statuspage'])) {
+
+            $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds($mapElementsByCategory['statuspage'], $MY_RIGHTS);
+
+            $statuspageHostIds = Hash::extract($hostsAndServices['hosts'], '{s}.id');
+            if (!empty($statuspageHostIds)) {
+                $hostIds = array_merge(
+                    $hostIds,
+                    $statuspageHostIds
+                );
+            }
+
+            $statuspageServiceIds = Hash::extract($hostsAndServices['services'], '{s}.id');
+
+            if (!empty($statuspageHostIds)) {
+                $serviceIds = array_merge(
+                    $serviceIds,
+                    $statuspageServiceIds
+                );
+            }
+        }
+
+        if (!empty($mapElementsByCategory['statuspagegroup'])) {
+            /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+            $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+            $statuspagesIds = $StatuspagegroupsTable->getStatuspagesByStatuspagegroupIds($mapElementsByCategory['statuspagegroup'], $MY_RIGHTS);
+            if (!empty($statuspagesIds)) {
+                $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds($statuspagesIds, $MY_RIGHTS);
+                $statuspageHostIds = Hash::extract($hostsAndServices['hosts'], '{s}.id');
+                if (!empty($statuspageHostIds)) {
+                    $hostIds = array_merge(
+                        $hostIds,
+                        $statuspageHostIds
+                    );
+                }
+                $statuspageServiceIds = Hash::extract($hostsAndServices['services'], '{s}.id');
+                if (!empty($statuspageHostIds)) {
+                    $serviceIds = array_merge(
+                        $serviceIds,
+                        $statuspageServiceIds
+                    );
+                }
+            }
+        }
 
         return [
-            'hostIds'    => $hostIds,
-            'serviceIds' => $serviceIds
+            'hostIds'    => array_unique($hostIds),
+            'serviceIds' => array_unique($serviceIds)
         ];
     }
 

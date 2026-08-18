@@ -365,4 +365,37 @@ class StatuspagegroupsTable extends Table {
         return $statuspagegroups;
     }
 
+    /**
+     * @param array $statuspagegroupIds
+     * @param $MY_RIGHTS
+     * @return array
+     */
+    public function getStatuspagesByStatuspagegroupIds(array $statuspagegroupIds, $MY_RIGHTS = []): array {
+        if (empty($statuspagegroupIds)) {
+            return [];
+        }
+        $query = $this->find()
+            ->select([
+                'StatuspagesMemberships.statuspage_id'
+            ]);
+        if (!empty($MY_RIGHTS)) {
+            $query->where(['Statuspages.container_id IN' => $MY_RIGHTS]);
+        }
+        $query
+            ->innerJoinWith('StatuspagesMemberships', function (Query $q) {
+                return $q->select([
+                    'StatuspagesMemberships.statuspage_id'
+                ]);
+            })
+            ->where([
+                'StatuspagesMemberships.statuspagegroup_id IN' => $statuspagegroupIds
+            ])->disableHydration()
+            ->all();
+
+        $result = $query->toArray();
+        if (empty($result)) {
+            return [];
+        }
+        return Hash::extract($result, '{n}._matchingData.StatuspagesMemberships.statuspage_id');
+    }
 }

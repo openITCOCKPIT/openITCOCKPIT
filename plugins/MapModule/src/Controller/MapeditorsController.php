@@ -667,9 +667,7 @@ class MapeditorsController extends AppController {
         $type = $this->request->getQuery('type');
         switch ($type) {
             case 'host':
-
                 $host = $HostsTable->getHostsWithServicesByIdsForMapeditor($objectId, $MY_RIGHTS, true);
-
                 if (!empty($host) && isset($host[0])) {
                     if ($this->hasRootPrivileges === false) {
                         if (!$this->allowedByContainerId(Hash::extract($host[0]->toArray(), 'hosts_to_containers_sharing.{n}.id'), false)) {
@@ -693,8 +691,6 @@ class MapeditorsController extends AppController {
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
                 $service = $ServicesTable->getServiceById($objectId)->toArray();
-                $host = $HostsTable->getHostById($service['host_id']);
-
                 if (!empty($service)) {
                     if ($this->hasRootPrivileges === false) {
                         if (!$this->allowedByContainerId(Hash::extract($service, 'host.hosts_to_containers_sharing.{n}.id'), false)) {
@@ -801,7 +797,6 @@ class MapeditorsController extends AppController {
                             break;
                         }
                     }
-
                     //fetch all dependent map items after permissions check
                     $mapSummaryItemToResolve = $MapsummaryitemsTable->getMapsummaryitemsForMaps($map['id'], $mapId);
                     if (!empty($mapSummaryItemToResolve)) {

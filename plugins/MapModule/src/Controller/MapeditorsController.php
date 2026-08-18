@@ -510,6 +510,7 @@ class MapeditorsController extends AppController {
                     if (!empty($statuspage)) {
                         if ($this->hasRootPrivileges === false) {
                             if (!$this->allowedByContainerId($statuspage['container_id'], false)) {
+                                $allowView = false;
                                 break;
                             }
                         }
@@ -556,6 +557,7 @@ class MapeditorsController extends AppController {
                     if (!empty($statuspageGroup)) {
                         if ($this->hasRootPrivileges === false) {
                             if (!$this->allowedByContainerId($statuspageGroup['container_id'], false)) {
+                                $allowView = false;
                                 break;
                             }
                         }
@@ -1327,6 +1329,7 @@ class MapeditorsController extends AppController {
                     $statuspageGroup = $StatuspagegroupsTable->get($objectId, contain: [
                         'StatuspagesMemberships'
                     ])->toArray();
+
                     if (empty($statuspageGroup)) {
                         throw new NotFoundException('Status page group not found!');
                     }

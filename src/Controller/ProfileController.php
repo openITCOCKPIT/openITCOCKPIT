@@ -104,6 +104,7 @@ class ProfileController extends AppController {
             $user = $UsersTable->get($User->getId());
             $user->setAccess('id', false);
             $user->setAccess('usergroup_id', false);
+            $user->setAccess('image', false);
 
             if ($isLdapUser) {
                 $data['is_ldap'] = true;

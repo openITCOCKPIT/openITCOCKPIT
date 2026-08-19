@@ -160,7 +160,7 @@ class BackupsController extends AppController {
 
         $fileToDelete = $this->request->getData('filename');
         $backupFiles = $this->getBackupFiles();
-        if (!in_array($fileToDelete, $backupFiles, true)) {
+        if (!array_key_exists($fileToDelete, $backupFiles)) {
             throw new FileNotFoundException();
         }
 

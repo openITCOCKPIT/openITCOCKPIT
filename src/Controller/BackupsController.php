@@ -159,6 +159,10 @@ class BackupsController extends AppController {
         }
 
         $fileToDelete = $this->request->getData('filename');
+        $backupFiles = $this->getBackupFiles();
+        if (!in_array($fileToDelete, $backupFiles, true)) {
+            throw new FileNotFoundException();
+        }
 
         $GearmanClient = new Gearman();
         $result = $GearmanClient->send("delete_sql_backup", ['path' => $fileToDelete]);

@@ -113,6 +113,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             'isDistributeModuleInstalled'     => false,
             'isPushNotificationRunning'       => false, // Replaced by openitcockpit-websocket.service
             'isNodeJsServerRunning'           => false,
+            'isSatellitesInformationRunning'  => true,
             'isWebsocketServerRunning'        => false
         ];
 
@@ -134,6 +135,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
                 'isDistributeModuleInstalled'     => false,
                 'isPushNotificationRunning'       => false, // ITC-3487 push_notification got removed
                 'isNodeJsServerRunning'           => $Supervisorctl->isRunning('openitcockpit-node'),
+                'isSatellitesInformationRunning'  => true,
                 'isWebsocketServerRunning'        => $Supervisorctl->isRunning('openitcockpit-websocket')
             ];
         }
@@ -245,7 +247,10 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             $data['isDistributeModuleInstalled'] = true;
             /** @var SatellitesTable $SatellitesTable */
             $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
-            $data['satellites'] = $SatellitesTable->getSatellitesStatus(new SatelliteFilter(new ServerRequest()));
+            $data['satellites'] = $SatellitesTable->getSatellitesStatusWithHealth(new SatelliteFilter(new ServerRequest()));
+
+            $data = $this->checkSatelliteInformationState($data);
+
         }
 
         return $data;
@@ -359,6 +364,41 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             $this->setHealthState('warning');
         }
 
+        if (!empty($dataForEmail['satellites']) && is_array($dataForEmail['satellites'])) {
+
+            foreach ($dataForEmail['satellites'] as $satellite) {
+
+                $satInfo = $satellite['satellite_information'] ?? null;
+
+                if (!$satInfo || empty($satInfo['system_health'])) {
+                    continue;
+                }
+
+                $systemHealth = $satInfo['system_health'];
+                // RAM
+                if (isset($systemHealth['memory']['memory']['state'])) {
+                    $this->setHealthState($systemHealth['memory']['memory']['state']);
+                }
+                if (isset($systemHealth['memory']['swap']['state'])) {
+                    $this->setHealthState($systemHealth['memory']['swap']['state']);
+                }
+                // Disks
+                if (!empty($systemHealth['disks']) && is_array($systemHealth['disks'])) {
+                    foreach ($systemHealth['disks'] as $disk) {
+                        if (isset($disk['state'])) {
+                            $this->setHealthState($disk['state']);
+                        }
+                    }
+                }
+
+                //CPU
+                if (isset($systemHealth['cpu_cores'], $systemHealth['cpu_load15'], $systemHealth['cpu_state'])) {
+                    $this->setHealthState($systemHealth['cpu_state']);
+                }
+
+            }
+        }
+
         $this->setHealthState($dataForEmail['memory_usage']['memory']['state']);
         $this->setHealthState($dataForEmail['memory_usage']['swap']['state']);
         $this->setHealthState($dataForEmail['load']['state']);
@@ -397,5 +437,19 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         $Redis = new \Redis();
         $Redis->connect($redisHost, $redisPort);
         $Redis->setex('permissions_system_health', 60 * 3, serialize($data));
+    }
+
+    public function checkSatelliteInformationState($data) {
+        $satellites = $data['satellites'] ?? null;
+        $satellite_errors = 0;
+        foreach ($satellites as &$satellite) {
+            if ($satellite['satellite_information']['satellite_error_count'] > 0) {
+                $satellite_errors += $satellite['satellite_information']['satellite_error_count'];
+            }
+        }
+        if ($satellite_errors > 0) {
+            $data['isSatellitesInformationRunning'] = false;
+        }
+        return $data;
     }
 }

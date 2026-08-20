@@ -747,8 +747,6 @@ class AngularController extends AppController {
                         $this->setHealthState($health['cpu_state']);
                         if (strtolower($health['cpu_state']) !== 'ok') {
                             $counter++;
-
-                            satellite_error_count
                         }
                     }
                     $cache['satellites'][$index]['satellite_information']['satellite_error_count'] = $counter;

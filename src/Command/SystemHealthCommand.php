@@ -451,5 +451,6 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             $data['isSatellitesInformationRunning'] = false;
         }
         return $data;
+        
     }
 }

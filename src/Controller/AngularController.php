@@ -740,7 +740,7 @@ class AngularController extends AppController {
                                     $counter++;
                                 }
                             }
-                        }isSatellitesInformationRunning
+                        }
                     }
                     // CPU
                     if (isset($health['cpu_cores'], $health['cpu_load15'], $health['cpu_state'])) {

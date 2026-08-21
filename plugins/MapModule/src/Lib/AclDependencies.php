@@ -52,7 +52,9 @@ class AclDependencies extends PluginAclDependencies {
             ->allow('Mapeditors', 'loadMapsByString')
             ->allow('Mapeditors', 'getPerformanceDataMetrics')
             ->allow('Mapeditors', 'mapWidget')
-            ->allow('Mapeditors', 'mapDetails');
+            ->allow('Mapeditors', 'mapDetails')
+            ->allow('Mapeditors', 'loadStatuspagesByString')
+            ->allow('Mapeditors', 'loadStatuspagegroupsByString');
 
         $this
             ->allow('Maps', 'loadUsersForTenant')

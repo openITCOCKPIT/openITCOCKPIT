@@ -42,10 +42,8 @@ use Cake\Command\Command;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
-use Cake\Core\Plugin;
 use Cake\Http\ServerRequest;
 use Cake\ORM\TableRegistry;
-use DistributeModule\Model\Table\SatellitesTable;
 use itnovum\openITCOCKPIT\Core\Interfaces\CronjobInterface;
 use itnovum\openITCOCKPIT\Core\System\Gearman;
 use itnovum\openITCOCKPIT\Core\System\Health\CpuLoad;
@@ -243,17 +241,71 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             //}
         }
 
-        if (Plugin::isLoaded('DistributeModule')) {
-            $data['isDistributeModuleInstalled'] = true;
-            /** @var SatellitesTable $SatellitesTable */
-            $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
-            $data['satellites'] = $SatellitesTable->getSatellitesStatusWithHealth(new SatelliteFilter(new ServerRequest()));
+        /*if (Plugin::isLoaded('DistributeModule')) {
+             $data['isDistributeModuleInstalled'] = false;
+             // @var SatellitesTable $SatellitesTable
+             $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
+             $data['satellites'] = $SatellitesTable->getSatellitesStatusWithHealth(new SatelliteFilter(new ServerRequest()));
 
-            $data = $this->checkSatelliteInformationState($data);
+             $data = $this->checkSatelliteInformationState($data);
+         }*/
 
-        }
+        $this->getSatellitesStatusWithHealth();
 
         return $data;
+    }
+
+    public function getSatellitesStatusWithHealth() {
+
+        $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
+
+        $SatelliteFilter = new SatelliteFilter(new ServerRequest());
+
+        $where = $SatelliteFilter->statusFilter();
+
+        $PaginateOMat = null;
+        $MY_RIGHTS = [];
+        $having = [];
+        if (isset($where['status IN'])) {
+            $having['status IN'] = $where['status IN'];
+            unset($where['status IN']);
+        }
+
+        $query = $SatellitesTable->find('all');
+        $query->select([
+            'Satellites.id',
+            'Satellites.name',
+            'Satellites.description',
+            'Satellites.address',
+            'Satellites.container_id',
+            'Satellites.timezone',
+            'Satellites.sync_method',
+            'SatelliteStatus.status',
+            'SatelliteStatus.last_error',
+            'SatelliteStatus.last_export',
+            'SatelliteStatus.last_seen',
+            'SatelliteStatus.satellite_id',
+            'status' => $query->newExpr('IF(SatelliteStatus.status IS NULL, 0, SatelliteStatus.status)')
+        ])
+            ->where($where)
+            ->having($having)
+            ->contain(['SatelliteStatus', 'SatelliteInformation'])
+            ->orderBy($SatelliteFilter->getOrderForPaginator('Satellites.name', 'asc'));
+
+        if (!empty($MY_RIGHTS)) {
+            $query->andWhere([
+                'Satellites.container_id IN' => $MY_RIGHTS
+            ]);
+        }
+
+        if ($PaginateOMat === null) {
+            //Just execute query
+            //
+        }
+
+        $result = $query->toArray();
+        dd($result);
+
     }
 
     public function sendHealthNotification($data, $sendingMail) {
@@ -451,6 +503,6 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             $data['isSatellitesInformationRunning'] = false;
         }
         return $data;
-        
+
     }
 }

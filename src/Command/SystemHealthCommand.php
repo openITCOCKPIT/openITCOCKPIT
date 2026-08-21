@@ -250,7 +250,10 @@ class SystemHealthCommand extends Command implements CronjobInterface {
              $data = $this->checkSatelliteInformationState($data);
          }*/
 
-        $this->getSatellitesStatusWithHealth();
+        $satellites = $this->getSatellitesStatusWithHealth();
+
+        $data['satellites'] = $satellites['satellites'];
+        $data['isSatellitesInformationRunning'] = $satellites['isSatellitesInformationRunning'];
 
         return $data;
     }
@@ -260,11 +263,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
 
         $SatelliteFilter = new SatelliteFilter(new ServerRequest());
-
         $where = $SatelliteFilter->statusFilter();
-
-        $PaginateOMat = null;
-        $MY_RIGHTS = [];
         $having = [];
         if (isset($where['status IN'])) {
             $having['status IN'] = $where['status IN'];
@@ -272,7 +271,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         }
 
         $query = $SatellitesTable->find('all');
-        $query->select([
+        $satellitesArray = $query->select([
             'Satellites.id',
             'Satellites.name',
             'Satellites.description',
@@ -289,23 +288,83 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         ])
             ->where($where)
             ->having($having)
-            ->contain(['SatelliteStatus', 'SatelliteInformation'])
-            ->orderBy($SatelliteFilter->getOrderForPaginator('Satellites.name', 'asc'));
+            ->contain(['SatelliteStatus'])
+            ->orderBy($SatelliteFilter->getOrderForPaginator('Satellites.name', 'asc'))
+            ->disableHydration()
+            ->toArray();
 
-        if (!empty($MY_RIGHTS)) {
-            $query->andWhere([
-                'Satellites.container_id IN' => $MY_RIGHTS
-            ]);
+        if (empty($satellitesArray)) {
+            return [];
         }
+        $satelliteIds = array_column($satellitesArray, 'id');
+        $SatelliteInformationTable = TableRegistry::getTableLocator()->get('DistributeModule.SatelliteInformation');
+        $total_error_count = 0;
 
-        if ($PaginateOMat === null) {
-            //Just execute query
-            //
+        $healthMap = $SatelliteInformationTable->find()
+            ->select(['satellite_id', 'system_health'])
+            ->where(['satellite_id IN' => $satelliteIds])
+            ->disableHydration()
+            ->all()
+            ->combine('satellite_id', function ($row) {
+                if (is_string($row['system_health'])) {
+                    $decoded = json_decode($row['system_health'], true);
+                    return $decoded !== null ? $decoded : @unserialize($row['system_health']);
+                }
+                return $row['system_health'];
+            })
+            ->toArray();
+
+        foreach ($satellitesArray as &$satellite) {
+            $satellite_error_count = 0;
+            $parsedHealth = $healthMap[$satellite['id']] ?? null;
+
+            if (!empty($parsedHealth) && is_array($parsedHealth)) {
+                //RAM
+                if (isset($parsedHealth['memory']['memory']['state']) && ($parsedHealth['memory']['memory']['state']) !== 'ok') {
+                    $satellite_error_count++;
+                }
+                if (isset($parsedHealth['memory']['swap']['state']) && ($parsedHealth['memory']['swap']['state']) !== 'ok') {
+                    $satellite_error_count++;
+                }
+
+                // Disks
+                if (!empty($parsedHealth['disks']) && is_array($parsedHealth['disks'])) {
+                    foreach ($parsedHealth['disks'] as $disk) {
+                        if (isset($disk['state']) && strtolower($disk['state']) !== 'ok') {
+                            $satellite_error_count++;
+                        }
+                    }
+                }
+
+                //CPU
+                if (isset($parsedHealth['cpu_cores'], $parsedHealth['cpu_load15'])) {
+                    $cores_warning = $parsedHealth['cpu_cores'] - 2 ?: 1;
+                    if ($cores_warning < $parsedHealth['cpu_load15']) {
+                        $parsedHealth['cpu_state'] = 'warning';
+                        $satellite_error_count++;
+                    } else if ($parsedHealth['cpu_cores'] < $parsedHealth['cpu_load15']) {
+                        $parsedHealth['cpu_state'] = 'critical';
+                        $satellite_error_count++;
+                    } else {
+                        $parsedHealth['cpu_state'] = 'ok';
+                    }
+                }
+            }
+
+            $total_error_count += $satellite_error_count;
+
+            $satellite['satellite_information'] = [
+                'satellite_id'          => $satellite['id'],
+                'satellite_error_count' => $satellite_error_count,
+                'system_health'         => $parsedHealth
+            ];
         }
+        unset($satellite);
 
-        $result = $query->toArray();
-        dd($result);
-
+        return [
+            'satellites'                     => $satellitesArray,
+            'isSatellitesInformationRunning' => ($total_error_count === 0)
+        ];
     }
 
     public function sendHealthNotification($data, $sendingMail) {

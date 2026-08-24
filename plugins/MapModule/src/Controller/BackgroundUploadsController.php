@@ -927,6 +927,16 @@ class BackgroundUploadsController extends AppController {
 
                     /** @var SplFileInfo $image */
                     foreach ($finder->files()->in($unzipDirectory . DS . $uploadedIconsetDirectoryName) as $image) {
+                        // We only need that whitelist of files.
+                        if (!in_array($image->getFilename(), $MapUploadsTable->getIconsNames(), true)) {
+                            //Remove tmp directory
+                            $fs = new Filesystem();
+                            $fs->remove($unzipDirectory);
+                            throw new \Exception(sprintf(
+                                'Additional files found. "%s" does not belong in an icon set.',
+                                $image->getFilename()
+                            ));
+                        }
                         $iconsetIcons[$image->getFilename()] = [
                             'filename' => $image->getFilename(),
                             'path'     => $image->getPath(),
@@ -942,6 +952,16 @@ class BackgroundUploadsController extends AppController {
                     //May be inside of the zip are only icons. (Not folder with icons)
                     /** @var SplFileInfo $image */
                     foreach ($finder->files()->in($unzipDirectory) as $image) {
+                        // We only need that whitelist of files.
+                        if (!in_array($image->getFilename(), $MapUploadsTable->getIconsNames(), true)) {
+                            //Remove tmp directory
+                            $fs = new Filesystem();
+                            $fs->remove($unzipDirectory);
+                            throw new \Exception(sprintf(
+                                'Additional files found. "%s" does not belong in an icon set.',
+                                $image->getFilename()
+                            ));
+                        }
                         $iconsetIcons[$image->getFilename()] = [
                             'filename' => $image->getFilename(),
                             'path'     => $image->getPath(),

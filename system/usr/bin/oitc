@@ -27,4 +27,20 @@
 
 # ITC-2986 keep all environment variables for config generation inside of docker containers
 # ITC-3780 Replace sudo with runuser
-runuser -u root -g www-data -- /opt/openitc/frontend/bin/cake "$@"
+# ITC-3832 Replace runuser with setpriv as it does not fiddle around with PAM or the environment
+# In case we run as Cronjob, we set the PATH variable. Otherwise CakePHP will may not find some commands
+export PATH="${PATH:+$PATH:}/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# Find GID of the www-data group, because older setpriv versions do not support group names, only GIDs.
+WWW_GID="$(getent group www-data | cut -d: -f3)"
+if [[ -z "$WWW_GID" || "$WWW_GID" == "0" ]]; then
+    echo "ERROR: could not resolve a valid GID for group www-data (got: '${WWW_GID:-<empty>}')" >&2
+    exit 78
+fi
+
+# Make sure new created files are group writable, so that the webserver can overwrite them.
+umask 002
+
+# Exec the command, preserve the environment and change the group to www-data
+exec setpriv --reuid 0 --regid "$WWW_GID" --keep-groups -- /opt/openitc/frontend/bin/cake "$@"
+

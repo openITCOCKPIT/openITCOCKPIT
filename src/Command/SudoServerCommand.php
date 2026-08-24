@@ -36,8 +36,8 @@ namespace App\Command;
 
 use App\itnovum\openITCOCKPIT\WebSockets\SudoMessasgeInterface;
 use App\Model\Table\SystemsettingsTable;
-use Cake\Console\Arguments;
 use Cake\Command\Command;
+use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Log\Log;
@@ -50,6 +50,8 @@ use React\Socket\SocketServer;
 
 /**
  * SudoServer command.
+ * @deprecated The SudoServer is deprecated and was replaced by
+ * https://github.com/openITCOCKPIT/openITCOCKPIT-websocket/
  */
 class SudoServerCommand extends Command {
 

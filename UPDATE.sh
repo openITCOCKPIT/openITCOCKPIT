@@ -518,22 +518,38 @@ if [ ! -f /opt/openitc/nagios/libexec/check_gearman ]; then
     fi
 fi
 
+# ITC-3487 Remove sudo_server and push_notification services if present
+echo "Checking for decommissioned systemd services..."
+for srv in sudo_server.service push_notification.service; do
+    if systemctl is-active --quiet "$srv"; then
+        echo "Stopping $srv and removing it."
+        systemctl stop $srv
+        systemctl disable $srv
+
+        SERVICE_PATH=$(systemctl show -p FragmentPath "$srv" | cut -d= -f2)
+        if [ -f "$SERVICE_PATH" ]; then
+            echo "Removing service file: $SERVICE_PATH"
+            rm -f "$SERVICE_PATH"
+        fi
+        systemctl daemon-reload
+    fi
+done
+
 echo "Enable new systemd services"
 systemctl daemon-reload
-systemctl enable sudo_server.service\
+systemctl enable\
  oitc_cmd.service\
  gearman_worker.service\
- push_notification.service\
+ openitcockpit-websocket.service\
  openitcockpit-node.service\
  openitcockpit-graphing.service\
  oitc_cronjobs.timer\
  statusengine.service
 
 systemctl restart\
- sudo_server.service\
  oitc_cmd.service\
  gearman_worker.service\
- push_notification.service\
+ openitcockpit-websocket.service\
  openitcockpit-node.service\
  oitc_cronjobs.timer\
  statusengine.service

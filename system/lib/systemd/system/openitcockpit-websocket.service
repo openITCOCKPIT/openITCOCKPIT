@@ -3,11 +3,13 @@ Description=openITCOCKPIT WebSocket Background Service
 After=syslog.target network.target mysql.service
 
 [Service]
-User=root
-Group=www-data
+User=www-data
+Group=nagios
 Type=simple
-Restart=always
-ExecStart=/opt/openitc/frontend/bin/cake sudo_server
+Restart=on-failure
+ExecStart=/opt/openitc/websocket/websocket
+LimitNOFILE=10000
+LimitNOFILESoft=10000
 RestartSec=30
 
 [Install]

@@ -665,7 +665,7 @@ class AngularController extends AppController {
             $this->setHealthState('warning');
         }
 
-        if (!$cache['isSudoServerRunning']) {
+        if (!$cache['isWebsocketServerRunning']) {
             $this->setHealthState('warning');
         }
 

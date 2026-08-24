@@ -198,10 +198,9 @@ mkdir -p /opt/openitc/var/prometheus/victoria-metrics
 echo "Enable new systemd services"
 systemctl daemon-reload
 systemctl enable\
- sudo_server.service\
  oitc_cmd.service\
  gearman_worker.service\
- push_notification.service\
+ openitcockpit-websocket.service\
  openitcockpit-node.service\
  openitcockpit-graphing.service\
  oitc_cronjobs.timer
@@ -400,10 +399,9 @@ systemctl restart\
  statusengine.service\
  nagios.service\
  nginx.service\
- sudo_server.service\
  oitc_cmd.service\
  gearman_worker.service\
- push_notification.service\
+ openitcockpit-websocket.service\
  openitcockpit-node.service\
  oitc_cronjobs.timer
 

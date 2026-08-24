@@ -236,7 +236,7 @@ class StatuspagegroupsController extends AppController {
                                 'services' => []
                             ];
                         }
-                        $hostsWithServices['hosts'][$service['host']['uuid']['uuid']]['services'][$service['uuid']] = $service['id'];
+                        $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
                         $allServiceUuids[$service['id']] = $service['uuid'];
                         $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
                     }

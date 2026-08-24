@@ -27,8 +27,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use Cake\Console\Arguments;
 use Cake\Command\Command;
+use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Log\Log;
@@ -40,6 +40,8 @@ use React\Socket\SocketServer;
 
 /**
  * PushNotifications command.
+ * @deprecated The PushNotificationsCommand is deprecated and was replaced by
+ * https://github.com/openITCOCKPIT/openITCOCKPIT-websocket
  */
 class PushNotificationsCommand extends Command {
     /**

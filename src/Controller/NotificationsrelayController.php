@@ -81,7 +81,8 @@ class NotificationsrelayController extends AppController {
         $settings = $PushNotificationsRelayTable->getSettings();
         $this->set('relay', $settings);
         $this->set('systemId', $SystemId->getSystemId());
-        $this->viewBuilder()->setOption('serialize', ['relay', 'systemId']);
+        $this->set('IS_CONTAINER', IS_CONTAINER);
+        $this->viewBuilder()->setOption('serialize', ['relay', 'systemId', 'IS_CONTAINER']);
     }
 
     /****************************

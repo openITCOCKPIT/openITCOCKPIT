@@ -950,6 +950,10 @@ class BackgroundUploadsController extends AppController {
                         // We only need that whitelist of files.
                         if (!in_array($image->getFilename(), $MapUploadsTable->getIconsNames(), true)) {
                             unlink($image->getPathname());
+                            throw new \Exception(sprintf(
+                                'Additinoal files found. "%s" does not belong in an icon set.',
+                                $image->getFilename()
+                            ));
                             continue;
                         }
                         $iconsetIcons[$image->getFilename()] = [

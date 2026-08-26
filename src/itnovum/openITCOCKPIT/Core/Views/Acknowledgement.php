@@ -194,6 +194,13 @@ abstract class Acknowledgement {
     }
 
     /**
+     * @return bool
+     */
+    public function hasEndTime(): bool {
+        return $this->end_time > 0;
+    }
+
+    /**
      * This field is only available in the statusengine_host_acknowledgements and statusengine_service_acknowledgements tables
      *
      * @return boolean
@@ -250,6 +257,7 @@ abstract class Acknowledgement {
         } else {
             $arr['end_time'] = $this->getEndTime();
         }
+        $arr['hasEndTime'] = $this->hasEndTime();
 
         return $arr;
     }

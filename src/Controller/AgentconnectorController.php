@@ -1294,7 +1294,7 @@ class AgentconnectorController extends AppController {
         $selected = $this->request->getQuery('selected');
         $pushAgentId = (int)$this->request->getQuery('pushAgentId', 0);
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $HostFilter = new HostFilter($this->request);

@@ -174,7 +174,7 @@ class ServicegroupsTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $tenantContainerIds = [];
 
@@ -411,9 +411,9 @@ class ServicegroupsTable extends Table {
             'Servicetemplate' => [],
         ];
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         if (!empty($dataToParse['Servicegroup']['services']['_ids'])) {
@@ -1171,7 +1171,7 @@ class ServicegroupsTable extends Table {
         if (!is_array($serviceIds)) {
             $serviceIds = [$serviceIds];
         }
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $tenantContainerIds = [];
 

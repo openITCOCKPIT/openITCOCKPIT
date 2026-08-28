@@ -29,7 +29,6 @@ namespace App\Command;
 
 use App\Model\Entity\Changelog;
 use App\Model\Table\ChangelogsTable;
-use App\Model\Table\CommandsTable;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\HostgroupsTable;
 use App\Model\Table\HostsTable;
@@ -38,7 +37,6 @@ use Cake\Command\Command;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
-use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Cache\ObjectsCache;
 use itnovum\openITCOCKPIT\Core\Comparison\HostComparisonForSave;
@@ -84,13 +82,13 @@ class HostgroupContainerPermissionsCommand extends Command {
         }
 
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
         /** @var  ChangelogsTable $ChangelogsTable */
         $ChangelogsTable = TableRegistry::getTableLocator()->get('Changelogs');

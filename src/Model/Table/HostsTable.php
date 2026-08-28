@@ -36,13 +36,18 @@ use App\Model\Entity\Hostescalation;
 use Cake\Core\Plugin;
 use Cake\Database\Expression\ComparisonExpression;
 use Cake\Database\Expression\QueryExpression;
+use Cake\Datasource\EntityInterface;
 use Cake\Datasource\Exception\RecordNotFoundException;
+use Cake\ORM\Association\BelongsTo;
+use Cake\ORM\Association\HasMany;
+use Cake\ORM\Behavior\TimestampBehavior;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use Cake\Validation\Validator;
+use DistributeModule\Model\Table\SatellitesTable;
 use itnovum\openITCOCKPIT\Cache\ObjectsCache;
 use itnovum\openITCOCKPIT\Core\HostConditions;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -52,29 +57,29 @@ use itnovum\openITCOCKPIT\Filter\HostFilter;
 /**
  * Hosts Model
  *
- * @property \App\Model\Table\ContainersTable|\Cake\ORM\Association\BelongsTo $Containers
- * @property \App\Model\Table\HosttemplatesTable|\Cake\ORM\Association\BelongsTo $Hosttemplates
- * @property \App\Model\Table\CommandsTable|\Cake\ORM\Association\BelongsTo $Commands
- * @property \App\Model\Table\EventhandlerCommandsTable|\Cake\ORM\Association\BelongsTo $EventhandlerCommands
- * @property \App\Model\Table\TimeperiodsTable|\Cake\ORM\Association\BelongsTo $Timeperiods
- * @property \App\Model\Table\TimeperiodsTable|\Cake\ORM\Association\BelongsTo $CheckPeriods
- * @property \App\Model\Table\TimeperiodsTable|\Cake\ORM\Association\BelongsTo $NotifyPeriods
- * @property \App\Model\Table\SatellitesTable|\Cake\ORM\Association\BelongsTo $Satellites
- * @property \App\Model\Table\ContactgroupsToHostsTable|\Cake\ORM\Association\HasMany $ContactgroupsToHosts
- * @property \App\Model\Table\ContactsToHostsTable|\Cake\ORM\Association\HasMany $ContactsToHosts
- * @property \App\Model\Table\DeletedHostsTable|\Cake\ORM\Association\HasMany $DeletedHosts
- * @property \App\Model\Table\ServicesTable|\Cake\ORM\Association\HasMany $Services
+ * @property ContainersTable|BelongsTo $Containers
+ * @property HosttemplatesTable|BelongsTo $Hosttemplates
+ * @property CommandsTable|BelongsTo $Commands
+ * @property EventhandlerCommandsTable|BelongsTo $EventhandlerCommands
+ * @property TimeperiodsTable|BelongsTo $Timeperiods
+ * @property TimeperiodsTable|BelongsTo $CheckPeriods
+ * @property TimeperiodsTable|BelongsTo $NotifyPeriods
+ * @property SatellitesTable|BelongsTo $Satellites
+ * @property ContactgroupsToHostsTable|HasMany $ContactgroupsToHosts
+ * @property ContactsToHostsTable|HasMany $ContactsToHosts
+ * @property DeletedHostsTable|HasMany $DeletedHosts
+ * @property ServicesTable|HasMany $Services
  *
- * @method \App\Model\Entity\Host get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
- * @method \App\Model\Entity\Host newEntity($data = null, array $options = [])
- * @method \App\Model\Entity\Host[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\Host|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
- * @method \App\Model\Entity\Host|bool saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
- * @method \App\Model\Entity\Host patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
- * @method \App\Model\Entity\Host[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Host findOrCreate($search, ?callable $callback = null, array $options = [])
+ * @method Host get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
+ * @method Host newEntity($data = null, array $options = [])
+ * @method Host[] newEntities(array $data, array $options = [])
+ * @method Host|bool save(EntityInterface $entity, $options = [])
+ * @method Host|bool saveOrFail(EntityInterface $entity, $options = [])
+ * @method Host patchEntity(EntityInterface $entity, array $data, array $options = [])
+ * @method Host[] patchEntities($entities, array $data, array $options = [])
+ * @method Host findOrCreate($search, ?callable $callback = null, array $options = [])
  *
- * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin TimestampBehavior
  */
 class HostsTable extends Table {
 
@@ -210,24 +215,13 @@ class HostsTable extends Table {
             'joinTable'        => 'statuspages_to_hosts',
             'saveStrategy'     => 'replace'
         ])->setDependent(true);
-
-        /*$this->hasOne('Agenthostscache', [
-            'foreignKey' => 'hostuuid',
-            'bindingKey' => 'uuid'
-        ])->setDependent(true);
-
-        $this->hasOne('Agentconnector', [
-            'foreignKey' => 'hostuuid',
-            'bindingKey' => 'uuid'
-        ])->setDependent(true);*/
-
     }
 
     /**
      * Default validation rules.
      *
-     * @param \Cake\Validation\Validator $validator Validator instance.
-     * @return \Cake\Validation\Validator
+     * @param Validator $validator Validator instance.
+     * @return Validator
      */
     public function validationDefault(Validator $validator): Validator {
         $validator
@@ -509,8 +503,8 @@ class HostsTable extends Table {
      * Returns a rules checker object that will be used for validating
      * application integrity.
      *
-     * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
-     * @return \Cake\ORM\RulesChecker
+     * @param RulesChecker $rules The rules object to be modified.
+     * @return RulesChecker
      */
     public function buildRules(RulesChecker $rules): RulesChecker {
         $rules->add($rules->isUnique(['uuid']));
@@ -523,28 +517,58 @@ class HostsTable extends Table {
      * @return array|Host|null
      */
     public function getHostById($id) {
-        $query = $this->find()
+        return $this->find()
             ->where([
                 'Hosts.id' => $id
             ])
             ->contain('HostsToContainersSharing')
             ->first();
-        return $query;
+    }
+
+    public function getHostWithHostgroupsById($id) {
+        return $this->find()
+            ->select([
+                'Hosts.id'
+            ])
+            ->where([
+                'Hosts.id' => $id
+            ])
+            ->contain([
+                'HostsToContainersSharing',
+                'Hostgroups'    => function (Query $query) {
+                    return $query
+                        ->disableAutoFields()
+                        ->select(['id']);
+                },
+                'Hosttemplates' => function (Query $query) {
+                    return $query
+                        ->disableAutoFields()
+                        ->select(['id'])
+                        ->contain([
+                            'Hostgroups' => function (Query $query) {
+                                return $query
+                                    ->disableAutoFields()
+                                    ->select(['id']);
+                            }
+                        ]);
+                }
+            ])
+            ->disableAutoFields()
+            ->first();
     }
 
     /**
      * @param int $id
-     * @return array|\Cake\Datasource\EntityInterface
+     * @return array|EntityInterface
      * @throws RecordNotFoundException
      */
     public function getHostByIdOrFail($id) {
-        $query = $this->find()
+        return $this->find()
             ->where([
                 'Hosts.id' => $id
             ])
             ->contain('HostsToContainersSharing')
             ->firstOrFail();
-        return $query;
     }
 
     /**
@@ -553,14 +577,13 @@ class HostsTable extends Table {
      * @return array|Host
      */
     public function getHostByUuid($uuid, $enableHydration = true) {
-        $query = $this->find()
+        return $this->find()
             ->where([
                 'Hosts.uuid' => $uuid
             ])
             ->contain('HostsToContainersSharing')
             ->enableHydration($enableHydration)
             ->firstOrFail();
-        return $query;
     }
 
     /**
@@ -569,7 +592,7 @@ class HostsTable extends Table {
      * @return array|Host
      */
     public function getHostWithServicesByUuid($uuid, $enableHydration = true) {
-        $query = $this->find()
+        return $this->find()
             ->where([
                 'Hosts.uuid' => $uuid
             ])
@@ -579,7 +602,6 @@ class HostsTable extends Table {
             ])
             ->enableHydration($enableHydration)
             ->firstOrFail();
-        return $query;
     }
 
     /**
@@ -625,10 +647,10 @@ class HostsTable extends Table {
     }
 
     /**
-     * @param string $uuid
-     * @param array $MY_RIGHTS
-     * @param bool $enableHydration
-     * @return array|Host
+     * @param $ids
+     * @param $MY_RIGHTS
+     * @param $enableHydration
+     * @return array
      */
     public function getHostsWithServicesByIdsForMapsumary($ids, $MY_RIGHTS = [], $enableHydration = true) {
         if (!is_array($ids)) {
@@ -661,7 +683,7 @@ class HostsTable extends Table {
                     ])
                     ->select([
                         'Services.id',
-                        'Services.name',
+                        'name' => $q->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
                         'Services.uuid',
                         'Services.host_id',
                         'Servicetemplates.name'
@@ -2040,17 +2062,17 @@ class HostsTable extends Table {
             'Parenthost'   => []
         ];
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
 
 
@@ -2706,7 +2728,7 @@ class HostsTable extends Table {
 
     /**
      * @param int $id
-     * @return array|\Cake\Datasource\EntityInterface
+     * @return array|EntityInterface
      */
     public function getContactsAndContactgroupsById($id) {
         $query = $this->find()
@@ -2736,7 +2758,7 @@ class HostsTable extends Table {
 
     /**
      * @param int $id
-     * @return array|\Cake\Datasource\EntityInterface
+     * @return array|EntityInterface
      */
     public function getContactsAndContactgroupsByIdForServiceBrowser($id) {
         $query = $this->find()
@@ -4680,7 +4702,7 @@ class HostsTable extends Table {
 
     /**
      * @param $uuid
-     * @return array|\Cake\Datasource\EntityInterface|null
+     * @return array|EntityInterface|null
      */
     public function getHostByUuidForCheckmkNagiosExportCommand($uuid) {
         $query = $this->find()
@@ -4912,7 +4934,7 @@ class HostsTable extends Table {
 
     /**
      * @param int $hostId
-     * @return array|\Cake\Datasource\EntityInterface|null
+     * @return array|EntityInterface|null
      */
     public function getServicesByHostIdForAllocation($hostId) {
         $query = $this->find()
@@ -4939,7 +4961,7 @@ class HostsTable extends Table {
     /**
      * @param string $uuid
      * @param bool $enableHydration
-     * @return array|\Cake\Datasource\EntityInterface|null
+     * @return array|EntityInterface|null
      */
     public function getPushAgentRecordByHostUuidForFreshnessCheck($uuid, $enableHydration = true) {
         $query = $this->find()

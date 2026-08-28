@@ -89,7 +89,7 @@
     }
 
     table.social {
-        background-color: #ebebeb
+        background-color: #FFFFFF;
     }
 
     .social .soc-btn {

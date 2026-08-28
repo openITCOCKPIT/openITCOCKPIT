@@ -164,7 +164,7 @@ class BrowsersController extends AppController {
                 $MY_RIGHTS = $this->MY_RIGHTS;
             }
 
-            /** @var $OrganizationalChartsTable OrganizationalChartsTable */
+            /** @var OrganizationalChartsTable $OrganizationalChartsTable */
             $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
             $organizationalCharts = $OrganizationalChartsTable->getOrganizationalChartsByContainerId($containerId, $MY_RIGHTS, 'list');
 

@@ -50,7 +50,7 @@ class Holidays {
 
         $filteredHolidays = [];
         foreach ($holidays as $holiday) {
-            /** @var $holiday Holiday */
+            /** @var Holiday $holiday */
             $holidayName = $holiday->getName(); //en_US
             if (isset($holiday->translations[$localCode])) { //exists de_DE ?
                 if ($holiday->translations[$localCode] !== $holidayName) { //No not translate english to english

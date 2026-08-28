@@ -153,11 +153,11 @@ class ServicesController extends AppController {
             $satellites[0] = $masterInstanceName;
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if (!$this->isApiRequest()) {
@@ -331,9 +331,9 @@ class ServicesController extends AppController {
         $User = new User($this->getUser());
 
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if (!$this->isApiRequest()) {
@@ -342,7 +342,7 @@ class ServicesController extends AppController {
 
         $MY_RIGHTS = [];
         if ($this->hasRootPrivileges === false) {
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
             //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
             // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
@@ -478,9 +478,9 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if (!$ServicesTable->exists($id)) {
@@ -514,9 +514,9 @@ class ServicesController extends AppController {
     }
 
     public function byUuid($uuid) {
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         try {
@@ -548,9 +548,9 @@ class ServicesController extends AppController {
         $ServiceConditions->setContainerIds($this->MY_RIGHTS);
         $ServiceConditions->setOrder($ServiceControllerRequest->getOrder('Hosts.name', 'asc'));
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $ServiceFilter->getPage());
@@ -639,9 +639,9 @@ class ServicesController extends AppController {
         $ServiceConditions->setContainerIds($this->MY_RIGHTS);
         $ServiceConditions->setOrder($ServiceControllerRequest->getOrder('Hosts.name', 'asc'));
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $ServiceFilter->getPage());
@@ -740,13 +740,13 @@ class ServicesController extends AppController {
                 throw new BadRequestException('Service.host_id needs to set.');
             }
 
-            /** @var $HosttemplatesTable HosttemplatesTable */
+            /** @var HosttemplatesTable $HosttemplatesTable */
             $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-            /** @var $HostsTable HostsTable */
+            /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-            /** @var $ServicetemplatesTable ServicetemplatesTable */
+            /** @var ServicetemplatesTable $ServicetemplatesTable */
             $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
             if (!$ServicetemplatesTable->existsById($servicetemplateId)) {
@@ -833,13 +833,13 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
         if (!$ServicesTable->existsById($id)) {
             throw new NotFoundException(__('Service not found'));
@@ -996,7 +996,7 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $DeletedServicesTable DeletedServicesTable */
+        /** @var DeletedServicesTable $DeletedServicesTable */
         $DeletedServicesTable = TableRegistry::getTableLocator()->get('DeletedServices');
         $ServiceFilter = new ServiceFilter($this->request);
 
@@ -1029,9 +1029,9 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if (!$ServicesTable->existsById($id)) {
@@ -1086,21 +1086,21 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->request->is('get')) {
@@ -1114,7 +1114,7 @@ class ServicesController extends AppController {
 
             $services = $ServicesTable->getServicesForCopy(func_get_args(), $containerIds);
 
-            /** @var $CommandsTable CommandsTable */
+            /** @var CommandsTable $CommandsTable */
             $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
             $commands = $CommandsTable->getCommandByTypeAsList(CHECK_COMMAND);
             $eventhandlerCommands = $CommandsTable->getCommandByTypeAsList(EVENTHANDLER_COMMAND);
@@ -1399,9 +1399,9 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if (!$ServicesTable->existsById($id)) {
@@ -1464,9 +1464,9 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if (!$ServicesTable->existsById($id)) {
@@ -1557,7 +1557,7 @@ class ServicesController extends AppController {
         }
 
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $id = $idOrUuid;
@@ -1573,32 +1573,32 @@ class ServicesController extends AppController {
         }
         unset($idOrUuid);
 
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $HoststatusTable HoststatusTableInterface */
+        /** @var HoststatusTableInterface $HoststatusTable */
         $HoststatusTable = $this->DbBackend->getHoststatusTable();
-        /** @var $ServicestatusTable ServicestatusTableInterface */
+        /** @var ServicestatusTableInterface $ServicestatusTable */
         $ServicestatusTable = $this->DbBackend->getServicestatusTable();
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
-        /** @var $AcknowledgementHostsTable AcknowledgementHostsTableInterface */
+        /** @var AcknowledgementHostsTableInterface $AcknowledgementHostsTable */
         $AcknowledgementHostsTable = $this->DbBackend->getAcknowledgementHostsTable();
-        /** @var $AcknowledgementServicesTable AcknowledgementServicesTableInterface */
+        /** @var AcknowledgementServicesTableInterface $AcknowledgementServicesTable */
         $AcknowledgementServicesTable = $this->DbBackend->getAcknowledgementServicesTable();
-        /** @var $DowntimehistoryHostsTable DowntimehistoryHostsTableInterface */
+        /** @var DowntimehistoryHostsTableInterface $DowntimehistoryHostsTable */
         $DowntimehistoryHostsTable = $this->DbBackend->getDowntimehistoryHostsTable();
-        /** @var $DowntimehistoryServicesTable DowntimehistoryServicesTableInterface */
+        /** @var DowntimehistoryServicesTableInterface $DowntimehistoryServicesTable */
         $DowntimehistoryServicesTable = $this->DbBackend->getDowntimehistoryServicesTable();
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
-        /** @var $SystemsettingsTable SystemsettingsTable */
+        /** @var SystemsettingsTable $SystemsettingsTable */
         $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
 
         if (!$ServicesTable->existsById($id)) {
@@ -1962,7 +1962,7 @@ class ServicesController extends AppController {
 
         //Check if the service is used by Autoreports
         if (Plugin::isLoaded('AutoreportModule')) {
-            /** @var $AutoreportsTable AutoreportsTable */
+            /** @var AutoreportsTable $AutoreportsTable */
             $AutoreportsTable = TableRegistry::getTableLocator()->get('AutoreportModule.Autoreports');
             $objects['Autoreports'] = $AutoreportsTable->getAutoReportsByServiceId((int)$id, $MY_RIGHTS);
         }
@@ -1976,13 +1976,13 @@ class ServicesController extends AppController {
 
         //Check if the service is used by Maps
         if (Plugin::isLoaded('MapModule')) {
-            /** @var $MapsTable MapsTable */
+            /** @var MapsTable $MapsTable */
             $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
             $objects['Maps'] = $MapsTable->getMapsByServiceId((int)$id, $MY_RIGHTS);
         }
 
         //Check if the host is used by Hostgroups
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
         $objects['Servicegroups'] = $ServicegroupsTable->getServiceGroupsByServiceId((int)$id, $MY_RIGHTS);
 
@@ -2057,11 +2057,11 @@ class ServicesController extends AppController {
      * @throws MissingDbBackendException
      */
     public function listToPdf() {
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $ServiceFilter = new ServiceFilter($this->request);
@@ -2174,11 +2174,11 @@ class ServicesController extends AppController {
      * @throws MissingDbBackendException
      */
     public function listToCsv() {
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $ServiceFilter = new ServiceFilter($this->request);
@@ -2389,7 +2389,7 @@ class ServicesController extends AppController {
         $ServiceCondition->setContainerIds($this->MY_RIGHTS);
         $ServiceCondition->includeDisabled();
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $services = Api::makeItJavaScriptAble(
@@ -2413,7 +2413,7 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if (!$ServicesTable->existsById($id)) {
@@ -2432,7 +2432,7 @@ class ServicesController extends AppController {
             $timeperiodId = $service->get('servicetemplate')->get('check_period_id');
         }
 
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
         $checkTimePeriod = $TimeperiodsTable->getTimeperiodWithTimerangesById($timeperiodId);
 
@@ -2750,21 +2750,21 @@ class ServicesController extends AppController {
 
         $servicetemplateType = GENERIC_SERVICE;
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
         if (!$HostsTable->existsById($hostId)) {
@@ -2834,7 +2834,7 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         if (!$ServicetemplatesTable->existsById($servicetemplateId)) {
@@ -2848,9 +2848,9 @@ class ServicesController extends AppController {
         if ($hostId !== null) {
             //We are in /services/add
 
-            /** @var $HostsTable HostsTable */
+            /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-            /** @var $HosttemplatesTable HosttemplatesTable */
+            /** @var HosttemplatesTable $HosttemplatesTable */
             $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
             if ($HostsTable->existsById($hostId)) {
                 $host = $HostsTable->get($hostId);
@@ -2902,7 +2902,7 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
         $commands = $CommandsTable->getCommandByTypeAsList(CHECK_COMMAND);
 
@@ -2930,9 +2930,9 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $CommandargumentsTable CommandargumentsTable */
+        /** @var CommandargumentsTable $CommandargumentsTable */
         $CommandargumentsTable = TableRegistry::getTableLocator()->get('Commandarguments');
 
         if (!$CommandsTable->existsById($commandId)) {
@@ -2945,7 +2945,7 @@ class ServicesController extends AppController {
             //User passed an serviceId, so we are in a non add mode!
             //Check if the service has defined command arguments
 
-            /** @var $ServicecommandargumentvaluesTable ServicecommandargumentvaluesTable */
+            /** @var ServicecommandargumentvaluesTable $ServicecommandargumentvaluesTable */
             $ServicecommandargumentvaluesTable = TableRegistry::getTableLocator()->get('Servicecommandargumentvalues');
 
             $serviceCommandArgumentValues = $ServicecommandargumentvaluesTable->getByServiceIdAndCommandId($serviceId, $commandId);
@@ -3028,9 +3028,9 @@ class ServicesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $CommandargumentsTable CommandargumentsTable */
+        /** @var CommandargumentsTable $CommandargumentsTable */
         $CommandargumentsTable = TableRegistry::getTableLocator()->get('Commandarguments');
 
 
@@ -3044,7 +3044,7 @@ class ServicesController extends AppController {
             //User passed an serviceId, so we are in a non add mode!
             //Check if the service has defined command arguments for the event handler
 
-            /** @var $ServiceeventcommandargumentvaluesTable ServiceeventcommandargumentvaluesTable */
+            /** @var ServiceeventcommandargumentvaluesTable $ServiceeventcommandargumentvaluesTable */
             $ServiceeventcommandargumentvaluesTable = TableRegistry::getTableLocator()->get('Serviceeventcommandargumentvalues');
 
             $serviceEventhandlerCommandArgumentValues = $ServiceeventcommandargumentvaluesTable->getByServiceIdAndCommandId($serviceId, $commandId);
@@ -3104,7 +3104,7 @@ class ServicesController extends AppController {
             return;
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId);
 
@@ -3131,7 +3131,7 @@ class ServicesController extends AppController {
 
         $ServiceConditions->setContainerIds($containerIds);
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $services = Api::makeItJavaScriptAble(
@@ -3160,7 +3160,7 @@ class ServicesController extends AppController {
             return;
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId);
 
@@ -3187,7 +3187,7 @@ class ServicesController extends AppController {
 
         $ServiceConditions->setContainerIds($containerIds);
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $services = $ServicesTable->getServicesForAngularCake4($ServiceConditions, $selected, true);
@@ -3242,7 +3242,7 @@ class ServicesController extends AppController {
 
         $containerIds = [ROOT_CONTAINER, $containerId];
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         if ($containerId == ROOT_CONTAINER) {
             //Don't panic! Only root users can edit /root objects ;)
@@ -3255,7 +3255,7 @@ class ServicesController extends AppController {
         $ServiceCondition->setIncludeDisabled(false);
 
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $services = Api::makeItJavaScriptAble(
@@ -3292,9 +3292,9 @@ class ServicesController extends AppController {
 
         $id = $this->request->getQuery('id');
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if (!$ServicesTable->existsById($id)) {
@@ -3408,7 +3408,7 @@ class ServicesController extends AppController {
 
         //Check if the service is used by Autoreports
         if (Plugin::isLoaded('AutoreportModule')) {
-            /** @var $AutoreportsTable AutoreportsTable */
+            /** @var AutoreportsTable $AutoreportsTable */
             $AutoreportsTable = TableRegistry::getTableLocator()->get('AutoreportModule.Autoreports');
             $objects['Autoreports'] = $AutoreportsTable->getAutoReportsByServiceId((int)$id, $MY_RIGHTS);
         }
@@ -3422,13 +3422,13 @@ class ServicesController extends AppController {
 
         //Check if the service is used by Maps
         if (Plugin::isLoaded('MapModule')) {
-            /** @var $MapsTable MapsTable */
+            /** @var MapsTable $MapsTable */
             $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
             $objects['Maps'] = $MapsTable->getMapsByServiceId((int)$id, $MY_RIGHTS);
         }
 
         //Check if the host is used by Hostgroups
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
         $objects['Servicegroups'] = $ServicegroupsTable->getServiceGroupsByServiceId((int)$id, $MY_RIGHTS);
 

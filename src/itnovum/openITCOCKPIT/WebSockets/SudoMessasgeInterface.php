@@ -33,9 +33,6 @@ namespace App\itnovum\openITCOCKPIT\WebSockets;
 
 use App\itnovum\openITCOCKPIT\Monitoring\Naemon\ExternalCommands;
 use App\Model\Table\ExportsTable;
-use Cake\Command\Command;
-use Cake\Core\Configure;
-use Cake\Core\Plugin;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -46,6 +43,8 @@ use Ratchet\MessageComponentInterface;
 /**
  * Class SudoMessasgeInterface
  * @package App\itnovum\openITCOCKPIT\WebSockets
+ * @deprecated The SudoMessageInterface is deprecated and was replaced by
+ * https://github.com/openITCOCKPIT/openITCOCKPIT-websocket
  */
 class SudoMessasgeInterface implements MessageComponentInterface {
 

@@ -23,7 +23,7 @@
         }
     ],
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.2",
         "ext-calendar": "*",
         "ext-curl": "*",
         "ext-gd": "*",

@@ -88,6 +88,7 @@ $logo = new Logo();
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <meta name="theme-color" content="#4085c6">
+    <meta http-equiv="refresh" content="<?= h($statuspage['statuspage']['public_refresh'] ?? 60); ?>">
 
     <link rel="stylesheet" type="text/css" href="/css/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="/css/@fortawesome/fontawesome-free/css/all.min.css">

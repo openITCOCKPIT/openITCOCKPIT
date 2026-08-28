@@ -72,7 +72,7 @@ class ContactsController extends AppController {
 
 
     public function index() {
-        /** @var $SystemsettingsTable SystemsettingsTable */
+        /** @var SystemsettingsTable $SystemsettingsTable */
         $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
 
         $this->set('isLdapAuth', $SystemsettingsTable->isLdapAuth());
@@ -81,7 +81,7 @@ class ContactsController extends AppController {
         }
 
 
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
 
@@ -124,7 +124,7 @@ class ContactsController extends AppController {
 
         }
 
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
         if (!$ContactsTable->existsById($id)) {
@@ -151,7 +151,7 @@ class ContactsController extends AppController {
         if ($this->request->is('post')) {
             $User = new User($this->getUser());
 
-            /** @var $ContactsTable ContactsTable */
+            /** @var ContactsTable $ContactsTable */
             $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
             $requestData = $this->request->getData();
@@ -185,7 +185,7 @@ class ContactsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
         if (!$ContactsTable->existsById($id)) {
@@ -282,7 +282,7 @@ class ContactsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
         if (!$ContactsTable->existsById($id)) {
@@ -360,7 +360,7 @@ class ContactsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
         $MY_RIGHTS = $this->MY_RIGHTS;
@@ -547,29 +547,29 @@ class ContactsController extends AppController {
 
 
         //Check if the contact is used by host or service templates
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
         $objects['Hosttemplates'] = $HosttemplatesTable->getHosttemplatesByContactId($id, $MY_RIGHTS, false);
 
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
         $objects['Servicetemplates'] = $ServicetemplatesTable->getServicetemplatesByContactId($id, $MY_RIGHTS, false);
 
         //Checking host and services
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
         $objects['Hosts'] = $HostsTable->getHostsByContactId($id, $MY_RIGHTS, false);
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
         $objects['Services'] = $ServicesTable->getServicesByContactId($id, $MY_RIGHTS, false);
 
         //Checking host and service escalations
-        /** @var $HostescalationsTable HostescalationsTable */
+        /** @var HostescalationsTable $HostescalationsTable */
         $HostescalationsTable = TableRegistry::getTableLocator()->get('Hostescalations');
         $objects['Hostescalations'] = $HostescalationsTable->getHostescalationsByContactId($id, $MY_RIGHTS, false);
 
-        /** @var $ServiceescalationsTable ServiceescalationsTable */
+        /** @var ServiceescalationsTable $ServiceescalationsTable */
         $ServiceescalationsTable = TableRegistry::getTableLocator()->get('Serviceescalations');
         $objects['Serviceescalations'] = $ServiceescalationsTable->getServiceescalationsByContactId($id, $MY_RIGHTS, false);
 
@@ -597,9 +597,9 @@ class ContactsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
 
         $timePeriods = [];
@@ -622,7 +622,7 @@ class ContactsController extends AppController {
         }
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->request->is('get')) {
@@ -652,7 +652,7 @@ class ContactsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
@@ -672,7 +672,7 @@ class ContactsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
         $hostPushComamndId = $CommandsTable->getCommandIdByCommandUuid('cd13d22e-acd4-4a67-997b-6e120e0d3153');
         $servicePushComamndId = $CommandsTable->getCommandIdByCommandUuid('c23255b7-5b1a-40b4-b614-17837dc376af');

@@ -576,7 +576,7 @@ class ContactsTable extends Table {
 
         $container_ids = array_unique($container_ids);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $tenantContainerIds = [];
@@ -697,9 +697,9 @@ class ContactsTable extends Table {
             'ServiceCommands'   => []
         ];
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
 
         foreach ($dataToParse['Contact']['host_commands']['_ids'] as $id) {
@@ -767,7 +767,7 @@ class ContactsTable extends Table {
             $contactIds = [$contactIds];
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId);
 

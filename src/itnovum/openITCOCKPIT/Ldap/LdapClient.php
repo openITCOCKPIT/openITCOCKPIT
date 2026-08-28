@@ -30,6 +30,10 @@ use App\Model\Table\LdapgroupsTable;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
+use FreeDSx\Ldap\Exception\ConnectionException;
+use FreeDSx\Ldap\Exception\OperationException;
+use FreeDSx\Ldap\Operations;
+use FreeDSx\Ldap\Search\Filters;
 
 class LdapClient {
 
@@ -81,6 +85,8 @@ class LdapClient {
 
     const ENCRYPTION_TLS = 2;
 
+    public string $baseDn;
+
     /**
      * LdapClient constructor.
      * @param string $username
@@ -105,6 +111,7 @@ class LdapClient {
         ];
 
         $options = Hash::merge($_options, $options);
+        $this->baseDn = $options['base_dn'];
         $this->isOpenLdap = $isOpenLdap;
         $this->openLdapGroupSchema = $openLdapGroupSchema;
 
@@ -505,9 +512,196 @@ class LdapClient {
             //Do load all LDAP groups for database import and sync
             //$paging->end();
         }
+        return $result;
+    }
 
+    /**
+     * Retrieves users and optionally filters by sAMAccountName and group names.
+     * @param string $sAMAccountName Optional filter for a specific account name
+     * @param bool $includeMember Whether to include group memberships in the result
+     * @param array $groupDNs List of group DNs (e.g., ['CN=G_File_Finance_RW,OU=Groups,OU=Contoso,DC=ad,DC=openitcockpit,DC=com', 'CN=G_Role_IT,OU=Groups,OU=Contoso,DC=ad,DC=openitcockpit,DC=com'])
+     * @return array
+     */
+    public function getUsersByGroupNames(string $sAMAccountName = '', bool $includeMember = false, array $groupDNs = []): array {
+        // If the group names array is empty
+        if (empty($groupDNs)) {
+            return [];
+        }
+
+        $filter = $this->getUsersFilter($sAMAccountName);
+        // Dynamically add group filters
+
+        if ($this->isOpenLdap === false) {
+            // --- MS Active Directory (Direct approach via memberOf) ---
+            $groupFilters = [];
+            foreach ($groupDNs as $groupDN) {
+                $groupFilters[] = Filters::equal('memberOf', $groupDN);
+            }
+            $filter = Filters::and($filter, Filters::or(...$groupFilters));
+
+        } else {
+            // --- OpenLDAP (groupDNs are full DNs; read memberUid directly from each group) ---
+            $allMemberUids = [];
+
+            foreach ($groupDNs as $groupDn) {
+                try {
+                    $groupEntry = $this->ldap->read($groupDn, ['memberUid', 'uniqueMember']);
+
+                    if (!$groupEntry) {
+                        continue;
+                    }
+
+                    // Schema: memberUid
+                    if ($groupEntry->has('memberUid')) {
+                        foreach ($groupEntry->get('memberUid')->getValues() as $uid) {
+                            $allMemberUids[] = (string)$uid;
+                        }
+                    }
+
+                    // Optional schema: uniqueMember (extract uid=... from DN-like values)
+                    if ($groupEntry->has('uniqueMember')) {
+                        foreach ($groupEntry->get('uniqueMember')->getValues() as $memberDn) {
+                            $memberDnString = (string)$memberDn;
+                            if (preg_match('/^uid=([^,]+)/i', $memberDnString, $matches)) {
+                                $allMemberUids[] = $matches[1];
+                            }
+                        }
+                    }
+                } catch (OperationException $e) {
+                    Log::debug(sprintf('LDAP group DN not found or unreadable: "%s". Error: %s', $groupDn, $e->getMessage()));
+                    continue;
+                } catch (\Exception $e) {
+                    Log::error(sprintf('Unexpected error reading LDAP group "%s": %s', $groupDn, $e->getMessage()));
+                    return [];
+                }
+            }
+
+            $allMemberUids = array_values(array_unique(array_filter($allMemberUids)));
+
+
+            // If no user IDs were found within the groups
+            if (empty($allMemberUids)) {
+                Log::info(sprintf('Search aborted: None of the specified groups %s contain members.', json_encode($groupDNs)));
+                return [];
+            }
+
+            $uidFilters = [];
+            foreach (array_unique($allMemberUids) as $uid) {
+                $uidFilters[] = Filters::equal('uid', $uid);
+            }
+
+            $filter = Filters::and($filter, Filters::or(...$uidFilters));
+        }
+
+        if ($this->isOpenLdap === false) {
+            $requiredFields = ['samaccountname', 'mail', 'sn', 'givenname'];
+            $search = Operations::search($filter, 'samaccountname', 'mail', 'sn', 'givenname', 'displayname', 'dn', 'memberOf');
+        } else {
+            $requiredFields = ['uid', 'mail', 'sn', 'givenname'];
+            $search = Operations::search($filter, 'uid', 'mail', 'sn', 'givenname', 'displayname', 'dn');
+        }
+        $result = [];
+        $droppedUsers = 0;
+        $resultCount = 0;
+        try {
+            $paging = $this->ldap->paging($search, 100);
+
+            // Use the native hasEntries logic, assigning entries to an array
+            while ($paging->hasEntries()) {
+                $entries = $paging->getEntries();
+
+                if (count($entries) === 0) {
+                    break;
+                }
+
+                foreach ($entries as $entry) {
+                    $resultCount++;
+                    $userDn = (string)$entry->getDn();
+                    if (empty($userDn)) {
+                        continue;
+                    }
+
+                    $entryArray = $entry->toArray();
+                    $entryArray = array_combine(array_map('strtolower', array_keys($entryArray)), array_values($entryArray));
+
+                    // Validate required fields
+                    foreach ($requiredFields as $requiredField) {
+                        if (!isset($entryArray[$requiredField])) {
+                            $droppedUsers++;
+                            continue 2;
+                        }
+                    }
+
+                    if (isset($entryArray['uid'])) {
+                        $entryArray['samaccountname'] = $entryArray['uid'];
+                    }
+
+                    $memberOf = [];
+                    if ($includeMember) {
+                        if ($this->isOpenLdap) {
+                            $memberOf = $groupDNs;
+                        } else {
+                            $memberOf = $entryArray['memberof'] ?? [];
+                        }
+                    }
+
+                    // Extract the first value safely from the LDAP property arrays
+                    $givenName = is_array($entryArray['givenname'])
+                        ? ($entryArray['givenname'][0] ?? '')
+                        : $entryArray['givenname'];
+
+                    $sn = is_array($entryArray['sn'])
+                        ? ($entryArray['sn'][0] ?? '')
+                        : $entryArray['sn'];
+
+                    $samAccountName = is_array($entryArray['samaccountname'])
+                        ? ($entryArray['samaccountname'][0] ?? '')
+                        : $entryArray['samaccountname'];
+
+                    $email = is_array($entryArray['mail'])
+                        ? ($entryArray['mail'][0] ?? '')
+                        : $entryArray['mail'];
+
+                    $result[] = [
+                        'givenname'      => $givenName,
+                        'sn'             => $sn,
+                        'samaccountname' => $samAccountName,
+                        'email'          => $email,
+                        'dn'             => $userDn,
+                        'memberof'       => $memberOf,
+                        'display_name'   => sprintf('%s, %s (%s)', $givenName, $sn, $samAccountName)
+                    ];
+                }
+            }
+        } catch (ConnectionException $e) {
+            // Handle network drops or server timeouts during paging
+            Log::error(sprintf('LDAP connection lost during user paging sync: %s', $e->getMessage()));
+            // Return partial results collected so far, or return empty array based on business logic
+            return [];
+        } catch (\Exception $e) {
+            // Handle unexpected runtime issues gracefully
+            Log::error(sprintf('General error during LDAP user synchronization: %s', $e->getMessage()));
+            return [];
+        }
+
+        if ($droppedUsers > 0) {
+            Log::warning(
+                sprintf(
+                    'Dropped %s/%s AD/LDAP users due to missing required fields. [%s]',
+                    $droppedUsers,
+                    $resultCount,
+                    implode(', ', $requiredFields)
+                ));
+        }
 
         return $result;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBaseDn() {
+        return (string)$this->baseDn;
     }
 
 }

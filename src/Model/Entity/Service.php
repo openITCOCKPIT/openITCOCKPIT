@@ -210,7 +210,7 @@ class Service extends Entity {
         $serviceeventcommandargumentvalues = $this->get('serviceeventcommandargumentvalues');
 
         foreach ($serviceeventcommandargumentvalues as $serviceeventcommandargumentvalue) {
-            /** @var $serviceeventcommandargumentvalue Serviceeventcommandargumentvalue */
+            /** @var Serviceeventcommandargumentvalue $serviceeventcommandargumentvalue */
             $serviceeventcommandargumentvaluesForCfg[] = [
                 'name'       => $serviceeventcommandargumentvalue->get('commandargument')->get('name'),
                 'human_name' => $serviceeventcommandargumentvalue->get('commandargument')->get('human_name'),
@@ -263,7 +263,7 @@ class Service extends Entity {
     public function getContactsforCfg() {
         $contacts = [];
         foreach ($this->get('contacts') as $contact) {
-            /** @var $contact Contact */
+            /** @var Contact $contact */
             $contacts[] = $contact->get('uuid');
         }
         return implode(',', $contacts);
@@ -275,7 +275,7 @@ class Service extends Entity {
     public function getContactgroupsforCfg() {
         $contactgroups = [];
         foreach ($this->get('contactgroups') as $contactgroup) {
-            /** @var $contactgroup Contactgroup */
+            /** @var Contactgroup $contactgroup */
             $contactgroups[] = $contactgroup->get('uuid');
         }
         return implode(',', $contactgroups);

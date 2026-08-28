@@ -34,7 +34,6 @@ use Cake\Command\Command;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
-use Cake\Core\Configure;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Client;
 use Cake\ORM\TableRegistry;
@@ -48,6 +47,8 @@ use itnovum\openITCOCKPIT\Core\Views\ServicestatusIcon;
  *
  * Usage:
  * oitc send_push_notification --type Host --notificationtype PROBLEM --hostuuid c36b8048-93ce-4385-ac19-ab5c90574b77 --state 1 --output "This host is down right now" --ackauthor "" --ackcomment "" --user-id 1
+ * @deprecated The PushNotificationsCommand is deprecated and was replaced by
+ * https://github.com/openITCOCKPIT/openITCOCKPIT-websocket
  */
 class SendPushNotificationCommand extends Command {
 
@@ -347,6 +348,42 @@ class SendPushNotificationCommand extends Command {
     }
 
     private function push($title, $message, $icon = null) {
+        // ITC-3487 Use the new Go WebSocket Server
+        // This is only here so that existing systems keep working after an update.
+        // The UPDATE.sh will replace the old CakePHP based notification commands in the database
+        // and the first config refresh will enable the new naemon config
+        // so this is just a workaround to keep systems alive after UPDATE.sh was executed, but no config refresh was done yet.
+        $postPayload = [
+            'timestamp'        => time(),
+            'userId'           => (int)$this->userId,
+            'type'             => $this->type,
+            'hostUuid'         => $this->hostUuid,
+            'serviceUuid'      => $this->serviceUuid,
+            'icon'             => $icon ? $icon : '',
+            'state'            => (int)$this->state,
+            'notificationtype' => $this->notificationtype,
+            'output'           => $this->output,
+            'ackauthor'        => $this->ackAuthor ? $this->ackAuthor : '',
+            'ackcomment'       => $this->ackComment ? $this->ackComment : ''
+        ];
+
+        $Client = new Client([
+            'timeout'         => 2,
+            'read_timeout'    => 2,
+            'connect_timeout' => 2,
+            'proxy'           => [
+                'http'  => '',
+                'https' => ''
+            ]
+        ]);
+
+        $Client->post('http://127.0.0.1:8083/message', json_encode($postPayload), [
+            'headers' => [
+                'Content-Type' => 'application/json'
+            ]
+        ]);
+
+        /*
         Configure::load('gearman');
         $config = Configure::read('gearman');
 
@@ -362,7 +399,7 @@ class SendPushNotificationCommand extends Command {
             'hostUuid'    => $this->hostUuid,
             'serviceUuid' => $this->serviceUuid,
             'icon'        => $icon
-        ]));
+        ]));*/
 
         $RelayTable = TableRegistry::getTableLocator()->get('PushNotificationsRelay');
         $relay = $RelayTable->getSettings();

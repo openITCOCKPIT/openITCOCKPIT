@@ -894,15 +894,15 @@ class HosttemplatesTable extends Table {
             'CheckCommand',
         ];
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
 
         if (!empty($dataToParse['Hosttemplate']['contacts']['_ids'])) {
@@ -967,7 +967,7 @@ class HosttemplatesTable extends Table {
      * @return bool
      */
     public function allowDelete($hosttemplateId) {
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $count = $HostsTable->find()
@@ -1477,7 +1477,7 @@ class HosttemplatesTable extends Table {
         if ($newHosttemplate['Hosttemplate']['command_id'] != $oldHosttemplate['Hosttemplate']['command_id'] &&
             !empty($oldHosttemplate['Hosttemplate']['hosttemplatecommandargumentvalues'])) {
             $oldCommandId = $oldHosttemplate['Hosttemplate']['command_id'];
-            /** @var $HostsTable HostsTable */
+            /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
             $HostsTable->updateHostCommandIdIfHostHasOwnCommandArguments($entity->get('id'), $oldCommandId);
         }

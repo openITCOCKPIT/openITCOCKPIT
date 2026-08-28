@@ -79,14 +79,6 @@ class ErrorImage {
      * @return bool|string
      */
     public function getImageAsPngStream() {
-        $fileName = md5(rand() . time() . rand()) . '.png';
-        $tmp = ROOT . DS . 'tmp';
-        if (!is_writable($tmp)) {
-            $tmp = '/tmp';
-        }
-        $fullImagePath = $tmp . DS . $fileName;
-
-
         $img = imagecreatetruecolor($this->width, $this->height);
         imagesavealpha($img, true);
 
@@ -94,21 +86,35 @@ class ErrorImage {
         $textColor = imagecolorallocate($img, 0, 0, 0);
         imagefill($img, 0, 0, $background);
 
-        imagestring($img, 5, 5, 5, sprintf('Chart render server returned with an error.'), $textColor);
-        imagestring($img, 5, 5, 25, $this->headline, $textColor);
+        imagestring($img, 5, 5, 5, 'Chart render server returned with an error.', $textColor);
+        imagestring($img, 5, 5, 25, (string)$this->headline, $textColor);
 
         $y = 25;
-        foreach (str_split($this->errorText, 80) as $line) {
-            $y = $y + 15;
+        foreach (str_split((string)$this->errorText, 80) as $line) {
+            $y += 15;
             imagestring($img, 5, 5, $y, $line, $textColor);
         }
 
-        imagepng($img, $fullImagePath); //Save image to disk, because php...
-        imagedestroy($img);
+        $fp = fopen('php://temp', 'w+b'); // oder php://memory für strict RAM-only
+        if ($fp === false) {
+            imagedestroy($img);
+            return false;
+        }
 
-        $binaryData = file_get_contents($fullImagePath); //Read image to get binary data
-        unlink($fullImagePath);
-        return $binaryData;
+        try {
+            if (!imagepng($img, $fp)) {
+                return false;
+            }
+            rewind($fp);
+            $binaryData = stream_get_contents($fp);
+            if ($binaryData === false) {
+                return false;
+            }
+            return $binaryData;
+        } finally {
+            fclose($fp);
+            imagedestroy($img);
+        }
     }
 
 }

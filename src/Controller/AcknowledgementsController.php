@@ -69,7 +69,7 @@ class AcknowledgementsController extends AppController {
         $session = $this->request->getSession();
         $session->close();
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->existsById($id)) {
@@ -97,7 +97,6 @@ class AcknowledgementsController extends AppController {
         $Conditions->setOrder($AngularAcknowledgementsControllerRequest->getOrderForPaginator('AcknowledgementHosts.entry_time', 'desc'));
         $Conditions->setConditions($AngularAcknowledgementsControllerRequest->getHostFilters());
         $Conditions->setHostUuid($host->get('uuid'));
-
 
 
         $AcknowledgementHostsTable = $this->DbBackend->getAcknowledgementHostsTable();
@@ -137,9 +136,9 @@ class AcknowledgementsController extends AppController {
         $session = $this->request->getSession();
         $session->close();
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if (!$ServicesTable->existsById($id)) {
@@ -206,7 +205,7 @@ class AcknowledgementsController extends AppController {
 
         if ($serviceId != null) {
 
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
             if (!$ServicesTable->existsById($serviceId)) {
@@ -235,7 +234,7 @@ class AcknowledgementsController extends AppController {
 
         //Delete host acknowledgement
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->existsById($hostId)) {

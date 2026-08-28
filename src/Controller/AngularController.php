@@ -268,7 +268,7 @@ class AngularController extends AppController {
 
         $MY_RIGHTS = [];
         if ($this->hasRootPrivileges === false) {
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
             //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
             // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
@@ -284,7 +284,7 @@ class AngularController extends AppController {
             $containerIds = [$containerIds];
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($recursive) {
@@ -567,7 +567,7 @@ class AngularController extends AppController {
 
         $user = $this->getUser();
 
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
         $this->set('user', [
@@ -665,7 +665,7 @@ class AngularController extends AppController {
             $this->setHealthState('warning');
         }
 
-        if (!$cache['isSudoServerRunning']) {
+        if (!$cache['isWebsocketServerRunning']) {
             $this->setHealthState('warning');
         }
 
@@ -971,7 +971,7 @@ class AngularController extends AppController {
         $includeHoststatus = $this->request->getQuery('includeHoststatus') === 'true';
         $includeServicestatus = $this->request->getQuery('includeServicestatus') === 'true';
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
         if (!$ServicesTable->existsById($serviceId)) {
             throw new NotFoundException('Invalid service');

@@ -651,6 +651,42 @@ class Menu {
                     true,
                     '/DashboardAllocations/index'
                 ))
+                ->addLink(new MenuLink(
+                    __('Filter Bookmark Allocation'),
+                    'FilterBookmarkAllocationsIndex',
+                    'FilterBookmarksAllocations',
+                    'index',
+                    '',
+                    ['fas', 'table'],
+                    [],
+                    6,
+                    true,
+                    '/FilterbookmarkAllocations/index'
+                ))
+                ->addLink(new MenuLink(
+                    __('LDAP User Defaults'),
+                    'UserDefaultTemplatesIndex',
+                    'UserDefaultTemplates',
+                    'index',
+                    '',
+                    ['fas', 'user-plus'],
+                    [],
+                    6,
+                    true,
+                    '/userDefaultTemplates/index'
+                ))
+                ->addLink(new MenuLink(
+                    __('Manage LDAP Groups'),
+                    'LdapgroupsIndex',
+                    'Ldapgroups',
+                    'index',
+                    '',
+                    ['fas', 'users-gear'],
+                    [],
+                    7,
+                    true,
+                    '/ldapgroups/index'
+                ))
             )
             ->addCategory((new MenuCategory(
                 'container_mgmt_category',

@@ -34,8 +34,8 @@ class PuppeteerClient {
         $this->Client = new Client([
             'base_uri' => $this->address,
             'proxy'    => [
-                'http'  => false,
-                'https' => false
+                'http'  => '',
+                'https' => ''
             ]
         ]);
     }

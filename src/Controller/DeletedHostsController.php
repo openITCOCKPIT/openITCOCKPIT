@@ -51,7 +51,7 @@ class DeletedHostsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $DeletedHostsTable DeletedHostsTable */
+        /** @var DeletedHostsTable $DeletedHostsTable */
         $DeletedHostsTable = TableRegistry::getTableLocator()->get('DeletedHosts');
         $HostFilter = new HostFilter($this->request);
         $User = new User($this->getUser());

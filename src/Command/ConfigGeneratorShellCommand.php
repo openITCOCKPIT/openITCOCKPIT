@@ -155,7 +155,7 @@ class ConfigGeneratorShellCommand extends Command {
         $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
         $systemsettings = $SystemsettingsTable->findAsArray();
 
-        /** @var $ConfigurationFilesTable ConfigurationFilesTable */
+        /** @var ConfigurationFilesTable $ConfigurationFilesTable */
         $ConfigurationFilesTable = TableRegistry::getTableLocator()->get('ConfigurationFiles');
 
         $GeneratorRegistry = new GeneratorRegistry();
@@ -175,7 +175,7 @@ class ConfigGeneratorShellCommand extends Command {
      */
     private function migrate(ConsoleIo $io) {
         $io->out('Migrate existing configuration files to database...    ');
-        /** @var $ConfigurationFilesTable ConfigurationFilesTable */
+        /** @var ConfigurationFilesTable $ConfigurationFilesTable */
         $ConfigurationFilesTable = TableRegistry::getTableLocator()->get('ConfigurationFiles');
 
         $GeneratorRegistry = new GeneratorRegistry();

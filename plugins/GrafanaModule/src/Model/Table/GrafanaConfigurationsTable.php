@@ -217,8 +217,8 @@ class GrafanaConfigurationsTable extends Table {
             ];
         } else {
             $options['proxy'] = [
-                'http'  => false,
-                'https' => false
+                'http'  => '',
+                'https' => ''
             ];
         }
         $client = new Client($options);

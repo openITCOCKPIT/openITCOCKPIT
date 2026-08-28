@@ -58,7 +58,7 @@ class TenantsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $TenantsTable TenantsTable */
+        /** @var TenantsTable $TenantsTable */
         $TenantsTable = TableRegistry::getTableLocator()->get('Tenants');
         $TenantFilter = new TenantFilter($this->request);
 
@@ -92,7 +92,7 @@ class TenantsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $TenantsTable TenantsTable */
+        /** @var TenantsTable $TenantsTable */
         $TenantsTable = TableRegistry::getTableLocator()->get('Tenants');
 
         if (!$TenantsTable->existsById($id)) {
@@ -121,7 +121,7 @@ class TenantsController extends AppController {
             return;
         }
 
-        /** @var $TenantsTable TenantsTable */
+        /** @var TenantsTable $TenantsTable */
         $TenantsTable = TableRegistry::getTableLocator()->get('Tenants');
 
         if ($this->request->is('post') && $this->isAngularJsRequest()) {
@@ -186,7 +186,7 @@ class TenantsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $TenantsTable TenantsTable */
+        /** @var TenantsTable $TenantsTable */
         $TenantsTable = TableRegistry::getTableLocator()->get('Tenants');
 
         if (!$TenantsTable->existsById($id)) {

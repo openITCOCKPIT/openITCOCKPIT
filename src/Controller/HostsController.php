@@ -137,20 +137,19 @@ class HostsController extends AppController {
     const PARENTS_CHILDREN_TREE_CHILDREN_GROUP = "hostChildrenGroup";
 
     public function index() {
-        /** @var User $User */
         $User = new User($this->getUser());
 
         /** @var SystemsettingsTable $SystemsettingsTable */
         $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
         $masterInstanceName = $SystemsettingsTable->getMasterInstanceName();
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $satellites = [];
 
         if (Plugin::isLoaded('DistributeModule')) {
-            /** @var \DistributeModule\Model\Table\SatellitesTable $SatellitesTable */
+            /** @var SatellitesTable $SatellitesTable */
             $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
 
             $satellites = $SatellitesTable->getSatellitesAsListWithDescription($this->MY_RIGHTS);
@@ -161,7 +160,7 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $HostFilter = new HostFilter($this->request);
@@ -216,6 +215,7 @@ class HostsController extends AppController {
             //$modelName = 'Hoststatus';
         }
 
+        $hosts = [];
         if ($this->DbBackend->isStatusengine3()) {
             $hosts = $HostsTable->getHostsIndexStatusengine3($HostFilter, $HostCondition, $PaginateOMat);
         }
@@ -336,6 +336,8 @@ class HostsController extends AppController {
 
             $all_hosts[] = $tmpRecord;
         }
+
+
         $this->set('all_hosts', $all_hosts);
         $this->set('username', $User->getFullName());
         $this->viewBuilder()->setOption('serialize', ['all_hosts', 'username']);
@@ -350,7 +352,7 @@ class HostsController extends AppController {
         $User = new User($this->getUser());
 
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
 
@@ -358,12 +360,12 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $MY_RIGHTS = [];
         if ($this->hasRootPrivileges === false) {
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
             //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
             // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
@@ -467,7 +469,7 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->exists($id)) {
@@ -504,7 +506,7 @@ class HostsController extends AppController {
      * @param $uuid
      */
     public function byUuid($uuid) {
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         try {
@@ -528,7 +530,7 @@ class HostsController extends AppController {
     public function notMonitored() {
         /** @var SystemsettingsTable $Systemsettings */
         $Systemsettings = TableRegistry::getTableLocator()->get('Systemsettings');
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $masterInstanceName = $Systemsettings->getMasterInstanceName();
@@ -538,7 +540,7 @@ class HostsController extends AppController {
             if ($this->hasRootPrivileges === false) {
                 $MY_RIGHTS = $this->MY_RIGHTS;
             }
-            /** @var $SatellitesTable \DistributeModule\Model\Table\SatellitesTable */
+            /** @var SatellitesTable $SatellitesTable */
             $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
             $SatelliteNames = $SatellitesTable->getSatellitesAsListWithDescription($MY_RIGHTS);
             $SatelliteNames[0] = $masterInstanceName;
@@ -657,9 +659,9 @@ class HostsController extends AppController {
             }
 
 
-            /** @var $HosttemplatesTable HosttemplatesTable */
+            /** @var HosttemplatesTable $HosttemplatesTable */
             $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-            /** @var $HostsTable HostsTable */
+            /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
             $hosttemplateId = $this->request->getData('Host.hosttemplate_id');
             if (!$HosttemplatesTable->existsById($hosttemplateId)) {
@@ -716,7 +718,7 @@ class HostsController extends AppController {
                 }
 
                 if ($saveHostAndAssignMatchingServicetemplateGroups === true) {
-                    /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+                    /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
                     $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
 
                     $result = $ServicetemplategroupsTable->assignMatchingServicetemplategroupsByHostgroupsToHost(
@@ -755,13 +757,13 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if (!$HostsTable->existsById($id)) {
@@ -922,7 +924,7 @@ class HostsController extends AppController {
                 }
 
                 if ($saveHostAndAssignMatchingServicetemplateGroups === true) {
-                    /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+                    /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
                     $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
 
                     $resultForAssign = $ServicetemplategroupsTable->assignMatchingServicetemplategroupsByHostgroupsToHost(
@@ -988,9 +990,9 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $User = new User($this->getUser());
 
@@ -1111,17 +1113,17 @@ class HostsController extends AppController {
         /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
         /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
 
 
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->request->is('get')) {
@@ -1139,7 +1141,7 @@ class HostsController extends AppController {
                 $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
                 $masterInstanceName = $SystemsettingsTable->getMasterInstanceName();
 
-                /** @var $SatellitesTable SatellitesTable */
+                /** @var SatellitesTable $SatellitesTable */
                 $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
 
                 $satellites = $SatellitesTable->getSatellitesAsListWithDescription($this->MY_RIGHTS);
@@ -1486,7 +1488,7 @@ class HostsController extends AppController {
             if ($this->hasRootPrivileges === false) {
                 $MY_RIGHTS = $this->MY_RIGHTS;
             }
-            /** @var $SatellitesTable \DistributeModule\Model\Table\SatellitesTable */
+            /** @var SatellitesTable $SatellitesTable */
             $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
             $SatelliteNames = $SatellitesTable->getSatellitesAsListWithDescription($MY_RIGHTS);
             $SatelliteNames[0] = $masterInstanceName;
@@ -1499,7 +1501,7 @@ class HostsController extends AppController {
         }
 
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $HostFilter = new HostFilter($this->request);
@@ -1571,7 +1573,7 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->existsById($id)) {
@@ -1606,7 +1608,7 @@ class HostsController extends AppController {
                 $ChangelogsTable->save($changelogEntry);
             }
 
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
             $ServicesTable->updateAll([
                 'disabled' => 1
@@ -1635,7 +1637,7 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->existsById($id)) {
@@ -1670,7 +1672,7 @@ class HostsController extends AppController {
                 $ChangelogsTable->save($changelogEntry);
             }
 
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
             $ServicesTable->updateAll([
                 'disabled' => 0
@@ -2194,7 +2196,7 @@ class HostsController extends AppController {
         /** @var DowntimehistoryHostsTableInterface $DowntimehistoryHostsTable */
         $DowntimehistoryHostsTable = $this->DbBackend->getDowntimehistoryHostsTable();
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         /** @var DocumentationsTable $DocumentationsTable */
         $DocumentationsTable = TableRegistry::getTableLocator()->get('Documentations');
@@ -2532,6 +2534,11 @@ class HostsController extends AppController {
             $checkCommand = 'Removed due to insufficient permissions';
         }
 
+        $HostdependenciesTable = TableRegistry::getTableLocator()->get('Hostdependencies');
+        $hasHostDependencies = $HostdependenciesTable->getHostHostDependenciesCount(
+            (int)$id,
+            Hash::extract($mergedHost, 'hostgroups.{n}.id')
+        );
         $MY_RIGHTS = $this->MY_RIGHTS;
         if ($this->hasRootPrivileges) {
             $MY_RIGHTS = [];
@@ -2556,7 +2563,7 @@ class HostsController extends AppController {
 
         //Check if the host is used by Autoreports
         if (Plugin::isLoaded('AutoreportModule')) {
-            /** @var $AutoreportsTable AutoreportsTable */
+            /** @var AutoreportsTable $AutoreportsTable */
             $AutoreportsTable = TableRegistry::getTableLocator()->get('AutoreportModule.Autoreports');
             $objects['Autoreports'] = $AutoreportsTable->getAutoReportsByHostId((int)$id, $MY_RIGHTS);
         }
@@ -2570,7 +2577,7 @@ class HostsController extends AppController {
 
         //Check if the host is used by Maps
         if (Plugin::isLoaded('MapModule')) {
-            /** @var $MapsTable MapsTable */
+            /** @var MapsTable $MapsTable */
             $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
             $objects['Maps'] = $MapsTable->getMapsByHostId((int)$id, $MY_RIGHTS);
         }
@@ -2598,6 +2605,7 @@ class HostsController extends AppController {
         $this->set('username', $User->getFullName());
         $this->set('blurryCommandLine', $blurryCommandLine);
         $this->set('masterInstanceName', $masterInstanceName);
+        $this->set('hasHostDependencies', $hasHostDependencies);
 
         $this->viewBuilder()->setOption('serialize', [
             'mergedHost',
@@ -2622,7 +2630,8 @@ class HostsController extends AppController {
             'mapModule',
             'username',
             'blurryCommandLine',
-            'masterInstanceName'
+            'masterInstanceName',
+            'hasHostDependencies'
         ]);
     }
 
@@ -2640,14 +2649,14 @@ class HostsController extends AppController {
 
         $satellites = [];
         if (Plugin::isLoaded('DistributeModule')) {
-            /** @var \DistributeModule\Model\Table\SatellitesTable $SatellitesTable */
+            /** @var SatellitesTable $SatellitesTable */
             $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
 
             $satellites = $SatellitesTable->getSatellitesAsListWithDescription($this->MY_RIGHTS);
             $satellites[0] = $masterInstanceName;
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $HostFilter = new HostFilter($this->request);
@@ -2687,7 +2696,7 @@ class HostsController extends AppController {
             }
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if ($this->DbBackend->isNdoUtils()) {
@@ -2754,14 +2763,14 @@ class HostsController extends AppController {
 
         $satellites = [];
         if (Plugin::isLoaded('DistributeModule')) {
-            /** @var \DistributeModule\Model\Table\SatellitesTable $SatellitesTable */
+            /** @var SatellitesTable $SatellitesTable */
             $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
 
             $satellites = $SatellitesTable->getSatellitesAsListWithDescription($this->MY_RIGHTS);
             $satellites[0] = $masterInstanceName;
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $HostFilter = new HostFilter($this->request);
@@ -2801,7 +2810,7 @@ class HostsController extends AppController {
             }
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if ($this->DbBackend->isNdoUtils()) {
@@ -3290,7 +3299,7 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
@@ -3308,7 +3317,7 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
         $commands = $CommandsTable->getCommandByTypeAsList(HOSTCHECK_COMMAND);
 
@@ -3333,19 +3342,19 @@ class HostsController extends AppController {
             $hosttemplateType = EVK_HOSTTEMPLATE;
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         if (!$ContainersTable->existsById($containerId)) {
@@ -3400,7 +3409,7 @@ class HostsController extends AppController {
 
         $satellites = [];
         if (Plugin::isLoaded('DistributeModule')) {
-            /** @var $SatellitesTable SatellitesTable */
+            /** @var SatellitesTable $SatellitesTable */
             $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
 
             $MY_RIGHTS = [];
@@ -3470,7 +3479,7 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
 
         if (!$HosttemplatesTable->existsById($hosttemplateId)) {
@@ -3531,9 +3540,9 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $CommandargumentsTable CommandargumentsTable */
+        /** @var CommandargumentsTable $CommandargumentsTable */
         $CommandargumentsTable = TableRegistry::getTableLocator()->get('Commandarguments');
 
         if (!$CommandsTable->existsById($commandId)) {
@@ -3546,7 +3555,7 @@ class HostsController extends AppController {
             //User passed an hostId, so we are in a non add mode!
             //Check if the host has defined command arguments
 
-            /** @var $HostcommandargumentvaluesTable HostcommandargumentvaluesTable */
+            /** @var HostcommandargumentvaluesTable $HostcommandargumentvaluesTable */
             $HostcommandargumentvaluesTable = TableRegistry::getTableLocator()->get('Hostcommandargumentvalues');
 
             $hostCommandArgumentValues = $HostcommandargumentvaluesTable->getByHostIdAndCommandId($hostId, $commandId);
@@ -3630,7 +3639,7 @@ class HostsController extends AppController {
         $satelliteId = $this->request->getQuery('satellite_id');
         $containerIds = [ROOT_CONTAINER, $containerId];
         if ($containerId == ROOT_CONTAINER) {
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
             //Don't panic! Only root users can edit /root objects ;)
@@ -3640,7 +3649,7 @@ class HostsController extends AppController {
         $HostFilter = new HostFilter($this->request);
         $HostCondition = new HostConditions($HostFilter->ajaxFilter());
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $HostCondition->setContainerIds($containerIds);
@@ -3672,7 +3681,7 @@ class HostsController extends AppController {
         $selected = $this->request->getQuery('selected');
         $includeDisabled = $this->request->getQuery('includeDisabled') === 'true';
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $HostFilter = new HostFilter($this->request);
@@ -3708,9 +3717,9 @@ class HostsController extends AppController {
         $selected = $this->request->getQuery('selected');
         $resolveContainerIds = $this->request->getQuery('resolveContainerIds', false);
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $HostFilter = new HostFilter($this->request);
@@ -3767,7 +3776,7 @@ class HostsController extends AppController {
         }
 
 
-        /** @var $HostTable HostsTable */
+        /** @var HostsTable $HostTable */
         $HostTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $hostname = $this->request->getData('hostname', '');
@@ -3794,7 +3803,7 @@ class HostsController extends AppController {
         $id = $this->request->getQuery('id');
         $sla_id = $this->request->getQuery('sla_id', null);
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
         if (!$HostsTable->exists($id)) {
             throw new NotFoundException(__('Invalid host'));
@@ -3860,7 +3869,7 @@ class HostsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
         if (!$HostsTable->existsById($id)) {
             throw new NotFoundException(__('Invalid host'));
@@ -3885,7 +3894,7 @@ class HostsController extends AppController {
 
         //Check if the host is used by Autoreports
         if (Plugin::isLoaded('AutoreportModule')) {
-            /** @var $AutoreportsTable AutoreportsTable */
+            /** @var AutoreportsTable $AutoreportsTable */
             $AutoreportsTable = TableRegistry::getTableLocator()->get('AutoreportModule.Autoreports');
             $objects['Autoreports'] = $AutoreportsTable->getAutoReportsByHostId((int)$id, $MY_RIGHTS);
         }
@@ -3899,7 +3908,7 @@ class HostsController extends AppController {
 
         //Check if the host is used by Maps
         if (Plugin::isLoaded('MapModule')) {
-            /** @var $MapsTable MapsTable */
+            /** @var MapsTable $MapsTable */
             $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
             $objects['Maps'] = $MapsTable->getMapsByHostId((int)$id, $MY_RIGHTS);
         }
@@ -3947,7 +3956,7 @@ class HostsController extends AppController {
 
         $id = $this->request->getQuery('id');
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
         if (!$HostsTable->existsById($id)) {
             throw new NotFoundException(__('Invalid host'));

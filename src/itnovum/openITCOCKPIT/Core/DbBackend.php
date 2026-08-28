@@ -100,7 +100,7 @@ class DbBackend {
      */
     public function getHoststatusTable() {
         if ($this->isNdoUtils()) {
-            /** @var $HoststatusTable HoststatusTableInterface */
+            /** @var HoststatusTableInterface $HoststatusTable */
             $HoststatusTable = TableRegistry::getTableLocator()->get('Statusengine2Module.Hoststatus');
             return $HoststatusTable;
         }
@@ -110,7 +110,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $HoststatusTable HoststatusTableInterface */
+            /** @var HoststatusTableInterface $HoststatusTable */
             $HoststatusTable = TableRegistry::getTableLocator()->get('Statusengine3Module.Hoststatus');
             return $HoststatusTable;
         }
@@ -122,7 +122,7 @@ class DbBackend {
      */
     public function getServicestatusTable() {
         if ($this->isNdoUtils()) {
-            /** @var $ServicestatusTable ServicestatusTableInterface */
+            /** @var ServicestatusTableInterface $ServicestatusTable */
             $ServicestatusTable = TableRegistry::getTableLocator()->get('Statusengine2Module.Servicestatus');
             return $ServicestatusTable;
         }
@@ -132,7 +132,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $ServicestatusTable ServicestatusTableInterface */
+            /** @var ServicestatusTableInterface $ServicestatusTable */
             $ServicestatusTable = TableRegistry::getTableLocator()->get('Statusengine3Module.Servicestatus');
             return $ServicestatusTable;
         }
@@ -144,7 +144,7 @@ class DbBackend {
      */
     public function getHostchecksTable() {
         if ($this->isNdoUtils()) {
-            /** @var $HostchecksTable HostchecksTableInterface */
+            /** @var HostchecksTableInterface $HostchecksTable */
             $HostchecksTable = TableRegistry::getTableLocator()->get('Statusengine2Module.Hostchecks');
             return $HostchecksTable;
         }
@@ -154,7 +154,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $HostchecksTable HostchecksTableInterface */
+            /** @var HostchecksTableInterface $HostchecksTable */
             $HostchecksTable = TableRegistry::getTableLocator()->get('Statusengine3Module.Hostchecks');
             return $HostchecksTable;
         }
@@ -166,7 +166,7 @@ class DbBackend {
      */
     public function getServicechecksTable() {
         if ($this->isNdoUtils()) {
-            /** @var $ServicechecksTable ServicechecksTableInterface */
+            /** @var ServicechecksTableInterface $ServicechecksTable */
             $ServicechecksTable = TableRegistry::getTableLocator()->get('Statusengine2Module.Servicechecks');
             return $ServicechecksTable;
         }
@@ -176,7 +176,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $ServicechecksTable ServicechecksTableInterface */
+            /** @var ServicechecksTableInterface $ServicechecksTable */
             $ServicechecksTable = TableRegistry::getTableLocator()->get('Statusengine3Module.Servicechecks');
             return $ServicechecksTable;
         }
@@ -188,7 +188,7 @@ class DbBackend {
      */
     public function getStatehistoryHostsTable() {
         if ($this->isNdoUtils()) {
-            /** @var $StatehistoryHostsTable StatehistoryHostTableInterface */
+            /** @var StatehistoryHostTableInterface $StatehistoryHostsTable */
             $StatehistoryHostsTable = TableRegistry::getTableLocator()->get('Statusengine2Module.StatehistoryHosts');
             return $StatehistoryHostsTable;
         }
@@ -198,7 +198,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $StatehistoryHostsTable StatehistoryHostTableInterface */
+            /** @var StatehistoryHostTableInterface $StatehistoryHostsTable */
             $StatehistoryHostsTable = TableRegistry::getTableLocator()->get('Statusengine3Module.StatehistoryHosts');
             return $StatehistoryHostsTable;
         }
@@ -210,7 +210,7 @@ class DbBackend {
      */
     public function getStatehistoryServicesTable() {
         if ($this->isNdoUtils()) {
-            /** @var $StatehistoryServicesTable StatehistoryServiceTableInterface */
+            /** @var StatehistoryServiceTableInterface $StatehistoryServicesTable */
             $StatehistoryServicesTable = TableRegistry::getTableLocator()->get('Statusengine2Module.StatehistoryServices');
             return $StatehistoryServicesTable;
         }
@@ -220,7 +220,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $StatehistoryServicesTable StatehistoryServiceTableInterface */
+            /** @var StatehistoryServiceTableInterface $StatehistoryServicesTable */
             $StatehistoryServicesTable = TableRegistry::getTableLocator()->get('Statusengine3Module.StatehistoryServices');
             return $StatehistoryServicesTable;
         }
@@ -232,7 +232,7 @@ class DbBackend {
      */
     public function getAcknowledgementHostsTable() {
         if ($this->isNdoUtils()) {
-            /** @var $AcknowledgementHostsTable AcknowledgementHostsTableInterface */
+            /** @var AcknowledgementHostsTableInterface $AcknowledgementHostsTable */
             $AcknowledgementHostsTable = TableRegistry::getTableLocator()->get('Statusengine2Module.AcknowledgementHosts');
             return $AcknowledgementHostsTable;
         }
@@ -242,7 +242,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $AcknowledgementHostsTable AcknowledgementHostsTableInterface */
+            /** @var AcknowledgementHostsTableInterface $AcknowledgementHostsTable */
             $AcknowledgementHostsTable = TableRegistry::getTableLocator()->get('Statusengine3Module.AcknowledgementHosts');
             return $AcknowledgementHostsTable;
         }
@@ -254,7 +254,7 @@ class DbBackend {
      */
     public function getAcknowledgementServicesTable() {
         if ($this->isNdoUtils()) {
-            /** @var $AcknowledgementServicesTable AcknowledgementServicesTableInterface */
+            /** @var AcknowledgementServicesTableInterface $AcknowledgementServicesTable */
             $AcknowledgementServicesTable = TableRegistry::getTableLocator()->get('Statusengine2Module.AcknowledgementServices');
             return $AcknowledgementServicesTable;
         }
@@ -264,7 +264,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $AcknowledgementServicesTable AcknowledgementServicesTableInterface */
+            /** @var AcknowledgementServicesTableInterface $AcknowledgementServicesTable */
             $AcknowledgementServicesTable = TableRegistry::getTableLocator()->get('Statusengine3Module.AcknowledgementServices');
             return $AcknowledgementServicesTable;
         }
@@ -276,7 +276,7 @@ class DbBackend {
      */
     public function getNotificationHostsTable() {
         if ($this->isNdoUtils()) {
-            /** @var $NotificationHostsTable NotificationHostsTableInterface */
+            /** @var NotificationHostsTableInterface $NotificationHostsTable */
             $NotificationHostsTable = TableRegistry::getTableLocator()->get('Statusengine2Module.NotificationHosts');
             return $NotificationHostsTable;
         }
@@ -286,7 +286,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $NotificationHostsTable NotificationHostsTableInterface */
+            /** @var NotificationHostsTableInterface $NotificationHostsTable */
             $NotificationHostsTable = TableRegistry::getTableLocator()->get('Statusengine3Module.NotificationHosts');
             return $NotificationHostsTable;
         }
@@ -306,7 +306,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $NotificationHostsLogTable NotificationHostsLogTableInterface */
+            /** @var NotificationHostsLogTableInterface $NotificationHostsLogTable */
             $NotificationHostsLogTable = TableRegistry::getTableLocator()->get('Statusengine3Module.NotificationHostsLog');
             return $NotificationHostsLogTable;
         }
@@ -318,7 +318,7 @@ class DbBackend {
      */
     public function getNotificationServicesTable() {
         if ($this->isNdoUtils()) {
-            /** @var $NotificationServicesTable NotificationServicesTableInterface */
+            /** @var NotificationServicesTableInterface $NotificationServicesTable */
             $NotificationServicesTable = TableRegistry::getTableLocator()->get('Statusengine2Module.NotificationServices');
             return $NotificationServicesTable;
         }
@@ -328,7 +328,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $NotificationServicesTable NotificationServicesTableInterface */
+            /** @var NotificationServicesTableInterface $NotificationServicesTable */
             $NotificationServicesTable = TableRegistry::getTableLocator()->get('Statusengine3Module.NotificationServices');
             return $NotificationServicesTable;
         }
@@ -348,7 +348,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $NotificationServicesLogTable NotificationServicesLogTableInterface */
+            /** @var NotificationServicesLogTableInterface $NotificationServicesLogTable */
             $NotificationServicesLogTable = TableRegistry::getTableLocator()->get('Statusengine3Module.NotificationServicesLog');
             return $NotificationServicesLogTable;
         }
@@ -360,7 +360,7 @@ class DbBackend {
      */
     public function getDowntimehistoryHostsTable() {
         if ($this->isNdoUtils()) {
-            /** @var $DowntimehistoryHostsTable DowntimehistoryHostsTableInterface */
+            /** @var DowntimehistoryHostsTableInterface $DowntimehistoryHostsTable */
             $DowntimehistoryHostsTable = TableRegistry::getTableLocator()->get('Statusengine2Module.DowntimeHosts');
             return $DowntimehistoryHostsTable;
         }
@@ -370,7 +370,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $DowntimehistoryHostsTable DowntimehistoryHostsTableInterface */
+            /** @var DowntimehistoryHostsTableInterface $DowntimehistoryHostsTable */
             $DowntimehistoryHostsTable = TableRegistry::getTableLocator()->get('Statusengine3Module.DowntimeHosts');
             return $DowntimehistoryHostsTable;
         }
@@ -382,7 +382,7 @@ class DbBackend {
      */
     public function getDowntimehistoryServicesTable() {
         if ($this->isNdoUtils()) {
-            /** @var $DowntimehistoryServicesTable DowntimehistoryServicesTableInterface */
+            /** @var DowntimehistoryServicesTableInterface $DowntimehistoryServicesTable */
             $DowntimehistoryServicesTable = TableRegistry::getTableLocator()->get('Statusengine2Module.DowntimeServices');
             return $DowntimehistoryServicesTable;
         }
@@ -392,7 +392,7 @@ class DbBackend {
         }
 
         if ($this->isStatusengine3()) {
-            /** @var $DowntimehistoryServicesTable DowntimehistoryServicesTableInterface */
+            /** @var DowntimehistoryServicesTableInterface $DowntimehistoryServicesTable */
             $DowntimehistoryServicesTable = TableRegistry::getTableLocator()->get('Statusengine3Module.DowntimeServices');
             return $DowntimehistoryServicesTable;
         }

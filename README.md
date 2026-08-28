@@ -40,17 +40,18 @@ Password: demo123
 
 | Distribution | Stable                                                                                                           | Nightly                                                                                                           |
 |--------------|------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| Jammy        | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fstable&style=flat-square) | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fnightly&style=flat-square) |
 | Noble        | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fstable&style=flat-square) | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fnightly&style=flat-square) |
-| Bookworm     | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fstable&style=flat-square) | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fnightly&style=flat-square) |
+| Resolute     | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fstable&style=flat-square) | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fnightly&style=flat-square) |
+| Trixie       | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fstable&style=flat-square) | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fnightly&style=flat-square) |
 | RHEL 8       | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fstable&style=flat-square) | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fnightly&style=flat-square) |
 | RHEL 9       | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fstable&style=flat-square) | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fnightly&style=flat-square) |
+| RHEL 10      | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fstable&style=flat-square) | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-packages%2Fnightly&style=flat-square) |
 | Docker       | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-docker%2Fstable&style=flat-square)   | ![status](https://drone.openitcockpit.io/buildStatus/icon?job=openitcockpit-docker%2Fnightly&style=flat-square)   |
 
 # System requirements
 
 * Ubuntu LTS or Debian
-* 2 CPU cores (x86-64)
+* 2 CPU cores (x86-64 or arm64)
 * 4 GB RAM
 * 60 GB space
 
@@ -86,10 +87,10 @@ documentation: [https://docs.openitcockpit.io/en/installation/docker/](https://d
 
 # Register openitcockpit community version:
 
-You can register your openITCOCKPIT installation to get access to free community modules.
-Login to the webinterface of openITCOCKPIT and navigate to System -> Registration,
-enter the community license key `e5aef99e-817b-0ff5-3f0e-140c1f342792` and click Register.
-After successful registration you can install the free community modules at System tools -> Package Manager
+You can register your openITCOCKPIT installation to get access to free community modules. Login to the webinterface of
+openITCOCKPIT and navigate to System -> Registration, enter the community license key
+`e5aef99e-817b-0ff5-3f0e-140c1f342792` and click Register. After successful registration you can install the free
+community modules at System tools -> Package Manager
 
 # Main Features
 
@@ -137,16 +138,16 @@ openITCOCKPIT's development is publicly available in GitHub. Everybody is welcom
 
 # Security
 
-Please send security vulnerabilities found in openITCOCKPIT or software that is used by openITCOCKPIT
-to: `security@openitcockpit.io`.
+Please send security vulnerabilities found in openITCOCKPIT or software that is used by openITCOCKPIT to:
+`security@openitcockpit.io`.
 
 All disclosed vulnerabilities are available
 here: [https://openitcockpit.io/security/](https://openitcockpit.io/security/)
 
 # Translations
 
-Most of the translations are handled by the Angular frontend. However, some parts of the application
-are generated on the server, such as reports, emails, pdf or zip files.
+Most of the translations are handled by the Angular frontend. However, some parts of the application are generated on
+the server, such as reports, emails, pdf or zip files.
 
 Translation files are located at `resources/locales/`.
 
@@ -170,9 +171,9 @@ into the existing language file. You can use the `oitc sync_lang --lang <langue-
 oitc sync_lang --lang de_DE
 ```
 
-The command will keep already existing translations, add missing ones or remove deleted messages.
-The new file will be stored at `/opt/openitc/frontend/resources/locales/NEW_de_DE.po`.
-You can now start translating. Every record with an empty `msgstr ""` needs to be translated.
+The command will keep already existing translations, add missing ones or remove deleted messages. The new file will be
+stored at `/opt/openitc/frontend/resources/locales/NEW_de_DE.po`. You can now start translating. Every record with an
+empty `msgstr ""` needs to be translated.
 
 Once your finished, you can overwrite the current file `resources/locales/de_DE/default.po`.
 
@@ -182,9 +183,9 @@ mv /opt/openitc/frontend/resources/locales/NEW_de_DE.po /opt/openitc/frontend/re
 
 ## AI assistance for translations
 
-AI can be a helping hand to make the process of creating or updating translations less painful. Please keep in mind
-that you have to do this in chunks, as you can not paste a file with more than 4000 lines
-into a Chatbot and expect to get a decent result.
+AI can be a helping hand to make the process of creating or updating translations less painful. Please keep in mind that
+you have to do this in chunks, as you can not paste a file with more than 4000 lines into a Chatbot and expect to get a
+decent result.
 
 Prompt example:
 

@@ -158,6 +158,8 @@ plugins/GudeModule
 plugins/PaloAltoModule
 plugins/RaritanModule
 plugins/SonicWallModule
+plugins/SymantecModule
+plugins/AristaNetworksModule
 
 # NFS mounts
 .nfs.*

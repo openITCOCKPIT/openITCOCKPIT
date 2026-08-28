@@ -136,7 +136,7 @@ class MapgeneratorsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {

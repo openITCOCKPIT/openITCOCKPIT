@@ -201,13 +201,22 @@ class AclDependencies {
             ->allow('Dashboards', 'calendarWidget')
             ->allow('Dashboards', 'desktopWidget')
             ->allow('Dashboards', 'delayedPassiveHostsWidget')
-            ->allow('Dashboards', 'delayedPassiveServicesWidget');
+            ->allow('Dashboards', 'delayedPassiveServicesWidget')
+            ->allow('Dashboards', 'cylinderWidget');
 
         $this
             ->allow('FilterBookmarks', 'index')
             ->allow('FilterBookmarks', 'add')
             ->allow('FilterBookmarks', 'edit')
             ->allow('FilterBookmarks', 'delete');
+
+        $this
+            ->dependency('FilterBookmarks', 'index', 'Users', 'loadContainersForAngular');
+        $this
+            ->dependency('FilterBookmarksAllocations', 'add', 'FilterBookmarksAllocations', 'loadElementsByContainerId')
+            ->dependency('FilterBookmarksAllocations', 'add', 'Users', 'loadContainersForAngular')
+            ->dependency('FilterBookmarksAllocations', 'edit', 'FilterBookmarksAllocations', 'loadElementsByContainerId')
+            ->dependency('FilterBookmarksAllocations', 'edit', 'Users', 'loadContainersForAngular');
 
         $this
             ->allow('Hosts', 'view')
@@ -562,6 +571,15 @@ class AclDependencies {
             ->dependency('Users', 'edit', 'Users', 'loadContainerPermissions')
             ->dependency('Users', 'edit', 'Users', 'loadContainersForAngular');
 
+        $this->dependency('UserDefaultTemplates', 'add', 'Users', 'loadContainersForAngular')
+            ->dependency('UserDefaultTemplates', 'edit', 'Users', 'loadContainersForAngular')
+            ->dependency('UserDefaultTemplates', 'add', 'UserDefaultTemplates', 'loadLdapgroupsWithContainerRolesForAngular')
+            ->dependency('UserDefaultTemplates', 'edit', 'UserDefaultTemplates', 'loadLdapgroupsWithContainerRolesForAngular')
+            ->dependency('UserDefaultTemplates', 'add', 'Containers', 'loadContainersByContainerIds')
+            ->dependency('UserDefaultTemplates', 'edit', 'Containers', 'loadContainersByContainerIds')
+            ->dependency('UserDefaultTemplates', 'add', 'UserDefaultTemplates', 'loadContainerRolesByLdapGroupIds')
+            ->dependency('UserDefaultTemplates', 'edit', 'UserDefaultTemplates', 'loadContainerRolesByLdapGroupIds');
+
 
         $this
             ->dependency('Tenants', 'index', 'Tenants', 'view')
@@ -598,12 +616,16 @@ class AclDependencies {
         $this
             ->dependency('Usergroups', 'index', 'Usergroups', 'view')
             ->dependency('Usergroups', 'add', 'Usergroups', 'loadLdapgroupsForAngular')
-            ->dependency('Usergroups', 'edit', 'Usergroups', 'loadLdapgroupsForAngular');
+            ->dependency('Usergroups', 'edit', 'Usergroups', 'loadLdapgroupsForAngular')
+            ->dependency('Usergroups', 'add', 'Usergroups', 'append')
+            ->dependency('Usergroups', 'edit', 'Usergroups', 'append');
 
 
         $this
             ->dependency('Usercontainerroles', 'add', 'Usercontainerroles', 'loadLdapgroupsForAngular')
-            ->dependency('Usercontainerroles', 'edit', 'Usercontainerroles', 'loadLdapgroupsForAngular');
+            ->dependency('Usercontainerroles', 'edit', 'Usercontainerroles', 'loadLdapgroupsForAngular')
+            ->dependency('Usercontainerroles', 'add', 'Usercontainerroles', 'append')
+            ->dependency('Usercontainerroles', 'edit', 'Usercontainerroles', 'append');
 
         $this
             ->dependency('Backups', 'index', 'Backups', 'checkBackupFinished');

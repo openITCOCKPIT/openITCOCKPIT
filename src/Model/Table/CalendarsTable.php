@@ -214,7 +214,7 @@ class CalendarsTable extends Table {
 
         $containerIds = array_unique($containerIds);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $tenantContainerIds = [];

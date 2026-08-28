@@ -220,7 +220,7 @@ class ServiceescalationsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ServiceescalationsTable ServiceescalationsTable */
+        /** @var ServiceescalationsTable $ServiceescalationsTable */
         $ServiceescalationsTable = TableRegistry::getTableLocator()->get('Serviceescalations');
 
         if (!$ServiceescalationsTable->exists($id)) {

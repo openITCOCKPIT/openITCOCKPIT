@@ -131,7 +131,7 @@ class SystemHealthUsersController extends AppController {
 
         if ($this->request->is('post')) {
 
-            /** @var $SystemHealthUsersTable SystemHealthUsersTable */
+            /** @var SystemHealthUsersTable $SystemHealthUsersTable */
             $SystemHealthUsersTable = TableRegistry::getTableLocator()->get('SystemHealthUsers');
 
             $systemHealthUserData = $this->request->getData('SystemHealthUser');
@@ -182,7 +182,7 @@ class SystemHealthUsersController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $SystemHealthUsersTable SystemHealthUsersTable */
+        /** @var SystemHealthUsersTable $SystemHealthUsersTable */
         $SystemHealthUsersTable = TableRegistry::getTableLocator()->get('SystemHealthUsers');
 
         if (!$SystemHealthUsersTable->existsById($id)) {
@@ -252,10 +252,10 @@ class SystemHealthUsersController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $SystemHealthUsersTable SystemHealthUsersTable */
+        /** @var SystemHealthUsersTable $SystemHealthUsersTable */
         $SystemHealthUsersTable = TableRegistry::getTableLocator()->get('SystemHealthUsers');
 
-        /** @var $UsersTable UsersTable */
+        /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
 
         if (!$SystemHealthUsersTable->existsById($id)) {
@@ -298,7 +298,7 @@ class SystemHealthUsersController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $UsersTable UsersTable */
+        /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
 
         $MY_RIGHTS = [];

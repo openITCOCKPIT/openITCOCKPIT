@@ -473,8 +473,8 @@ class ServiceAccountCommand extends Command {
 
             // Disable HTTP proxy
             'proxy'           => [
-                'http'  => false,
-                'https' => false
+                'http'  => '',
+                'https' => ''
             ]
         ];
 

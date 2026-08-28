@@ -58,7 +58,7 @@ class HostchecksController extends AppController {
         $session = $this->request->getSession();
         $session->close();
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->existsById($id)) {

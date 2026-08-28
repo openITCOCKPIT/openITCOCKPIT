@@ -133,7 +133,7 @@ class StatuspagegroupsController extends AppController {
         }
         $MY_RIGHTS = [];
         if ($this->hasRootPrivileges === false) {
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
             //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
             // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
@@ -236,7 +236,7 @@ class StatuspagegroupsController extends AppController {
                                 'services' => []
                             ];
                         }
-                        $hostsWithServices['hosts'][$service['host']['uuid']['uuid']]['services'][$service['uuid']] = $service['id'];
+                        $hostsWithServices['hosts'][$service['host']['uuid']]['services'][$service['uuid']] = $service['id'];
                         $allServiceUuids[$service['id']] = $service['uuid'];
                         $allHostUuids[$service['host']['id']] = $service['host']['uuid'];
                     }

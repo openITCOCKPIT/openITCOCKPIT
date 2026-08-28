@@ -144,6 +144,22 @@ class UsersTable extends Table {
             'dependent'        => true
         ]);
 
+        $this->hasMany('FilterBookmarks', [
+            'foreignKey'       => 'user_id',
+            'dependent'        => true,
+            'cascadeCallbacks' => true
+        ]);
+
+
+        $this->belongsToMany('FilterBookmarksAllocations', [
+            'className'        => 'FilterBookmarksAllocations',
+            'joinTable'        => 'users_to_filter_bookmark_allocations',
+            'foreignKey'       => 'user_id',
+            'targetForeignKey' => 'filter_bookmark_allocation_id',
+            'saveStrategy'     => 'replace',
+            'dependent'        => true
+        ]);
+
         $this->hasOne('SystemHealthUsers', [
             'foreignKey' => 'user_id'
         ]);
@@ -1681,6 +1697,63 @@ class UsersTable extends Table {
         return $dashboardTabs;
     }
 
+    public function getFilterBookmarksByContainerIdsAsList($containerIds, $MY_RIGHTS) {
+        if (!is_array($containerIds)) {
+            $containerIds = [$containerIds];
+        }
+
+        $query = $this->find();
+        $query->select([
+            'id'   => 'FilterBookmarks.id',
+            'name' => $query->newExpr('CONCAT(FilterBookmarks.name, " (", Users.firstname, " " ,Users.lastname,")")'),
+        ])
+            ->innerJoinWith('FilterBookmarks')
+            ->leftJoin(
+                ['ContainersUsersMemberships' => 'users_to_containers'],
+                ['Users.id = ContainersUsersMemberships.user_id']
+            )
+            ->leftJoin(
+                ['UsercontainerrolesMemberships' => 'users_to_usercontainerroles'],
+                ['Users.id = UsercontainerrolesMemberships.user_id']
+            )
+            ->leftJoin(
+                ['Usercontainerroles' => 'usercontainerroles'],
+                ['Usercontainerroles.id = UsercontainerrolesMemberships.usercontainerrole_id']
+            )
+            ->leftJoin(
+                ['ContainersUsercontainerrolesMemberships' => 'usercontainerroles_to_containers'],
+                ['ContainersUsercontainerrolesMemberships.usercontainerrole_id = Usercontainerroles.id']
+            );
+
+        if (!empty($MY_RIGHTS)) {
+            //remove not allowed containerIds
+            $containerIds = array_intersect($MY_RIGHTS, $containerIds);
+        }
+        if (!empty($containerIds)) {
+            $query->where([
+                    'OR' => [
+                        'ContainersUsersMemberships.container_id IN'              => $containerIds,
+                        'ContainersUsercontainerrolesMemberships.container_id IN' => $containerIds
+                    ]
+                ]
+            );
+        }
+        $query->groupBy(['FilterBookmarks.id'])
+            ->disableHydration()
+            ->all();
+        $result = $this->emptyArrayIfNull($query->toArray());
+        if (empty($result)) {
+            return [];
+        }
+
+        $filterBookmarks = [];
+        foreach ($result as $resultSet) {
+            $filterBookmarks[$resultSet['id']] = $resultSet['name'];
+        }
+        return $filterBookmarks;
+    }
+
+
     /**
      * @param array $dataToParse
      * @return array
@@ -1948,5 +2021,20 @@ class UsersTable extends Table {
             $return[$user['id']] = $user['lastname'] . ', ' . $user['firstname'];
         }
         return $return;
+    }
+
+    /**
+     * @return User[]
+     */
+    public function getUsersForLdapImport() {
+        $query = $this->find();
+        $query->select([
+            'id',
+            'email' => $query->func()->lcase(['email' => 'identifier'])
+        ])
+            ->disableHydration()
+            ->all();
+
+        return $query->toArray();
     }
 }

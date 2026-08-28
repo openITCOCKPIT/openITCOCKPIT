@@ -27,9 +27,13 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Lib\Traits\Cake2ResultTableTrait;
+use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\Ldapgroup;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use itnovum\openITCOCKPIT\Database\PaginateOMat;
+use itnovum\openITCOCKPIT\Filter\LdapgroupFilter;
 
 /**
  * Ldapgroups Model
@@ -51,6 +55,10 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\Ldapgroup[]|\Cake\Datasource\ResultSetInterface deleteManyOrFail(iterable $entities, $options = [])
  */
 class LdapgroupsTable extends Table {
+
+    use PaginationAndScrollIndexTrait;
+    use Cake2ResultTableTrait;
+
     /**
      * Initialize method
      *
@@ -235,6 +243,116 @@ class LdapgroupsTable extends Table {
         }
 
         return $query->toArray();
+    }
+
+    /**
+     * @param LdapgroupFilter $LdapgroupsFilter
+     * @param PaginateOMat|null $PaginateOMat
+     * @return array
+     */
+    public function getLdapgroupsIndex(LdapgroupFilter $LdapgroupsFilter, $PaginateOMat = null) {
+        $query = $this->find('all')->disableHydration();
+        $query->where($LdapgroupsFilter->indexFilter());
+        $query->orderBy($LdapgroupsFilter->getOrderForPaginator('Ldapgroups.cn', 'asc'));
+
+        if ($PaginateOMat === null) {
+            //Just execute query
+            $result = $this->formatResultAsCake2($query->toArray(), false);
+        } else {
+            if ($PaginateOMat->useScroll()) {
+                $result = $this->scroll($query, $PaginateOMat->getHandler(), false);
+            } else {
+                $result = $this->paginate($query, $PaginateOMat->getHandler(), false);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param $id
+     * @return array
+     */
+    public function getLdapgroupById($id) {
+        $query = $this->find('all')
+            ->where([
+                'Ldapgroups.id' => $id
+            ]);
+
+        $result = $query->first();
+        if (empty($result)) {
+            return [];
+        }
+        return $result->toArray();
+    }
+
+    /**
+     * @param array $where
+     * @param $selected
+     * @return array
+     */
+    public function getLdapgroupsWitContainerRolesForAngular(array $where, $selected = []) {
+        if (!is_array($selected)) {
+            $selected = [$selected];
+        }
+
+        $query = $this->find('list')
+            ->innerJoinWith('Usercontainerroles');
+
+        if (is_array($selected)) {
+            $selected = array_filter($selected);
+        }
+        if (!empty($selected)) {
+            $where['NOT'] = [
+                'Ldapgroups.id IN' => $selected
+            ];
+        }
+
+        if (!empty($where['NOT'])) {
+            // https://github.com/cakephp/cakephp/issues/14981#issuecomment-694770129
+            $where['NOT'] = [
+                'OR' => $where['NOT']
+            ];
+        }
+        if (!empty($where)) {
+            $query->where($where);
+        }
+        $query->orderBy([
+            'Ldapgroups.cn' => 'asc'
+        ]);
+        $query->limit(ITN_AJAX_LIMIT);
+
+        $ldapgroupsWithLimit = $query->toArray();
+
+        $selectedLdapgroups = [];
+        if (!empty($selected)) {
+            $query = $this->find('list')
+                ->innerJoinWith('Usercontainerroles');
+            $where = [
+                'Ldapgroups.id IN' => $selected
+            ];
+
+            if (!empty($where['NOT'])) {
+                // https://github.com/cakephp/cakephp/issues/14981#issuecomment-694770129
+                $where['NOT'] = [
+                    'OR' => $where['NOT']
+                ];
+            }
+
+            if (!empty($where)) {
+                $query->where($where);
+            }
+            $query->orderBy([
+                'Ldapgroups.cn' => 'asc'
+            ]);
+
+            $selectedLdapgroups = $query->toArray();
+
+        }
+
+        $ldapgroups = $ldapgroupsWithLimit + $selectedLdapgroups;
+        asort($ldapgroups, SORT_FLAG_CASE | SORT_NATURAL);
+        return $ldapgroups;
     }
 
 }

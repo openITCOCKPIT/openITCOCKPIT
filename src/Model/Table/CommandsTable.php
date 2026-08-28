@@ -30,7 +30,6 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\Changelog;
 use App\Model\Entity\Command;
 use Cake\Datasource\EntityInterface;
-use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -490,26 +489,26 @@ class CommandsTable extends Table {
         }
 
         //Check if the command is used by host or service templates
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
         if ($HosttemplatesTable->isCommandUsedByHosttemplate($id)) {
             return false;
         }
 
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
         if ($ServicetemplatesTable->isCommandUsedByServicetemplate($id)) {
             return false;
         }
 
         //Checking host and services
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
         if ($HostsTable->isCommandUsedByHost($id)) {
             return false;
         }
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
         if ($ServicesTable->isCommandUsedByService($id)) {
             return false;

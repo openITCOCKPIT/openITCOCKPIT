@@ -110,7 +110,7 @@ class AutomapsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $AutomapsTable AutomapsTable */
+        /** @var AutomapsTable $AutomapsTable */
         $AutomapsTable = TableRegistry::getTableLocator()->get('Automaps');
 
         if ($this->request->is('post') || $this->request->is('put')) {
@@ -210,7 +210,7 @@ class AutomapsController extends AppController {
             6 => 'x-large',
             7 => 'xx-large',
         ];
-        /** @var $AutomapsTable AutomapsTable */
+        /** @var AutomapsTable $AutomapsTable */
         $AutomapsTable = TableRegistry::getTableLocator()->get('Automaps');
 
         if (!$AutomapsTable->existsById($id)) {
@@ -231,11 +231,11 @@ class AutomapsController extends AppController {
         }
 
         // Query host and services
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         $containerIds = [
@@ -365,7 +365,7 @@ class AutomapsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $AutomapsTable AutomapsTable */
+        /** @var AutomapsTable $AutomapsTable */
         $AutomapsTable = TableRegistry::getTableLocator()->get('Automaps');
 
         if (!$AutomapsTable->existsById($id)) {
@@ -488,7 +488,7 @@ class AutomapsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $containers = $ContainersTable->easyPath($this->MY_RIGHTS, OBJECT_HOST, [], $this->hasRootPrivileges, [CT_HOSTGROUP]);
         $containers = Api::makeItJavaScriptAble($containers);
@@ -520,13 +520,13 @@ class AutomapsController extends AppController {
         $post = Hash::merge($defaults, $post);
 
         if ($post['container_id'] > 0) {
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-            /** @var $HostsTable HostsTable */
+            /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-            /** @var $HostgroupTable ServicesTable */
+            /** @var HostgroupsTable $HostgroupTable */
             $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
             $containerIds = [

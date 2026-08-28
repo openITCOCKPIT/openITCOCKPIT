@@ -30,10 +30,13 @@ use Cake\Datasource\EntityInterface;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
+use Cake\ORM\TableRegistry;
+use Cake\Utility\Hash;
 use Cake\Validation\Validator;
+use itnovum\openITCOCKPIT\Core\ValueObjects\User;
+
 
 class FilterBookmarksTable extends Table {
-    //use PaginationAndScrollIndexTrait;
 
     /**
      * Initialize method
@@ -47,6 +50,17 @@ class FilterBookmarksTable extends Table {
         $this->setTable('filter_bookmarks');
         $this->setDisplayField('name');
         $this->setPrimaryKey('id');
+
+        $this->belongsTo('Users', [
+            'foreignKey' => 'user_id',
+            'joinType'   => 'INNER',
+        ]);
+
+        $this->hasMany('FilterBookmarkAllocations', [
+            'foreignKey'       => 'filter_bookmark_id',
+            'dependent'        => true,
+            'cascadeCallbacks' => true // https://book.cakephp.org/4/en/orm/deleting-data.html#cascading-deletes
+        ]);
     }
 
     /**
@@ -137,10 +151,10 @@ class FilterBookmarksTable extends Table {
                 'FilterBookmarks.action'     => $action,
                 'FilterBookmarks.user_id'    => $userId
             ])
-        ->orderBy([
-            'FilterBookmarks.favorite' => 'asc',
-            'FilterBookmarks.name'     => 'asc',
-        ]);
+            ->orderBy([
+                'FilterBookmarks.favorite' => 'asc',
+                'FilterBookmarks.name'     => 'asc',
+            ]);
         $result = $query->all();
         if (empty($result)) {
             return [];
@@ -173,7 +187,112 @@ class FilterBookmarksTable extends Table {
                 'FilterBookmarks.user_id' => $userId
             ])
             ->firstOrFail();
+    }
 
+    /**
+     * @param User $User
+     * @param string $plugin
+     * @param string $controller
+     * @param string $action
+     * @return array
+     */
+
+    public function getAllBookmarksByUser(User $User, string $plugin, string $controller, string $action): array {
+        // Check for allocated Dashboards
+        $allocations = [];
+
+        /** @var FilterBookmarkAllocationsTable $FilterBookmarkAllocationsTable */
+        $FilterBookmarkAllocationsTable = TableRegistry::getTableLocator()->get('FilterBookmarkAllocations');
+
+        //$allocations = $FilterBookmarksAllocationsTable->getAllBookmarksAllocationsByUser($User);
+        //$allocationBookmarkIds = Hash::combine($allocations, '{n}.filter_bookmark_id', '{n}');
+
+        $allBookmarkAllocations = $FilterBookmarkAllocationsTable->getAllBookmarkAllocations($User, $plugin, $controller, $action);
+        $userBookmarkAllocations = $FilterBookmarkAllocationsTable->getAllBookmarkAllocationsByUser($User, $plugin, $controller, $action);
+        $userBookmarkAllocationsIds = Hash::combine($userBookmarkAllocations, '{n}.filter_bookmark_id', '{n}');
+        $allBookmarkAllocationsIds = Hash::combine($allBookmarkAllocations, '{n}.filter_bookmark_id', '{n}');
+
+
+        // Get all Filter Bookmarks from the user
+        $where = [
+            'FilterBookmarks.user_id'    => $User->getId(),
+            'FilterBookmarks.plugin'     => $plugin,
+            'FilterBookmarks.controller' => $controller,
+            'FilterBookmarks.action'     => $action,
+        ];
+
+        // Also select allocated Tabs (if any exit)
+        if (!empty($allBookmarkAllocationsIds) && !empty($userBookmarkAllocationsIds)) {
+            $where = [
+                'OR' => [
+                    [
+                        'FilterBookmarks.user_id'    => $User->getId(),
+                        'FilterBookmarks.plugin'     => $plugin,
+                        'FilterBookmarks.controller' => $controller,
+                        'FilterBookmarks.action'     => $action,
+                    ],
+                    [
+                        'FilterBookmarks.id IN' => array_keys($userBookmarkAllocationsIds),
+                    ],
+                ]
+            ];
+        }
+
+        $result = $this->find()
+            ->where($where)
+            ->orderBy([
+                'FilterBookmarks.id' => 'ASC',
+            ]);
+
+        $result
+            ->disableHydration()
+            ->all();
+
+
+        $forJs = [];
+        foreach ($result as $row) {
+            $isOwner = (int)$row['user_id'] === $User->getId();
+            if ($isOwner) {
+                // This dashboard tab is from the user itself
+                $forJs[] = [
+                    'id'                         => (int)$row['id'],
+                    'uuid'                       => $row['uuid'],
+                    'plugin'                     => $row['plugin'],
+                    'controller'                 => $row['controller'],
+                    'action'                     => $row['action'],
+                    'name'                       => $row['name'],
+                    'filter'                     => $row['filter'],
+                    'ownership'                  => $isOwner,
+                    'filter_bookmark_allocation' => $allBookmarkAllocationsIds[$row['id']] ?? null,
+                    'fav_group'                  => $row['favorite'] ? __('Favorites') : __('Filters'),
+                ];
+            } else {
+                // This dashboard tab got allocated to the user
+                // We remove any potential sensitive data
+                if (!isset($allBookmarkAllocationsIds[$row['id']])) {
+                    // this should be impossible !
+                    continue;
+                }
+
+                $allocation = $allBookmarkAllocationsIds[$row['id']];
+
+                $forJs[] = [
+                    'id'         => (int)$row['id'],
+                    'uuid'       => $row['uuid'],
+                    'plugin'     => $row['plugin'],
+                    'controller' => $row['controller'],
+                    'action'     => $row['action'],
+                    'name'       => $row['name'],
+                    'filter'     => $row['filter'],
+                    'ownership'  => $isOwner,
+                    'fav_group'  => $row['favorite'] ? __('Favorites') : __('Filters'),
+                    //'source'            => 'ALLOCATED'
+                ];
+            }
+        }
+
+
+        return Hash::sort($forJs, '{n}.id', 'asc');
     }
 
 }

@@ -192,7 +192,7 @@ class AgentCommand extends Command {
             $this->nagOutput('No host uuid given', $rc);
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $record = $HostsTable->getPushAgentRecordByHostUuidForFreshnessCheck($uuid, false);

@@ -88,7 +88,7 @@ class DowntimereportsController extends AppController {
                 return;
             }
 
-            /** @var $TimeperiodsTable TimeperiodsTable */
+            /** @var TimeperiodsTable $TimeperiodsTable */
             $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
             $timeperiod = $TimeperiodsTable->getTimeperiodWithTimerangesById($this->request->getData('timeperiod_id'));
             if (empty($timeperiod['Timeperiod']['timeperiod_timeranges'])) {
@@ -169,7 +169,7 @@ class DowntimereportsController extends AppController {
             return;
         }
 
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
 
         if (!$TimeperiodsTable->existsById($this->request->getQuery('data.timeperiod_id', 0))) {
@@ -588,5 +588,5 @@ class DowntimereportsController extends AppController {
         $downtimeReport['downtimes'] = $downtimes;
         return $downtimeReport;
     }
-    
+
 }

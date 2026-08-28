@@ -77,7 +77,7 @@ class SystemdowntimesController extends AppController {
         $Conditions->setOrder($AngularRequest->getOrderForPaginator('Systemdowntimes.from_time', 'desc'));
         $Conditions->setConditions($SystemdowntimesFilter->hostFilter());
 
-        /** @var $SystemdowntimesTable SystemdowntimesTable */
+        /** @var SystemdowntimesTable $SystemdowntimesTable */
         $SystemdowntimesTable = TableRegistry::getTableLocator()->get('Systemdowntimes');
 
         $recurringHostDowntimes = $SystemdowntimesTable->getRecurringHostDowntimes($Conditions, $PaginateOMat);
@@ -135,7 +135,7 @@ class SystemdowntimesController extends AppController {
         $Conditions->setOrder($AngularRequest->getOrderForPaginator('Systemdowntimes.from_time', 'desc'));
         $Conditions->setConditions($SystemdowntimesFilter->serviceFilter());
 
-        /** @var $SystemdowntimesTable SystemdowntimesTable */
+        /** @var SystemdowntimesTable $SystemdowntimesTable */
         $SystemdowntimesTable = TableRegistry::getTableLocator()->get('Systemdowntimes');
         $recurringServiceDowntimes = $SystemdowntimesTable->getRecurringServiceDowntimes($Conditions, $PaginateOMat);
 
@@ -197,7 +197,7 @@ class SystemdowntimesController extends AppController {
         $Conditions->setOrder($AngularRequest->getOrderForPaginator('Systemdowntimes.from_time', 'desc'));
         $Conditions->setConditions($SystemdowntimesFilter->hostgroupFilter());
 
-        /** @var $SystemdowntimesTable SystemdowntimesTable */
+        /** @var SystemdowntimesTable $SystemdowntimesTable */
         $SystemdowntimesTable = TableRegistry::getTableLocator()->get('Systemdowntimes');
 
         $recurringHostgroupDowntimes = $SystemdowntimesTable->getRecurringHostgroupDowntimes($Conditions, $PaginateOMat);
@@ -257,7 +257,7 @@ class SystemdowntimesController extends AppController {
         $Conditions->setOrder($AngularRequest->getOrderForPaginator('Systemdowntimes.from_time', 'desc'));
         $Conditions->setConditions($SystemdowntimesFilter->nodeFilter());
 
-        /** @var $SystemdowntimesTable SystemdowntimesTable */
+        /** @var SystemdowntimesTable $SystemdowntimesTable */
         $SystemdowntimesTable = TableRegistry::getTableLocator()->get('Systemdowntimes');
 
         $recurringNodeDowntimes = $SystemdowntimesTable->getRecurringNodeDowntimes($Conditions, $PaginateOMat);
@@ -303,7 +303,7 @@ class SystemdowntimesController extends AppController {
         }
 
         if ($this->request->is('post') || $this->request->is('put')) {
-            /** @var $SystemdowntimesTable SystemdowntimesTable */
+            /** @var SystemdowntimesTable $SystemdowntimesTable */
             $SystemdowntimesTable = TableRegistry::getTableLocator()->get('Systemdowntimes');
             $data = $this->request->getData('Systemdowntime');
 
@@ -369,7 +369,7 @@ class SystemdowntimesController extends AppController {
 
                 //Normal downtimes will be passed to the monitoring engine
                 $GearmanClient = new Gearman();
-                /** @var $HostsTable HostsTable */
+                /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
                 foreach ($Entities as $Entity) {
@@ -409,7 +409,7 @@ class SystemdowntimesController extends AppController {
         }
 
         if ($this->request->is('post') || $this->request->is('put')) {
-            /** @var $SystemdowntimesTable SystemdowntimesTable */
+            /** @var SystemdowntimesTable $SystemdowntimesTable */
             $SystemdowntimesTable = TableRegistry::getTableLocator()->get('Systemdowntimes');
             $data = $this->request->getData('Systemdowntime');
 
@@ -472,7 +472,7 @@ class SystemdowntimesController extends AppController {
             } else {
                 //Normal downtimes will be passed to the monitoring engine
                 $GearmanClient = new Gearman();
-                /** @var $HostgroupsTable HostgroupsTable */
+                /** @var HostgroupsTable $HostgroupsTable */
                 $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
                 $offset = $UserTime->getUserTimeToServerOffset();
@@ -515,7 +515,7 @@ class SystemdowntimesController extends AppController {
         }
 
         if ($this->request->is('post') || $this->request->is('put')) {
-            /** @var $SystemdowntimesTable SystemdowntimesTable */
+            /** @var SystemdowntimesTable $SystemdowntimesTable */
             $SystemdowntimesTable = TableRegistry::getTableLocator()->get('Systemdowntimes');
             $data = $this->request->getData('Systemdowntime');
 
@@ -578,7 +578,7 @@ class SystemdowntimesController extends AppController {
             } else {
                 //Normal downtimes will be passed to the monitoring engine
                 $GearmanClient = new Gearman();
-                /** @var $ServicesTable ServicesTable */
+                /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
                 $offset = $UserTime->getUserTimeToServerOffset();
@@ -625,7 +625,7 @@ class SystemdowntimesController extends AppController {
         }
 
         if ($this->request->is('post') || $this->request->is('put')) {
-            /** @var $SystemdowntimesTable SystemdowntimesTable */
+            /** @var SystemdowntimesTable $SystemdowntimesTable */
             $SystemdowntimesTable = TableRegistry::getTableLocator()->get('Systemdowntimes');
             $data = $this->request->getData('Systemdowntime');
 
@@ -689,9 +689,9 @@ class SystemdowntimesController extends AppController {
             } else {
                 //Normal downtimes will be passed to the monitoring engine
                 $GearmanClient = new Gearman();
-                /** @var $ContainersTable ContainersTable */
+                /** @var ContainersTable $ContainersTable */
                 $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-                /** @var $HostsTable HostsTable */
+                /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
                 $offset = $UserTime->getUserTimeToServerOffset();
@@ -762,7 +762,7 @@ class SystemdowntimesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $SystemdowntimesTable SystemdowntimesTable */
+        /** @var SystemdowntimesTable $SystemdowntimesTable */
         $SystemdowntimesTable = TableRegistry::getTableLocator()->get('Systemdowntimes');
 
         if (!$SystemdowntimesTable->existsById($id)) {

@@ -84,7 +84,7 @@ class ServiceStateSummary {
             return $serviceStateSummary;
         }
         foreach ($servicestatusArray as $Servicestatus) {
-            /** @var $Servicestatus Servicestatus */
+            /** @var Servicestatus $Servicestatus */
             $serviceStateSummary['state'][$Servicestatus->currentState()]++;
             if ($extended === true) {
                 if ($Servicestatus->currentState() > 0) {

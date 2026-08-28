@@ -379,18 +379,17 @@ class AppController extends Controller {
 
         $user = $this->Authentication->getIdentity();
 
-        if ($user !== null) {
+        if ($user) {
             $userId = $user->get('id');
 
             //User is logged in
             $cacheKey = 'userPermissions_' . $userId;
 
-            if (Cache::read($cacheKey, 'permissions') === null) {
+            $permissions = Cache::read($cacheKey, 'permissions');
+            if ($permissions === null) {
                 $permissions = $this->getUserPermissions($user);
                 Cache::write($cacheKey, $permissions, 'permissions');
             }
-
-            $permissions = Cache::read($cacheKey, 'permissions');
 
             $this->MY_RIGHTS = $permissions['MY_RIGHTS'];
             $this->MY_RIGHTS_LEVEL = $permissions['MY_RIGHTS_LEVEL'];

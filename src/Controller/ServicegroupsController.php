@@ -83,7 +83,7 @@ class ServicegroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
         $MY_RIGHTS = [];
@@ -122,7 +122,7 @@ class ServicegroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
         if (!$ServicegroupsTable->existsById($id)) {
@@ -152,7 +152,7 @@ class ServicegroupsController extends AppController {
         if ($this->request->is('post')) {
             $User = new User($this->getUser());
 
-            /** @var $ServicegroupsTable ServicegroupsTable */
+            /** @var ServicegroupsTable $ServicegroupsTable */
             $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
             $servicegroup = $ServicegroupsTable->newEmptyEntity();
@@ -202,7 +202,7 @@ class ServicegroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
         if (!$ServicegroupsTable->existsById($id)) {
@@ -275,9 +275,9 @@ class ServicegroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if (!$ServicegroupsTable->existsById($id)) {
@@ -364,13 +364,13 @@ class ServicegroupsController extends AppController {
                 return;
             }
 
-            /** @var $ServicegroupsTable ServicegroupsTable */
+            /** @var ServicegroupsTable $ServicegroupsTable */
             $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-            /** @var $HostsTable HostsTable */
+            /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
             if (!$ServicegroupsTable->existsById($id)) {
@@ -493,13 +493,13 @@ class ServicegroupsController extends AppController {
      * @throws MissingDbBackendException
      */
     public function listToPdf() {
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
-        /** @var $HoststatusTable HoststatusTableInterface */
+        /** @var HoststatusTableInterface $HoststatusTable */
         $HoststatusTable = $this->DbBackend->getHoststatusTable();
-        /** @var $ServicestatusTable ServicestatusTableInterface */
+        /** @var ServicestatusTableInterface $ServicestatusTable */
         $ServicestatusTable = $this->DbBackend->getServicestatusTable();
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $MY_RIGHTS = [];
@@ -595,9 +595,9 @@ class ServicegroupsController extends AppController {
      * @throws MissingDbBackendException
      */
     public function listToCsv() {
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $MY_RIGHTS = [];
@@ -853,7 +853,7 @@ class ServicegroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
@@ -885,9 +885,9 @@ class ServicegroupsController extends AppController {
 
         $ServiceFilter = new ServiceFilter($this->request);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if ($containerId == ROOT_CONTAINER) {
@@ -934,9 +934,9 @@ class ServicegroupsController extends AppController {
 
         $ServiceFilter = new ServiceFilter($this->request);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if ($containerId == ROOT_CONTAINER) {
@@ -960,7 +960,7 @@ class ServicegroupsController extends AppController {
         $ServiceConditions = new ServiceConditions($ServiceFilter->indexFilter());
         $ServiceConditions->setContainerIds($containerIds);
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $services = $ServicesTable->getServicesForAngularCake4($ServiceConditions, $selected, true);
@@ -1004,9 +1004,9 @@ class ServicegroupsController extends AppController {
         $selected = $this->request->getQuery('selected');
         $ServicetemplateFilter = new ServicetemplateFilter($this->request);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         $containerIds = [ROOT_CONTAINER, $containerId];
@@ -1032,12 +1032,12 @@ class ServicegroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
-        /** @var $HoststatusTable HoststatusTableInterface */
+        /** @var HoststatusTableInterface $HoststatusTable */
         $HoststatusTable = $this->DbBackend->getHoststatusTable();
 
         if (!$ServicegroupsTable->existsById($id)) {
@@ -1072,13 +1072,13 @@ class ServicegroupsController extends AppController {
 
         if (!empty($serviceIds)) {
             if ($this->DbBackend->isNdoUtils()) {
-                /** @var $ServicesTable ServicesTable */
+                /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
                 $services = $ServicesTable->getServiceIndex($ServiceConditions);
             }
 
             if ($this->DbBackend->isStatusengine3()) {
-                /** @var $ServicesTable ServicesTable */
+                /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
                 $services = $ServicesTable->getServiceIndexStatusengine3($ServiceConditions, $PaginateOMat);
                 $servicegroupServicestatusAllServices = $ServicesTable->getServiceStatusGlobalOverview($ServiceConditions);
@@ -1176,9 +1176,9 @@ class ServicegroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
         $containerId = $this->request->getQuery('containerId');
@@ -1221,7 +1221,7 @@ class ServicegroupsController extends AppController {
 
         $selected = $this->request->getQuery('selected');
 
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
         $ServicegroupFilter = new ServicegroupFilter($this->request);
@@ -1241,13 +1241,13 @@ class ServicegroupsController extends AppController {
         if (!$this->isAngularJsRequest()) {
             throw new MethodNotAllowedException();
         }
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
         $selected = $this->request->getQuery('selected');
         $containerId = $this->request->getQuery('containerId');
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [
             CT_GLOBAL,

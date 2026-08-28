@@ -65,12 +65,12 @@ class DocumentationsController extends AppController {
         }
         $type = strtolower($type);
 
-        /** @var $DocumentationsTable DocumentationsTable */
+        /** @var DocumentationsTable $DocumentationsTable */
         $DocumentationsTable = TableRegistry::getTableLocator()->get('Documentations');
 
         switch ($type) {
             case 'host':
-                /** @var $HostsTable HostsTable */
+                /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
                 $host = $HostsTable->getHostByUuid($uuid);
                 $objectId = $host->get('id');
@@ -90,7 +90,7 @@ class DocumentationsController extends AppController {
                 break;
 
             case 'service':
-                /** @var $ServicesTable ServicesTable */
+                /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
                 $service = $ServicesTable->getServiceByUuid($uuid);
                 $objectId = $service->get('id');
@@ -110,7 +110,7 @@ class DocumentationsController extends AppController {
                 break;
 
             case 'hosttemplate':
-                /** @var $HosttemplatesTable HosttemplatesTable */
+                /** @var HosttemplatesTable $HosttemplatesTable */
                 $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
                 $hosttemplate = $HosttemplatesTable->getHosttemplateByUuid($uuid);
                 $objectId = $hosttemplate['Hosttemplate']['id'];
@@ -129,7 +129,7 @@ class DocumentationsController extends AppController {
                 break;
 
             case 'servicetemplate':
-                /** @var $ServicetemplatesTable ServicetemplatesTable */
+                /** @var ServicetemplatesTable $ServicetemplatesTable */
                 $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
                 $servicetemplate = $ServicetemplatesTable->getServicetemplateByUuid($uuid);
                 $objectId = $servicetemplate['Servicetemplate']['id'];

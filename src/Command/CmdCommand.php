@@ -153,7 +153,7 @@ class CmdCommand extends Command {
     public function buildServiceCache() {
         Log::info('CmdCommand: Build up service cache');
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $query = $ServicesTable->find();
@@ -229,7 +229,7 @@ class CmdCommand extends Command {
             return $this->serviceCache[$hostAndServiceHash];
         }
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         //Reconnect datasource to avoid "MySQL has gone away"

@@ -77,10 +77,10 @@ class HostgroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $HostgroupFilter = new HostgroupFilter($this->request);
@@ -131,7 +131,7 @@ class HostgroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         if (!$HostgroupsTable->existsById($id)) {
@@ -165,7 +165,7 @@ class HostgroupsController extends AppController {
         if ($this->request->is('post')) {
             $User = new User($this->getUser());
 
-            /** @var $HostgroupsTable HostgroupsTable */
+            /** @var HostgroupsTable $HostgroupsTable */
             $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
             $hostgroup = $HostgroupsTable->newEmptyEntity();
             $hostgroup = $HostgroupsTable->patchEntity($hostgroup, $this->request->getData('Hostgroup'));
@@ -210,7 +210,7 @@ class HostgroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         if (!$HostgroupsTable->existsById($id)) {
@@ -284,9 +284,9 @@ class HostgroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if (!$HostgroupsTable->existsById($id)) {
@@ -356,12 +356,12 @@ class HostgroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
-        /** @var $ServicestatusTable ServicestatusTable */
+        /** @var ServicestatusTable $ServicestatusTable */
         $ServicestatusTable = $this->DbBackend->getServicestatusTable();
 
         if (!$HostgroupsTable->existsById($id)) {
@@ -375,7 +375,7 @@ class HostgroupsController extends AppController {
         $hostgroup = $HostgroupsTable->getHostgroupById($id);
         $hasSLAHosts = false;
         if (Plugin::isLoaded('SLAModule')) {
-            /** @var $HostsTable HostsTable */
+            /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
             $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroup->get('id'));
             if (!empty($hostIds)) {
@@ -409,13 +409,13 @@ class HostgroupsController extends AppController {
 
         if (!empty($hostIds)) {
             if ($this->DbBackend->isNdoUtils()) {
-                /** @var $HostsTable HostsTable */
+                /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
                 $hosts = $HostsTable->getHostsIndex($HostFilter, $HostConditions);
             }
 
             if ($this->DbBackend->isStatusengine3()) {
-                /** @var $HostsTable HostsTable */
+                /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
                 $hosts = $HostsTable->getHostsIndexForExtendedHostgroupsStatusengine3($HostFilter, $HostConditions, $PaginateOMat);
                 $hostgroupServicestatusAllHosts = $HostsTable->getHostStatusGlobalOverview($HostFilter, $HostConditions);
@@ -509,11 +509,11 @@ class HostgroupsController extends AppController {
      */
     public function listToPdf() {
 
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
-        /** @var $HoststatusTable HoststatusTableInterface */
+        /** @var HoststatusTableInterface $HoststatusTable */
         $HoststatusTable = $this->DbBackend->getHoststatusTable();
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $MY_RIGHTS = [];
@@ -591,11 +591,11 @@ class HostgroupsController extends AppController {
      * @throws MissingDbBackendException
      */
     public function listToCsv() {
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
-        /** @var $HoststatusTable HoststatusTableInterface */
+        /** @var HoststatusTableInterface $HoststatusTable */
         $HoststatusTable = $this->DbBackend->getHoststatusTable();
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $MY_RIGHTS = [];
@@ -747,11 +747,11 @@ class HostgroupsController extends AppController {
                 return;
             }
 
-            /** @var $HostgroupsTable HostgroupsTable */
+            /** @var HostgroupsTable $HostgroupsTable */
             $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-            /** @var $HostsTable HostsTable */
+            /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
             if (!$HostgroupsTable->existsById($id)) {
@@ -992,7 +992,7 @@ class HostgroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
@@ -1024,9 +1024,9 @@ class HostgroupsController extends AppController {
 
         $HostFilter = new HostFilter($this->request);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if ($containerId == ROOT_CONTAINER) {
@@ -1068,9 +1068,9 @@ class HostgroupsController extends AppController {
         $selected = $this->request->getQuery('selected');
         $HosttemplateFilter = new HosttemplateFilter($this->request);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
 
         $containerIds = [ROOT_CONTAINER, $containerId];
@@ -1103,7 +1103,7 @@ class HostgroupsController extends AppController {
             $HostgroupCondition->setContainerIds($this->MY_RIGHTS);
         }
 
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         $hostgroups = Api::makeItJavaScriptAble(
@@ -1122,7 +1122,7 @@ class HostgroupsController extends AppController {
         $selected = $this->request->getQuery('selected');
         $containerId = (int)$this->request->getQuery('containerId');
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId, true, [
             CT_GLOBAL,
@@ -1154,7 +1154,7 @@ class HostgroupsController extends AppController {
         $HostgroupCondition = new HostgroupConditions($HostgroupFilter->indexFilter());
         $HostgroupCondition->setContainerIds($containerIds);
 
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         $hostgroups = Api::makeItJavaScriptAble(
@@ -1175,9 +1175,9 @@ class HostgroupsController extends AppController {
         $resolveContainerIds = $this->request->getQuery('resolveContainerIds', false);
 
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         if ($containerId == ROOT_CONTAINER) {

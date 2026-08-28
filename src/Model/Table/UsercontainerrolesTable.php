@@ -215,6 +215,61 @@ class UsercontainerrolesTable extends Table {
     }
 
     /**
+     * @param GenericFilter $GenericFilter
+     * @param array $MY_RIGHTS
+     * @param array $ldapGroupIds
+     * @return array
+     */
+    public function getUsercontainerrolesAsListByLdapGroupIds(GenericFilter $GenericFilter, array $ldapGroupIds = []): array {
+        if (empty($ldapGroupIds)) {
+            return [];
+        }
+
+        $query = $this->find();
+
+        if (!empty($GenericFilter->genericFilters())) {
+            $query->where($GenericFilter->genericFilters());
+        }
+
+        $query->select([
+            'Usercontainerroles.id',
+            'Usercontainerroles.name'
+        ])
+            ->contain([
+                'Containers',
+                'Ldapgroups' => function ($q) use ($ldapGroupIds) {
+                    return $q->where([
+                        'Ldapgroups.id IN' => $ldapGroupIds
+                    ]);
+                }
+            ])
+            ->matching('Containers');
+
+        $query->innerJoinWith('Ldapgroups', function (Query $q) use ($ldapGroupIds) {
+            return $q->where([
+                'Ldapgroups.id IN' => $ldapGroupIds
+            ]);
+        });
+        $query->groupBy([
+            'Usercontainerroles.id'
+        ])
+            ->orderBy([
+                'Usercontainerroles.name' => 'asc',
+                'Usercontainerroles.id'   => 'asc'
+            ])
+            ->disableHydration();
+
+        $result = [];
+        foreach ($query->toArray() as $record) {
+            $result[$record['id']] = [
+                'name'       => $record['name'],
+                'ldapgroups' => Hash::remove($record['ldapgroups'], '{n}._joinData')
+            ];
+        }
+        return $result;
+    }
+
+    /**
      * @param UsercontainerrolesFilter $UsercontainerrolesFilter
      * @param PaginateOMat|null $PaginateOMat
      * @param array $MY_RIGHTS
@@ -335,7 +390,7 @@ class UsercontainerrolesTable extends Table {
             ->disableHydration()
             ->all();
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $result = [];
@@ -371,7 +426,7 @@ class UsercontainerrolesTable extends Table {
             ->disableHydration()
             ->all();
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $result = [];

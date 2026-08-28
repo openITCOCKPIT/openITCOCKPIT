@@ -269,7 +269,7 @@ class ContactgroupsTable extends Table {
         }
 
         //Lookup for the tenant container of $container_id
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
 
@@ -332,7 +332,7 @@ class ContactgroupsTable extends Table {
             'Contact' => []
         ];
 
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
         foreach ($ContactsTable->getContactsAsList($dataToParse['Contactgroup']['contacts']['_ids']) as $contactId => $contactName) {
@@ -552,7 +552,7 @@ class ContactgroupsTable extends Table {
             $contactgroupsId = [$contactgroupsId];
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId);
 

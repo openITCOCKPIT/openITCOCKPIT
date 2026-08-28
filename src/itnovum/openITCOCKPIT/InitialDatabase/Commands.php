@@ -49,7 +49,43 @@ class Commands extends Importer {
             }
         }
 
+        $this->updateRecords();
+        
         return true;
+    }
+
+    public function updateRecords() {
+        // ITC-3487 Migrate existing installations to the new Browser Push Notification commands
+        if ($this->Table->existsByUuid('cd13d22e-acd4-4a67-997b-6e120e0d3153')) {
+            $command = $this->Table->find()
+                ->where([
+                    'uuid' => 'cd13d22e-acd4-4a67-997b-6e120e0d3153'
+                ])
+                ->firstOrFail();
+
+            // Is this still the old CakePHP Command?
+            if (substr($command->command_line, 0, 53) === '/opt/openitc/frontend/bin/cake send_push_notification') {
+                // Old CakePHP based command detected - replace it with the new Go binary.
+                $command->command_line = '$USER1$/send_push_notification --type Host --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --state "$HOSTSTATEID$" --output "$HOSTOUTPUT$"  --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --user-id $_CONTACTOITCUSERID$';
+            }
+            $this->Table->save($command);
+        }
+
+        if ($this->Table->existsByUuid('c23255b7-5b1a-40b4-b614-17837dc376af')) {
+            $command = $this->Table->find()
+                ->where([
+                    'uuid' => 'c23255b7-5b1a-40b4-b614-17837dc376af'
+                ])
+                ->firstOrFail();
+
+            // Is this still the old CakePHP Command?
+            if (substr($command->command_line, 0, 53) === '/opt/openitc/frontend/bin/cake send_push_notification') {
+                // Old CakePHP based command detected - replace it with the new Go binary.
+                $command->command_line = '$USER1$/send_push_notification --type Service --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --serviceuuid "$SERVICEDESC$" --state "$SERVICESTATEID$" --output "$SERVICEOUTPUT$" --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --user-id $_CONTACTOITCUSERID$';
+            }
+            $this->Table->save($command);
+        }
+
     }
 
     /**
@@ -653,7 +689,7 @@ of processes.  Search filters can be applied to limit the processes to check.',
             (int)25 => [
                 'id'               => '27',
                 'name'             => 'host-notify-by-browser-notification',
-                'command_line'     => '/opt/openitc/frontend/bin/cake send_push_notification --type Host --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --state "$HOSTSTATEID$" --output "$HOSTOUTPUT$"  --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --user-id $_CONTACTOITCUSERID$',
+                'command_line'     => '$USER1$/send_push_notification --type Host --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --state "$HOSTSTATEID$" --output "$HOSTOUTPUT$"  --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --user-id $_CONTACTOITCUSERID$',
                 'command_type'     => '3',
                 'human_args'       => null,
                 'uuid'             => 'cd13d22e-acd4-4a67-997b-6e120e0d3153',
@@ -663,7 +699,7 @@ of processes.  Search filters can be applied to limit the processes to check.',
             (int)26 => [
                 'id'               => '28',
                 'name'             => 'service-notify-by-browser-notification',
-                'command_line'     => '/opt/openitc/frontend/bin/cake send_push_notification --type Service --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --serviceuuid "$SERVICEDESC$" --state "$SERVICESTATEID$" --output "$SERVICEOUTPUT$" --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --user-id $_CONTACTOITCUSERID$',
+                'command_line'     => '$USER1$/send_push_notification --type Service --notificationtype $NOTIFICATIONTYPE$ --hostuuid "$HOSTNAME$" --serviceuuid "$SERVICEDESC$" --state "$SERVICESTATEID$" --output "$SERVICEOUTPUT$" --ackauthor "$NOTIFICATIONAUTHOR$" --ackcomment "$NOTIFICATIONCOMMENT$" --user-id $_CONTACTOITCUSERID$',
                 'command_type'     => '3',
                 'human_args'       => null,
                 'uuid'             => 'c23255b7-5b1a-40b4-b614-17837dc376af',

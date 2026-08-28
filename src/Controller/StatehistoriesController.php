@@ -66,7 +66,7 @@ class StatehistoriesController extends AppController {
         $session = $this->request->getSession();
         $session->close();
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->existsById($id)) {
@@ -135,9 +135,9 @@ class StatehistoriesController extends AppController {
         $session = $this->request->getSession();
         $session->close();
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if (!$ServicesTable->existsById($id)) {

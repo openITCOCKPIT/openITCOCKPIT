@@ -568,4 +568,214 @@ class HostdependenciesTable extends Table {
         return $list;
     }
 
+    /**
+     * @param int $hostId
+     * @param array $hostgroupIds
+     * @param array $MY_RIGHTS
+     * @return int
+     */
+    public function getHostHostDependenciesCount(int $hostId, array $hostgroupIds = [], array $MY_RIGHTS = []): int {
+        $query = $this->find()
+            ->leftJoinWith('Hosts')
+            ->leftJoinWith('Hostgroups');
+
+        if (!empty($MY_RIGHTS)) {
+            $query->andWhere([
+                'Hostdependencies.container_id IN' => $MY_RIGHTS
+            ]);
+        }
+
+        if (!empty($hostgroupIds)) {
+            $query->leftJoinWith('Hostgroups')
+                ->andWhere([
+                    'OR' => [
+                        'Hosts.id'         => $hostId,
+                        'Hostgroups.id IN' => $hostgroupIds
+                    ]
+                ]);
+        } else {
+            $query->where([
+                'Hosts.id'       => $hostId,
+                'Hosts.disabled' => 0
+            ]);
+        }
+        $query->groupBy([
+            'Hostdependencies.id'
+        ]);
+
+        return $query->count();
+    }
+
+    /**
+     * @param int $hostId
+     * @param array $hostgroupIds
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getHostDependenciesHosts(int $hostId, array $hostgroupIds = [], array $MY_RIGHTS = []): array {
+        $query = $this->find()
+            ->contain([
+                'Hosts'      => function (Query $q) use ($MY_RIGHTS) {
+                    $query = $q->select([
+                        'Hosts.id',
+                        'Hosts.uuid',
+                        'Hosts.address',
+                        'Hosts.name'
+                    ])->disableAutoFields();
+                    if (!empty($MY_RIGHTS)) {
+                        $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
+                            'HostsToContainersSharing.host_id = Hosts.id'
+                        ]);
+                        $query->where([
+                            'HostsToContainersSharing.container_id IN' => $MY_RIGHTS
+                        ]);
+                    }
+                    return $query;
+                },
+                'Hostgroups' => function (Query $q) use ($MY_RIGHTS) {
+                    $query = $q->select([
+                        'Hostgroups.id'
+                    ])
+                        ->contain(['Containers'])
+                        ->disableAutoFields();
+                    if (!empty($MY_RIGHTS)) {
+                        $query->where(['Containers.parent_id IN' => $MY_RIGHTS]);
+                    }
+                    return $query;
+                },
+                'Timeperiods',
+            ])
+            ->leftJoinWith('Hosts')
+            ->leftJoinWith('Hostgroups');
+
+        if (!empty($MY_RIGHTS)) {
+            $query->andWhere([
+                'Hostdependencies.container_id IN' => $MY_RIGHTS
+            ]);
+        }
+
+        if (!empty($hostgroupIds)) {
+            $query->leftJoinWith('Hostgroups')
+                ->andWhere([
+                    'OR' => [
+                        'Hosts.id'         => $hostId,
+                        'Hostgroups.id IN' => $hostgroupIds
+                    ]
+                ]);
+        } else {
+            $query->where([
+                'Hosts.id' => $hostId
+            ]);
+        }
+        $query->groupBy([
+            'Hostdependencies.id'
+        ]);
+
+        if (empty($query)) {
+            return [];
+        }
+        return $query->toArray();
+    }
+
+    /**
+     * @param int $hostId
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getHostDependenciesTree(int $hostId, array $MY_RIGHTS = []) {
+        $query = $this->find()
+            ->select(
+                [
+                    'Hostdependencies.id',
+                    'Hostdependencies.uuid',
+                    'Hostdependencies.inherits_parent',
+                    'Hostdependencies.timeperiod_id',
+                    'Hostdependencies.execution_fail_on_up',
+                    'Hostdependencies.execution_fail_on_down',
+                    'Hostdependencies.execution_fail_on_unreachable',
+                    'Hostdependencies.execution_fail_on_pending',
+                    'Hostdependencies.execution_none',
+                    'Hostdependencies.notification_fail_on_up',
+                    'Hostdependencies.notification_fail_on_down',
+                    'Hostdependencies.notification_fail_on_unreachable',
+                    'Hostdependencies.notification_fail_on_pending',
+                    'Hostdependencies.notification_none',
+                ]
+            )
+            ->innerJoinWith('Hosts')
+            ->innerJoinWith('HostsDependent')
+            ->where([
+                'OR' => [
+                    'Hosts.id'          => $hostId,
+                    'HostsDependent.id' => $hostId
+                ]
+            ])
+            ->contain([
+                'Timeperiods'         => function (Query $q) {
+                    return $q->enableAutoFields(false)
+                        ->select([
+                            'Timeperiods.id',
+                            'Timeperiods.name'
+                        ]);
+                },
+                'Hosts'               => function (Query $q) {
+                    return $q->enableAutoFields(false)
+                        ->where([
+                            'HostdependenciesHostMemberships.dependent' => 0,
+                        ])->select([
+                            'Hosts.id',
+                            'Hosts.name',
+                            'Hosts.uuid'
+                        ]);
+                },
+                'HostsDependent'      => function (Query $q) {
+                    return $q->enableAutoFields(false)
+                        ->where([
+                            'HostdependenciesHostMemberships.dependent' => 1,
+                        ])
+                        ->select([
+                            'HostsDependent.id',
+                            'HostsDependent.name',
+                            'HostsDependent.uuid'
+                        ]);
+                },
+                'Hostgroups'          => [
+                    'Containers' => function (Query $q) {
+                        return $q->enableAutoFields(false)
+                            ->where([
+                                'HostdependenciesHostgroupMemberships.dependent' => 0
+                            ])
+                            ->select([
+                                'Hostgroups.id',
+                                'Containers.name'
+                            ]);
+                    },
+                ],
+                'HostgroupsDependent' => [
+                    'Containers' => function (Query $q) {
+                        return $q->enableAutoFields(false)
+                            ->where([
+                                'HostdependenciesHostgroupMemberships.dependent' => 1
+                            ])
+                            ->select([
+                                'HostgroupsDependent.id',
+                                'Containers.name'
+                            ]);
+                    },
+                ]
+            ])
+            ->groupBy('Hostdependencies.id')
+            ->disableHydration();
+
+        if (!empty($MY_RIGHTS)) {
+            $query->andWhere([
+                'Hostdependencies.container_id IN' => $MY_RIGHTS
+            ]);
+        }
+        $query->all();
+
+        return $query->toArray();
+
+    }
+
 }

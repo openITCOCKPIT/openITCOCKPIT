@@ -878,11 +878,11 @@ class ContainersTable extends Table {
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
         /** @var HostdependenciesTable $HostdependenciesTable */
         $HostdependenciesTable = TableRegistry::getTableLocator()->get('Hostdependencies');
-        /** @var $HostescalationsTable HostescalationsTable */
+        /** @var HostescalationsTable $HostescalationsTable */
         $HostescalationsTable = TableRegistry::getTableLocator()->get('Hostescalations');
         /** @var ServicedependenciesTable $ServicedependenciesTable */
         $ServicedependenciesTable = TableRegistry::getTableLocator()->get('Servicedependencies');
-        /** @var $ServiceescalationsTable ServiceescalationsTable */
+        /** @var ServiceescalationsTable $ServiceescalationsTable */
         $ServiceescalationsTable = TableRegistry::getTableLocator()->get('Serviceescalations');
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
@@ -891,10 +891,10 @@ class ContainersTable extends Table {
 
         /** Reports Objects */
 
-        /** @var $InstantreportsTable InstantreportsTable */
+        /** @var InstantreportsTable $InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
         if (Plugin::isLoaded('AutoreportModule')) {
-            /** @var $AutoreportsTable AutoreportsTable */
+            /** @var AutoreportsTable $AutoreportsTable */
             $AutoreportsTable = TableRegistry::getTableLocator()->get('AutoreportModule.Autoreports');
         }
 
@@ -918,12 +918,12 @@ class ContainersTable extends Table {
 
 
         if (Plugin::isLoaded('GrafanaModule')) {
-            /** @var $GrafanaUserdashboardsTable GrafanaUserdashboardsTable */
+            /** @var GrafanaUserdashboardsTable $GrafanaUserdashboardsTable */
             $GrafanaUserdashboardsTable = TableRegistry::getTableLocator()->get('GrafanaModule.GrafanaUserdashboards');
         }
 
         if (Plugin::isLoaded('MapModule')) {
-            /** @var $MapsTable MapsTable */
+            /** @var MapsTable $MapsTable */
             $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
         }
 
@@ -1390,7 +1390,7 @@ class ContainersTable extends Table {
             $inUse = true;
         }
 
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
         if (!empty($ContactgroupsTable->getOrphanedContactgroupsByContainerId($containerId))) {
             Log::error(sprintf('container_id %s is used by contact group', $containerId));
@@ -1418,7 +1418,7 @@ class ContainersTable extends Table {
             $inUse = true;
         }
 
-        /** @var $InstantreportsTable InstantreportsTable */
+        /** @var InstantreportsTable $InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
         if (!empty($InstantreportsTable->getOrphanedInstantreportsByContainerId($containerId))) {
             Log::error(sprintf('container_id %s is used by instant report', $containerId));
@@ -1436,7 +1436,7 @@ class ContainersTable extends Table {
         }
 
         if (Plugin::isLoaded('AutoreportModule')) {
-            /** @var $AutoreportsTable AutoreportsTable */
+            /** @var AutoreportsTable $AutoreportsTable */
             $AutoreportsTable = TableRegistry::getTableLocator()->get('AutoreportModule.Autoreports');
 
             if (!empty($AutoreportsTable->getOrphanedAutoreportsByContainerId($containerId))) {
@@ -1446,7 +1446,7 @@ class ContainersTable extends Table {
         }
 
         if (Plugin::isLoaded('GrafanaModule')) {
-            /** @var $GrafanaUserdashboardsTable GrafanaUserdashboardsTable */
+            /** @var GrafanaUserdashboardsTable $GrafanaUserdashboardsTable */
             $GrafanaUserdashboardsTable = TableRegistry::getTableLocator()->get('GrafanaModule.GrafanaUserdashboards');
 
             if (!empty($GrafanaUserdashboardsTable->getOrphanedGrafanaUserdashboardsByContainerId($containerId))) {
@@ -1456,7 +1456,7 @@ class ContainersTable extends Table {
         }
 
         if (Plugin::isLoaded('MapModule')) {
-            /** @var $MapsTable MapsTable */
+            /** @var MapsTable $MapsTable */
             $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
 
             if (!empty($MapsTable->getOrphanedMapsByContainerId($containerId))) {
@@ -1509,7 +1509,7 @@ class ContainersTable extends Table {
             $inUse = true;
         }
 
-        /** @var $HostescalationsTable HostescalationsTable */
+        /** @var HostescalationsTable $HostescalationsTable */
         $HostescalationsTable = TableRegistry::getTableLocator()->get('Hostescalations');
         if (!empty($HostescalationsTable->getHostescalationsByContainerIdExact($containerId))) {
             Log::error(sprintf('container_id %s is used by host escalation', $containerId));
@@ -1523,7 +1523,7 @@ class ContainersTable extends Table {
             $inUse = true;
         }
 
-        /** @var $ServiceescalationsTable ServiceescalationsTable */
+        /** @var ServiceescalationsTable $ServiceescalationsTable */
         $ServiceescalationsTable = TableRegistry::getTableLocator()->get('Serviceescalations');
         if (!empty($ServiceescalationsTable->getServiceescalationsByContainerIdExact($containerId))) {
             Log::error(sprintf('container_id %s is used by service escalation', $containerId));
@@ -1735,7 +1735,7 @@ class ContainersTable extends Table {
                 ->toArray();
 
             $subContainers = Hash::extract($tree, '{n}.id');
-            if(!isset($userParentAndChildrenContainers[$container['id']])){
+            if (!isset($userParentAndChildrenContainers[$container['id']])) {
                 $userParentAndChildrenContainers[$container['id']] = [];
             }
             foreach ($subContainers as $subContainerId) {

@@ -674,7 +674,7 @@ class UsersController extends AppController {
             throw new \RuntimeException('You cannot delete yourself!');
         }
 
-        /** @var $UsersTable UsersTable */
+        /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
 
         if (!$UsersTable->existsById($id)) {
@@ -853,7 +853,7 @@ class UsersController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $UsersTable UsersTable */
+        /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
 
         if (!$UsersTable->existsById($id)) {
@@ -1298,7 +1298,7 @@ class UsersController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $containers = $ContainersTable->easyPath(

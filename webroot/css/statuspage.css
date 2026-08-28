@@ -221,3 +221,22 @@
 .bg-not-monitored {
     background-color: #5856d6 !important;
 }
+
+.border-ok, border-up {
+    border-color: #00C851 !important;
+}
+
+.border-warning {
+    border-color: #ffbb33 !important;
+}
+
+.border-critical, .border-down {
+    border-color: #CC0000 !important;
+}
+.border-unknown, .border-unreachable {
+    border-color: #727b84  !important;
+}
+
+.border-not-monitored {
+    border-color: rgb(88, 86, 214) !important;
+}

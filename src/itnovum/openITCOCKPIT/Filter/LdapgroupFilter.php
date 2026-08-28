@@ -31,11 +31,34 @@ class LdapgroupFilter extends Filter {
     /**
      * @return array
      */
+    public function indexFilter() {
+        $filters = [
+            'like'   => [
+                'Ldapgroups.cn',
+                'Ldapgroups.dn',
+                'Ldapgroups.description',
+            ],
+            'equals' => [
+                'Ldapgroups.id'
+            ]
+        ];
+
+        return $this->getConditionsByFilters($filters);
+    }
+
+    /**
+     * @return array
+     */
     public function ajaxFilter() {
         $filters = [
-            'like'     => [
+            'like'   => [
                 'Ldapgroups.cn',
+                'Ldapgroups.dn',
+                'Ldapgroups.description',
             ],
+            'equals' => [
+                'Ldapgroups.id'
+            ]
         ];
 
         return $this->getConditionsByFilters($filters);

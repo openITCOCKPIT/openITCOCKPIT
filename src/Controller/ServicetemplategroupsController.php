@@ -72,7 +72,7 @@ class ServicetemplategroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+        /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
 
         $ServicetemplategroupsFilter = new ServicetemplategroupsFilter($this->request);
@@ -105,7 +105,7 @@ class ServicetemplategroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+        /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
 
         if (!$ServicetemplategroupsTable->existsById($id)) {
@@ -130,7 +130,7 @@ class ServicetemplategroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+        /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
 
 
@@ -175,7 +175,7 @@ class ServicetemplategroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+        /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
 
         if (!$ServicetemplategroupsTable->existsById($id)) {
@@ -257,11 +257,11 @@ class ServicetemplategroupsController extends AppController {
                 return;
             }
 
-            /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+            /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
             $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-            /** @var $ServicetemplatesTable ServicetemplatesTable */
+            /** @var ServicetemplatesTable $ServicetemplatesTable */
             $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
             if (!$ServicetemplategroupsTable->existsById($id)) {
@@ -386,14 +386,14 @@ class ServicetemplategroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+        /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
 
         if (!$ServicetemplategroupsTable->existsById($id)) {
             throw new NotFoundException(__('Service template group not found'));
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $ContainersTable->acquireLock();
@@ -478,7 +478,7 @@ class ServicetemplategroupsController extends AppController {
             $User = new User($this->getUser());
             $userId = $User->getId();
 
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
             $ContainersTable->acquireLock();
@@ -563,7 +563,7 @@ class ServicetemplategroupsController extends AppController {
     }
 
     public function listToCsv() {
-        /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+        /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
 
         $ServicetemplategroupsFilter = new ServicetemplategroupsFilter($this->request);
@@ -630,7 +630,7 @@ class ServicetemplategroupsController extends AppController {
     }
 
     public function listToPdf() {
-        /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+        /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
 
         $ServicetemplategroupsFilter = new ServicetemplategroupsFilter($this->request);
@@ -674,9 +674,9 @@ class ServicetemplategroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+        /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$ServicetemplategroupsTable->existsById($servicetemplategroupId)) {
@@ -699,7 +699,7 @@ class ServicetemplategroupsController extends AppController {
                 throw new NotFoundException('Invalid host');
             }
 
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
             $hostPrimaryContainerId = $HostsTable->getHostPrimaryContainerIdByHostId($hostId);
@@ -770,7 +770,7 @@ class ServicetemplategroupsController extends AppController {
                 return;
             }
 
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
             $User = new User($this->getUser());
@@ -795,11 +795,11 @@ class ServicetemplategroupsController extends AppController {
         if (!$this->isAngularJsRequest()) {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
-        /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+        /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         if (!$ServicetemplategroupsTable->existsById($servicetemplategroupId)) {
@@ -823,7 +823,7 @@ class ServicetemplategroupsController extends AppController {
                 throw new NotFoundException('Invalid host group');
             }
 
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
             $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroupId);
@@ -904,7 +904,7 @@ class ServicetemplategroupsController extends AppController {
                 return;
             }
 
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
             $User = new User($this->getUser());
@@ -935,17 +935,17 @@ class ServicetemplategroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+        /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         $User = new User($this->getUser());
@@ -982,7 +982,7 @@ class ServicetemplategroupsController extends AppController {
             throw new NotFoundException('Invalid host group');
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $hostIds = $HostgroupsTable->getHostIdsByHostgroupId($hostgroupId);
@@ -1114,7 +1114,7 @@ class ServicetemplategroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
@@ -1139,9 +1139,9 @@ class ServicetemplategroupsController extends AppController {
         $selected = $this->request->getQuery('selected');
         $ServicetemplateFilter = new ServicetemplateFilter($this->request);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         $containerIds = [ROOT_CONTAINER, $containerId];
@@ -1170,7 +1170,7 @@ class ServicetemplategroupsController extends AppController {
         $ServicetemplategroupsConditions = new ServicetemplategroupsConditions($ServicetemplategroupsFilter->indexFilter());
         $ServicetemplategroupsConditions->setContainerIds($this->MY_RIGHTS);
 
-        /** @var $ServicetemplategroupsTable ServicetemplategroupsTable */
+        /** @var ServicetemplategroupsTable $ServicetemplategroupsTable */
         $ServicetemplategroupsTable = TableRegistry::getTableLocator()->get('Servicetemplategroups');
 
         $servicetemplategroups = Api::makeItJavaScriptAble(
@@ -1186,7 +1186,7 @@ class ServicetemplategroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         $selected = $this->request->getQuery('selected');

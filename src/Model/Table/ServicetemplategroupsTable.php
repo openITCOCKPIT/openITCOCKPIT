@@ -275,7 +275,7 @@ class ServicetemplategroupsTable extends Table {
             'Contact' => []
         ];
 
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         foreach ($ServicetemplatesTable->getServicetemplatesAsList($dataToParse['Servicetemplategroup']['servicetemplates']['_ids']) as $servicetemplateId => $servicetemplateName) {
@@ -629,11 +629,11 @@ class ServicetemplategroupsTable extends Table {
      * @return array
      */
     public function assignMatchingServicetemplategroupsByHostgroupsToHost($hostgroupIds, $hostId, $userId = 0, $MY_RIGHTS = []) {
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         if (empty($hostgroupIds)) {
@@ -729,7 +729,7 @@ class ServicetemplategroupsTable extends Table {
             return $result;
         }
 
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         $hostgroupNamesToRemove = [];
@@ -772,7 +772,7 @@ class ServicetemplategroupsTable extends Table {
                 }
                 $serviceTemplateIdsToDisable = $serviceTemplateIdsToDisable_tmp;
             }
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
             $result = $ServicesTable->disableServiceByServicetemplateIds($serviceTemplateIdsToDisable, $hostId, $userId);
             $result['services_disabled_count'] = sizeof($result['disabledServiceIds']);

@@ -147,7 +147,7 @@ class TimeperiodsTable extends Table {
     public function buildRules(RulesChecker $rules): RulesChecker {
         $rules->add($rules->isUnique(['uuid']));
         $rules->add($rules->existsIn(['container_id'], 'Containers'));
-        /** @var $entity Entity */
+        /** @var Entity $entity */
         $rules->add(function ($entity, $options) {
             if (empty($entity->timeperiod_timeranges)) {
                 return true;
@@ -493,7 +493,7 @@ class TimeperiodsTable extends Table {
 
         $container_ids = array_unique($container_ids);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $tenantContainerIds = [];
@@ -541,7 +541,7 @@ class TimeperiodsTable extends Table {
     public function checkTimeperiodIdForContainerPermissions($timeperiodId, $containerId, $fallbackTimeperiodId) {
         $tenantContainerIds = [];
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId);
 

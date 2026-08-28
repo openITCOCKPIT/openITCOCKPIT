@@ -311,6 +311,22 @@ if [ "$CURRENT_LOGENTRY_COLUMN_TYPE" = "varchar(1024)" ]; then
     mysql --defaults-extra-file=${INIFILE} -e "ALTER TABLE statusengine_servicestatus CHANGE long_output long_output VARCHAR(8192) DEFAULT NULL, CHANGE perfdata perfdata VARCHAR(2084) DEFAULT NULL"
 fi
 
+echo "Checking column end_time on statusengine_host_acknowledgements"
+HOST_ACK_END_TIME_EXISTS=$(mysql "--defaults-extra-file=$INIFILE" -e "SELECT COUNT(*) FROM \`information_schema\`.\`COLUMNS\` WHERE \`TABLE_SCHEMA\`='${dbc_dbname}' AND \`TABLE_NAME\`='statusengine_host_acknowledgements' AND \`COLUMN_NAME\`='end_time'" -B -s 2>/dev/null)
+
+if [ "$HOST_ACK_END_TIME_EXISTS" = "0" ]; then
+    echo "Adding end_time column to statusengine_host_acknowledgements..."
+    mysql --defaults-extra-file="${INIFILE}" -e "ALTER TABLE \`statusengine_host_acknowledgements\` ADD COLUMN \`end_time\` BIGINT NOT NULL DEFAULT 0"
+fi
+
+echo "Checking column end_time on statusengine_service_acknowledgements"
+SERVICE_ACK_END_TIME_EXISTS=$(mysql "--defaults-extra-file=$INIFILE" -e "SELECT COUNT(*) FROM \`information_schema\`.\`COLUMNS\` WHERE \`TABLE_SCHEMA\`='${dbc_dbname}' AND \`TABLE_NAME\`='statusengine_service_acknowledgements' AND \`COLUMN_NAME\`='end_time'" -B -s 2>/dev/null)
+
+if [ "$SERVICE_ACK_END_TIME_EXISTS" = "0" ]; then
+    echo "Adding end_time column to statusengine_service_acknowledgements..."
+    mysql --defaults-extra-file="${INIFILE}" -e "ALTER TABLE \`statusengine_service_acknowledgements\` ADD COLUMN \`end_time\` BIGINT NOT NULL DEFAULT 0"
+fi
+
 # Upgrade to Checkmk 2 in Docker Container
 mysql --defaults-extra-file=${INIFILE} -e "UPDATE commands SET command_line = '\$USER1\$/checkmk_http_client -H \$HOSTNAME\$' WHERE name = 'check_mk_active' AND command_line LIKE 'PYTHONPATH=/opt/openitc/check_mk/lib/python OMD_ROOT=/opt/openitc/check_mk%';"
 

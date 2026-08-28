@@ -104,6 +104,12 @@ $table->addColumn("notify_contacts", "boolean", array (
     'notnull' => false,
     'default' => '0',
 ));
+$table->addColumn("end_time", "bigint", array (
+    'unsigned' => false,
+    'autoincrement' => false,
+    'notnull' => true,
+    'default' => '0',
+));
 $table->setPrimaryKey([
     "hostname",
     "entry_time",
@@ -1175,6 +1181,12 @@ $table->addColumn("notify_contacts", "boolean", array (
     'unsigned' => true,
     'autoincrement' => false,
     'notnull' => false,
+    'default' => '0',
+));
+$table->addColumn("end_time", "bigint", array (
+    'unsigned' => false,
+    'autoincrement' => false,
+    'notnull' => true,
     'default' => '0',
 ));
 $table->setPrimaryKey([

@@ -100,7 +100,7 @@ class ContainerOwnedBehavior extends Behavior {
 
         $containerIdsToCheck = [$containerId];
 
-        // Moving an entity out of a container requires write permissions to the old container as well.
+        // Changing the container needs write access to both containers.
         if (!$entity->isNew() && $entity->isDirty('container_id')) {
             $originalContainerId = (int)($entity->getOriginal('container_id') ?? 0);
             if ($originalContainerId > 0 && $originalContainerId !== $containerId) {

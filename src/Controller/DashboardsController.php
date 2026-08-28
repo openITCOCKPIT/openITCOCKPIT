@@ -37,6 +37,7 @@ use App\itnovum\openITCOCKPIT\Core\Dashboards\DelayedPassiveHostsJson;
 use App\itnovum\openITCOCKPIT\Core\Dashboards\DelayedPassiveServicesJson;
 use App\itnovum\openITCOCKPIT\Core\Dashboards\HostStatusOverviewExtendedJson;
 use App\itnovum\openITCOCKPIT\Core\Dashboards\HostsTopAlertJson;
+use App\itnovum\openITCOCKPIT\Core\Dashboards\OperationsSummaryJson;
 use App\itnovum\openITCOCKPIT\Core\Dashboards\ServiceStatusOverviewExtendedJson;
 use App\itnovum\openITCOCKPIT\Core\Dashboards\ServicesTopAlertJson;
 use App\itnovum\openITCOCKPIT\Perfdata\NagiosAdapter;
@@ -2627,6 +2628,167 @@ class DashboardsController extends AppController {
             return;
         }
 
+        throw new MethodNotAllowedException();
+    }
+
+    public function operationsSummaryWidget() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+        $widgetId = (int)$this->request->getQuery('widgetId');
+        $type = $this->request->getQuery('type');
+        $OperationsSummaryJson = new OperationsSummaryJson();
+
+
+        /** @var WidgetsTable $WidgetsTable */
+        $WidgetsTable = TableRegistry::getTableLocator()->get('Widgets');
+
+        if (!$WidgetsTable->existsById($widgetId)) {
+            throw new NotFoundException('Widget not found');
+        }
+
+        $widget = $WidgetsTable->get($widgetId);
+
+        if ($this->request->is('get')) {
+            $MY_RIGHTS = [];
+            if ($this->hasRootPrivileges === false) {
+                /** @var ContainersTable $ContainersTable */
+                //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+                //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
+                // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
+                $MY_RIGHTS = $this->MY_RIGHTS;
+            }
+
+            $data = [];
+            if ($widget->get('json_data') !== null && $widget->get('json_data') !== '') {
+                $data = json_decode($widget->get('json_data'), true);
+            }
+            $config = $OperationsSummaryJson->standardizedData($data);
+
+            $conditions = $config;
+            // Migrate keyword / tags from JSON string to SQL RLIKE query string
+            foreach (['Host', 'Service', 'Hostgroup', 'Servicegroup'] as $tableName) {
+                foreach (['keywords', 'not_keywords'] as $field) {
+                    if (empty($conditions[$tableName][$field])) {
+                        $conditions[$tableName][$field] = [];
+                    }
+
+                    if (isset($conditions[$tableName][$field]) && is_string($conditions[$tableName][$field])) {
+                        $arr = explode(',', $conditions[$tableName][$field]);
+                        $conditions[$tableName][$field] = [];
+                        if (!empty($arr)) {
+                            $conditions[$tableName][$field] = sprintf('.*(%s).*', implode('|', $arr));
+                        }
+                    }
+                }
+            }
+
+            $now = time();
+            $timestampFrom = $now - 24 * 60 * 60;
+            $timestampTo = $now;
+
+            switch ($type) {
+                case 'hosts':
+                    $hoststatus = [];
+                    $hoststatusSummary = [];
+                    if ($this->DbBackend->isNdoUtils()) {
+                        /** @var HostsTable $HostsTable */
+                        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+                        $hoststatus = $HostsTable->getHostsWithStatusByConditions($MY_RIGHTS, $conditions);
+                        $hoststatusSummary = $HostsTable->getHostStateSummary($hoststatus);
+
+                    }
+
+                    if ($this->DbBackend->isCrateDb()) {
+                        throw new MissingDbBackendException('MissingDbBackendException');
+                    }
+
+                    if ($this->DbBackend->isStatusengine3()) {
+                        /** @var HostsTable $HostsTable */
+                        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+                        $hoststatus = $HostsTable->getHostsWithExtendedStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
+                        $hoststatusSummary = $HostsTable->getHostStateSummaryWithLastTimeStats($hoststatus, $timestampFrom, $timestampTo);
+                    }
+
+                    $this->set('config', $config);
+                    $this->set('hoststatusSummary', $hoststatusSummary);
+                    $this->viewBuilder()->setOption('serialize', ['config', 'hoststatusSummary']);
+                    return;
+                case 'services':
+                    $servicestatus = [];
+                    if ($this->DbBackend->isNdoUtils()) {
+                        /** @var ServicesTable $ServicesTable */
+                        $ServicesTable = TableRegistry::getTableLocator()->get('Services');
+                        $servicestatus = $ServicesTable->getServicesWithStatusByConditions($MY_RIGHTS, $conditions);
+                    }
+
+                    if ($this->DbBackend->isCrateDb()) {
+                        throw new MissingDbBackendException('MissingDbBackendException');
+                    }
+
+                    if ($this->DbBackend->isStatusengine3()) {
+                        /** @var ServicesTable $ServicesTable */
+                        $ServicesTable = TableRegistry::getTableLocator()->get('Services');
+                        $servicestatus = $ServicesTable->getServicesWithStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
+                    };
+                    break;
+            }
+
+            $hostgroupIds = [];
+            $servicegroupIds = [];
+            $containerIds = [];
+            if (!empty($config['Hostgroup']['_ids'])) {
+                foreach (explode(',', $config['Hostgroup']['_ids']) as $hostgroupId) {
+                    $hostgroupIds[] = (int)$hostgroupId;
+                }
+            }
+            if (!empty($config['Servicegroup']['_ids'])) {
+                foreach (explode(',', $config['Servicegroup']['_ids']) as $servicegroupId) {
+                    $servicegroupIds[] = (int)$servicegroupId;
+                }
+            }
+            if (!empty($config['Container']['_ids'])) {
+                foreach (explode(',', $config['Container']['_ids']) as $containerId) {
+                    $containerIds[] = (int)$containerId;
+                }
+            }
+            $config['Hostgroup']['_ids'] = $hostgroupIds;
+            $config['Servicegroup']['_ids'] = $servicegroupIds;
+            $config['Container']['_ids'] = $containerIds;
+
+
+            $this->set('config', $config);
+
+            $this->viewBuilder()->setOption('serialize', [
+                'config'
+            ]);
+            return;
+        }
+
+
+        if ($this->request->is('post')) {
+            /** @var DashboardTabsTable $DashboardTabsTable */
+            $DashboardTabsTable = TableRegistry::getTableLocator()->get('DashboardTabs');
+
+            $User = new User($this->getUser());
+
+            if (!$DashboardTabsTable->isOwnedByUser($widget->dashboard_tab_id, $User->getId())) {
+                throw new ForbiddenException();
+            }
+
+            $config = $OperationsSummaryJson->standardizedData($this->request->getData());
+            $widget = $WidgetsTable->patchEntity($widget, [
+                'json_data' => json_encode($config)
+            ]);
+            $WidgetsTable->save($widget);
+            if ($widget->hasErrors()) {
+                return $this->serializeCake4ErrorMessage($widget);
+            }
+
+            $this->set('sucess', true);
+            $this->viewBuilder()->setOption('sucess', ['config']);
+            return;
+        }
         throw new MethodNotAllowedException();
     }
 }

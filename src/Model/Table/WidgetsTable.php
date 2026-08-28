@@ -391,6 +391,14 @@ class WidgetsTable extends Table {
                 'width'     => 3,
                 'height'    => 15
             ];
+            $widgets[] = [
+                'type_id'   => 42,
+                'title'     => __('Host Operations Summary'),
+                'icon'      => 'fas fa-magnifying-glass-chart',
+                'directive' => 'host-operations-summary-widget',
+                'width'     => 12,
+                'height'    => 15
+            ];
         }
 
         if (isset($ACL_PERMISSIONS['services']['index'])) {

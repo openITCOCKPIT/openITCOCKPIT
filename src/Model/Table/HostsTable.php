@@ -5403,6 +5403,220 @@ class HostsTable extends Table {
     }
 
     /**
+     * @param $MY_RIGHTS
+     * @param $conditions
+     * @return array
+     */
+    public function getHostsWithExtendedStatusByConditionsStatusengine3($MY_RIGHTS, $conditions) {
+        $query = $this->find();
+        $query
+            ->select([
+                'Hosts.id',
+                'Hosts.priority',
+                'Hoststatus.current_state',
+                'Hoststatus.scheduled_downtime_depth',
+                'Hoststatus.active_checks_enabled',
+                'Hoststatus.problem_has_been_acknowledged',
+                'Hoststatus.last_hard_state_change',
+                'Hoststatus.last_state_change',
+                'Hoststatus.status_update_time',
+                'Hoststatus.last_time_up',
+                'Hoststatus.last_time_down',
+            ]);
+        $query->where([
+            'Hosts.disabled' => 0
+        ])
+            ->join([
+                'b'             => [
+                    'table'      => 'statusengine_hoststatus',
+                    'type'       => 'INNER',
+                    'alias'      => 'Hoststatus',
+                    'conditions' => 'Hoststatus.hostname = Hosts.uuid',
+                ],
+                'hosttemplates' => [
+                    'table'      => 'hosttemplates',
+                    'type'       => 'INNER',
+                    'alias'      => 'Hosttemplates',
+                    'conditions' => 'Hosttemplates.id = Hosts.hosttemplate_id',
+                ]
+            ]);
+        if (!empty($MY_RIGHTS)) {
+            $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
+                'HostsToContainersSharing.host_id = Hosts.id'
+            ]);
+            $query->where([
+                'HostsToContainersSharing.container_id IN' => $MY_RIGHTS
+            ]);
+            if (!empty($conditions['Container']['_ids'])) {
+                $query->where([
+                    'HostsToContainersSharing.container_id IN' => $conditions['Container']['_ids']
+                ]);
+            }
+        } else if (!empty($conditions['Container']['_ids'])) {
+            $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
+                'HostsToContainersSharing.host_id = Hosts.id'
+            ]);
+            $containerIds = explode(',', $conditions['Container']['_ids']);
+            $query->where([
+                'HostsToContainersSharing.container_id IN' => $containerIds
+            ]);
+        }
+
+        $query->contain([
+            'HostsToContainersSharing',
+            'Hosttemplates' => [
+                'fields' => [
+                    'Hosttemplates.priority',
+                    'hostpriority' => $query->newExpr('IF(Hosts.priority IS NULL, Hosttemplates.priority, Hosts.priority)'),
+                    'tags'         => $query->newExpr('IF(Hosts.tags IS NULL, Hosttemplates.tags, Hosts.tags)')
+
+                ]
+            ]
+        ]);
+
+        if (!empty($conditions['Hostgroup'])) {
+            $conditions['Hostgroup'] = Hash::filter($conditions['Hostgroup']);
+        }
+        if (!empty($conditions['Hostgroup'])) {
+            $hostgroups = $this->fetchTable('Hostgroups');
+            $hostgroupIds = [];
+            if (!empty($conditions['Hostgroup']['_ids'])) {
+                $hostgroupIds = explode(',', $conditions['Hostgroup']['_ids']);
+            }
+            $whereForCount = [
+                $query->newExpr('FIND_IN_SET (Hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+                                GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
+                                GROUP_CONCAT(HostToHostgroups.hostgroup_id)))')
+            ];
+
+            if (!empty($hostgroupIds)) {
+                $whereForCount[] = ['Hostgroups.id IN' => $hostgroupIds];
+            }
+
+            if (!empty($conditions['Hostgroup']['keywords'])) {
+                $whereForCount[] = new ComparisonExpression(
+                    'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                    $conditions['Hostgroup']['keywords'],
+                    'string',
+                    'RLIKE'
+
+                );
+            }
+
+            if (!empty($conditions['Hostgroup']['not_keywords'])) {
+                $whereForCount[] = new ComparisonExpression(
+                    'IF((Hostgroups.tags IS NOT NULL), Hostgroups.tags, "")',
+                    $conditions['Hostgroup']['not_keywords'],
+                    'string',
+                    'NOT RLIKE'
+                );
+            }
+
+            if (!empty($whereForCount)) {
+                $query->select([
+                    'hostgroup_ids' => $query->newExpr(
+                        'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+                    GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
+                    GROUP_CONCAT(HostToHostgroups.hostgroup_id))'),
+                    'count'         => $hostgroups->find()->select([$query->func()->count('Hostgroups.id')])
+                        ->where($whereForCount)
+                ]);
+
+            }
+
+            $query->join([
+                'hosts_to_hostgroups'         => [
+                    'table'      => 'hosts_to_hostgroups',
+                    'type'       => 'LEFT',
+                    'alias'      => 'HostToHostgroups',
+                    'conditions' => 'HostToHostgroups.host_id = Hosts.id',
+                ],
+                'hosttemplates_to_hostgroups' => [
+                    'table'      => 'hosttemplates_to_hostgroups',
+                    'type'       => 'LEFT',
+                    'alias'      => 'HosttemplatesToHostgroups',
+                    'conditions' => 'HosttemplatesToHostgroups.hosttemplate_id = Hosttemplates.id',
+                ]
+            ]);
+            $query->having([
+                'hostgroup_ids IS NOT NULL',
+                'count > 0'
+            ]);
+        }
+
+        $where = [];
+
+
+        if (!empty($conditions['Host']['name'])) {
+            if (isset($conditions['Host']['name_regex']) && $conditions['Host']['name_regex'] === true || $conditions['Host']['name_regex'] === 'true') {
+                if ($this->isValidRegularExpression($conditions['Host']['name'])) {
+                    $where[] = new ComparisonExpression(
+                        'Hosts.name',
+                        $conditions['Host']['name'],
+                        'string',
+                        'RLIKE'
+                    );
+                }
+            } else {
+                // Use LIKE
+                $where['Hosts.name LIKE'] = sprintf('%%%s%%', $conditions['Host']['name']);
+            }
+        }
+
+        if (!empty($conditions['Host']['address'])) {
+            if (isset($conditions['Host']['address_regex']) && $conditions['Host']['address_regex'] === true || $conditions['Host']['address_regex'] === 'true') {
+                if ($this->isValidRegularExpression($conditions['Host']['address'])) {
+                    $where[] = new ComparisonExpression(
+                        'Hosts.address',
+                        $conditions['Host']['address'],
+                        'string',
+                        'RLIKE'
+                    );
+                }
+            } else {
+                $where['Hosts.address LIKE'] = sprintf('%%%s%%', $conditions['Host']['address']);
+            }
+        }
+
+        if (!empty($conditions['Host']['keywords'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
+                $conditions['Host']['keywords'],
+                'string',
+                'RLIKE'
+            );
+        }
+
+        if (!empty($conditions['Host']['not_keywords'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
+                $conditions['Host']['not_keywords'],
+                'string',
+                'NOT RLIKE'
+            );
+        }
+
+        if (!empty($conditions['hostpriority'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hosts.priority IS NULL), Hosttemplates.priority, Hosts.priority)',
+                $conditions['hostpriority'],
+                'integer[]',
+                'IN'
+            );
+        }
+
+        $query->andWhere($where);
+        $query->groupBy('Hosts.id');
+        $query->disableHydration();
+        $result = $query->all();
+        if ($result === null) {
+            return [];
+        }
+
+        return $result->toArray();
+    }
+
+    /**
      * @param string $hostUuid
      * @return Host|null
      */
@@ -5910,6 +6124,233 @@ class HostsTable extends Table {
         }
 
         return $query->all();
+    }
+
+    /**
+     * @param $hoststatus
+     * @param int $timestampFrom
+     * @param int $timestampTo
+     * @return array
+     */
+    public function getHostStateSummaryWithLastTimeStats(array $hoststatus, int $timestampFrom, int $timestampTo): array {
+        $hostStateSummary = [
+            'state'              => [
+                0         => 0,
+                1         => 0,
+                2         => 0,
+                'hostIds' => [
+                    0 => [],
+                    1 => [],
+                    2 => []
+                ]
+            ],
+            'acknowledged'       => [
+                0         => 0,
+                1         => 0,
+                2         => 0,
+                'hostIds' => [
+                    0 => [],
+                    1 => [],
+                    2 => []
+                ]
+            ],
+            'in_downtime'        => [
+                0         => 0,
+                1         => 0,
+                2         => 0,
+                'hostIds' => [
+                    0 => [],
+                    1 => [],
+                    2 => []
+                ]
+            ],
+            'not_handled'        => [
+                0              => 0,
+                1              => 0,
+                2              => 0,
+                'hostIds'      => [
+                    0 => [],
+                    1 => [],
+                    2 => []
+                ],
+                'totalHostIds' => []
+            ],
+            'passive'            => [
+                0         => 0,
+                1         => 0,
+                2         => 0,
+                'hostIds' => [
+                    0 => [],
+                    1 => [],
+                    2 => []
+                ]
+            ],
+            'total'              => 0,
+            'cumulative_state'   => -1, // not monitored
+            'lastTimeAlwaysUp'   => [
+                'count' => 0,
+                'ids'   => []
+            ],
+            'lastTimeAlwaysDown' => [
+                'count' => 0,
+                'ids'   => []
+            ],
+            'recovered'          => [
+                'count' => 0,
+                'ids'   => []
+            ],
+            'failed'             => [
+                'count' => 0,
+                'ids'   => []
+            ],
+            'tagsOverview'       => []
+        ];
+        if (empty($hoststatus)) {
+            return $hostStateSummary;
+        }
+        foreach ($hoststatus as $host) {
+            //Check for random exit codes like 255...
+            if ($host['Hoststatus']['current_state'] > 2) {
+                $host['Hoststatus']['current_state'] = 2;
+            }
+
+            $tags = Hash::filter(explode(',', $host['tags']));
+            if (!empty($tags)) {
+                foreach ($tags as $tag) {
+                    if (!isset($hostStateSummary[$tag])) {
+                        $hostStateSummary['tagsOverview'][$tag] = [
+                            'state'            => [
+                                0         => 0,
+                                1         => 0,
+                                2         => 0,
+                                'hostIds' => [
+                                    0 => [],
+                                    1 => [],
+                                    2 => []
+                                ]
+                            ],
+                            'acknowledged'     => [
+                                0         => 0,
+                                1         => 0,
+                                2         => 0,
+                                'hostIds' => [
+                                    0 => [],
+                                    1 => [],
+                                    2 => []
+                                ]
+                            ],
+                            'in_downtime'      => [
+                                0         => 0,
+                                1         => 0,
+                                2         => 0,
+                                'hostIds' => [
+                                    0 => [],
+                                    1 => [],
+                                    2 => []
+                                ]
+                            ],
+                            'not_handled'      => [
+                                0              => 0,
+                                1              => 0,
+                                2              => 0,
+                                'hostIds'      => [
+                                    0 => [],
+                                    1 => [],
+                                    2 => []
+                                ],
+                                'totalHostIds' => []
+                            ],
+                            'passive'          => [
+                                0         => 0,
+                                1         => 0,
+                                2         => 0,
+                                'hostIds' => [
+                                    0 => [],
+                                    1 => [],
+                                    2 => []
+                                ]
+                            ],
+                            'total'            => 0,
+                            'cumulative_state' => -1, // not monitored
+                        ];
+                    }
+                    $hostStateSummary['tagsOverview'][$tag]['state'][$host['Hoststatus']['current_state']]++;
+                    // $hostStateSummary['tagsOverview'][$tag]['state']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+
+                    if ($host['Hoststatus']['problem_has_been_acknowledged'] > 0) {
+                        $hostStateSummary['tagsOverview'][$tag]['acknowledged'][$host['Hoststatus']['current_state']]++;
+                        $hostStateSummary['tagsOverview'][$tag]['acknowledged']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                    } else if ($host['Hoststatus']['problem_has_been_acknowledged'] == 0 && $host['Hoststatus']['scheduled_downtime_depth'] == 0) {
+                        $hostStateSummary['tagsOverview'][$tag]['not_handled'][$host['Hoststatus']['current_state']]++;
+                        $hostStateSummary['tagsOverview'][$tag]['not_handled']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                        $hostStateSummary['tagsOverview'][$tag]['not_handled']['totalHostIds'][] = $host['id'];
+                    }
+                    if ($host['Hoststatus']['scheduled_downtime_depth'] > 0) {
+                        $hostStateSummary['tagsOverview'][$tag]['in_downtime'][$host['Hoststatus']['current_state']]++;
+                        $hostStateSummary['tagsOverview'][$tag]['in_downtime']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                    }
+                    if ($host['Hoststatus']['active_checks_enabled'] == 0) {
+                        $hostStateSummary['tagsOverview'][$tag]['passive'][$host['Hoststatus']['current_state']]++;
+                        $hostStateSummary['tagsOverview'][$tag]['passive']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                    }
+                    if ($hostStateSummary['tagsOverview'][$tag]['cumulative_state'] < $host['Hoststatus']['current_state']) {
+                        $hostStateSummary['tagsOverview'][$tag]['cumulative_state'] = $host['Hoststatus']['current_state'];
+                    }
+                    $hostStateSummary['tagsOverview'][$tag]['total']++;
+                }
+            }
+
+
+            if ($host['Hoststatus']['current_state'] === 0) {
+                if ($host['Hoststatus']['last_state_change'] <= $timestampFrom
+                    && $host['Hoststatus']['last_time_down'] <= $timestampFrom) {
+                    $hostStateSummary['lastTimeAlwaysUp']['count']++;
+                    $hostStateSummary['lastTimeAlwaysUp']['ids'][] = $host['id'];
+                } else if ($host['Hoststatus']['last_state_change'] > $timestampFrom
+                    && $host['Hoststatus']['last_time_down'] < $timestampFrom) {
+                    $hostStateSummary['recovered']['count']++;
+                    $hostStateSummary['recovered']['ids'][] = $host['id'];
+                }
+            } else if ($host['Hoststatus']['current_state'] === 1) {
+                if ($host['Hoststatus']['last_state_change'] <= $timestampFrom
+                    && $host['Hoststatus']['last_time_down'] <= $timestampFrom) {
+                    $hostStateSummary['lastTimeAlwaysDown']['count']++;
+                    $hostStateSummary['lastTimeAlwaysDown']['ids'][] = $host['id'];
+                } else if ($host['Hoststatus']['last_state_change'] > $timestampFrom
+                    && $host['Hoststatus']['last_time_up'] < $timestampFrom) {
+                    $hostStateSummary['failed']['count']++;
+                    $hostStateSummary['failed']['ids'][] = $host['id'];
+                }
+            }
+            $hostStateSummary['state'][$host['Hoststatus']['current_state']]++;
+            $hostStateSummary['state']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+            if ($host['Hoststatus']['current_state'] > 0) {
+                if ($host['Hoststatus']['problem_has_been_acknowledged'] > 0) {
+                    $hostStateSummary['acknowledged'][$host['Hoststatus']['current_state']]++;
+                    $hostStateSummary['acknowledged']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                } else if ($host['Hoststatus']['problem_has_been_acknowledged'] == 0 && $host['Hoststatus']['scheduled_downtime_depth'] == 0) {
+                    $hostStateSummary['not_handled'][$host['Hoststatus']['current_state']]++;
+                    $hostStateSummary['not_handled']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                    $hostStateSummary['not_handled']['totalHostIds'][] = $host['id'];
+                }
+            }
+
+            if ($host['Hoststatus']['scheduled_downtime_depth'] > 0) {
+                $hostStateSummary['in_downtime'][$host['Hoststatus']['current_state']]++;
+                $hostStateSummary['in_downtime']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+            }
+            if ($host['Hoststatus']['active_checks_enabled'] == 0) {
+                $hostStateSummary['passive'][$host['Hoststatus']['current_state']]++;
+                $hostStateSummary['passive']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+            }
+
+            if ($hostStateSummary['cumulative_state'] < $host['Hoststatus']['current_state']) {
+                $hostStateSummary['cumulative_state'] = $host['Hoststatus']['current_state'];
+            }
+            $hostStateSummary['total']++;
+        }
+        uksort($hostStateSummary['tagsOverview'], 'strcasecmp');
+        return $hostStateSummary;
     }
 
 }

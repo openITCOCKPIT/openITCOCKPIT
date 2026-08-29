@@ -104,6 +104,7 @@ class ProfileController extends AppController {
             $user = $UsersTable->get($User->getId());
             $user->setAccess('id', false);
             $user->setAccess('usergroup_id', false);
+            $user->setAccess('image', false);
 
             if ($isLdapUser) {
                 $data['is_ldap'] = true;
@@ -481,9 +482,10 @@ class ProfileController extends AppController {
         //prevent multiple hash of password
         unset($user->password);
 
-        if ($user->image != null && $user->image != '') {
-            if (file_exists(WWW_ROOT . 'img' . DS . 'userimages' . DS . $user->image)) {
-                unlink(WWW_ROOT . 'img' . DS . 'userimages' . DS . $user->image);
+        if (!empty($user->image)) {
+            $profileImagePath = WWW_ROOT . 'img' . DS . 'userimages' . DS . basename($user->image);
+            if (file_exists($profileImagePath)) {
+                unlink($profileImagePath);
             }
         }
 

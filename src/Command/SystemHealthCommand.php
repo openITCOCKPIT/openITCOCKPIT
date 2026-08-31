@@ -298,6 +298,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         $satelliteIds = array_column($satellitesArray, 'id');
         $SatelliteInformationTable = TableRegistry::getTableLocator()->get('DistributeModule.SatelliteInformation');
         $total_error_count = 0;
+        $updatedSatellites = [];
 
         $healthMap = $SatelliteInformationTable->find()
             ->select(['satellite_id', 'system_health'])
@@ -361,11 +362,12 @@ class SystemHealthCommand extends Command implements CronjobInterface {
                 'satellite_error_count' => $satellite_error_count,
                 'system_health'         => $parsedHealth
             ];
+            $updatedSatellites[] = $satellite;
         }
         unset($satellite);
 
         return [
-            'satellites'                     => $satellitesArray,
+            'satellites'                     => $updatedSatellites,
             'isSatellitesInformationRunning' => ($total_error_count === 0)
         ];
     }

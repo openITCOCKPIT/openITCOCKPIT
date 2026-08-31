@@ -42,6 +42,7 @@ use Cake\Command\Command;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
+use Cake\Core\Plugin;
 use Cake\Http\ServerRequest;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\Interfaces\CronjobInterface;
@@ -241,24 +242,22 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             //}
         }
 
-        /*if (Plugin::isLoaded('DistributeModule')) {
-             $data['isDistributeModuleInstalled'] = false;
-             // @var SatellitesTable $SatellitesTable
-             $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
-             $data['satellites'] = $SatellitesTable->getSatellitesStatusWithHealth(new SatelliteFilter(new ServerRequest()));
+        if (Plugin::isLoaded('DistributeModule')) {
+            $data['isDistributeModuleInstalled'] = false;
+            // @var SatellitesTable $SatellitesTable
+            //$SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
+            //$data['satellites'] = $SatellitesTable->getSatellitesStatusWithHealth(new SatelliteFilter(new ServerRequest()));
 
-             $data = $this->checkSatelliteInformationState($data);
-         }*/
+            $satellites = $this->getSatellitesStatusWithHealth();
 
-        $satellites = $this->getSatellitesStatusWithHealth();
-
-        $data['satellites'] = $satellites['satellites'];
-        $data['isSatellitesInformationRunning'] = $satellites['isSatellitesInformationRunning'];
+            $data['satellites'] = $satellites['satellites'];
+            $data['isSatellitesInformationRunning'] = $satellites['isSatellitesInformationRunning'];
+        }
 
         return $data;
     }
 
-    public function getSatellitesStatusWithHealth() {
+    public function getSatellitesStatusWithHealth(): array {
 
         $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
 
@@ -314,10 +313,14 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             })
             ->toArray();
 
-        foreach ($satellitesArray as &$satellite) {
+        foreach ($satellitesArray as $satellite) {
             $satellite_error_count = 0;
-            $parsedHealth = $healthMap[$satellite['id']] ?? null;
 
+            if ($satellite['satellite_status']['status'] != 1) {
+                $satellite_error_count++;
+            }
+
+            $parsedHealth = $healthMap[$satellite['id']] ?? null;
             if (!empty($parsedHealth) && is_array($parsedHealth)) {
                 //RAM
                 if (isset($parsedHealth['memory']['memory']['state']) && ($parsedHealth['memory']['memory']['state']) !== 'ok') {
@@ -548,20 +551,5 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         $Redis = new \Redis();
         $Redis->connect($redisHost, $redisPort);
         $Redis->setex('permissions_system_health', 60 * 3, serialize($data));
-    }
-
-    public function checkSatelliteInformationState($data) {
-        $satellites = $data['satellites'] ?? null;
-        $satellite_errors = 0;
-        foreach ($satellites as &$satellite) {
-            if ($satellite['satellite_information']['satellite_error_count'] > 0) {
-                $satellite_errors += $satellite['satellite_information']['satellite_error_count'];
-            }
-        }
-        if ($satellite_errors > 0) {
-            $data['isSatellitesInformationRunning'] = false;
-        }
-        return $data;
-
     }
 }

@@ -699,8 +699,9 @@ class AngularController extends AppController {
 
         $User = new User($this->getUser());
         $UserTime = $User->getUserTime();
-        foreach (($cache['satellites'] ?? []) as $index => $satellite) {
 
+        foreach (($cache['satellites'] ?? []) as $index => $satellite) {
+            $counter = 0;
             // Put date to users time-zone
             if (!empty($cache['satellites'][$index]['satellite_status']['last_seen'])) {
                 $date = $UserTime->format($cache['satellites'][$index]['satellite_status']['last_seen']);
@@ -712,12 +713,15 @@ class AngularController extends AppController {
             } else {
                 $cache['satellites'][$index]['allow_edit'] = $this->isWritableContainer($satellite['container_id']);
             }
+            if ($cache['satellites'][$index]['satellite_status']['status'] != 1) {
+                $this->setHealthState($cache['satellites'][$index]['satellite_status']['status']);
+                $counter++;
+            }
 
             // Check user satellite_information ['RAM,Disks,CPU']
             $health = $cache['satellites'][$index]['satellite_information']['system_health'] ?? null;
             if ($health) {
 
-                $counter = 0;
                 // RAM
                 if (isset($health['memory']['memory']['state'])) {
                     $this->setHealthState($health['memory']['memory']['state']);
@@ -752,7 +756,6 @@ class AngularController extends AppController {
                 $cache['satellites'][$index]['satellite_information']['satellite_error_count'] = $counter;
             }
         }
-
         $user = $this->getUser();
         $UserTime = new UserTime($user->get('timezone'), $user->get('dateformat'));
         $cache['update'] = $UserTime->format($cache['update']);

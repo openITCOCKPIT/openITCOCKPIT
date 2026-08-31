@@ -657,7 +657,7 @@ class Menu {
                     'FilterBookmarksAllocations',
                     'index',
                     '',
-                    ['fas', 'table'],
+                    ['fas', 'square-share-nodes'],
                     [],
                     6,
                     true,

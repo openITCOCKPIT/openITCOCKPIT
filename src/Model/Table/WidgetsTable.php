@@ -452,6 +452,15 @@ class WidgetsTable extends Table {
                 'width'     => 12,
                 'height'    => 16
             ];
+
+            $widgets[] = [
+                'type_id'   => 41,
+                'title'     => __('Cylinder'),
+                'icon'      => 'fas fa-database',
+                'directive' => 'cylinder-widget',
+                'width'     => 3,
+                'height'    => 14
+            ];
         }
 
         if (isset($ACL_PERMISSIONS['services']['index']) && isset($ACL_PERMISSIONS['servicegroups']['index'])) {

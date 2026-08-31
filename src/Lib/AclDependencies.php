@@ -202,6 +202,7 @@ class AclDependencies {
             ->allow('Dashboards', 'desktopWidget')
             ->allow('Dashboards', 'delayedPassiveHostsWidget')
             ->allow('Dashboards', 'delayedPassiveServicesWidget')
+            ->allow('Dashboards', 'cylinderWidget')
             ->allow('Dashboards', 'operationsSummaryWidget');
 
         $this

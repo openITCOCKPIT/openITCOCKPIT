@@ -59,6 +59,7 @@ use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\CalendarTime;
+use itnovum\openITCOCKPIT\Core\Dashboards\CylinderJson;
 use itnovum\openITCOCKPIT\Core\Dashboards\DowntimeHostListJson;
 use itnovum\openITCOCKPIT\Core\Dashboards\DowntimeServiceListJson;
 use itnovum\openITCOCKPIT\Core\Dashboards\HostStatusListJson;
@@ -1530,6 +1531,111 @@ class DashboardsController extends AppController {
 
         if ($this->request->is('post')) {
             $config = $TachoJson->standardizedData($this->request->getData());
+            $widgetId = (int)$this->request->getData('Widget.id', 0);
+            $serviceId = (int)$this->request->getData('Widget.service_id', 0);
+
+            if (!$WidgetsTable->existsById($widgetId)) {
+                throw new RuntimeException('Invalid widget id');
+            }
+            $widget = $WidgetsTable->get($widgetId);
+
+            /** @var DashboardTabsTable $DashboardTabsTable */
+            $DashboardTabsTable = TableRegistry::getTableLocator()->get('DashboardTabs');
+
+            $User = new User($this->getUser());
+
+            if (!$DashboardTabsTable->isOwnedByUser($widget->dashboard_tab_id, $User->getId())) {
+                throw new ForbiddenException();
+            }
+
+            $widget = $WidgetsTable->patchEntity($widget, [
+                'service_id' => $serviceId,
+                'json_data'  => json_encode($config)
+            ]);
+
+            $WidgetsTable->save($widget);
+
+            if ($widget->hasErrors()) {
+                return $this->serializeCake4ErrorMessage($widget);
+            }
+
+            $service = $this->getServicestatusByServiceId($serviceId);
+            $this->set('service', $service);
+            $this->set('config', $config);
+            $this->set('ACL', $this->getAcls());
+            $this->viewBuilder()->setOption('serialize', ['service', 'config', 'ACL']);
+            return;
+        }
+        throw new MethodNotAllowedException();
+    }
+
+    public function cylinderWidget() {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $CylinderJson = new CylinderJson();
+
+        /** @var WidgetsTable $WidgetsTable */
+        $WidgetsTable = TableRegistry::getTableLocator()->get('Widgets');
+
+        if ($this->request->is('get')) {
+            $widgetId = (int)$this->request->getQuery('widgetId');
+            if (!$WidgetsTable->existsById($widgetId)) {
+                throw new RuntimeException('Invalid widget id');
+            }
+
+            $widget = $WidgetsTable->get($widgetId);
+
+            $serviceId = (int)$widget->get('service_id');
+            if ($serviceId === 0) {
+                $serviceId = null;
+            }
+
+            $service = $this->getServicestatusByServiceId($serviceId);
+            $data = [];
+            $metrics = array_keys($service['Perfdata']);
+            $newPerfdata = [];
+            foreach ($metrics as $metric) {
+                if (Plugin::isLoaded('PrometheusModule') && $service['Service']['serviceType'] === PROMETHEUS_SERVICE) {
+                    $PrometheusPerfdataLoader = new \PrometheusModule\Lib\PrometheusPerfdataLoader();
+                    $Service = new Service($service);
+                    $perfdata = $PrometheusPerfdataLoader->getAvailableMetricsByService($Service, false, true);
+                    // Query Prometheus to get all metrics
+                    $adapter = new PrometheusAdapter();
+                    $indexMetric = $metric;
+                    if ($metric !== $perfdata[$metric]) {
+                        $indexMetric = $perfdata[$metric]['metric'];
+                    }
+                    $newPerfdata['Perfdata'][$indexMetric] = $service['Perfdata'][$metric];
+                    $newPerfdata['Perfdata'][$indexMetric]['metric'] = $indexMetric;
+                    $newPerfdata['Perfdata'][$indexMetric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata[$metric])->toArray();
+                } else {
+                    $PerfdataParser = new PerfdataParser($service['Servicestatus']['perfdata']);
+                    $perfdata = $PerfdataParser->parse();
+                    $perfdata = $perfdata[$metric] ?? [];
+                    $adapter = new NagiosAdapter();
+                    $newPerfdata['Perfdata'][$metric] = $service['Perfdata'][$metric];
+                    $newPerfdata['Perfdata'][$metric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata)->toArray();
+                }
+            }
+
+            $service['Perfdata'] = $newPerfdata['Perfdata'] ?? [];
+
+            if ($widget->get('json_data') !== null && $widget->get('json_data') !== '') {
+                $data = json_decode($widget->get('json_data'), true);
+            }
+            $config = $CylinderJson->standardizedData($data);
+            $this->set('config', $config);
+            $this->set('service', $service);
+            $this->set('ACL', $this->getAcls());
+            $this->viewBuilder()->setOption('serialize', ['service', 'config', 'ACL']);
+            return;
+        }
+
+
+        if ($this->request->is('post')) {
+            $config = $CylinderJson->standardizedData($this->request->getData());
             $widgetId = (int)$this->request->getData('Widget.id', 0);
             $serviceId = (int)$this->request->getData('Widget.service_id', 0);
 

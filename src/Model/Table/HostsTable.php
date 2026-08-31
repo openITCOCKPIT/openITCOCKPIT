@@ -6127,12 +6127,13 @@ class HostsTable extends Table {
     }
 
     /**
-     * @param $hoststatus
+     * @param array $hoststatus
      * @param int $timestampFrom
      * @param int $timestampTo
+     * @param array $hostConditions
      * @return array
      */
-    public function getHostStateSummaryWithLastTimeStats(array $hoststatus, int $timestampFrom, int $timestampTo): array {
+    public function getHostStateSummaryWithLastTimeStats(array $hoststatus, int $timestampFrom, int $timestampTo, array $hostConditions): array {
         $hostStateSummary = [
             'state'              => [
                 0         => 0,
@@ -6217,7 +6218,10 @@ class HostsTable extends Table {
             $tags = Hash::filter(explode(',', $host['tags']));
             if (!empty($tags)) {
                 foreach ($tags as $tag) {
-                    if (!isset($hostStateSummary[$tag])) {
+                    if (!empty($hostConditions['keywords']) && !preg_match(sprintf('`%s`', $hostConditions['keywords']), $tag)) {
+                        continue;
+                    }
+                    if (!isset($hostStateSummary['tagsOverview'][$tag])) {
                         $hostStateSummary['tagsOverview'][$tag] = [
                             'state'            => [
                                 0         => 0,
@@ -6250,11 +6254,9 @@ class HostsTable extends Table {
                                 ]
                             ],
                             'not_handled'      => [
-                                0              => 0,
                                 1              => 0,
                                 2              => 0,
                                 'hostIds'      => [
-                                    0 => [],
                                     1 => [],
                                     2 => []
                                 ],
@@ -6271,20 +6273,24 @@ class HostsTable extends Table {
                                 ]
                             ],
                             'total'            => 0,
+                            'hostIds'          => [],
                             'cumulative_state' => -1, // not monitored
                         ];
                     }
                     $hostStateSummary['tagsOverview'][$tag]['state'][$host['Hoststatus']['current_state']]++;
-                    // $hostStateSummary['tagsOverview'][$tag]['state']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                    $hostStateSummary['tagsOverview'][$tag]['state']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
 
-                    if ($host['Hoststatus']['problem_has_been_acknowledged'] > 0) {
-                        $hostStateSummary['tagsOverview'][$tag]['acknowledged'][$host['Hoststatus']['current_state']]++;
-                        $hostStateSummary['tagsOverview'][$tag]['acknowledged']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
-                    } else if ($host['Hoststatus']['problem_has_been_acknowledged'] == 0 && $host['Hoststatus']['scheduled_downtime_depth'] == 0) {
-                        $hostStateSummary['tagsOverview'][$tag]['not_handled'][$host['Hoststatus']['current_state']]++;
-                        $hostStateSummary['tagsOverview'][$tag]['not_handled']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
-                        $hostStateSummary['tagsOverview'][$tag]['not_handled']['totalHostIds'][] = $host['id'];
+                    if ($host['Hoststatus']['current_state'] > 0) {
+                        if ($host['Hoststatus']['problem_has_been_acknowledged'] > 0) {
+                            $hostStateSummary['tagsOverview'][$tag]['acknowledged'][$host['Hoststatus']['current_state']]++;
+                            $hostStateSummary['tagsOverview'][$tag]['acknowledged']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                        } else if ($host['Hoststatus']['problem_has_been_acknowledged'] == 0 && $host['Hoststatus']['scheduled_downtime_depth'] == 0) {
+                            $hostStateSummary['tagsOverview'][$tag]['not_handled'][$host['Hoststatus']['current_state']]++;
+                            $hostStateSummary['tagsOverview'][$tag]['not_handled']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                            $hostStateSummary['tagsOverview'][$tag]['not_handled']['totalHostIds'][] = $host['id'];
+                        }
                     }
+
                     if ($host['Hoststatus']['scheduled_downtime_depth'] > 0) {
                         $hostStateSummary['tagsOverview'][$tag]['in_downtime'][$host['Hoststatus']['current_state']]++;
                         $hostStateSummary['tagsOverview'][$tag]['in_downtime']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
@@ -6297,9 +6303,9 @@ class HostsTable extends Table {
                         $hostStateSummary['tagsOverview'][$tag]['cumulative_state'] = $host['Hoststatus']['current_state'];
                     }
                     $hostStateSummary['tagsOverview'][$tag]['total']++;
+                    $hostStateSummary['tagsOverview'][$tag]['hostIds'][] = $host['id'];
                 }
             }
-
 
             if ($host['Hoststatus']['current_state'] === 0) {
                 if ($host['Hoststatus']['last_state_change'] <= $timestampFrom
@@ -6348,9 +6354,10 @@ class HostsTable extends Table {
                 $hostStateSummary['cumulative_state'] = $host['Hoststatus']['current_state'];
             }
             $hostStateSummary['total']++;
+            $hostStateSummary['totalHostIds'][] = $host['id'];
         }
+
         uksort($hostStateSummary['tagsOverview'], 'strcasecmp');
         return $hostStateSummary;
     }
-
 }

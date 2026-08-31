@@ -2813,7 +2813,12 @@ class DashboardsController extends AppController {
                         /** @var HostsTable $HostsTable */
                         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
                         $hoststatus = $HostsTable->getHostsWithExtendedStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
-                        $hoststatusSummary = $HostsTable->getHostStateSummaryWithLastTimeStats($hoststatus, $timestampFrom, $timestampTo);
+                        $hoststatusSummary = $HostsTable->getHostStateSummaryWithLastTimeStats(
+                            $hoststatus,
+                            $timestampFrom,
+                            $timestampTo,
+                            $conditions['Host']
+                        );
                     }
 
                     $this->set('config', $config);

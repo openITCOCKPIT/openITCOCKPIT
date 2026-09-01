@@ -210,8 +210,6 @@ class FilterBookmarksAllocationsController extends AppController {
     }
 
 
-
-
     /****************************
      *       AJAX METHODS       *
      ****************************/
@@ -267,8 +265,6 @@ class FilterBookmarksAllocationsController extends AppController {
             'allocated_filter_bookmarks'
         ]);
     }
-
-
 
 
 }

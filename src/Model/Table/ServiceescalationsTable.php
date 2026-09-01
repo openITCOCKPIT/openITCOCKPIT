@@ -22,12 +22,14 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 namespace App\Model\Table;
 
 use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use App\Model\Behavior\ContainerOwnedBehavior;
 use Cake\Database\Expression\ComparisonExpression;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
@@ -55,6 +57,7 @@ use itnovum\openITCOCKPIT\Filter\ServiceescalationsFilter;
  * @method \App\Model\Entity\Serviceescalation findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin ContainerOwnedBehavior
  */
 class ServiceescalationsTable extends Table {
 
@@ -72,6 +75,7 @@ class ServiceescalationsTable extends Table {
     public function initialize(array $config): void {
         parent::initialize($config);
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->setTable('serviceescalations');
         $this->setPrimaryKey('id');

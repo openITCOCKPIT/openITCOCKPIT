@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 namespace App\Model\Table;
 
@@ -29,6 +30,7 @@ use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Lib\Traits\PluginManagerTableTrait;
+use App\Model\Behavior\ContainerOwnedBehavior;
 use App\Model\Entity\Changelog;
 use App\Model\Entity\Host;
 use App\Model\Entity\Hostdependency;
@@ -79,6 +81,7 @@ use itnovum\openITCOCKPIT\Filter\HostFilter;
  * @method Host[] patchEntities($entities, array $data, array $options = [])
  * @method Host findOrCreate($search, ?callable $callback = null, array $options = [])
  *
+ * @mixin ContainerOwnedBehavior
  * @mixin TimestampBehavior
  */
 class HostsTable extends Table {
@@ -102,6 +105,7 @@ class HostsTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->belongsToMany('HostsToContainersSharing', [
             'className'        => 'Containers',

@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -41,6 +42,7 @@ use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\ORM\TableRegistry;
+use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -109,6 +111,12 @@ class DashboardAllocationsController extends AppController {
             }
 
             //No errors
+            $allocation['users'] = [
+                '_ids' => Hash::extract($allocation, 'users.{n}.id')
+            ];
+            $allocation['usergroups'] = [
+                '_ids' => Hash::extract($allocation, 'usergroups.{n}.id')
+            ];
             $this->set('allocation', $allocation);
             $this->viewBuilder()->setOption('serialize', ['allocation']);
         }
@@ -159,6 +167,12 @@ class DashboardAllocationsController extends AppController {
             }
 
             //No errors
+            $allocation['users'] = [
+                '_ids' => Hash::extract($allocation, 'users.{n}.id')
+            ];
+            $allocation['usergroups'] = [
+                '_ids' => Hash::extract($allocation, 'usergroups.{n}.id')
+            ];
             $this->set('allocation', $allocation);
             $this->viewBuilder()->setOption('serialize', ['allocation']);
             return;

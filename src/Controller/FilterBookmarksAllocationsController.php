@@ -165,12 +165,8 @@ class FilterBookmarksAllocationsController extends AppController {
             }
 
             //No errors
-            $allocation['users'] = [
-                '_ids' => Hash::extract($allocation, 'users.{n}.id')
-            ];
-            $allocation['usergroups'] = [
-                '_ids' => Hash::extract($allocation, 'usergroups.{n}.id')
-            ];
+            unset($allocation['users']);
+            unset($allocation['usergroups']);
             $this->set('allocation', $allocation);
             $this->viewBuilder()->setOption('serialize', ['allocation']);
             return;

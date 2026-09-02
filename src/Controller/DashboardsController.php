@@ -2792,10 +2792,12 @@ class DashboardsController extends AppController {
             $now = time();
             $timestampFrom = $now - 24 * 60 * 60;
             $timestampTo = $now;
+            $User = new User($this->getUser());
+            $UserTime = $User->getUserTime();
+            $userTimezone = $UserTime->getUserTimezone();
 
             switch ($type) {
                 case 'hosts':
-                    $hoststatus = [];
                     $hoststatusSummary = [];
                     if ($this->DbBackend->isNdoUtils()) {
                         /** @var HostsTable $HostsTable */
@@ -2817,7 +2819,8 @@ class DashboardsController extends AppController {
                             $hoststatus,
                             $timestampFrom,
                             $timestampTo,
-                            $conditions['Host']
+                            $conditions['Host'],
+                            $userTimezone
                         );
                     }
 

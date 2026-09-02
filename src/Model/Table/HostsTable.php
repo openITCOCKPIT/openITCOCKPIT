@@ -38,6 +38,7 @@ use Cake\Database\Expression\ComparisonExpression;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\Exception\RecordNotFoundException;
+use Cake\I18n\DateTime;
 use Cake\ORM\Association\BelongsTo;
 use Cake\ORM\Association\HasMany;
 use Cake\ORM\Behavior\TimestampBehavior;
@@ -5412,6 +5413,7 @@ class HostsTable extends Table {
         $query
             ->select([
                 'Hosts.id',
+                'Hosts.name',
                 'Hosts.priority',
                 'Hoststatus.current_state',
                 'Hoststatus.scheduled_downtime_depth',
@@ -5422,6 +5424,7 @@ class HostsTable extends Table {
                 'Hoststatus.status_update_time',
                 'Hoststatus.last_time_up',
                 'Hoststatus.last_time_down',
+                'Hoststatus.last_time_unreachable'
             ]);
         $query->where([
             'Hosts.disabled' => 0
@@ -6133,7 +6136,7 @@ class HostsTable extends Table {
      * @param array $hostConditions
      * @return array
      */
-    public function getHostStateSummaryWithLastTimeStats(array $hoststatus, int $timestampFrom, int $timestampTo, array $hostConditions): array {
+    public function getHostStateSummaryWithLastTimeStats(array $hoststatus, int $timestampFrom, int $timestampTo, array $hostConditions, string $UserTimeZone): array {
         $hostStateSummary = [
             'state'              => [
                 0         => 0,
@@ -6204,7 +6207,12 @@ class HostsTable extends Table {
                 'count' => 0,
                 'ids'   => []
             ],
-            'tagsOverview'       => []
+            'tagsOverview'       => [],
+            'statusEvents'       => [
+                'up'          => [],
+                'down'        => [],
+                'unreachable' => [],
+            ]
         ];
         if (empty($hoststatus)) {
             return $hostStateSummary;
@@ -6328,6 +6336,53 @@ class HostsTable extends Table {
                     $hostStateSummary['failed']['ids'][] = $host['id'];
                 }
             }
+            /* Set status events -  START */
+            if ($host['Hoststatus']['last_time_up'] > $timestampFrom) {
+                $stateDateTime = new DateTime($host['Hoststatus']['last_time_up'], $UserTimeZone);
+                $hostStateSummary['statusEvents']['up'][] = [
+                    'hostId'            => $host['id'],
+                    'type'              => 'up',
+                    'timestamp'         => $host['Hoststatus']['last_time_up'],
+                    'userDateTime'      => $stateDateTime->format('c'),
+                    'stateEventMinutes' => (int)date($stateDateTime->format('i'), $stateDateTime->getTimestamp()),
+                    'host'              => [
+                        'id'   => $host['id'],
+                        'name' => $host['name']
+                    ]
+                ];
+            }
+            if ($host['Hoststatus']['last_time_down'] > $timestampFrom) {
+                $stateDateTime = new DateTime($host['Hoststatus']['last_time_down'], $UserTimeZone);
+                $hostStateSummary['statusEvents']['down'][] = [
+                    'hostId'            => $host['id'],
+                    'type'              => 'down',
+                    'timestamp'         => $host['Hoststatus']['last_time_down'],
+                    'userDateTime'      => $stateDateTime->format('c'),
+                    'stateEventMinutes' => (int)date($stateDateTime->format('i'), $stateDateTime->getTimestamp()),
+                    'host'              => [
+                        'id'   => $host['id'],
+                        'name' => $host['name']
+                    ]
+                ];
+            }
+            if ($host['Hoststatus']['last_time_unreachable'] > $timestampFrom) {
+                $stateDateTime = new DateTime($host['Hoststatus']['last_time_unreachable'], $UserTimeZone);
+                $hostStateSummary['statusEvents']['unreachable'][] = [
+                    'hostId'            => $host['id'],
+                    'type'              => 'down',
+                    'timestamp'         => $host['Hoststatus']['last_time_unreachable'],
+                    'userDateTime'      => $stateDateTime->format('c'),
+                    'stateEventMinutes' => (int)date($stateDateTime->format('i'), $stateDateTime->getTimestamp()),
+                    'host'              => [
+                        'id'   => $host['id'],
+                        'name' => $host['name']
+                    ]
+                ];
+            }
+
+            /* Set status events -  END */
+
+
             $hostStateSummary['state'][$host['Hoststatus']['current_state']]++;
             $hostStateSummary['state']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
             if ($host['Hoststatus']['current_state'] > 0) {

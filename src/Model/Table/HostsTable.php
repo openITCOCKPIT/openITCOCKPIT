@@ -6487,7 +6487,7 @@ class HostsTable extends Table {
                 'up'          => [],
                 'down'        => [],
                 'unreachable' => [],
-                'min'         => null,
+                'min'         => 0,
                 'max'         => null
             ];
 
@@ -6498,9 +6498,6 @@ class HostsTable extends Table {
             foreach ($hoststatusDetails as $date => $hostStatusByMinutes) {
                 foreach ($hostStatusByMinutes as $minute => $hostStatusArray) {
                     $sizeofHostStatusArray = sizeof($hostStatusArray);
-                    if (is_null($reformatedData['min']) || $minute < $reformatedData['min']) {
-                        $reformatedData['min'] = $minute;
-                    }
                     if (is_null($reformatedData['max']) || $minute > $reformatedData['max']) {
                         $reformatedData['max'] = $minute;
                     }
@@ -6513,7 +6510,6 @@ class HostsTable extends Table {
                 }
             }
         }
-        $reformatedData['min'] = is_null($reformatedData['min']) ? 0 : (int)$reformatedData['min'];
         $reformatedData['max'] = is_null($reformatedData['max']) ? 60 : (int)$reformatedData['max'];
 
         return $reformatedData;

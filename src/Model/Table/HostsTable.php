@@ -6440,15 +6440,22 @@ class HostsTable extends Table {
             1 => 'last_time_down',
             2 => 'last_time_unreachable',
         ];
+        $stateLabels = [
+            -1 => 'not_in_monitoring',
+            0  => 'up',
+            1  => 'down',
+            2  => 'unreachable'
+        ];
 
         $result = [
             0 => [],
             1 => [],
             2 => [],
         ];
-
+        $totalHosts = sizeof($hoststatusList);
         foreach ($hoststatusList as $hoststatus) {
             $state = (int)($hoststatus['Hoststatus']['current_state'] ?? -1);
+
             if (!isset($stateToTimeField[$state])) {
                 continue;
             }
@@ -6475,7 +6482,41 @@ class HostsTable extends Table {
             $result[$state][$hourKey][$tenMin][] = $hoststatus;
         }
 
-        return $result;
+        $reformatedData =
+            [
+                'up'          => [],
+                'down'        => [],
+                'unreachable' => [],
+                'min'         => null,
+                'max'         => null
+            ];
+
+        //debug($result);
+        foreach ($result as $state => $hoststatusDetails) {
+            $reformatedData[$stateLabels[$state]] = [];
+
+            foreach ($hoststatusDetails as $date => $hostStatusByMinutes) {
+                foreach ($hostStatusByMinutes as $minute => $hostStatusArray) {
+                    $sizeofHostStatusArray = sizeof($hostStatusArray);
+                    if (is_null($reformatedData['min']) || $minute < $reformatedData['min']) {
+                        $reformatedData['min'] = $minute;
+                    }
+                    if (is_null($reformatedData['max']) || $minute > $reformatedData['max']) {
+                        $reformatedData['max'] = $minute;
+                    }
+                    $reformatedData[$stateLabels[$state]][] = [
+                        $date,
+                        $minute,
+                        $sizeofHostStatusArray,
+                        'statusDetails' => $hostStatusArray
+                    ];
+                }
+            }
+        }
+        $reformatedData['min'] = is_null($reformatedData['min']) ? 0 : (int)$reformatedData['min'];
+        $reformatedData['max'] = is_null($reformatedData['max']) ? 60 : (int)$reformatedData['max'];
+
+        return $reformatedData;
     }
 
 }

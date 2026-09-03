@@ -242,7 +242,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         }
 
         if (Plugin::isLoaded('DistributeModule')) {
-            $data['isDistributeModuleInstalled'] = false;
+            //$data['isDistributeModuleInstalled'] = false;
             // @var SatellitesTable $SatellitesTable
             //$SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
             //$data['satellites'] = $SatellitesTable->getSatellitesStatusWithHealth(new SatelliteFilter(new ServerRequest()));
@@ -454,39 +454,36 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             $this->setHealthState('warning');
         }
 
-        if (!empty($dataForEmail['satellites']) && is_array($dataForEmail['satellites'])) {
+        foreach ($dataForEmail['satellites'] ?? [] as $satellite) {
 
-            foreach ($dataForEmail['satellites'] as $satellite) {
+            $satInfo = $satellite['satellite_information'] ?? null;
 
-                $satInfo = $satellite['satellite_information'] ?? null;
+            if (!$satInfo || empty($satInfo['system_health'])) {
+                continue;
+            }
 
-                if (!$satInfo || empty($satInfo['system_health'])) {
-                    continue;
-                }
-
-                $systemHealth = $satInfo['system_health'];
-                // RAM
-                if (isset($systemHealth['memory']['memory']['state'])) {
-                    $this->setSatellitesHealthState($systemHealth['memory']['memory']['state']);
-                }
-                if (isset($systemHealth['memory']['swap']['state'])) {
-                    $this->setSatellitesHealthState($systemHealth['memory']['swap']['state']);
-                }
-                // Disks
-                if (!empty($systemHealth['disks']) && is_array($systemHealth['disks'])) {
-                    foreach ($systemHealth['disks'] as $disk) {
-                        if (isset($disk['state'])) {
-                            $this->setSatellitesHealthState($disk['state']);
-                        }
+            $systemHealth = $satInfo['system_health'];
+            // RAM
+            if (isset($systemHealth['memory']['memory']['state'])) {
+                $this->setSatellitesHealthState($systemHealth['memory']['memory']['state']);
+            }
+            if (isset($systemHealth['memory']['swap']['state'])) {
+                $this->setSatellitesHealthState($systemHealth['memory']['swap']['state']);
+            }
+            // Disks
+            if (!empty($systemHealth['disks']) && is_array($systemHealth['disks'])) {
+                foreach ($systemHealth['disks'] as $disk) {
+                    if (isset($disk['state'])) {
+                        $this->setSatellitesHealthState($disk['state']);
                     }
                 }
-
-                //CPU
-                if (isset($systemHealth['cpu_cores'], $systemHealth['cpu_load15'], $systemHealth['cpu_state'])) {
-                    $this->setSatellitesHealthState($systemHealth['cpu_state']);
-                }
-
             }
+
+            //CPU
+            if (isset($systemHealth['cpu_cores'], $systemHealth['cpu_load15'], $systemHealth['cpu_state'])) {
+                $this->setSatellitesHealthState($systemHealth['cpu_state']);
+            }
+
         }
 
         $this->setHealthState($dataForEmail['memory_usage']['memory']['state']);

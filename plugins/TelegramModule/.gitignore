@@ -1,0 +1,3 @@
+.idea
+vendor
+config/Migrations/schema-dump-default.lock

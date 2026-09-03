@@ -327,6 +327,9 @@ if [ "$SERVICE_ACK_END_TIME_EXISTS" = "0" ]; then
     mysql --defaults-extra-file="${INIFILE}" -e "ALTER TABLE \`statusengine_service_acknowledgements\` ADD COLUMN \`end_time\` BIGINT NOT NULL DEFAULT 0"
 fi
 
+# Enforce migration to Statusengine4
+mysql --defaults-extra-file="${INIFILE}" -e "UPDATE \`configuration_files\` SET \`value\`='Statusengine4' WHERE \`config_file\`='DbBackend' AND \`key\`='dbbackend' AND \`value\`='Statusengine3';"
+
 # Upgrade to Checkmk 2 in Docker Container
 mysql --defaults-extra-file=${INIFILE} -e "UPDATE commands SET command_line = '\$USER1\$/checkmk_http_client -H \$HOSTNAME\$' WHERE name = 'check_mk_active' AND command_line LIKE 'PYTHONPATH=/opt/openitc/check_mk/lib/python OMD_ROOT=/opt/openitc/check_mk%';"
 

@@ -1517,7 +1517,7 @@ class DashboardsController extends AppController {
                     $unit = $newPerfdata['Perfdata'][$metric]['datasource']['setup']['metric']['unit'];
 
                     if (isset($current) && ($unit !== null && $unit !== '')) {
-                        $newPerfdata['Perfdata'] = $this->getPerfdataUnitScaler($newPerfdata['Perfdata'], $metric);
+                        $newPerfdata['Perfdata'] = $this->getPerfdataUnitScalerTacho($newPerfdata['Perfdata'], $metric);
                     }
 
                 }
@@ -1633,7 +1633,7 @@ class DashboardsController extends AppController {
                     $unit = $newPerfdata['Perfdata'][$metric]['datasource']['setup']['metric']['unit'];
 
                     if (isset($current) && ($unit !== null && $unit !== '')) {
-                        $newPerfdata['Perfdata'] = $this->getPerfdataUnitScaler($newPerfdata['Perfdata'], $metric);
+                        $newPerfdata['Perfdata'] = $this->getPerfdataUnitScalerCylinder($newPerfdata['Perfdata'], $metric);
                     }
 
                 }
@@ -1693,7 +1693,61 @@ class DashboardsController extends AppController {
         throw new MethodNotAllowedException();
     }
 
-    private function getPerfdataUnitScaler($perfdata, $metric) {
+    private function getPerfdataUnitScalerCylinder($perfdata, $metric) {
+
+        $name = $perfdata[$metric]['datasource']['setup']['metric']['name'];
+        $unit = $perfdata[$metric]['datasource']['setup']['metric']['unit'];
+        $current = $perfdata[$metric]['datasource']['setup']['metric']['value'];
+
+        $gaugeData = [
+            'datasource' => [
+                'ds'     => $name,
+                'name'   => $name,
+                'label'  => $name,
+                'metric' => $name,
+                'unit'   => $unit,
+                'act'    => $current,
+                'warn'   => $perfdata[$metric]['datasource']['setup']['warn']['low'],
+                'crit'   => $perfdata[$metric]['datasource']['setup']['crit']['low'],
+                'min'    => $perfdata[$metric]['datasource']['setup']['scale']['min'],
+                'max'    => $perfdata[$metric]['datasource']['setup']['scale']['max'],
+            ],
+            'data'       => [
+                $current
+            ]
+        ];
+
+        $unitScaler = new UnitScaler($gaugeData);
+        $scaledGauge = $unitScaler->scale();
+        if ($scaledGauge) {
+            $scaledAct = $scaledGauge['data'][0] ?? $current;
+
+            $max = $scaledGauge['datasource']['max'];
+            $min = $scaledGauge['datasource']['min'];
+            $critical = $scaledGauge['datasource']['crit'];
+            $warn = $scaledGauge['datasource']['warn'];
+            $unit = $scaledGauge['datasource']['unit'];
+
+            $perfdata[$metric]['current'] = $scaledAct;
+            $perfdata[$metric]['warning'] = $warn;
+            $perfdata[$metric]['critical'] = $critical;
+            $perfdata[$metric]['min'] = $min;
+            $perfdata[$metric]['max'] = $max;
+            $perfdata[$metric]['unit'] = $unit;
+
+            $perfdata[$metric]['datasource']['setup']['metric']['value'] = $scaledAct;
+            $perfdata[$metric]['datasource']['setup']['warn']['low'] = $warn;
+            $perfdata[$metric]['datasource']['setup']['crit']['low'] = $critical;
+            $perfdata[$metric]['datasource']['setup']['scale']['min'] = $min;
+            $perfdata[$metric]['datasource']['setup']['scale']['max'] = $max;
+            $perfdata[$metric]['datasource']['setup']['metric']['unit'] = $unit;
+
+        }
+
+        return $perfdata;
+    }
+
+    private function getPerfdataUnitScalerTacho($perfdata, $metric) {
 
         $name = $perfdata[$metric]['datasource']['setup']['metric']['name'];
         $unit = $perfdata[$metric]['datasource']['setup']['metric']['unit'];

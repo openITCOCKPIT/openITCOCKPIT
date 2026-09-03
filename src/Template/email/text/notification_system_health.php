@@ -133,7 +133,7 @@ $systemHealth['load']['load15']); ?>
 <?= PHP_EOL ?>
 <?php if (($systemHealth['satellites_state'] ?? 'ok') == 'warning' || ($systemHealth['satellites_state'] ?? 'ok') == 'critical'): ?>
     <?= PHP_EOL ?>
-    "--- <?= __('Satellites System Health') ?> ---"
+    --- <?= __('Satellites System Health') ?> ---
     <?= PHP_EOL ?>
 <?php foreach ($systemHealth['satellites'] ?? [] as $satellite): ?>
     <?php if ($satellite['satellite_status']['status'] !== 1): ?>

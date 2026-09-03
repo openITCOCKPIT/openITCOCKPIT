@@ -356,6 +356,26 @@ echo $this->element('emails/style');
                                 </ul>
                             <?php endif; ?>
 
+                            <?php if ($systemHealth['state'] === 'unknown'): ?>
+                                <ul class="padding-5 list-unstyled system-health-item notification-message fs-sm"
+                                    style="width: 100%;">
+                                    <?php if (!$systemHealth['isNagiosRunning']): ?>
+                                        <li>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <p class="margin-bottom-5">
+                                                        <i class="fa fa-question-circle text-primary"></i>
+                                                        <strong><?php echo __('Unknown'); ?></strong>
+                                                        <br/>
+                                                        <i><?php echo __('Could not detect system health status.'); ?></i>
+                                                    </p>
+                                                </div>
+                                            </span>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
+                            <?php endif; ?>
+
                             <br/>
                             <?php if (($systemHealth['satellites_state'] ?? 'ok') == 'warning' || ($systemHealth['satellites_state'] ?? 'ok') == 'critical'): ?>
                                 <hr noshade size="1" style="border-color: #ccc;">
@@ -475,26 +495,6 @@ echo $this->element('emails/style');
 
                                         <?php endif; ?>
                                     <?php endforeach; ?>
-                                </ul>
-                            <?php endif; ?>
-
-                            <?php if ($systemHealth['state'] === 'unknown'): ?>
-                                <ul class="padding-5 list-unstyled system-health-item notification-message fs-sm"
-                                    style="width: 100%;">
-                                    <?php if (!$systemHealth['isNagiosRunning']): ?>
-                                        <li>
-                                            <span>
-                                                <div class="padding-5">
-                                                    <p class="margin-bottom-5">
-                                                        <i class="fa fa-question-circle text-primary"></i>
-                                                        <strong><?php echo __('Unknown'); ?></strong>
-                                                        <br/>
-                                                        <i><?php echo __('Could not detect system health status.'); ?></i>
-                                                    </p>
-                                                </div>
-                                            </span>
-                                        </li>
-                                    <?php endif; ?>
                                 </ul>
                             <?php endif; ?>
 

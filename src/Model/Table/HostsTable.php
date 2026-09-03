@@ -6425,14 +6425,13 @@ class HostsTable extends Table {
     }
 
     /**
-     * Will group the hoststatus by state and time buckets of 10 minutes (600 seconds) for the last 24 hours.
+     * Will group the hoststatus into hour and 10 minute buckets for each state for the last 24 hours.
      *
      * @param array $hoststatusList
      * @param string $dateFormat The date format to use for the time buckets. Default is 'U' (Unix timestamp).
      * @return array|array[]
      */
     public function groupHoststatusByStateAndTimeBuckets(array $hoststatusList, string $dateFormat = 'U'): array {
-        $bucketSize = 600;
         $now = time();
         $from = $now - 86400; // 24 hours ago
 
@@ -6449,31 +6448,27 @@ class HostsTable extends Table {
         ];
 
         foreach ($hoststatusList as $hoststatus) {
-            $state = (int)$hoststatus['Hoststatus']['current_state'];
-
+            $state = (int)($hoststatus['Hoststatus']['current_state'] ?? -1);
             if (!isset($stateToTimeField[$state])) {
                 continue;
             }
 
-            $timestamp = (int)($hoststatus['Hoststatus'][$stateToTimeField[$state]] ?? 0);
-
+            $timeField = $stateToTimeField[$state];
+            $timestamp = (int)($hoststatus['Hoststatus'][$timeField] ?? 0);
             if ($timestamp < $from || $timestamp > $now) {
                 continue;
             }
 
-            // did a state change occur?
-            if ($hoststatus['Hoststatus']['last_state_change'] < $timestamp) {
-                continue;
-            }
+            // Get full hour timestamp for the given timestamp
+            $hourStartTs = (int)(floor($timestamp / 3600) * 3600);
+            $hourKey = date($dateFormat, $hourStartTs);
 
-            $bucketStart = (int)(floor($timestamp / $bucketSize) * $bucketSize);
-            // Apply date format
-            $bucketStart = date($dateFormat, $bucketStart);
-            if (!isset($result[$state][$bucketStart])) {
-                $result[$state][$bucketStart] = [];
-            }
+            // 10 minutes slot (bucket) in the hour: 00,10,20,30,40,50
+            $minute = (int)date('i', $timestamp);
+            $tenMin = (int)(floor($minute / 10) * 10);
+            //$tenMinKey = str_pad((string)$tenMin, 2, '0', STR_PAD_LEFT);
 
-            $result[$state][$bucketStart][] = $hoststatus;
+            $result[$state][$hourKey][$tenMin][] = $hoststatus;
         }
 
         return $result;

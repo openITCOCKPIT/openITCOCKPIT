@@ -1696,22 +1696,16 @@ class DashboardsController extends AppController {
     private function getPerfdataUnitScalerCylinder($perfdata, $metric) {
 
         $setup = &$perfdata[$metric]['datasource']['setup'];
-        $name = $setup['metric']['name'];
         $unit = $setup['metric']['unit'];
         $current = $setup['metric']['value'];
 
         $gaugeData = [
             'datasource' => [
-                'ds'     => $name,
-                'name'   => $name,
-                'label'  => $name,
-                'metric' => $name,
-                'unit'   => $unit,
-                'act'    => $current,
-                'warn'   => $setup['warn']['low'],
-                'crit'   => $setup['crit']['low'],
-                'min'    => $setup['scale']['min'],
-                'max'    => $setup['scale']['max'],
+                'unit' => $unit,
+                'warn' => $setup['warn']['low'],
+                'crit' => $setup['crit']['low'],
+                'min'  => $setup['scale']['min'],
+                'max'  => $setup['scale']['max'],
             ],
             'data'       => [
                 $current
@@ -1751,22 +1745,16 @@ class DashboardsController extends AppController {
     private function getPerfdataUnitScalerTacho($perfdata, $metric) {
 
         $setup = &$perfdata[$metric]['datasource']['setup'];
-        $name = $setup['metric']['name'];
         $unit = $setup['metric']['unit'];
         $current = $setup['metric']['value'];
 
         $gaugeData = [
             'datasource' => [
-                'ds'     => $name,
-                'name'   => $name,
-                'label'  => $name,
-                'metric' => $name,
-                'unit'   => $unit,
-                'act'    => $current,
-                'warn'   => $setup['warn']['low'],
-                'crit'   => $setup['crit']['low'],
-                'min'    => $setup['scale']['min'],
-                'max'    => $setup['scale']['max'],
+                'unit' => $unit,
+                'warn' => $setup['warn']['low'],
+                'crit' => $setup['crit']['low'],
+                'min'  => $setup['scale']['min'],
+                'max'  => $setup['scale']['max'],
             ],
             'data'       => [
                 $current

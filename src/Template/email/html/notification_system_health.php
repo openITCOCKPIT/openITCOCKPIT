@@ -277,7 +277,93 @@ echo $this->element('emails/style');
                                         </li>
                                     <?php endif; ?>
 
+                                    <?php if ($systemHealth['memory_usage']['memory']['state'] !== 'ok'): ?>
+                                        <li>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <p class="margin-bottom-5">
+                                                        <i><?php echo __('High memory usage.'); ?></i>
+                                                        <span class="pull-right semi-bold text-muted">
+                                                            <?= h($systemHealth['memory_usage']['memory']['percentage']); ?>
+                                                            %
+                                                        </span>
+                                                    </p>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar bg-color-darken"
+                                                             style="width: <?= h($systemHealth['memory_usage']['memory']['percentage']); ?>%;"></div>
+                                                    </div>
+                                                </div>
+                                            </span>
+                                        </li>
+                                    <?php endif; ?>
 
+                                    <?php if ($systemHealth['memory_usage']['swap']['state'] !== 'ok'): ?>
+                                        <li>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <p class="margin-bottom-5">
+                                                        <i><?php echo __('High Swap usage'); ?></i>
+                                                        <span class="pull-right semi-bold text-muted">
+                                                            <?= h($systemHealth['memory_usage']['swap']['percentage']); ?>
+                                                            %
+                                                        </span>
+                                                    </p>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar bg-color-darken"
+                                                             style="width: <?= h($systemHealth['memory_usage']['swap']['percentage']); ?>%;"></div>
+                                                    </div>
+                                                </div>
+                                            </span>
+                                        </li>
+                                    <?php endif; ?>
+
+                                    <?php foreach ($systemHealth['disk_usage'] ?? [] as $disk): ?>
+                                        <?php if ($disk['state'] !== 'ok'): ?>
+                                            <li>
+                                                <span>
+                                                    <div class="padding-5">
+                                                        <p class="margin-bottom-5">
+                                                            <i><?php echo __('Low disk space left for mountpoint:'); ?></i>
+                                                            <br/>
+                                                            <i>"<?= h($disk['mountpoint']); ?>"</i>
+                                                            <span class="pull-right semi-bold text-muted">
+                                                                <?= h($disk['use_percentage']); ?>%
+                                                            </span>
+                                                        </p>
+                                                        <div class="progress progress-sm">
+                                                            <div class="progress-bar bg-color-darken"
+                                                                 style="width: <?= h($disk['use_percentage']); ?>%;"></div>
+                                                        </div>
+                                                    </div>
+                                                </span>
+                                            </li>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+
+                                    <?php if ($systemHealth['isDistributeModuleInstalled'] && !$systemHealth['isNstaRunning']): ?>
+                                        <li>
+                                            <span>
+                                                <div class="padding-5">
+                                                    <h6>
+                                                        <i class="fa fa-warning warning"></i>
+                                                        <?php echo __('Warning'); ?>
+                                                    </h6>
+                                                    <i><?php echo __('Service NSTA is not running!'); ?></i>
+                                                </div>
+                                            </span>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
+                            <?php endif; ?>
+
+                            <br/>
+                            <?php if (($systemHealth['satellites_state'] ?? 'ok') == 'warning' || ($systemHealth['satellites_state'] ?? 'ok') == 'critical'): ?>
+                                <hr noshade size="1" style="border-color: #ccc;">
+                                <strong><?= __('Satellites System Health') ?>:</strong>
+                                <hr noshade size="1" style="border-color: #ccc;">
+                                <br/>
+                                <ul class="padding-5 list-unstyled system-health-item notification-message fs-sm"
+                                    style="width: 100%;">
                                     <?php foreach ($systemHealth['satellites'] ?? [] as $satellite): ?>
                                         <?php if ($satellite['satellite_status']['status'] !== 1): ?>
                                             <li>
@@ -286,8 +372,9 @@ echo $this->element('emails/style');
                                                         <p class="margin-bottom-5">
                                                             <i><?php echo __('Sync status'); ?><?php echo __('failed') ?></i>
                                                             <br/>
-                                                            <i><?= h($satellite['name']); ?>
-                                                                , <?php echo __('last seen') ?> <?= h($satellite['satellite_status']['last_seen']); ?></i>
+                                                            <i><b><?= h($satellite['name']); ?></b>
+                                                                , <?php echo __('last seen') ?> <?= h($satellite['satellite_status']['last_seen']); ?>
+                                                            </i>
                                                         </p>
                                                     </div>
                                                 </span>
@@ -377,8 +464,8 @@ echo $this->element('emails/style');
                                                                 <i><b><?= h($satellite['name']); ?></b></i>
                                                                 <br/>
                                                                 <i><?= h($satellite_health['cpu_load1']); ?>
-                                                                    , <?= h($systemHealth['cpu_load5']); ?>, <?= h(
-                                                                        $systemHealth['cpu_load15']); ?></i>
+                                                                    , <?= h($satellite_health['cpu_load5']); ?>, <?= h(
+                                                                        $satellite_health['cpu_load15']); ?></i>
                                                             </p>
                                                         </div>
                                                     </span>
@@ -388,83 +475,6 @@ echo $this->element('emails/style');
 
                                         <?php endif; ?>
                                     <?php endforeach; ?>
-
-                                    <?php if ($systemHealth['memory_usage']['memory']['state'] !== 'ok'): ?>
-                                        <li>
-                                            <span>
-                                                <div class="padding-5">
-                                                    <p class="margin-bottom-5">
-                                                        <i><?php echo __('High memory usage.'); ?></i>
-                                                        <span class="pull-right semi-bold text-muted">
-                                                            <?= h($systemHealth['memory_usage']['memory']['percentage']); ?>
-                                                            %
-                                                        </span>
-                                                    </p>
-                                                    <div class="progress progress-sm">
-                                                        <div class="progress-bar bg-color-darken"
-                                                             style="width: <?= h($systemHealth['memory_usage']['memory']['percentage']); ?>%;"></div>
-                                                    </div>
-                                                </div>
-                                            </span>
-                                        </li>
-                                    <?php endif; ?>
-
-                                    <?php if ($systemHealth['memory_usage']['swap']['state'] !== 'ok'): ?>
-                                        <li>
-                                            <span>
-                                                <div class="padding-5">
-                                                    <p class="margin-bottom-5">
-                                                        <i><?php echo __('High Swap usage'); ?></i>
-                                                        <span class="pull-right semi-bold text-muted">
-                                                            <?= h($systemHealth['memory_usage']['swap']['percentage']); ?>
-                                                            %
-                                                        </span>
-                                                    </p>
-                                                    <div class="progress progress-sm">
-                                                        <div class="progress-bar bg-color-darken"
-                                                             style="width: <?= h($systemHealth['memory_usage']['swap']['percentage']); ?>%;"></div>
-                                                    </div>
-                                                </div>
-                                            </span>
-                                        </li>
-                                    <?php endif; ?>
-
-                                    <?php foreach ($systemHealth['disk_usage'] ?? [] as $disk): ?>
-                                        <?php if ($disk['state'] !== 'ok'): ?>
-                                            <li>
-                                                <span>
-                                                    <div class="padding-5">
-                                                        <p class="margin-bottom-5">
-                                                            <i><?php echo __('Low disk space left for mountpoint:'); ?></i>
-                                                            <br/>
-                                                            <i>"<?= h($disk['mountpoint']); ?>"</i>
-                                                            <span class="pull-right semi-bold text-muted">
-                                                                <?= h($disk['use_percentage']); ?>%
-                                                            </span>
-                                                        </p>
-                                                        <div class="progress progress-sm">
-                                                            <div class="progress-bar bg-color-darken"
-                                                                 style="width: <?= h($disk['use_percentage']); ?>%;"></div>
-                                                        </div>
-                                                    </div>
-                                                </span>
-                                            </li>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
-
-                                    <?php if ($systemHealth['isDistributeModuleInstalled'] && !$systemHealth['isNstaRunning']): ?>
-                                        <li>
-                                            <span>
-                                                <div class="padding-5">
-                                                    <h6>
-                                                        <i class="fa fa-warning warning"></i>
-                                                        <?php echo __('Warning'); ?>
-                                                    </h6>
-                                                    <i><?php echo __('Service NSTA is not running!'); ?></i>
-                                                </div>
-                                            </span>
-                                        </li>
-                                    <?php endif; ?>
                                 </ul>
                             <?php endif; ?>
 
@@ -526,7 +536,7 @@ echo $this->element('emails/style');
         <td></td>
     </tr>
 </table>
-
+</body>
 <?php
 
 // Disable PhpStorm code reformatting

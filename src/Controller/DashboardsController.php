@@ -78,6 +78,7 @@ use itnovum\openITCOCKPIT\Core\ServicestatusFields;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Core\Views\Host;
 use itnovum\openITCOCKPIT\Core\Views\Service;
+use itnovum\openITCOCKPIT\Perfdata\UnitScaler;
 use ParsedownExtra;
 use PrometheusModule\Lib\PrometheusAdapter;
 use RuntimeException;
@@ -1511,6 +1512,14 @@ class DashboardsController extends AppController {
                     $adapter = new NagiosAdapter();
                     $newPerfdata['Perfdata'][$metric] = $service['Perfdata'][$metric];
                     $newPerfdata['Perfdata'][$metric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata)->toArray();
+
+                    $current = $newPerfdata['Perfdata'][$metric]['datasource']['setup']['metric']['value'];
+                    $unit = $newPerfdata['Perfdata'][$metric]['datasource']['setup']['metric']['unit'];
+
+                    if (isset($current) && ($unit !== null && $unit !== '')) {
+                        $newPerfdata['Perfdata'] = $this->getPerfdataUnitScalerTacho($newPerfdata['Perfdata'], $metric);
+                    }
+
                 }
             }
 
@@ -1596,6 +1605,7 @@ class DashboardsController extends AppController {
             $metrics = array_keys($service['Perfdata']);
             $newPerfdata = [];
             foreach ($metrics as $metric) {
+
                 if (Plugin::isLoaded('PrometheusModule') && $service['Service']['serviceType'] === PROMETHEUS_SERVICE) {
                     $PrometheusPerfdataLoader = new \PrometheusModule\Lib\PrometheusPerfdataLoader();
                     $Service = new Service($service);
@@ -1610,12 +1620,22 @@ class DashboardsController extends AppController {
                     $newPerfdata['Perfdata'][$indexMetric]['metric'] = $indexMetric;
                     $newPerfdata['Perfdata'][$indexMetric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata[$metric])->toArray();
                 } else {
+
                     $PerfdataParser = new PerfdataParser($service['Servicestatus']['perfdata']);
+                    //dd($PerfdataParser);
                     $perfdata = $PerfdataParser->parse();
                     $perfdata = $perfdata[$metric] ?? [];
                     $adapter = new NagiosAdapter();
                     $newPerfdata['Perfdata'][$metric] = $service['Perfdata'][$metric];
                     $newPerfdata['Perfdata'][$metric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata)->toArray();
+
+                    $current = $newPerfdata['Perfdata'][$metric]['datasource']['setup']['metric']['value'];
+                    $unit = $newPerfdata['Perfdata'][$metric]['datasource']['setup']['metric']['unit'];
+
+                    if (isset($current) && ($unit !== null && $unit !== '')) {
+                        $newPerfdata['Perfdata'] = $this->getPerfdataUnitScalerCylinder($newPerfdata['Perfdata'], $metric);
+                    }
+
                 }
             }
 
@@ -1671,6 +1691,104 @@ class DashboardsController extends AppController {
             return;
         }
         throw new MethodNotAllowedException();
+    }
+
+    private function getPerfdataUnitScalerCylinder($perfdata, $metric) {
+
+        $setup = &$perfdata[$metric]['datasource']['setup'];
+        $unit = $setup['metric']['unit'];
+        $current = $setup['metric']['value'];
+
+        $gaugeData = [
+            'datasource' => [
+                'unit' => $unit,
+                'warn' => $setup['warn']['low'],
+                'crit' => $setup['crit']['low'],
+                'min'  => $setup['scale']['min'],
+                'max'  => $setup['scale']['max'],
+            ],
+            'data'       => [
+                $current
+            ]
+        ];
+
+        $unitScaler = new UnitScaler($gaugeData);
+        $scaledGauge = $unitScaler->scale();
+        if ($scaledGauge) {
+            $scaledAct = $scaledGauge['data'][0] ?? $current;
+
+            $max = $scaledGauge['datasource']['max'];
+            $min = $scaledGauge['datasource']['min'];
+            $critical = $scaledGauge['datasource']['crit'];
+            $warn = $scaledGauge['datasource']['warn'];
+            $unit = $scaledGauge['datasource']['unit'];
+
+            $perfdata[$metric]['current'] = $scaledAct;
+            $perfdata[$metric]['warning'] = $warn;
+            $perfdata[$metric]['critical'] = $critical;
+            $perfdata[$metric]['min'] = $min;
+            $perfdata[$metric]['max'] = $max;
+            $perfdata[$metric]['unit'] = $unit;
+
+            $setup['metric']['value'] = $scaledAct;
+            $setup['warn']['low'] = $warn;
+            $setup['crit']['low'] = $critical;
+            $setup['scale']['min'] = $min;
+            $setup['scale']['max'] = $max;
+            $setup['metric']['unit'] = $unit;
+
+        }
+
+        return $perfdata;
+    }
+
+    private function getPerfdataUnitScalerTacho($perfdata, $metric) {
+
+        $setup = &$perfdata[$metric]['datasource']['setup'];
+        $unit = $setup['metric']['unit'];
+        $current = $setup['metric']['value'];
+
+        $gaugeData = [
+            'datasource' => [
+                'unit' => $unit,
+                'warn' => $setup['warn']['low'],
+                'crit' => $setup['crit']['low'],
+                'min'  => $setup['scale']['min'],
+                'max'  => $setup['scale']['max'],
+            ],
+            'data'       => [
+                $current
+            ]
+        ];
+
+        $unitScaler = new UnitScaler($gaugeData);
+        $scaledGauge = $unitScaler->scale();
+        if ($scaledGauge) {
+            $scaledAct = $scaledGauge['data'][0] ?? $current;
+
+            $max = $scaledGauge['datasource']['max'];
+            $min = $scaledGauge['datasource']['min'];
+            $critical = $scaledGauge['datasource']['crit'];
+            $warn = $scaledGauge['datasource']['warn'];
+            $unit = $scaledGauge['datasource']['unit'];
+
+            $perfdata[$metric]['current'] = $scaledAct;
+            $perfdata[$metric]['warning'] = $warn;
+            $perfdata[$metric]['critical'] = $critical;
+            $perfdata[$metric]['min'] = $min;
+            $perfdata[$metric]['max'] = $max;
+            $perfdata[$metric]['unit'] = $unit;
+
+            $setup['metric']['value'] = $scaledAct;
+            $setup['metric']['unit'] = $unit;
+            $setup['warn']['low'] = $warn;
+            $setup['crit']['low'] = $critical;
+            $setup['scale']['min'] = $min;
+            $setup['scale']['max'] = $max;
+
+        }
+
+        return $perfdata;
     }
 
     private function getServicestatusByServiceId($id) {

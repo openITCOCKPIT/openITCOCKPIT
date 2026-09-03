@@ -242,7 +242,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         }
 
         if (Plugin::isLoaded('DistributeModule')) {
-            //$data['isDistributeModuleInstalled'] = false;
+            $data['isDistributeModuleInstalled'] = true;
             // @var SatellitesTable $SatellitesTable
             //$SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
             //$data['satellites'] = $SatellitesTable->getSatellitesStatusWithHealth(new SatelliteFilter(new ServerRequest()));

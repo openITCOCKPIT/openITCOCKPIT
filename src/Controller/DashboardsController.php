@@ -1695,9 +1695,10 @@ class DashboardsController extends AppController {
 
     private function getPerfdataUnitScalerCylinder($perfdata, $metric) {
 
-        $name = $perfdata[$metric]['datasource']['setup']['metric']['name'];
-        $unit = $perfdata[$metric]['datasource']['setup']['metric']['unit'];
-        $current = $perfdata[$metric]['datasource']['setup']['metric']['value'];
+        $setup = &$perfdata[$metric]['datasource']['setup'];
+        $name = $setup['metric']['name'];
+        $unit = $setup['metric']['unit'];
+        $current = $setup['metric']['value'];
 
         $gaugeData = [
             'datasource' => [
@@ -1707,10 +1708,10 @@ class DashboardsController extends AppController {
                 'metric' => $name,
                 'unit'   => $unit,
                 'act'    => $current,
-                'warn'   => $perfdata[$metric]['datasource']['setup']['warn']['low'],
-                'crit'   => $perfdata[$metric]['datasource']['setup']['crit']['low'],
-                'min'    => $perfdata[$metric]['datasource']['setup']['scale']['min'],
-                'max'    => $perfdata[$metric]['datasource']['setup']['scale']['max'],
+                'warn'   => $setup['warn']['low'],
+                'crit'   => $setup['crit']['low'],
+                'min'    => $setup['scale']['min'],
+                'max'    => $setup['scale']['max'],
             ],
             'data'       => [
                 $current
@@ -1735,12 +1736,12 @@ class DashboardsController extends AppController {
             $perfdata[$metric]['max'] = $max;
             $perfdata[$metric]['unit'] = $unit;
 
-            $perfdata[$metric]['datasource']['setup']['metric']['value'] = $scaledAct;
-            $perfdata[$metric]['datasource']['setup']['warn']['low'] = $warn;
-            $perfdata[$metric]['datasource']['setup']['crit']['low'] = $critical;
-            $perfdata[$metric]['datasource']['setup']['scale']['min'] = $min;
-            $perfdata[$metric]['datasource']['setup']['scale']['max'] = $max;
-            $perfdata[$metric]['datasource']['setup']['metric']['unit'] = $unit;
+            $setup['metric']['value'] = $scaledAct;
+            $setup['warn']['low'] = $warn;
+            $setup['crit']['low'] = $critical;
+            $setup['scale']['min'] = $min;
+            $setup['scale']['max'] = $max;
+            $setup['metric']['unit'] = $unit;
 
         }
 
@@ -1749,9 +1750,10 @@ class DashboardsController extends AppController {
 
     private function getPerfdataUnitScalerTacho($perfdata, $metric) {
 
-        $name = $perfdata[$metric]['datasource']['setup']['metric']['name'];
-        $unit = $perfdata[$metric]['datasource']['setup']['metric']['unit'];
-        $current = $perfdata[$metric]['datasource']['setup']['metric']['value'];
+        $setup = &$perfdata[$metric]['datasource']['setup'];
+        $name = $setup['metric']['name'];
+        $unit = $setup['metric']['unit'];
+        $current = $setup['metric']['value'];
 
         $gaugeData = [
             'datasource' => [
@@ -1761,10 +1763,10 @@ class DashboardsController extends AppController {
                 'metric' => $name,
                 'unit'   => $unit,
                 'act'    => $current,
-                'warn'   => $perfdata[$metric]['datasource']['setup']['warn']['low'],
-                'crit'   => $perfdata[$metric]['datasource']['setup']['crit']['low'],
-                'min'    => $perfdata[$metric]['datasource']['setup']['scale']['min'],
-                'max'    => $perfdata[$metric]['datasource']['setup']['scale']['max'],
+                'warn'   => $setup['warn']['low'],
+                'crit'   => $setup['crit']['low'],
+                'min'    => $setup['scale']['min'],
+                'max'    => $setup['scale']['max'],
             ],
             'data'       => [
                 $current
@@ -1789,12 +1791,12 @@ class DashboardsController extends AppController {
             $perfdata[$metric]['max'] = $max;
             $perfdata[$metric]['unit'] = $unit;
 
-            $perfdata[$metric]['datasource']['setup']['metric']['value'] = $scaledAct;
-            $perfdata[$metric]['datasource']['setup']['warn']['low'] = $warn;
-            $perfdata[$metric]['datasource']['setup']['crit']['low'] = $critical;
-            $perfdata[$metric]['datasource']['setup']['scale']['min'] = $min;
-            $perfdata[$metric]['datasource']['setup']['scale']['max'] = $max;
-            $perfdata[$metric]['datasource']['setup']['metric']['unit'] = $unit;
+            $setup['metric']['value'] = $scaledAct;
+            $setup['metric']['unit'] = $unit;
+            $setup['warn']['low'] = $warn;
+            $setup['crit']['low'] = $critical;
+            $setup['scale']['min'] = $min;
+            $setup['scale']['max'] = $max;
 
         }
 

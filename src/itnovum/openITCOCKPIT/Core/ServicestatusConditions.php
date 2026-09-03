@@ -113,7 +113,7 @@ class ServicestatusConditions {
             $this->conditions['Servicestatus.problem_has_been_acknowledged'] = $dbValue;
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $this->conditions['Servicestatus.problem_has_been_acknowledged'] = $dbValue;
         }
 
@@ -157,7 +157,7 @@ class ServicestatusConditions {
             $this->conditions['Servicestatus.active_checks_enabled'] = $dbValue;
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $this->conditions['Servicestatus.active_checks_enabled'] = (bool)$dbValue;
         }
 

@@ -223,7 +223,7 @@ class ServicesController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceIndexStatusengine3($ServiceConditions, $PaginateOMat);
         }
 
@@ -378,7 +378,7 @@ class ServicesController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceIndexForPassiveServicesStatusengine3($ServiceConditions, $PaginateOMat);
         }
 
@@ -563,7 +563,7 @@ class ServicesController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceNotMonitoredStatusengine3($ServiceConditions, $PaginateOMat);
         }
 
@@ -2119,7 +2119,7 @@ class ServicesController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceIndexStatusengine3($ServiceConditions);
         }
 
@@ -2236,7 +2236,7 @@ class ServicesController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceIndexStatusengine3($ServiceConditions);
         }
 

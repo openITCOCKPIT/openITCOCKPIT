@@ -1818,7 +1818,7 @@ class DashboardsController extends AppController {
                 throw new MissingDbBackendException('MissingDbBackendException');
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
@@ -1921,7 +1921,7 @@ class DashboardsController extends AppController {
                 throw new MissingDbBackendException('MissingDbBackendException');
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
@@ -2062,7 +2062,7 @@ class DashboardsController extends AppController {
                 throw new MissingDbBackendException('MissingDbBackendException');
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
@@ -2169,7 +2169,7 @@ class DashboardsController extends AppController {
                 throw new MissingDbBackendException('MissingDbBackendException');
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
@@ -2406,7 +2406,7 @@ class DashboardsController extends AppController {
                         throw new MissingDbBackendException('MissingDbBackendException');
                     }
 
-                    if ($this->DbBackend->isStatusengine3()) {
+                    if ($this->DbBackend->isStatusengine4()) {
                         /** @var HostsTable $HostsTable */
                         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
                         $hoststatus = $HostsTable->getHostsWithStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
@@ -2438,7 +2438,7 @@ class DashboardsController extends AppController {
                         throw new MissingDbBackendException('MissingDbBackendException');
                     }
 
-                    if ($this->DbBackend->isStatusengine3()) {
+                    if ($this->DbBackend->isStatusengine4()) {
                         /** @var ServicesTable $ServicesTable */
                         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
                         $servicestatus = $ServicesTable->getServicesWithStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
@@ -2611,7 +2611,7 @@ class DashboardsController extends AppController {
         if ($this->DbBackend->isCrateDb()) {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
             $hoststatus = $HostsTable->getHostsForDesktopWithStatusByConditionsStatusengine3($MY_RIGHTS, $hostsConfig);

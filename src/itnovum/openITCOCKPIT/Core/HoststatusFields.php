@@ -80,7 +80,7 @@ class HoststatusFields {
     }
 
     public function checkTimeperiod() {
-        if ($this->DbBackend->isCrateDB() || $this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isCrateDB() || $this->DbBackend->isStatusengine4()) {
             $this->addField('Hoststatus.check_timeperiod');
         }
 
@@ -131,7 +131,7 @@ class HoststatusFields {
     }
 
     public function isHardstate() {
-        if ($this->DbBackend->isCrateDB() || $this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isCrateDB() || $this->DbBackend->isStatusengine4()) {
             $this->addField('Hoststatus.is_hardstate');
         }
 
@@ -142,7 +142,7 @@ class HoststatusFields {
     }
 
     public function isPassiveCheck() {
-        if ($this->DbBackend->isCrateDB() || $this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isCrateDB() || $this->DbBackend->isStatusengine4()) {
             $this->addField('Hoststatus.is_passive_check');
         }
 
@@ -218,7 +218,7 @@ class HoststatusFields {
     }
 
     public function node_name() {
-        if ($this->DbBackend->isCrateDB() || $this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isCrateDB() || $this->DbBackend->isStatusengine4()) {
             $this->addField('Hoststatus.node_name');
         }
 

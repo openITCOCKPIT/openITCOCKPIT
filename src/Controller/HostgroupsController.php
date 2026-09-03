@@ -414,7 +414,7 @@ class HostgroupsController extends AppController {
                 $hosts = $HostsTable->getHostsIndex($HostFilter, $HostConditions);
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
                 $hosts = $HostsTable->getHostsIndexForExtendedHostgroupsStatusengine3($HostFilter, $HostConditions, $PaginateOMat);
@@ -548,7 +548,7 @@ class HostgroupsController extends AppController {
                     $hosts = $HostsTable->getHostsIndex($HostFilter, $HostConditions);
                 }
 
-                if ($this->DbBackend->isStatusengine3()) {
+                if ($this->DbBackend->isStatusengine4()) {
                     $hosts = $HostsTable->getHostsIndexStatusengine3($HostFilter, $HostConditions);
                 }
 
@@ -629,7 +629,7 @@ class HostgroupsController extends AppController {
                     $hosts = $HostsTable->getHostsIndex($HostFilter, $HostConditions);
                 }
 
-                if ($this->DbBackend->isStatusengine3()) {
+                if ($this->DbBackend->isStatusengine4()) {
                     $hosts = $HostsTable->getHostsIndexStatusengine3($HostFilter, $HostConditions);
                 }
 

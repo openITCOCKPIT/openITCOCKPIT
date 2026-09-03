@@ -212,7 +212,7 @@ class CurrentstatereportsController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceForCurrentReportStatusengine3($ServiceConditions, $ServicestatusConditions);
         }
 

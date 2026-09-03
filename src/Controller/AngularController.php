@@ -78,7 +78,11 @@ class AngularController extends AppController {
 
     private $state = 'unknown';
 
+    private $satellites_state = 'unknown';
+
     private $errorCount = 0;
+
+    private $errorCountSatellites = 0;
 
     /**
      * @throws Exception
@@ -696,29 +700,62 @@ class AngularController extends AppController {
             $this->setHealthState($disk['state']);
         }
 
-        if (Plugin::isLoaded('DistributeModule')) {
-            $User = new User($this->getUser());
-            $UserTime = $User->getUserTime();
-            foreach (($cache['satellites'] ?? []) as $index => $satellite) {
-                // Put date to users time-zone
-                if (!empty($cache['satellites'][$index]['satellite_status']['last_seen'])) {
-                    $date = $UserTime->format($cache['satellites'][$index]['satellite_status']['last_seen']);
-                    $cache['satellites'][$index]['satellite_status']['last_seen'] = $date;
+
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
+        foreach (($cache['satellites'] ?? []) as $index => $satellite) {
+
+            // Put date to users time-zone
+            if (!empty($cache['satellites'][$index]['satellite_status']['last_seen'])) {
+                $date = $UserTime->format($cache['satellites'][$index]['satellite_status']['last_seen']);
+                $cache['satellites'][$index]['satellite_status']['last_seen'] = $date;
+            }
+            // Check if user may edit satellite
+            if ($this->hasRootPrivileges) {
+                $cache['satellites'][$index]['allow_edit'] = true;
+            } else {
+                $cache['satellites'][$index]['allow_edit'] = $this->isWritableContainer($satellite['container_id']);
+            }
+            if ($cache['satellites'][$index]['status'] != 1) {
+
+                $satellite_status = $this->getSatellitesState($cache['satellites'][$index]['status']);
+                $this->setSatellitesHealthState($satellite_status);
+            }
+
+            // Check user satellite_information ['RAM,Disks,CPU']
+            $health = $cache['satellites'][$index]['satellite_information']['system_health'] ?? null;
+            if ($health) {
+
+                // RAM
+                if (isset($health['memory']['memory']['state'])) {
+                    $this->setSatellitesHealthState($health['memory']['memory']['state']);
                 }
-                // Check if user may edit satellite
-                if ($this->hasRootPrivileges) {
-                    $cache['satellites'][$index]['allow_edit'] = true;
-                } else {
-                    $cache['satellites'][$index]['allow_edit'] = $this->isWritableContainer($satellite['container_id']);
+                if (isset($health['memory']['swap']['state'])) {
+                    $this->setSatellitesHealthState($health['memory']['swap']['state']);
+                }
+                // Disks
+                if (!empty($health['disks']) && is_array($health['disks'])) {
+                    foreach ($health['disks'] as $disk) {
+                        if (isset($disk['state'])) {
+                            $this->setSatellitesHealthState($disk['state']);
+                        }
+                    }
+                }
+                // CPU
+                if (isset($health['cpu_cores'], $health['cpu_load15'], $health['cpu_state'])) {
+                    $this->setSatellitesHealthState($health['cpu_state']);
                 }
             }
         }
-
         $user = $this->getUser();
         $UserTime = new UserTime($user->get('timezone'), $user->get('dateformat'));
         $cache['update'] = $UserTime->format($cache['update']);
         $cache['state'] = $this->state;
+        $cache['satellites_state'] = $this->satellites_state;
         $cache['errorCount'] = $this->errorCount;
+        $cache['errorCountSatellites'] = $this->errorCountSatellites;
+
         $this->set('status', $cache);
         $this->viewBuilder()->setOption('serialize', ['status']);
     }
@@ -740,6 +777,36 @@ class AngularController extends AppController {
 
         $this->state = $state;
     }
+
+
+    private function setSatellitesHealthState($satellites_state) {
+        if ($satellites_state !== 'ok') {
+            $this->errorCountSatellites++;
+        }
+        //Do not overwrite critical with ok or warning
+        if ($this->satellites_state === 'critical') {
+            return;
+        }
+        //Do not overwrite warning with ok
+        if ($this->satellites_state === 'warning' && $satellites_state !== 'critical') {
+            return;
+        }
+        $this->satellites_state = $satellites_state;
+    }
+
+    private function getSatellitesState($satellites_state): string {
+        if (!isset($satellites_state)) {
+            return 'unknown';
+        }
+
+        return match ($satellites_state) {
+            1 => 'ok',
+            2 => 'warning',
+            3 => 'critical',
+            default => 'unknown',
+        };
+    }
+
 
     /**
      * @param int $up up|ok

@@ -6212,11 +6212,19 @@ class HostsTable extends Table {
                 'up'          => [],
                 'down'        => [],
                 'unreachable' => [],
+            ],
+            'buckets'            => [
+                'up'          => [],
+                'down'        => [],
+                'unreachable' => [],
             ]
         ];
         if (empty($hoststatus)) {
             return $hostStateSummary;
         }
+
+        $hostStateSummary['buckets'] = $this->groupHoststatusByStateAndTimeBuckets($hoststatus, 'c');
+
         foreach ($hoststatus as $host) {
             //Check for random exit codes like 255...
             if ($host['Hoststatus']['current_state'] > 2) {
@@ -6415,4 +6423,60 @@ class HostsTable extends Table {
         uksort($hostStateSummary['tagsOverview'], 'strcasecmp');
         return $hostStateSummary;
     }
+
+    /**
+     * Will group the hoststatus by state and time buckets of 10 minutes (600 seconds) for the last 24 hours.
+     *
+     * @param array $hoststatusList
+     * @param string $dateFormat The date format to use for the time buckets. Default is 'U' (Unix timestamp).
+     * @return array|array[]
+     */
+    public function groupHoststatusByStateAndTimeBuckets(array $hoststatusList, string $dateFormat = 'U'): array {
+        $bucketSize = 600;
+        $now = time();
+        $from = $now - 86400; // 24 hours ago
+
+        $stateToTimeField = [
+            0 => 'last_time_up',
+            1 => 'last_time_down',
+            2 => 'last_time_unreachable',
+        ];
+
+        $result = [
+            0 => [],
+            1 => [],
+            2 => [],
+        ];
+
+        foreach ($hoststatusList as $hoststatus) {
+            $state = (int)$hoststatus['Hoststatus']['current_state'];
+
+            if (!isset($stateToTimeField[$state])) {
+                continue;
+            }
+
+            $timestamp = (int)($hoststatus['Hoststatus'][$stateToTimeField[$state]] ?? 0);
+
+            if ($timestamp < $from || $timestamp > $now) {
+                continue;
+            }
+
+            // did a state change occur?
+            if ($hoststatus['Hoststatus']['last_state_change'] < $timestamp) {
+                continue;
+            }
+
+            $bucketStart = (int)(floor($timestamp / $bucketSize) * $bucketSize);
+            // Apply date format
+            $bucketStart = date($dateFormat, $bucketStart);
+            if (!isset($result[$state][$bucketStart])) {
+                $result[$state][$bucketStart] = [];
+            }
+
+            $result[$state][$bucketStart][] = $hoststatus;
+        }
+
+        return $result;
+    }
+
 }

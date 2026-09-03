@@ -6458,6 +6458,10 @@ class HostsTable extends Table {
             if ($timestamp < $from || $timestamp > $now) {
                 continue;
             }
+            // did a state change occur?
+            if ($hoststatus['Hoststatus']['last_state_change'] < $timestamp) {
+                continue;
+            }
 
             // Get full hour timestamp for the given timestamp
             $hourStartTs = (int)(floor($timestamp / 3600) * 3600);

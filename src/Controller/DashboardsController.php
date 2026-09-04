@@ -76,6 +76,7 @@ use itnovum\openITCOCKPIT\Core\HoststatusConditions;
 use itnovum\openITCOCKPIT\Core\HoststatusFields;
 use itnovum\openITCOCKPIT\Core\Servicestatus;
 use itnovum\openITCOCKPIT\Core\ServicestatusFields;
+use itnovum\openITCOCKPIT\Core\StatehistoryHostConditions;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Core\Views\Host;
 use itnovum\openITCOCKPIT\Core\Views\Service;
@@ -2814,7 +2815,29 @@ class DashboardsController extends AppController {
                     if ($this->DbBackend->isStatusengine3()) {
                         /** @var HostsTable $HostsTable */
                         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+                        $StatehistoryHostsTable = $this->DbBackend->getStatehistoryHostsTable();
+
+                        //Process conditions
+                        $Conditions = new StatehistoryHostConditions();
+
+
                         $hoststatus = $HostsTable->getHostsWithExtendedStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
+                        $hostUuids = Hash::extract($hoststatus, '{n}.uuid');
+                        $Conditions->setFrom($timestampFrom);
+                        $Conditions->setHostUuids($hostUuids);
+                        $Conditions->setOrder(['StatehistoryHosts.state_time' => 'asc']);
+                        $statehistoriesHost = $StatehistoryHostsTable->getStatehistoryByUuids(
+                            $Conditions,
+                            false
+                        );
+                        foreach ($hoststatus as $key => $host) {
+                            $hostUuid = $host['uuid'];
+                            if (isset($statehistoriesHost[$hostUuid])) {
+                                $hoststatus[$key]['statehistory'] = $statehistoriesHost[$hostUuid];
+                            } else {
+                                $hoststatus[$key]['statehistory'] = [];
+                            }
+                        }
                         $hoststatusSummary = $HostsTable->getHostStateSummaryWithLastTimeStats(
                             $hoststatus,
                             $timestampFrom,

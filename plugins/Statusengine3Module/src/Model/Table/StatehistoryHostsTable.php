@@ -225,4 +225,62 @@ class StatehistoryHostsTable extends Table implements StatehistoryHostTableInter
 
         return $statehistoryRecords;
     }
+
+
+    public function getStatehistoryByUuids(StatehistoryHostConditions $StatehistoryHostConditions, $enableHydration = true) {
+        if (empty($StatehistoryHostConditions->getHostUuids())) {
+            return [];
+        }
+        $query = $this->find()
+            ->select([
+                'StatehistoryHosts.hostname',
+                'StatehistoryHosts.state',
+                'StatehistoryHosts.state_time',
+            ])
+            ->where([
+                'StatehistoryHosts.hostname IN'  => $StatehistoryHostConditions->getHostUuids(),
+                'StatehistoryHosts.state_time >' => $StatehistoryHostConditions->getFrom()
+            ])
+            ->orderBy($StatehistoryHostConditions->getOrder());
+
+        if ($StatehistoryHostConditions->hasConditions()) {
+            $query->andWhere($StatehistoryHostConditions->getConditions());
+        }
+        if (!empty($StatehistoryHostConditions->getStates())) {
+            $query->andWhere([
+                'StatehistoryHosts.state IN' => $StatehistoryHostConditions->getStates()
+            ]);
+        }
+        if (!empty($StatehistoryHostConditions->getStateTypes())) {
+            $query->andWhere([
+                'StatehistoryHosts.is_hardstate IN' => $StatehistoryHostConditions->getStateTypes()
+            ]);
+        }
+        if ($StatehistoryHostConditions->hardStateTypeAndUpState()) {
+            $query->andWhere([
+                'OR' => [
+                    'StatehistoryHosts.is_hardstate' => 1,
+                    'StatehistoryHosts.state'        => 0
+                ]
+            ]);
+        }
+
+        $query->enableHydration($enableHydration)
+            ->all();
+
+        $result = $this->emptyArrayIfNull($query->toArray());
+        if (empty($result)) {
+            return [];
+        }
+
+        $statehistoryRecords = [];
+        foreach ($result as $record) {
+            if (!isset($statehistoryRecords[$record['hostname']])) {
+                $statehistoryRecords[$record['hostname']] = [];
+            }
+            $statehistoryRecords[$record['hostname']][] = $record;
+        }
+
+        return $statehistoryRecords;
+    }
 }

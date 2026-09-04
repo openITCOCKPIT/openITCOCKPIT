@@ -46,6 +46,8 @@ class StatehistoryHostConditions extends ListSettingsConditions {
      */
     protected $hostUuid;
 
+    protected $hostUuids = [];
+
     /**
      * @var bool
      */
@@ -64,11 +66,26 @@ class StatehistoryHostConditions extends ListSettingsConditions {
     }
 
     /**
+     * @param array $hostUuids
+     */
+    public function setHostUuids(array $hostUuids): void {
+        $this->hostUuids = $hostUuids;
+    }
+
+    /**
      * @return string
      */
     public function getHostUuid() {
         return $this->hostUuid;
     }
+
+    /**
+     * @return array
+     */
+    public function getHostUuids(): array {
+        return $this->hostUuids;
+    }
+
 
     /**
      * @param HostStates $HostStates

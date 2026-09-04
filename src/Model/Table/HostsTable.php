@@ -38,7 +38,6 @@ use Cake\Database\Expression\ComparisonExpression;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\Exception\RecordNotFoundException;
-use Cake\I18n\DateTime;
 use Cake\ORM\Association\BelongsTo;
 use Cake\ORM\Association\HasMany;
 use Cake\ORM\Behavior\TimestampBehavior;
@@ -51,6 +50,7 @@ use Cake\Validation\Validator;
 use DistributeModule\Model\Table\SatellitesTable;
 use itnovum\openITCOCKPIT\Cache\ObjectsCache;
 use itnovum\openITCOCKPIT\Core\HostConditions;
+use itnovum\openITCOCKPIT\Core\Hoststatus;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\HostFilter;
@@ -5413,6 +5413,7 @@ class HostsTable extends Table {
         $query
             ->select([
                 'Hosts.id',
+                'Hosts.uuid',
                 'Hosts.name',
                 'Hosts.priority',
                 'Hoststatus.current_state',
@@ -6208,11 +6209,6 @@ class HostsTable extends Table {
                 'ids'   => []
             ],
             'tagsOverview'       => [],
-            'statusEvents'       => [
-                'up'          => [],
-                'down'        => [],
-                'unreachable' => [],
-            ],
             'buckets'            => [
                 'up'          => [],
                 'down'        => [],
@@ -6222,14 +6218,13 @@ class HostsTable extends Table {
         if (empty($hoststatus)) {
             return $hostStateSummary;
         }
-
         $hostStateSummary['buckets'] = $this->groupHoststatusByStateAndTimeBuckets($hoststatus, 'c');
-
         foreach ($hoststatus as $host) {
             //Check for random exit codes like 255...
             if ($host['Hoststatus']['current_state'] > 2) {
                 $host['Hoststatus']['current_state'] = 2;
             }
+            $host['Hoststatus'] = new Hoststatus($host['Hoststatus']);
 
             $tags = Hash::filter(explode(',', $host['tags']));
             if (!empty($tags)) {
@@ -6293,128 +6288,82 @@ class HostsTable extends Table {
                             'cumulative_state' => -1, // not monitored
                         ];
                     }
-                    $hostStateSummary['tagsOverview'][$tag]['state'][$host['Hoststatus']['current_state']]++;
-                    $hostStateSummary['tagsOverview'][$tag]['state']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                    $hostStateSummary['tagsOverview'][$tag]['state'][$host['Hoststatus']->currentState()]++;
+                    $hostStateSummary['tagsOverview'][$tag]['state']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
 
-                    if ($host['Hoststatus']['current_state'] > 0) {
-                        if ($host['Hoststatus']['problem_has_been_acknowledged'] > 0) {
-                            $hostStateSummary['tagsOverview'][$tag]['acknowledged'][$host['Hoststatus']['current_state']]++;
-                            $hostStateSummary['tagsOverview'][$tag]['acknowledged']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
-                        } else if ($host['Hoststatus']['problem_has_been_acknowledged'] == 0 && $host['Hoststatus']['scheduled_downtime_depth'] == 0) {
-                            $hostStateSummary['tagsOverview'][$tag]['not_handled'][$host['Hoststatus']['current_state']]++;
-                            $hostStateSummary['tagsOverview'][$tag]['not_handled']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                    if ($host['Hoststatus']->currentState() > 0) {
+                        if ($host['Hoststatus']->isAcknowledged()) {
+                            $hostStateSummary['tagsOverview'][$tag]['acknowledged'][$host['Hoststatus']->currentState()]++;
+                            $hostStateSummary['tagsOverview'][$tag]['acknowledged']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
+                        } else if (!$host['Hoststatus']->isInDowntime()) {
+                            $hostStateSummary['tagsOverview'][$tag]['not_handled'][$host['Hoststatus']->currentState()]++;
+                            $hostStateSummary['tagsOverview'][$tag]['not_handled']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
                             $hostStateSummary['tagsOverview'][$tag]['not_handled']['totalHostIds'][] = $host['id'];
                         }
                     }
 
-                    if ($host['Hoststatus']['scheduled_downtime_depth'] > 0) {
-                        $hostStateSummary['tagsOverview'][$tag]['in_downtime'][$host['Hoststatus']['current_state']]++;
-                        $hostStateSummary['tagsOverview'][$tag]['in_downtime']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                    if ($host['Hoststatus']->isInDowntime()) {
+                        $hostStateSummary['tagsOverview'][$tag]['in_downtime'][$host['Hoststatus']->currentState()]++;
+                        $hostStateSummary['tagsOverview'][$tag]['in_downtime']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
                     }
-                    if ($host['Hoststatus']['active_checks_enabled'] == 0) {
-                        $hostStateSummary['tagsOverview'][$tag]['passive'][$host['Hoststatus']['current_state']]++;
-                        $hostStateSummary['tagsOverview'][$tag]['passive']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+                    if (!$host['Hoststatus']->isActiveChecksEnabled()) {
+                        $hostStateSummary['tagsOverview'][$tag]['passive'][$host['Hoststatus']->currentState()]++;
+                        $hostStateSummary['tagsOverview'][$tag]['passive']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
                     }
-                    if ($hostStateSummary['tagsOverview'][$tag]['cumulative_state'] < $host['Hoststatus']['current_state']) {
-                        $hostStateSummary['tagsOverview'][$tag]['cumulative_state'] = $host['Hoststatus']['current_state'];
+                    if ($hostStateSummary['tagsOverview'][$tag]['cumulative_state'] < $host['Hoststatus']->currentState()) {
+                        $hostStateSummary['tagsOverview'][$tag]['cumulative_state'] = $host['Hoststatus']->currentState();
                     }
                     $hostStateSummary['tagsOverview'][$tag]['total']++;
                     $hostStateSummary['tagsOverview'][$tag]['hostIds'][] = $host['id'];
                 }
             }
 
-            if ($host['Hoststatus']['current_state'] === 0) {
-                if ($host['Hoststatus']['last_state_change'] <= $timestampFrom
-                    && $host['Hoststatus']['last_time_down'] <= $timestampFrom) {
+            if ($host['Hoststatus']->currentState() === 0) {
+                if ($host['Hoststatus']->getLastStateChange() <= $timestampFrom
+                    && $host['Hoststatus']->getLastTimeDown() <= $timestampFrom) {
                     $hostStateSummary['lastTimeAlwaysUp']['count']++;
                     $hostStateSummary['lastTimeAlwaysUp']['ids'][] = $host['id'];
-                } else if ($host['Hoststatus']['last_state_change'] > $timestampFrom
-                    && $host['Hoststatus']['last_time_down'] < $timestampFrom) {
+                } else if ($host['Hoststatus']->getLastStateChange() > $timestampFrom
+                    && $host['Hoststatus']->getLastTimeDown() < $timestampFrom) {
                     $hostStateSummary['recovered']['count']++;
                     $hostStateSummary['recovered']['ids'][] = $host['id'];
                 }
-            } else if ($host['Hoststatus']['current_state'] === 1) {
-                if ($host['Hoststatus']['last_state_change'] <= $timestampFrom
-                    && $host['Hoststatus']['last_time_down'] <= $timestampFrom) {
+            } else if ($host['Hoststatus']->currentState() === 1) {
+                if ($host['Hoststatus']->getLastStateChange() <= $timestampFrom
+                    && $host['Hoststatus']->getLastTimeUp() <= $timestampFrom) {
                     $hostStateSummary['lastTimeAlwaysDown']['count']++;
                     $hostStateSummary['lastTimeAlwaysDown']['ids'][] = $host['id'];
-                } else if ($host['Hoststatus']['last_state_change'] > $timestampFrom
-                    && $host['Hoststatus']['last_time_up'] < $timestampFrom) {
+                } else if ($host['Hoststatus']->getLastStateChange() > $timestampFrom
+                    && $host['Hoststatus']->getLastTimeUp() < $timestampFrom) {
                     $hostStateSummary['failed']['count']++;
                     $hostStateSummary['failed']['ids'][] = $host['id'];
                 }
             }
-            /* Set status events -  START */
-            if ($host['Hoststatus']['last_time_up'] > $timestampFrom) {
-                $stateDateTime = new DateTime($host['Hoststatus']['last_time_up'], $UserTimeZone);
-                $hostStateSummary['statusEvents']['up'][] = [
-                    'hostId'            => $host['id'],
-                    'type'              => 'up',
-                    'timestamp'         => $host['Hoststatus']['last_time_up'],
-                    'userDateTime'      => $stateDateTime->format('c'),
-                    'stateEventMinutes' => (int)date($stateDateTime->format('i'), $stateDateTime->getTimestamp()),
-                    'host'              => [
-                        'id'   => $host['id'],
-                        'name' => $host['name']
-                    ]
-                ];
-            }
-            if ($host['Hoststatus']['last_time_down'] > $timestampFrom) {
-                $stateDateTime = new DateTime($host['Hoststatus']['last_time_down'], $UserTimeZone);
-                $hostStateSummary['statusEvents']['down'][] = [
-                    'hostId'            => $host['id'],
-                    'type'              => 'down',
-                    'timestamp'         => $host['Hoststatus']['last_time_down'],
-                    'userDateTime'      => $stateDateTime->format('c'),
-                    'stateEventMinutes' => (int)date($stateDateTime->format('i'), $stateDateTime->getTimestamp()),
-                    'host'              => [
-                        'id'   => $host['id'],
-                        'name' => $host['name']
-                    ]
-                ];
-            }
-            if ($host['Hoststatus']['last_time_unreachable'] > $timestampFrom) {
-                $stateDateTime = new DateTime($host['Hoststatus']['last_time_unreachable'], $UserTimeZone);
-                $hostStateSummary['statusEvents']['unreachable'][] = [
-                    'hostId'            => $host['id'],
-                    'type'              => 'down',
-                    'timestamp'         => $host['Hoststatus']['last_time_unreachable'],
-                    'userDateTime'      => $stateDateTime->format('c'),
-                    'stateEventMinutes' => (int)date($stateDateTime->format('i'), $stateDateTime->getTimestamp()),
-                    'host'              => [
-                        'id'   => $host['id'],
-                        'name' => $host['name']
-                    ]
-                ];
-            }
 
-            /* Set status events -  END */
-
-
-            $hostStateSummary['state'][$host['Hoststatus']['current_state']]++;
-            $hostStateSummary['state']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
-            if ($host['Hoststatus']['current_state'] > 0) {
-                if ($host['Hoststatus']['problem_has_been_acknowledged'] > 0) {
-                    $hostStateSummary['acknowledged'][$host['Hoststatus']['current_state']]++;
-                    $hostStateSummary['acknowledged']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
-                } else if ($host['Hoststatus']['problem_has_been_acknowledged'] == 0 && $host['Hoststatus']['scheduled_downtime_depth'] == 0) {
-                    $hostStateSummary['not_handled'][$host['Hoststatus']['current_state']]++;
-                    $hostStateSummary['not_handled']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+            $hostStateSummary['state'][$host['Hoststatus']->currentState()]++;
+            $hostStateSummary['state']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
+            if ($host['Hoststatus']->currentState() > 0) {
+                if ($host['Hoststatus']->isAcknowledged()) {
+                    $hostStateSummary['acknowledged'][$host['Hoststatus']->currentState()]++;
+                    $hostStateSummary['acknowledged']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
+                } else if (!$host['Hoststatus']->isInDowntime()) {
+                    $hostStateSummary['not_handled'][$host['Hoststatus']->currentState()]++;
+                    $hostStateSummary['not_handled']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
                     $hostStateSummary['not_handled']['totalHostIds'][] = $host['id'];
                 }
             }
 
-            if ($host['Hoststatus']['scheduled_downtime_depth'] > 0) {
-                $hostStateSummary['in_downtime'][$host['Hoststatus']['current_state']]++;
-                $hostStateSummary['in_downtime']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+            if ($host['Hoststatus']->isInDowntime()) {
+                $hostStateSummary['in_downtime'][$host['Hoststatus']->currentState()]++;
+                $hostStateSummary['in_downtime']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
             }
-            if ($host['Hoststatus']['active_checks_enabled'] == 0) {
-                $hostStateSummary['passive'][$host['Hoststatus']['current_state']]++;
-                $hostStateSummary['passive']['hostIds'][$host['Hoststatus']['current_state']][] = $host['id'];
+            if (!$host['Hoststatus']->isActiveChecksEnabled()) {
+                $hostStateSummary['passive'][$host['Hoststatus']->currentState()]++;
+                $hostStateSummary['passive']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
             }
 
-            if ($hostStateSummary['cumulative_state'] < $host['Hoststatus']['current_state']) {
-                $hostStateSummary['cumulative_state'] = $host['Hoststatus']['current_state'];
+            if ($hostStateSummary['cumulative_state'] < $host['Hoststatus']->currentState()) {
+                $hostStateSummary['cumulative_state'] = $host['Hoststatus']->currentState();
             }
             $hostStateSummary['total']++;
             $hostStateSummary['totalHostIds'][] = $host['id'];
@@ -6452,36 +6401,29 @@ class HostsTable extends Table {
             1 => [],
             2 => [],
         ];
-        $totalHosts = sizeof($hoststatusList);
-        foreach ($hoststatusList as $hoststatus) {
-            $state = (int)($hoststatus['Hoststatus']['current_state'] ?? -1);
 
-            if (!isset($stateToTimeField[$state])) {
-                continue;
+
+        foreach ($hoststatusList as $key => $hoststatus) {
+            $hoststatus['Hoststatus'] = new Hoststatus($hoststatus['Hoststatus']);
+            foreach ($hoststatus['statehistory'] as $stateHistory) {
+                $state = $stateHistory['state'];
+
+                $timestamp = (int)$stateHistory['state_time'] ?? 0;
+                if ($timestamp < $from || $timestamp > $now) {
+                    continue;
+                }
+                // Get full hour timestamp for the given timestamp
+                $hourStartTs = (int)(floor($timestamp / 3600) * 3600);
+                $hourKey = date($dateFormat, $hourStartTs);
+
+                // 10 minutes slot (bucket) in the hour: 00,10,20,30,40,50
+                $minute = (int)date('i', $timestamp);
+                $tenMin = (int)(floor($minute / 10) * 10);
+                //$tenMinKey = str_pad((string)$tenMin, 2, '0', STR_PAD_LEFT);
+
+                $result[$state][$hourKey][$tenMin][] = $hoststatus;
             }
-
-            $timeField = $stateToTimeField[$state];
-            $timestamp = (int)($hoststatus['Hoststatus'][$timeField] ?? 0);
-            if ($timestamp < $from || $timestamp > $now) {
-                continue;
-            }
-            // did a state change occur?
-            if ($hoststatus['Hoststatus']['last_state_change'] < $timestamp) {
-                continue;
-            }
-
-            // Get full hour timestamp for the given timestamp
-            $hourStartTs = (int)(floor($timestamp / 3600) * 3600);
-            $hourKey = date($dateFormat, $hourStartTs);
-
-            // 10 minutes slot (bucket) in the hour: 00,10,20,30,40,50
-            $minute = (int)date('i', $timestamp);
-            $tenMin = (int)(floor($minute / 10) * 10);
-            //$tenMinKey = str_pad((string)$tenMin, 2, '0', STR_PAD_LEFT);
-
-            $result[$state][$hourKey][$tenMin][] = $hoststatus;
         }
-
         $reformatedData =
             [
                 'up'          => [],
@@ -6491,13 +6433,24 @@ class HostsTable extends Table {
                 'max'         => null
             ];
 
-        //debug($result);
+        $result = Hash::remove($result, '{n}.{s}.{n}.{n}.statehistory');
+
         foreach ($result as $state => $hoststatusDetails) {
             $reformatedData[$stateLabels[$state]] = [];
-
             foreach ($hoststatusDetails as $date => $hostStatusByMinutes) {
                 foreach ($hostStatusByMinutes as $minute => $hostStatusArray) {
                     $sizeofHostStatusArray = sizeof($hostStatusArray);
+                    $statusDetails = [];
+                    foreach ($hostStatusArray as $hostStatusDetails) {
+                        $statusDetails[$hostStatusDetails['id']] = [
+                            'id'            => $hostStatusDetails['id'],
+                            'hostUuid'      => $hostStatusDetails['uuid'],
+                            'name'          => $hostStatusDetails['name'],
+                            'hostpriority'  => $hostStatusDetails['hostpriority'],
+                            'current_state' => $hostStatusDetails['Hoststatus']->currentState(),
+                        ];
+                    }
+                    $statusDetails = array_values($statusDetails);
                     if (is_null($reformatedData['max']) || $minute > $reformatedData['max']) {
                         $reformatedData['max'] = $minute;
                     }
@@ -6505,14 +6458,13 @@ class HostsTable extends Table {
                         $date,
                         $minute,
                         $sizeofHostStatusArray,
-                        'statusDetails' => $hostStatusArray
+                        'statusDetails' => $statusDetails
                     ];
                 }
             }
         }
-        $reformatedData['max'] = is_null($reformatedData['max']) ? 60 : (int)$reformatedData['max'];
 
+        $reformatedData['max'] = is_null($reformatedData['max']) ? 60 : (int)$reformatedData['max'];
         return $reformatedData;
     }
-
 }

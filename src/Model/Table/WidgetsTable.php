@@ -393,7 +393,7 @@ class WidgetsTable extends Table {
             ];
             $widgets[] = [
                 'type_id'   => 42,
-                'title'     => __('Host Operations Summary'),
+                'title'     => __('Host Operations Summary (last 24 hours)'),
                 'icon'      => 'fas fa-magnifying-glass-chart',
                 'directive' => 'host-operations-summary-widget',
                 'width'     => 12,

@@ -29,6 +29,9 @@ namespace itnovum\openITCOCKPIT\ConfigGenerator;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
+/**
+ * @deprecated Statusengine 3 got replaced by Statusengien 4. A Go based implementation of Statusengine.
+ */
 class Statusengine3Cfg extends ConfigGenerator implements ConfigInterface {
 
     protected $templateDir = 'statusengine3';
@@ -37,7 +40,7 @@ class Statusengine3Cfg extends ConfigGenerator implements ConfigInterface {
 
     protected $realOutfile = '/opt/openitc/statusengine3/worker/etc/config.yml';
 
-    protected $linkedOutfile = '/opt/openitc/etc/statusengine/config.yml';
+    protected $linkedOutfile = '/opt/openitc/etc/statusengine/config-php.yml';
 
     /**
      * @var string

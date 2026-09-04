@@ -51,6 +51,7 @@ class GeneratorRegistry {
             new GraphingDocker(),
             new StatusengineCfg(),
             new Statusengine3Cfg(),
+            new Statusengine4Cfg(),
             new GraphiteWeb(),
             new NSTAMaster(),
             new PhpFpmOitc()
@@ -113,7 +114,8 @@ class GeneratorRegistry {
             ],
             __('Statusengine')                                => [
                 new StatusengineCfg(),
-                new Statusengine3Cfg()
+                new Statusengine3Cfg(),
+                new Statusengine4Cfg(),
             ],
             //__('phpNSTA')                                     => [
             //    new phpNSTAMaster()

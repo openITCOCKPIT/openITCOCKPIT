@@ -184,6 +184,20 @@ class ConfigGenerator {
     }
 
     /**
+     * Converts a comma separated string from the database into an array
+     *
+     * @param $value
+     * @return array
+     */
+    public function asStringArray($value): array {
+        if (!is_string($value)) {
+            return [];
+        }
+
+        return explode(',', $value);
+    }
+
+    /**
      * @return array
      */
     public function getDefaults() {
@@ -230,6 +244,17 @@ class ConfigGenerator {
                     case 'string':
                         if (!$Validator->assertStringNotEmpty($value)) {
                             $error[$fakeModelName][$field][] = __('This field can not left be blank.');
+                        }
+                        break;
+
+                    case 'string_array':
+                        if (is_array($value)) {
+                            foreach ($value as $index => $strValue) {
+                                if (!$Validator->assertStringNotEmpty($strValue)) {
+                                    // try to rebuild the validation structure as CakePHP would do it for a model with hasMany relation
+                                    $error[$field][$index][$field] = __('This field can not left be blank.');
+                                }
+                            }
                         }
                         break;
 
@@ -290,6 +315,10 @@ class ConfigGenerator {
                         $mergedConfiguration[$type][$key] = $this->asBoolNumber((int)$dbRecords[$key]);
                         break;
 
+                    case 'string_array':
+                        $mergedConfiguration[$type][$key] = $this->asStringArray($dbRecords[$key]);
+                        break;
+
                     default:
                         $mergedConfiguration[$type][$key] = $dbRecords[$key];
                         break;
@@ -329,6 +358,15 @@ class ConfigGenerator {
 
         foreach ($requestData as $type => $fields) {
             foreach ($fields as $key => $value) {
+
+                switch ($type) {
+                    case 'string_array':
+                        $value = implode(',', $value);
+                        break;
+
+                    // Add more type conversions here if needed
+                }
+
                 $records[] = [
                     'ConfigurationFile' => [
                         'config_file' => $this->getDbKey(),

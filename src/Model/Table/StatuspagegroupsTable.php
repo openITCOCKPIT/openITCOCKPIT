@@ -22,12 +22,14 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 declare(strict_types=1);
 
 namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use App\Model\Behavior\ContainerOwnedBehavior;
 use App\Model\Entity\Statuspagegroup;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
@@ -60,6 +62,7 @@ use itnovum\openITCOCKPIT\Filter\GenericFilter;
  * @method iterable<\App\Model\Entity\Statuspagegroup>|\Cake\Datasource\ResultSetInterface<\App\Model\Entity\Statuspagegroup> deleteManyOrFail(iterable $entities, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin ContainerOwnedBehavior
  */
 class StatuspagegroupsTable extends Table {
     use PaginationAndScrollIndexTrait;
@@ -78,6 +81,7 @@ class StatuspagegroupsTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->belongsTo('Containers', [
             'foreignKey' => 'container_id',

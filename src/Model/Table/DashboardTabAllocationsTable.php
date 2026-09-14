@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -34,6 +35,7 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use App\Model\Behavior\ContainerOwnedBehavior;
 use Cake\Database\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -67,6 +69,7 @@ use itnovum\openITCOCKPIT\Filter\DashboardTabAllocationsFilter;
  * @method \App\Model\Entity\DashboardTabAllocation[]|\Cake\Datasource\ResultSetInterface deleteManyOrFail(iterable $entities, $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin ContainerOwnedBehavior
  */
 class DashboardTabAllocationsTable extends Table {
 
@@ -86,6 +89,7 @@ class DashboardTabAllocationsTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->belongsTo('DashboardTabs', [
             'foreignKey' => 'dashboard_tab_id',

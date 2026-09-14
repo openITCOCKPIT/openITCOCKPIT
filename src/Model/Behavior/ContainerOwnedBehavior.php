@@ -22,7 +22,6 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
-//
 
 namespace App\Model\Behavior;
 
@@ -149,7 +148,7 @@ class ContainerOwnedBehavior extends Behavior {
         $cacheKey = 'userPermissions_' . $identity->get('id');
         $permissions = Cache::read($cacheKey, 'permissions');
 
-        // Fallback to put the userPermissions tot he cache if not cached previously.
+        // Fallback to put the userPermissions to the cache if not cached previously.
         if ($permissions === null) {
             $permissions = MyRightsFactory::getUserPermissions($identity->get('id'), $identity->get('usergroup_id'));
             Cache::write($cacheKey, $permissions, 'permissions');

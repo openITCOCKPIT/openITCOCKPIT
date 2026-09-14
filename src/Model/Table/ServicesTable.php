@@ -587,7 +587,7 @@ class ServicesTable extends Table {
      * @param bool $returnEmptyArrayIfMyRightsIsEmpty
      * @return array|null
      */
-    public function getServicesForAngularCake4(ServiceConditions $ServiceConditions, $selected = [], $returnEmptyArrayIfMyRightsIsEmpty = false) {
+    public function getServicesForAngularCake4(ServiceConditions $ServiceConditions, $selected = [], $returnEmptyArrayIfMyRightsIsEmpty = false, $withCheckValues = false) {
         if (!is_array($selected)) {
             $selected = [$selected];
         }
@@ -618,6 +618,30 @@ class ServicesTable extends Table {
 
         $query = $this->find();
 
+        $select = [
+            'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
+            'Services.id',
+            'Services.disabled',
+            'Hosts.id',
+            'Hosts.name'
+        ];
+
+        if ($withCheckValues) {
+            $select = [
+                'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
+                'Services.id',
+                'Services.disabled',
+                'Hosts.id',
+                'Hosts.name',
+                'Services.check_interval',
+                'Services.max_check_attempts',
+                'Services.retry_interval',
+                'Servicetemplates.check_interval',
+                'Servicetemplates.max_check_attempts',
+                'Servicetemplates.retry_interval',
+            ];
+        }
+
         if (isset($where['servicename rlike'])) {
             $query->where(new ComparisonExpression(
                 'CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))',
@@ -636,13 +660,7 @@ class ServicesTable extends Table {
                 ]);
             })
             ->innerJoinWith('Servicetemplates')
-            ->select([
-                'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
-                'Services.id',
-                'Services.disabled',
-                'Hosts.id',
-                'Hosts.name'
-            ])
+            ->select($select)
             ->where(
                 $where
             );
@@ -674,13 +692,7 @@ class ServicesTable extends Table {
                     ]);
                 })
                 ->innerJoinWith('Servicetemplates')
-                ->select([
-                    'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
-                    'Services.id',
-                    'Services.disabled',
-                    'Hosts.id',
-                    'Hosts.name'
-                ])
+                ->select($select)
                 ->where([
                     'Services.id IN' => $selected
                 ])

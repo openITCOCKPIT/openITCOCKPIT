@@ -33,6 +33,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\itnovum\openITCOCKPIT\Core\Merger\HostMergerForCheckValues;
 use App\Model\Table\ContactgroupsTable;
 use App\Model\Table\ContactsTable;
 use App\Model\Table\ContainersTable;
@@ -287,8 +288,26 @@ class HostescalationsController extends AppController {
         $contactgroups = $ContactgroupsTable->getContactgroupsByContainerId($containerIds, 'list', 'id');
         $contactgroups = Api::makeItJavaScriptAble($contactgroups);
 
-        $this->set(compact(['hosts', 'hostgroups', 'timeperiods', 'contacts', 'contactgroups']));
-        $this->viewBuilder()->setOption('serialize', ['hosts', 'hostgroups', 'timeperiods', 'contacts', 'contactgroups']);
+        $hostsForNotificationCalc = $HostsTable->getHostsForNotificationCalc(Hash::extract($hosts, '{n}.key'));
+        $hostsWithCheckValues = [];
+        foreach ($hostsForNotificationCalc as $host) {
+            //Merge host and inheritance data
+            $HostMergerForCheckValues = new HostMergerForCheckValues(
+                $host,
+                $host['hosttemplate']
+            );
+            $mergedHost = $HostMergerForCheckValues->getDataForView();
+            $hostsWithCheckValues[$mergedHost['id']] = [
+                'id'                 => $mergedHost['id'],
+                'name'               => $mergedHost['name'],
+                'check_interval'     => $mergedHost['check_interval'],
+                'retry_interval'     => $mergedHost['retry_interval'],
+                'max_check_attempts' => $mergedHost['max_check_attempts'],
+            ];
+        }
+
+        $this->set(compact(['hosts', 'hostgroups', 'timeperiods', 'contacts', 'contactgroups', 'hostsWithCheckValues']));
+        $this->viewBuilder()->setOption('serialize', ['hosts', 'hostgroups', 'timeperiods', 'contacts', 'contactgroups', 'hostsWithCheckValues']);
     }
 
     public function loadContainers() {

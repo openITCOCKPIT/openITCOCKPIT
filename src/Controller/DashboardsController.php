@@ -2868,7 +2868,6 @@ class DashboardsController extends AppController {
         $type = $this->request->getQuery('type');
         $OperationsSummaryJson = new OperationsSummaryJson();
 
-
         /** @var WidgetsTable $WidgetsTable */
         $WidgetsTable = TableRegistry::getTableLocator()->get('Widgets');
 
@@ -2955,7 +2954,7 @@ class DashboardsController extends AppController {
                         throw new MissingDbBackendException('MissingDbBackendException');
                     }
 
-                    if ($this->DbBackend->isStatusengine3()) {
+                    if ($this->DbBackend->isStatusengine4()) {
                         /** @var HostsTable $HostsTable */
                         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
                         $StatehistoryHostsTable = $this->DbBackend->getStatehistoryHostsTable();
@@ -3012,12 +3011,11 @@ class DashboardsController extends AppController {
                         throw new MissingDbBackendException('MissingDbBackendException');
                     }
 
-                    if ($this->DbBackend->isStatusengine3()) {
+                    if ($this->DbBackend->isStatusengine4()) {
                         $StatehistoryServicesTable = $this->DbBackend->getStatehistoryServicesTable();
 
                         //Process conditions
                         $Conditions = new StatehistoryServiceConditions();
-
 
                         $servicestatus = $ServicesTable->getServicesWithExtendedStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
                         $serviceUuids = Hash::extract($servicestatus, '{n}.uuid');

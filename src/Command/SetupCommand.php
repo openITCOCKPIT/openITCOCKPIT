@@ -451,9 +451,6 @@ class SetupCommand extends Command {
      * @return bool
      */
     public function createMysqlPartitions() {
-        $this->io->out('Create MySQL partitions', 0);
-
-
         $DbBackend = new DbBackend();
         if ($DbBackend->isNdoUtils()) {
             $sqlFile = ROOT . DS . 'partitions.sql';
@@ -463,6 +460,16 @@ class SetupCommand extends Command {
             $sqlFile = ROOT . DS . 'partitions_statusengine3.sql';
         }
 
+        if ($DbBackend->isStatusengine4()) {
+            // Statusengine4 does not provide a partitions.sql file.
+            // openITCOCKPIT itself will create the partitions now in the DatabaseClenupCommand.
+            // In addition, starting with 20240917054853_StatusengineNotificationsLog.php
+            // we use the CakePHP migrations to manage the database structure of Statusengine Tables as well.
+            return true;
+        }
+
+        $this->io->out('Create MySQL partitions', 0);
+        
         if (!isset($sqlFile)) {
             throw new \RuntimeException('Could not detect DbBackend!');
         }

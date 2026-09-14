@@ -310,7 +310,7 @@ class AutomapsController extends AppController {
                 throw new MissingDbBackendException('MissingDbBackendException');
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 $services = $ServicesTable->getServiceWithStatusByRegularExpressionStatusengine3($ServicesConditions, $PaginateOMat, 'all');
             }
         } catch (Exception $e) {
@@ -592,7 +592,7 @@ class AutomapsController extends AppController {
                         throw new MissingDbBackendException('MissingDbBackendException');
                     }
 
-                    if ($this->DbBackend->isStatusengine3()) {
+                    if ($this->DbBackend->isStatusengine4()) {
                         $serviceCount = $ServicesTable->getServiceWithStatusByRegularExpressionStatusengine3($ServicesConditions, null, 'count');
                     }
                 } catch (Exception $e) {

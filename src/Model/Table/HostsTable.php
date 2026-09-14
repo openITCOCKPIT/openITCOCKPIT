@@ -105,7 +105,6 @@ class HostsTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
-        $this->addBehavior('ContainerOwned');
 
         $this->belongsToMany('HostsToContainersSharing', [
             'className'        => 'Containers',

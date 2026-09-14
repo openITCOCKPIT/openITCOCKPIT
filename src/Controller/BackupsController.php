@@ -103,6 +103,9 @@ class BackupsController extends AppController {
         }
 
         $pathForRestore = $this->request->getData('backupfile');
+        if (!array_key_exists($pathForRestore, $this->getBackupFiles())) {
+            throw new FileNotFoundException();
+        }
         $GearmanClient = new Gearman();
         $GearmanClient->sendBackground("restore_sql_backup", ['path' => $pathForRestore]);
         $backup = [
@@ -156,6 +159,10 @@ class BackupsController extends AppController {
         }
 
         $fileToDelete = $this->request->getData('filename');
+        $backupFiles = $this->getBackupFiles();
+        if (!array_key_exists($fileToDelete, $backupFiles)) {
+            throw new FileNotFoundException();
+        }
 
         $GearmanClient = new Gearman();
         $result = $GearmanClient->send("delete_sql_backup", ['path' => $fileToDelete]);

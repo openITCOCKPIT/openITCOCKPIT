@@ -801,8 +801,7 @@ class AngularController extends AppController {
 
         return match ($satellites_state) {
             1 => 'ok',
-            2 => 'warning',
-            3 => 'critical',
+            2, 3 => 'critical',//2 => 'warning'
             default => 'unknown',
         };
     }

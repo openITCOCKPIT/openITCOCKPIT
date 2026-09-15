@@ -124,7 +124,7 @@ class LocationsController extends AppController {
         if ($this->request->is('post') && $this->isAngularJsRequest()) {
             $location = $LocationsTable->newEmptyEntity();
             $location = $LocationsTable->patchEntity($location, $this->request->getData());
-            if ($location->container->parent_id == 1 || !$this->isWritableContainer($location->container->parent_id)) {
+            if ($location->container->parent_id == ROOT_CONTAINER || !$this->isWritableContainer($location->container->parent_id)) {
                 $this->render403();
                 return;
             }

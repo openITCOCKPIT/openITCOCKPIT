@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -133,6 +134,11 @@ class ContactgroupsController extends AppController {
             $contactgroup->set('uuid', UUID::v4());
             $contactgroup->get('container')->set('containertype_id', CT_CONTACTGROUP);
 
+            if (!$this->isWritableContainer($contactgroup->get('container')->get('parent_id'))) {
+                $this->render403();
+                return;
+            }
+
             $User = new User($this->getUser());
 
             $contactgroup = $ContactgroupsTable->createContactgroup($contactgroup, $requestData, $User->getId());
@@ -194,11 +200,20 @@ class ContactgroupsController extends AppController {
 
             $ContainersTable->acquireLock();
 
+            $data = $this->request->getData('Contactgroup');
+            unset($data['container']['lft'], $data['container']['rght']);
+
             $contactgroupEntity = $ContactgroupsTable->get($id, contain: [
                 'Containers'
             ]);
             $contactgroupEntity->setAccess('uuid', false);
-            $contactgroupEntity = $ContactgroupsTable->patchEntity($contactgroupEntity, $this->request->getData('Contactgroup'));
+            $contactgroupEntity = $ContactgroupsTable->patchEntity($contactgroupEntity, $data);
+
+            if (!$this->isWritableContainer($contactgroupEntity->get('container')->get('parent_id'))) {
+                $this->render403();
+                return;
+            }
+
             $contactgroupEntity->id = $id;
 
             $requestData = $this->request->getData();

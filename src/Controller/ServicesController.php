@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -754,6 +755,12 @@ class ServicesController extends AppController {
             }
 
             $host = $HostsTable->get($hostId);
+            $hostForPermissionCheck = $HostsTable->getHostByIdForPermissionCheck($hostId);
+            if (!$this->allowedByContainerId($hostForPermissionCheck->getContainerIds())) {
+                $this->render403();
+                return;
+            }
+
             $request = $this->request->getData();
             $request['Host'] = [
                 'id'   => $host->get('id'),

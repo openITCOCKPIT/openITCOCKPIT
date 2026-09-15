@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -123,6 +124,10 @@ class LocationsController extends AppController {
         if ($this->request->is('post') && $this->isAngularJsRequest()) {
             $location = $LocationsTable->newEmptyEntity();
             $location = $LocationsTable->patchEntity($location, $this->request->getData());
+            if ($location->container->parent_id == ROOT_CONTAINER || !$this->isWritableContainer($location->container->parent_id)) {
+                $this->render403();
+                return;
+            }
             $location->set('uuid', UUID::v4());
             $location->container->containertype_id = CT_LOCATION;
 
@@ -215,7 +220,9 @@ class LocationsController extends AppController {
                 return;
             }
 
-            $location = $LocationsTable->patchEntity($oldLocation, $this->request->getData());
+            $locationData = $this->request->getData();
+            unset($locationData['container']['parent_id'], $locationData['container']['lft'], $locationData['container']['rght']);
+            $location = $LocationsTable->patchEntity($oldLocation, $locationData);
 
             $location->container_id = $oldLocation->get('container_id');
             $location->container->id = $oldLocation->get('container_id');

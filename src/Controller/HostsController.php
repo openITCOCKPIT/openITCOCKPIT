@@ -216,7 +216,7 @@ class HostsController extends AppController {
         }
 
         $hosts = [];
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $hosts = $HostsTable->getHostsIndexStatusengine3($HostFilter, $HostCondition, $PaginateOMat);
         }
 
@@ -397,7 +397,7 @@ class HostsController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $hosts = $HostsTable->getHostsIndexForPassiveHostsStatusengine3($HostFilter, $HostCondition, $PaginateOMat);
         }
 
@@ -577,7 +577,7 @@ class HostsController extends AppController {
             //$modelName = 'CrateHost';
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $hosts = $HostsTable->getHostsNotMonitoredStatusengine3($HostFilter, $HostCondition, $PaginateOMat);
         }
 
@@ -2709,7 +2709,7 @@ class HostsController extends AppController {
             //$modelName = 'Hoststatus';
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $hosts = $HostsTable->getHostsIndexStatusengine3($HostFilter, $HostCondition);
         }
 
@@ -2823,7 +2823,7 @@ class HostsController extends AppController {
             //$modelName = 'Hoststatus';
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $hosts = $HostsTable->getHostsIndexStatusengine3($HostFilter, $HostCondition);
         }
 

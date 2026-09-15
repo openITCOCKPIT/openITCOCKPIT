@@ -39,8 +39,10 @@
  * @var AppView $this
  * @var string $systemname
  * @var HoststatusIcon $StatusIcon
+ * @var HoststatusIcon $StatusSatelliteIcon
  * @var string $systemAddress
  * @var array $systemHealth
+ *  @var string $satelliteState
  *
  */
 use App\View\AppView;use itnovum\openITCOCKPIT\Core\Views\HoststatusIcon;
@@ -131,9 +133,12 @@ $systemHealth['load']['load15']); ?>
 <?= PHP_EOL ?>
 <?php endif; ?>
 <?= PHP_EOL ?>
-<?php if (($systemHealth['satellites_state'] ?? 'ok') == 'warning' || ($systemHealth['satellites_state'] ?? 'ok') == 'critical'): ?>
+<?php if ($systemHealth['isDistributeModuleInstalled'] && !$satelliteState != 'unknown'): ?>
+    <?= __('Satellites System Health') ?> is <?= $StatusSatelliteIcon->getHumanState() ?>!
     <?= PHP_EOL ?>
-    --- <?= __('Satellites System Health') ?> ---
+    Time: <?php echo date('H:i:s T'); ?>
+    <?= PHP_EOL ?>
+    State: <?= $StatusSatelliteIcon->getHumanState(); ?>
     <?= PHP_EOL ?>
 <?php foreach ($systemHealth['satellites'] ?? [] as $satellite): ?>
     <?php if ($satellite['satellite_status']['status'] !== 1): ?>
@@ -142,30 +147,32 @@ $systemHealth['load']['load15']); ?>
         <?= h($satellite['name']); ?>, <?php echo __('last seen') ?> <?= h($satellite['satellite_status']['last_seen']); ?>
         <?= PHP_EOL ?>
     <?php endif; ?>
-    <?php if (isset($satellite['satellite_status']['satellite_information']['system_health'])): ?>
-        <?php  $satellite_health = $satellite['satellite_status']['satellite_information']['system_health']; ?>
-        <?php if (($satellite_health['memory']['memory']['state'] ?? 'ok') !== 'ok'): ?>
-            <?= h($satellite['name']); ?>, <?php echo __('High memory usage.'); ?> <?= h($satellite_health['memory']['memory']['percentage']); ?>%
-            <?= PHP_EOL ?>
-        <?php endif; ?>
-        <?php if (($satellite_health['memory']['swap']['state'] ?? 'ok') !== 'ok'): ?>
-            <?= h($satellite['name']); ?>, <?php echo __('High Swap usage'); ?> <?= h($satellite_health['memory']['swap']['percentage']); ?>%
-            <?= PHP_EOL ?>
-        <?php endif; ?>
-        <?php foreach ($satellite_health['disks'] ?? [] as $disk): ?>
-            <?php if (($disk['state'] ?? 'ok') !== 'ok'): ?>
-                <?= h($satellite['name']); ?>, <?php echo __('Low disk space left for mountpoint:'); ?> "<?= h($disk['mountpoint']); ?>" <?= h($disk['use_percentage']); ?>%
+    <?php if ($satelliteState == 'warning' || $satelliteState == 'critical'): ?>
+        <?php if (isset($satellite['satellite_information']['system_health'])): ?>
+            <?php  $satellite_health = $satellite['satellite_information']['system_health']; ?>
+            <?php if (($satellite_health['memory']['memory']['state'] ?? 'ok') !== 'ok'): ?>
+                <?= h($satellite['name']); ?>, <?php echo __('High memory usage.'); ?> <?= h($satellite_health['memory']['memory']['percentage']); ?>%
                 <?= PHP_EOL ?>
             <?php endif; ?>
-        <?php endforeach; ?>
-        <?php if ($satellite_health['cpu_state'] !== 'ok'): ?>
-            <?= h($satellite['name']); ?>, <?php echo __('Current CPU load is too high!'); ?>
-            <?= PHP_EOL ?>
-            <?= h($satellite_health['cpu_load1']); ?>, <?= h($satellite_health['cpu_load5']); ?>, <?= h(
-                $satellite_health['cpu_load15']); ?>
-            <?= PHP_EOL ?>
+            <?php if (($satellite_health['memory']['swap']['state'] ?? 'ok') !== 'ok'): ?>
+                <?= h($satellite['name']); ?>, <?php echo __('High Swap usage'); ?> <?= h($satellite_health['memory']['swap']['percentage']); ?>%
+                <?= PHP_EOL ?>
+            <?php endif; ?>
+            <?php foreach ($satellite_health['disks'] ?? [] as $disk): ?>
+                <?php if (($disk['state'] ?? 'ok') !== 'ok'): ?>
+                    <?= h($satellite['name']); ?>, <?php echo __('Low disk space left for mountpoint:'); ?> "<?= h($disk['mountpoint']); ?>" <?= h($disk['use_percentage']); ?>%
+                    <?= PHP_EOL ?>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            <?php if ($satellite_health['cpu_state'] !== 'ok'): ?>
+                <?= h($satellite['name']); ?>, <?php echo __('Current CPU load is too high!'); ?>
+                <?= PHP_EOL ?>
+                <?= h($satellite_health['cpu_load1']); ?>, <?= h($satellite_health['cpu_load5']); ?>, <?= h(
+                    $satellite_health['cpu_load15']); ?>
+                <?= PHP_EOL ?>
+            <?php endif; ?>
         <?php endif; ?>
-    <?php endif; ?>
+        <?php endif; ?>
 <?php endforeach; ?>
 <?php endif; ?>
 

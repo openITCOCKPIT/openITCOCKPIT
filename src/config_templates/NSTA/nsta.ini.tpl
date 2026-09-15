@@ -1,4 +1,5 @@
 [nsta]
+{{STATIC_FILE_HEADER}}
 ; All config options can be found: https://github.com/openITCOCKPIT/nsta/blob/development/cli/cli.go
 ;
 ; address for local gearman server

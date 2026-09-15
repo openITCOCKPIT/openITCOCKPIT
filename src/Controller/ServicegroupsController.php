@@ -544,7 +544,7 @@ class ServicegroupsController extends AppController {
                     $services = $ServicesTable->getServiceIndex($ServiceConditions);
                 }
 
-                if ($this->DbBackend->isStatusengine3()) {
+                if ($this->DbBackend->isStatusengine4()) {
                     $services = $ServicesTable->getServiceIndexStatusengine3($ServiceConditions);
                 }
 
@@ -638,7 +638,7 @@ class ServicegroupsController extends AppController {
                     $services = $ServicesTable->getServiceIndex($ServiceConditions);
                 }
 
-                if ($this->DbBackend->isStatusengine3()) {
+                if ($this->DbBackend->isStatusengine4()) {
                     $services = $ServicesTable->getServiceIndexStatusengine3($ServiceConditions);
                 }
 
@@ -1089,7 +1089,7 @@ class ServicegroupsController extends AppController {
                 $services = $ServicesTable->getServiceIndex($ServiceConditions);
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
                 $services = $ServicesTable->getServiceIndexStatusengine3($ServiceConditions, $PaginateOMat);

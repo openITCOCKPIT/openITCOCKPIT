@@ -36,8 +36,8 @@ namespace App\Command;
 use App\Lib\Exceptions\MissingDbBackendException;
 use App\Lib\Traits\DatabasePartitionsTrait;
 use App\Model\Table\SystemsettingsTable;
-use Cake\Console\Arguments;
 use Cake\Command\Command;
+use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Log\Log;
@@ -109,7 +109,21 @@ class DatabaseCleanupCommand extends Command implements CronjobInterface {
             $this->checkAndCreatePartitionsMySQL($tables, $io);
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
+
+            // Check for p_max partition in new tables
+            $this->checkAndCreateInitialPartition($this->DbBackend->getHostchecksTable(), 'start_time', $io);
+            $this->checkAndCreateInitialPartition($this->DbBackend->getServicechecksTable(), 'start_time', $io);
+            $this->checkAndCreateInitialPartition($this->DbBackend->getStatehistoryHostsTable(), 'state_time', $io);
+            $this->checkAndCreateInitialPartition($this->DbBackend->getStatehistoryServicesTable(), 'state_time', $io);
+            $this->checkAndCreateInitialPartition($this->DbBackend->getLogentriesTable(), 'entry_time', $io);
+            $this->checkAndCreateInitialPartition($this->DbBackend->getNotificationHostsTable(), 'start_time', $io);
+            $this->checkAndCreateInitialPartition($this->DbBackend->getNotificationServicesTable(), 'start_time', $io);
+            // In case the tables above this line are glowing yellow in PhpStorm, I have no clue why.
+            // In case PhpStorm is happy, please remove the comment!
+            $this->checkAndCreateInitialPartition($this->DbBackend->getNotificationHostsLogTable(), 'start_time', $io);
+            $this->checkAndCreateInitialPartition($this->DbBackend->getNotificationServicesLogTable(), 'start_time', $io);
+
             $tables = [
                 $this->DbBackend->getServicechecksTable(),
                 $this->DbBackend->getHostchecksTable(),
@@ -122,27 +136,11 @@ class DatabaseCleanupCommand extends Command implements CronjobInterface {
                 $this->DbBackend->getNotificationServicesLogTable()
             ];
 
-            // Check for p_max partition in new tables
-            $this->checkAndCreateInitialPartition($this->DbBackend->getNotificationHostsLogTable(), 'start_time', $io);
-            $this->checkAndCreateInitialPartition($this->DbBackend->getNotificationServicesLogTable(), 'start_time', $io);
-
             $this->checkAndCreatePartitionsMySQLStatusengine3($tables, $io);
         }
 
         if ($this->DbBackend->isCrateDb()) {
-            throw new MissingDbBackendException('CrateDB is not implemented yet!');
-
-            $tables = [
-                $this->DbBackend->getServicechecksTable(),
-                $this->DbBackend->getHostchecksTable(),
-                $this->DbBackend->getStatehistoryHostsTable(),
-                $this->DbBackend->getStatehistoryServicesTable(),
-                $this->DbBackend->getLogentriesTable(),
-                $this->DbBackend->getNotificationHostsTable(),
-                $this->DbBackend->getNotificationServicesTable(),
-            ];
-
-            $this->cleanupCrateDb($tables);
+            throw new MissingDbBackendException('CrateDB is not implemented anymore!');
         }
 
     }

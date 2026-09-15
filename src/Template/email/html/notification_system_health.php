@@ -33,8 +33,10 @@
  * @var \App\View\AppView $this
  * @var string $systemname
  * @var \itnovum\openITCOCKPIT\Core\Views\ServicestatusIcon $StatusIcon
+ * @var \itnovum\openITCOCKPIT\Core\Views\ServicestatusIcon $StatusSatelliteIcon
  * @var string $systemAddress
  * @var array $systemHealth
+ * @var string $satelliteState
  *
  */
 
@@ -113,10 +115,11 @@ echo $this->element('emails/style');
                                 </tr>
                             </table>
                             <br/>
-                            <strong><?php echo __('Output'); ?>:</strong>
 
                             <?php if ($systemHealth['state'] == 'warning' || $systemHealth['state'] == 'critical'): ?>
-
+                                <strong><?php echo __('Output'); ?>:</strong>
+                                <br/>
+                                <br/>
                                 <ul class="padding-5 list-unstyled system-health-item notification-message fs-sm"
                                     style="width: 100%;">
                                     <?php if (!$systemHealth['isNagiosRunning']): ?>
@@ -377,125 +380,155 @@ echo $this->element('emails/style');
                             <?php endif; ?>
 
                             <br/>
-                            <?php if (($systemHealth['satellites_state'] ?? 'ok') == 'warning' || ($systemHealth['satellites_state'] ?? 'ok') == 'critical'): ?>
-                                <hr noshade size="1" style="border-color: #ccc;">
-                                <strong><?= __('Satellites System Health') ?>:</strong>
-                                <hr noshade size="1" style="border-color: #ccc;">
+                            <br/>
+                            <?php if ($systemHealth['isDistributeModuleInstalled'] && $satelliteState != 'unknown'): ?>
+                                <h5>
+                                    <?= $StatusSatelliteIcon->getEmoji() ?>
+                                    &nbsp;
+                                    <span>
+                                        <a href="<?php printf('https://%s/a/distribute_module/satellites/index', $systemAddress); ?>"
+                                           style="text-decoration:none"
+                                           class="<?= strtoupper($StatusSatelliteIcon->getTextColor()) ?>">
+                                            <?= __('Satellites System Health') ?>
+                                        </a>
+                                        <?= __(' is {0}', $StatusSatelliteIcon->getHumanState()); ?>
+                                    </span>
+                                </h5>
+                                <hr noshade width="560" size="3" align="left">
+                                <br>
+                                <table width="100%">
+                                    <tr>
+                                        <td><strong><?php echo __('Time'); ?>:</strong></td>
+                                        <td><?php echo date('H:i:s T'); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong><?php echo __('State'); ?>:</strong></td>
+                                        <td class=<?= strtoupper($StatusSatelliteIcon->getTextColor()) ?>>
+                                            <?= h($StatusSatelliteIcon->getHumanState()); ?>
+                                        </td>
+                                    </tr>
+                                </table>
                                 <br/>
-                                <ul class="padding-5 list-unstyled system-health-item notification-message fs-sm"
-                                    style="width: 100%;">
-                                    <?php foreach ($systemHealth['satellites'] ?? [] as $satellite): ?>
-                                        <?php if ($satellite['satellite_status']['status'] !== 1): ?>
-                                            <li>
-                                                <span>
-                                                    <div class="padding-5">
-                                                        <p class="margin-bottom-5">
-                                                            <i><?php echo __('Sync status'); ?><?php echo __('failed') ?></i>
-                                                            <br/>
-                                                            <i><b><?= h($satellite['name']); ?></b>
-                                                                , <?php echo __('last seen') ?> <?= h($satellite['satellite_status']['last_seen']); ?>
-                                                            </i>
-                                                        </p>
-                                                    </div>
-                                                </span>
-                                            </li>
-                                        <?php endif; ?>
-
-                                        <?php if (isset($satellite['satellite_status']['satellite_information']['system_health'])): ?>
-
-                                            <?php
-                                            $satellite_health = $satellite['satellite_status']['satellite_information']['system_health']; ?>
-
-                                            <?php if (($satellite_health['memory']['memory']['state'] ?? 'ok') !== 'ok'): ?>
+                                <?php if ($satelliteState == 'warning' || $satelliteState == 'critical'): ?>
+                                    <strong><?php echo __('Output'); ?>:</strong>
+                                    <br/>
+                                    <br/>
+                                    <ul class="padding-5 list-unstyled system-health-item notification-message fs-sm"
+                                        style="width: 100%;">
+                                        <?php foreach ($systemHealth['satellites'] ?? [] as $satellite): ?>
+                                            <?php if ($satellite['satellite_status']['status'] !== 1): ?>
                                                 <li>
+                                                    <i><b><?= h($satellite['name']); ?></b></i>
+                                                    <br/>
                                                     <span>
                                                         <div class="padding-5">
                                                             <p class="margin-bottom-5">
-                                                                <i><?php echo __('High memory usage.'); ?></i>
-                                                                <span class="pull-right semi-bold text-muted">
-                                                                    <?= h($satellite_health['memory']['memory']['percentage']); ?>
-                                                                    %
-                                                                </span>
+                                                                <i><?php echo __('Sync status'); ?><?php echo __('failed') ?></i>
+                                                                <br/>
+                                                                <i> <?php echo __('last seen') ?> <?= h($satellite['satellite_status']['last_seen']); ?>
+                                                                </i>
                                                             </p>
-                                                            <i><b><?= h($satellite['name']); ?></b></i>
-                                                            <br/>
-                                                            <div class="progress progress-sm">
-                                                                <div class="progress-bar bg-color-darken"
-                                                                     style="width: <?= h($satellite_health['memory']['memory']['percentage']); ?>%;"></div>
-                                                            </div>
-                                                        </div>
-                                                    </span>
-                                                </li>
-                                            <?php endif; ?>
-                                            <?php if (($satellite_health['memory']['swap']['state'] ?? 'ok') !== 'ok'): ?>
-                                                <li>
-                                                    <span>
-                                                        <div class="padding-5">
-                                                            <p class="margin-bottom-5">
-                                                                <i><?php echo __('High Swap usage.'); ?></i>
-                                                                <span class="pull-right semi-bold text-muted">
-                                                                    <?= h($satellite_health['memory']['swap']['percentage']); ?>
-                                                                    %
-                                                                </span>
-                                                            </p>
-                                                            <i><b><?= h($satellite['name']); ?></b></i>
-                                                            <br/>
-                                                            <div class="progress progress-sm">
-                                                                <div class="progress-bar bg-color-darken"
-                                                                     style="width: <?= h($satellite_health['memory']['swap']['percentage']); ?>%;"></div>
-                                                            </div>
                                                         </div>
                                                     </span>
                                                 </li>
                                             <?php endif; ?>
 
-                                            <?php foreach ($satellite_health['disks'] ?? [] as $disk): ?>
-                                                <?php if (($disk['state'] ?? 'ok') !== 'ok'): ?>
+                                            <?php if (isset($satellite['satellite_information']['system_health'])): ?>
+
+                                                <?php
+                                                $satellite_health = $satellite['satellite_information']['system_health']; ?>
+
+                                                <?php if (($satellite_health['memory']['memory']['state'] ?? 'ok') !== 'ok'): ?>
                                                     <li>
+                                                        <i><b><?= h($satellite['name']); ?></b></i>
+                                                        <br/>
                                                         <span>
                                                             <div class="padding-5">
                                                                 <p class="margin-bottom-5">
-                                                                    <i><?php echo __('Low disk space left for mountpoint:'); ?></i>
-                                                                    <br/>
-                                                                    <i><b><?= h($satellite['name']); ?></b></i>
-                                                                    <br/>
-                                                                    <i>"<?= h($disk['mountpoint']); ?>"</i>
-                                                                    <span class="pull-right semi-bold text-muted">
-                                                                        <?= h($disk['use_percentage']); ?>%
-                                                                    </span>
+                                                                    <i><?php echo __('High memory usage.'); ?></i>
+                                                                    <b class="pull-right semi-bold text-muted">
+                                                                        <?= h($satellite_health['memory']['memory']['percentage']); ?>
+                                                                        %
+                                                                    </b>
                                                                 </p>
+
                                                                 <div class="progress progress-sm">
                                                                     <div class="progress-bar bg-color-darken"
-                                                                         style="width: <?= h($disk['use_percentage']); ?>%;"></div>
+                                                                         style="width: <?= h($satellite_health['memory']['memory']['percentage']); ?>%;"></div>
                                                                 </div>
                                                             </div>
                                                         </span>
                                                     </li>
                                                 <?php endif; ?>
-                                            <?php endforeach; ?>
-
-                                            <?php if (($satellite_health['cpu_state'] ?? 'ok') !== 'ok'): ?>
-                                                <li>
-                                                    <span>
+                                                <?php if (($satellite_health['memory']['swap']['state'] ?? 'ok') !== 'ok'): ?>
+                                                    <li><i><b><?= h($satellite['name']); ?></b></i>
+                                                        <br/>
                                                         <div class="padding-5">
                                                             <p class="margin-bottom-5">
-                                                                <i><?php echo __('Current CPU load is too high!'); ?></i>
-                                                                <br/>
-                                                                <i><b><?= h($satellite['name']); ?></b></i>
-                                                                <br/>
-                                                                <i><?= h($satellite_health['cpu_load1']); ?>
-                                                                    , <?= h($satellite_health['cpu_load5']); ?>, <?= h(
-                                                                        $satellite_health['cpu_load15']); ?></i>
+                                                                <i><?php echo __('High Swap usage.'); ?></i>
+                                                                <b class="pull-right semi-bold text-muted">
+                                                                    <?= h($satellite_health['memory']['swap']['percentage']); ?>
+                                                                    %
+                                                                </b>
                                                             </p>
+
+                                                            <div class="progress progress-sm">
+                                                                <div class="progress-bar bg-color-darken"
+                                                                     style="width: <?= h($satellite_health['memory']['swap']['percentage']); ?>%;"></div>
+                                                            </div>
                                                         </div>
-                                                    </span>
-                                                </li>
+                                                    </li>
+                                                <?php endif; ?>
+
+                                                <?php foreach ($satellite_health['disks'] ?? [] as $disk): ?>
+                                                    <?php if (($disk['state'] ?? 'ok') !== 'ok'): ?>
+                                                        <li>
+                                                            <i><b><?= h($satellite['name']); ?></b></i>
+                                                            <br/>
+                                                            <span>
+                                                                <div class="padding-5">
+                                                                    <p class="margin-bottom-5">
+                                                                        <i><?php echo __('Low disk space left for mountpoint:'); ?></i>
+
+                                                                        <b>"<?= h($disk['mountpoint']); ?>"
+                                                                            <span
+                                                                                class="pull-right semi-bold text-muted">
+                                                                                <?= h($disk['use_percentage']); ?>%
+                                                                            </span></b>
+                                                                    </p>
+                                                                    <div class="progress progress-sm">
+                                                                        <div class="progress-bar bg-color-darken"
+                                                                             style="width: <?= h($disk['use_percentage']); ?>%;"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </span>
+                                                        </li>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+
+                                                <?php if (($satellite_health['cpu_state'] ?? 'ok') !== 'ok'): ?>
+                                                    <li>
+                                                        <i><b><?= h($satellite['name']); ?></b></i>
+                                                        <br/>
+                                                        <span>
+                                                            <div class="padding-5">
+                                                                <p class="margin-bottom-5">
+                                                                    <i><?php echo __('Current CPU load is too high!'); ?></i>
+                                                                    <b><?= h($satellite_health['cpu_load1']); ?>
+                                                                        , <?= h($satellite_health['cpu_load5']); ?>
+                                                                        , <?= h($satellite_health['cpu_load15']); ?></b>
+                                                                </p>
+                                                            </div>
+                                                        </span>
+                                                    </li>
+                                                <?php endif; ?>
+
+
                                             <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php endif; ?>
 
-
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </ul>
                             <?php endif; ?>
 
                             <br/>

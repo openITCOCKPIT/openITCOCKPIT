@@ -1103,6 +1103,26 @@ class UsersTable extends Table {
     }
 
     /**
+     * The user an API token names, if the account is still active.
+     *
+     * Unlike getActiveUsersByIdForCake2Login() this includes users that log in
+     * through oAuth: how someone signs in to the interface has no bearing on
+     * whether a component may act for them.
+     *
+     * @param int $id
+     * @return \App\Model\Entity\User|null
+     */
+    public function getActiveUserByIdForApiToken(int $id) {
+        $query = $this->find()
+            ->enableAutoFields()
+            ->where([
+                'Users.id'        => $id,
+                'Users.is_active' => 1
+            ]);
+        return $query->first();
+    }
+
+    /**
      * @param string $email
      * @return array|EntityInterface|null
      */

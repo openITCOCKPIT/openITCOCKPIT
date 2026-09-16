@@ -319,6 +319,9 @@ oitc roles --enable-defaults --admin
 echo "Checking that a server certificate for the openITCOCKPIT Monitoring Agent exists"
 oitc agent --generate-server-ca
 
+echo "Checking that a key pair for API tokens exists"
+oitc api_tokens --generate-key
+
 # ITC-1911
 echo "Cleanup for invalid parent hosts on satellite instance"
 oitc ParentHostsVisibilityCleaning

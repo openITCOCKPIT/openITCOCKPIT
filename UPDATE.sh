@@ -361,6 +361,9 @@ oitc agent --migrate
 echo "Checking that a server certificate for the openITCOCKPIT Monitoring Agent exists"
 oitc agent --generate-server-ca
 
+echo "Checking that a key pair for API tokens exists"
+oitc api_tokens --generate-key
+
 # ITC-2800 ITC-2819
 #echo "Apply strict checking of host group assignments by container permissions"
 #oitc HostgroupContainerPermissions

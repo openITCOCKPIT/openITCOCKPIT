@@ -51,6 +51,7 @@
         "damienharper/adf-tools": "^1.1",
         "erusev/parsedown": "^1.8",
         "erusev/parsedown-extra": "^0.9.0",
+        "firebase/php-jwt": "^7.0",
         "freedsx/ldap": "^0.8",
         "friendsofcake/cakephp-csvview": "^5.0",
         "guzzlehttp/guzzle": "^7.4",

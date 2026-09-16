@@ -26,9 +26,11 @@
 namespace App;
 
 use App\Authenticator\ApikeyAuthenticator;
+use App\Authenticator\ApiTokenAuthenticator;
 use App\Authenticator\oAuthAuthenticator;
 use App\Authenticator\SslAuthenticator;
 use App\Identifier\ApikeyIdentifier;
+use App\Identifier\ApiTokenIdentifier;
 use App\Identifier\LdapIdentifier;
 use App\Identifier\oAuthIdentifier;
 use App\Identifier\PasswordIdentifier;
@@ -137,6 +139,19 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             Cache::write('isLdapAuth', $SystemsettingsTable->isLdapAuth(), 'permissions');
         }
         $isLdapAuth = Cache::read('isLdapAuth', 'permissions');
+
+        // Load API token identifier
+        // Before the Apikey authenticator: that one reads any Authorization
+        // header as "X-OITC-API <key>" without checking the prefix, and would
+        // look up a bearer token as an API key.
+        $service->loadAuthenticator('Authentication.ApiToken', [
+            'identifier' => [
+                'Authentication.ApiToken' => [
+                    'className' => ApiTokenIdentifier::class
+                ]
+            ],
+            'className'  => ApiTokenAuthenticator::class,
+        ]);
 
         // Load Apikey identifier
         $service->loadAuthenticator('Authentication.Apikey', [
@@ -296,9 +311,13 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         ];
 
         // ITC-3806: Disable CSRF check for users authenticated with API Token.
+        // ITC-3864: The same holds for a bearer token issued by ApiTokenIssuer.
+        // CSRF abuses credentials a browser sends on its own, and neither an
+        // API key nor a bearer token in the Authorization header is one.
         $service = $request->getAttribute('authentication');
         if ($service instanceof AuthenticationServiceInterface
-            && $service->getAuthenticationProvider() instanceof ApikeyAuthenticator
+            && ($service->getAuthenticationProvider() instanceof ApikeyAuthenticator
+                || $service->getAuthenticationProvider() instanceof ApiTokenAuthenticator)
         ) {
             return true;
         }

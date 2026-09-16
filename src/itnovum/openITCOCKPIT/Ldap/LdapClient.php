@@ -381,21 +381,33 @@ class LdapClient {
             }
 
             // Extract the first value safely from the LDAP property arrays
-            $givenName = is_array($entry['givenname'])
-                ? ($entry['givenname'][0] ?? '')
-                : ($entry['givenname'] ?? '');
+            $givenName = '';
+            if (isset($entry['givenname'])) {
+                $givenName = is_array($entry['givenname'])
+                    ? ($entry['givenname'][0] ?? '')
+                    : ($entry['givenname'] ?? '');
+            }
 
-            $sn = is_array($entry['sn'])
-                ? ($entry['sn'][0] ?? '')
-                : ($entry['sn'] ?? '');
+            $sn = '';
+            if (isset($entry['sn'])) {
+                $sn = is_array($entry['sn'])
+                    ? ($entry['sn'][0] ?? '')
+                    : ($entry['sn'] ?? '');
+            }
 
-            $samAccountName = is_array($entry['samaccountname'])
-                ? ($entry['samaccountname'][0] ?? '')
-                : ($entry['samaccountname'] ?? '');
+            $samAccountName = '';
+            if (isset($entry['samaccountname'])) {
+                $samAccountName = is_array($entry['samaccountname'])
+                    ? ($entry['samaccountname'][0] ?? '')
+                    : ($entry['samaccountname'] ?? '');
+            }
 
-            $email = is_array($entry['mail'])
-                ? ($entry['mail'][0] ?? '')
-                : ($entry['mail'] ?? '');
+            $email = '';
+            if (isset($entry['mail'])) {
+                $email = is_array($entry['mail'])
+                    ? ($entry['mail'][0] ?? '')
+                    : ($entry['mail'] ?? '');
+            }
 
             $user = [
                 'givenname'      => $givenName,
@@ -666,21 +678,34 @@ class LdapClient {
                     }
 
                     // Extract the first value safely from the LDAP property arrays
-                    $givenName = is_array($entryArray['givenname'])
-                        ? ($entryArray['givenname'][0] ?? '')
-                        : $entryArray['givenname'];
+                    $givenName = '';
+                    if (isset($entryArray['givenname'])) {
+                        $givenName = is_array($entryArray['givenname'])
+                            ? ($entryArray['givenname'][0] ?? '')
+                            : $entryArray['givenname'];
+                    }
 
-                    $sn = is_array($entryArray['sn'])
-                        ? ($entryArray['sn'][0] ?? '')
-                        : $entryArray['sn'];
+                    $sn = '';
+                    if (isset($entryArray['sn'])) {
+                        $sn = is_array($entryArray['sn'])
+                            ? ($entryArray['sn'][0] ?? '')
+                            : $entryArray['sn'];
+                    }
 
-                    $samAccountName = is_array($entryArray['samaccountname'])
-                        ? ($entryArray['samaccountname'][0] ?? '')
-                        : $entryArray['samaccountname'];
+                    $samAccountName = '';
+                    if (isset($entryArray['samaccountname'])) {
+                        $samAccountName = is_array($entryArray['samaccountname'])
+                            ? ($entryArray['samaccountname'][0] ?? '')
+                            : $entryArray['samaccountname'];
+                    }
 
-                    $email = is_array($entryArray['mail'])
-                        ? ($entryArray['mail'][0] ?? '')
-                        : $entryArray['mail'];
+                    $email = '';
+                    if (isset($entryArray['mail'])) {
+                        $email = is_array($entryArray['mail'])
+                            ? ($entryArray['mail'][0] ?? '')
+                            : $entryArray['mail'];
+                    }
+
 
                     $result[] = [
                         'givenname'      => $givenName,

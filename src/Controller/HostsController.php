@@ -100,6 +100,7 @@ use itnovum\openITCOCKPIT\Core\StatehistoryHostConditions;
 use itnovum\openITCOCKPIT\Core\Timeline\AcknowledgementSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\DowntimeSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\Groups;
+use itnovum\openITCOCKPIT\Core\Timeline\NotificationsContactSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\NotificationSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\StatehistorySerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\TimeRangeSerializer;
@@ -138,7 +139,6 @@ class HostsController extends AppController {
 
     public function index() {
         $User = new User($this->getUser());
-
         /** @var SystemsettingsTable $SystemsettingsTable */
         $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
         $masterInstanceName = $SystemsettingsTable->getMasterInstanceName();
@@ -3086,15 +3086,15 @@ class HostsController extends AppController {
         $this->set('timeranges', $TimeRangeSerializer->serialize());
 
 
-        $TimeRangeSerializer = new TimeRangeSerializer(
+        $TimeRangePeriodSerializer = new TimeRangeSerializer(
             $timeRangesNotifyPeriod,
             $UserTime,
             'bg-notification-period',
-            6
+            (new Groups())->getNotificationContactId()
         );
 
-        $this->set('notification_timeranges', $TimeRangeSerializer->serialize());
-        unset($TimeRangeSerializer, $timeRangesCheckPeriod, $timeRangesNotifyPeriod);
+        $this->set('notification_timeranges', $TimeRangePeriodSerializer->serialize());
+        unset($TimeRangeSerializer, $timeRangesCheckPeriod, $timeRangesNotifyPeriod, $TimeRangePeriodSerializer);
 
 
         $hostUuid = $host->get('uuid');
@@ -3267,7 +3267,6 @@ class HostsController extends AppController {
                 }
             }
         }
-
         $contactNotificationPeriodIdsByContacts = [];
         $filteredContacts = [];
         if (!empty($hostContacts)) {
@@ -3293,146 +3292,10 @@ class HostsController extends AppController {
             }
         }
 
-        //dd($timerangesForContactNotificationPeriods);
+        $NotificationsContactSerializer = new NotificationsContactSerializer($timerangesForContactNotificationPeriods, $filteredContacts, $contactNotificationPeriods, $UserTime);
 
+        $this->set('notifications_contact', $NotificationsContactSerializer->serialize());
 
-        dd($contactNotificationPeriods);
-
-        debug($filteredContacts);
-        dd($contactNotificationPeriodIdsByContacts);
-
-        dd($host->get('contactgroups'));
-
-        dd('HERE');
-
-        $noti = [
-            [
-                'id'      => 1,
-                'content' => '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs">'
-                    . 'Mohammed 1<br>'
-                    . '<b class="badge bg-success ">Enabled</b> '
-                    . '<b class="badge bg-success ">R</b> '
-                    . '<b class="badge bg-danger ">D</b> '
-                    . '<b class="badge bg-secondary ">U</b>'
-                    . '</b>',
-                'start'   => "2026-09-09 08:00:35",
-                'end'     => "2026-09-09 14:00:35",
-                'group'   => 6,
-                'type'    => 'range',
-            ],
-            [
-                'id'      => 2,
-                'start'   => "2026-09-10 08:00:35",
-                'end'     => "2026-09-10 14:00:35",
-                'group'   => 6,
-                'type'    => 'range',
-                'content' => '<b class="d-inline-block lh-1 fs-xs">'
-                    . 'Mohammed 1<br>'
-                    . '<b class="badge bg-success ">Enabled</b> '
-                    . '<b class="badge bg-success ">R</b> '
-                    . '<b class="badge bg-danger ">D</b> '
-                    . '<b class="badge bg-secondary ">U</b>'
-                    . '</b>',
-            ],
-            [
-                'id'      => 3,
-                'content' => '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs">'
-                    . 'Mohammed 1<br>'
-                    . '<b class="badge bg-success ">Enabled</b> '
-                    . '<b class="badge bg-success ">R</b> '
-                    . '<b class="badge bg-danger ">D</b> '
-                    . '<b class="badge bg-secondary ">U</b>'
-                    . '</b>',
-                'start'   => "2026-09-11 08:00:35",
-                'end'     => "2026-09-11 14:00:35",
-                'group'   => 6,
-                'type'    => 'range',
-            ],
-            [
-                'id'      => 4,
-                'content' => '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs">'
-                    . 'Mohammed 1<br>'
-                    . '<b class="badge bg-success ">Enabled</b> '
-                    . '<b class="badge bg-success ">R</b> '
-                    . '<b class="badge bg-danger ">D</b> '
-                    . '<b class="badge bg-secondary ">U</b>'
-                    . '</b>',
-                'start'   => "2026-09-12 08:00:35",
-                'end'     => "2026-09-12 14:00:35",
-                'group'   => 6,
-                'type'    => 'range',
-            ],
-            [
-                'id'      => 5,
-                'content' => '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs">'
-                    . 'Mohammed 1<br>'
-                    . '<b class="badge bg-success ">Enabled</b> '
-                    . '<b class="badge bg-success ">R</b> '
-                    . '<b class="badge bg-danger ">D</b> '
-                    . '<b class="badge bg-secondary ">U</b>'
-                    . '</b>',
-                'start'   => "2026-09-09 13:47:35",
-                'group'   => 6,
-            ],
-            [
-                'id'      => 6,
-                'content' => '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs">'
-                    . 'John Doe<br>'
-                    . '<b class="badge bg-success ">Enabled</b> '
-                    . '<b class="badge bg-success ">R</b> '
-                    . '<b class="badge bg-danger ">D</b> '
-                    . '<b class="badge bg-secondary ">U</b>'
-                    . '</b>',
-                'start'   => "2026-09-09 00:00:00",
-                'end'     => "2026-09-09 08:00:00",
-                'group'   => 6,
-                'type'    => 'range',
-            ],
-            [
-                'id'      => 7,
-                'content' => '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs">'
-                    . 'John Doe<br>'
-                    . '<b class="badge bg-success ">Enabled</b> '
-                    . '<b class="badge bg-success ">R</b> '
-                    . '<b class="badge bg-danger ">D</b> '
-                    . '<b class="badge bg-secondary ">U</b>'
-                    . '</b>',
-                'start'   => "2026-09-10 00:00:00",
-                'end'     => "2026-09-10 08:00:00",
-                'group'   => 6,
-                'type'    => 'range',
-            ],
-            [
-                'id'      => 8,
-                'content' => '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs">'
-                    . 'John Doe<br>'
-                    . '<b class="badge bg-success ">Enabled</b> '
-                    . '<b class="badge bg-success ">R</b> '
-                    . '<b class="badge bg-danger ">D</b> '
-                    . '<b class="badge bg-secondary ">U</b>'
-                    . '</b>',
-                'start'   => "2026-09-11 00:00:00",
-                'end'     => "2026-09-11 08:00:00",
-                'group'   => 6,
-                'type'    => 'range',
-            ],
-            [
-                'id'      => 9,
-                'content' => '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs">'
-                    . 'John Doe<br>'
-                    . '<b class="badge bg-success ">Enabled</b> '
-                    . '<b class="badge bg-success ">R</b> '
-                    . '<b class="badge bg-danger ">D</b> '
-                    . '<b class="badge bg-secondary ">U</b>'
-                    . '</b>',
-                'start'   => "2026-09-08 00:00:00",
-                'end'     => "2026-09-08 08:00:00",
-                'group'   => 6,
-                'type'    => 'range',
-            ],
-        ];
-
-        $this->set('notifications_contact', $noti);
         $start += $offset;
         $end += $offset;
 

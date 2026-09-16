@@ -98,7 +98,7 @@ use itnovum\openITCOCKPIT\Core\StatehistoryServiceConditions;
 use itnovum\openITCOCKPIT\Core\Timeline\AcknowledgementSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\DowntimeSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\Groups;
-use itnovum\openITCOCKPIT\Core\Timeline\NotificationSerializer;
+use itnovum\openITCOCKPIT\Core\Timeline\NotificationsContactSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\StatehistorySerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\TimeRangeSerializer;
 use itnovum\openITCOCKPIT\Core\UserDefinedMacroReplacer;
@@ -2688,7 +2688,7 @@ class ServicesController extends AppController {
             ];
         }
 
-        $NotificationSerializer = new NotificationSerializer($notificationRecords, $UserTime, 'service');
+        $NotificationSerializer = new NotificationsContactSerializer($notificationRecords, $UserTime, 'service');
         $this->set('notifications', $NotificationSerializer->serialize());
         unset($NotificationSerializer, $notificationRecords);
 

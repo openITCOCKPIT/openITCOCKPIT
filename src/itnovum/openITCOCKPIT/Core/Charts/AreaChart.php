@@ -67,7 +67,16 @@ class AreaChart {
     private bool $showMarkers = false;
 
     /** @var string Path to TTF font file for text rendering */
-    private string $font = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf';
+    private string $font = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'; // Ubuntu and Debian
+
+    private array $fontAlternatives = [
+        '/usr/share/fonts/dejavu/DejaVuSans.ttf', // RHEL 8
+        '/usr/share/fonts/dejavu-sans-fonts/DejaVuSans.ttf', // RHEL 9 and RHEL 10
+        '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf', // Ubuntu and Debian
+        '/usr/share/fonts/liberation-sans/LiberationSans-Regular.ttf', // RHEL 8, RHEL 9 and RHEL 10
+        '/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf', // Ubuntu and Debian
+        '/usr/share/fonts/google-noto/NotoSans-Regular.ttf' // RHEL 8, RHEL 9 and RHEL 10
+    ];
 
     /** @var int Chart width in pixels */
     private int $width = 1000;
@@ -124,6 +133,15 @@ class AreaChart {
      * @param int $height Chart height in pixels
      */
     public function __construct(int $width, int $height) {
+        if (!file_exists($this->font)) {
+            foreach ($this->fontAlternatives as $alternative) {
+                if (file_exists($alternative)) {
+                    $this->font = $alternative;
+                    break;
+                }
+            }
+        }
+
         $this->palette = $this->darkPalette;
         $this->width = $width;
         $this->height = $height;

@@ -31,7 +31,7 @@ class RepositoryChecker {
     /**
      * @var string
      */
-    private $oldAptRepository = 'apt.open-itcockpit.com';
+    private $oldAptRepository = 'packages.openitcockpit.io';
 
     /**
      * @var string
@@ -49,23 +49,67 @@ class RepositoryChecker {
     private $sourcesList = '/etc/apt/sources.list.d/openitcockpit.list';
 
     /**
+     * @var string
+     */
+    private $deb822Sources = '/etc/apt/sources.list.d/openitcockpit.sources';
+
+    /**
+     * Checks if the system is already using the new deb822 sources list format.
+     * https://manpages.debian.org/trixie/dpkg-dev/deb822.5.en.html
+     * @return bool
+     */
+    public function isDeb822Present(): bool {
+        if (!file_exists($this->deb822Sources)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isOldSourceListPresent(): bool {
+        if (!file_exists($this->sourcesList)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns true on success, throws an exception if the file is not readable.
      * @return bool
      * @throws \Exception
      */
-    public function isReadable() {
-        if (!is_readable($this->sourcesList)) {
-            throw new \Exception(sprintf('File %s not readable', $this->sourcesList));
+    public function isReadable(): bool {
+        $isDeb882 = $this->isDeb822Present();
+        $isDeb882Readable = false;
+        if ($isDeb882) {
+            $isDeb882Readable = is_readable($this->deb822Sources);
+        }
+
+        $isOldSourceList = $this->isOldSourceListPresent();
+        $isOldSourceListReadable = false;
+        if ($isOldSourceList) {
+            $isOldSourceListReadable = is_readable($this->sourcesList);
+        }
+
+        if (!$isDeb882Readable && !$isOldSourceListReadable) {
+            throw new \Exception(sprintf('File %s not readable', $this->deb822Sources));
         }
         return true;
     }
 
     /**
+     * Checks if at least one of the sources.list files exists. Throws an exception if none of them exist.
      * @return bool
      * @throws \Exception
      */
-    public function exists() {
-        if (!file_exists($this->sourcesList)) {
-            throw new \Exception(sprintf('File %s not found', $this->sourcesList));
+    public function exists(): bool {
+        $isDeb882 = $this->isDeb822Present();
+        $isOldSourceList = $this->isOldSourceListPresent();
+
+
+        if (!$isDeb882 && !$isOldSourceList) {
+            throw new \Exception(sprintf('File %s not found', $this->deb822Sources));
         }
         return true;
     }
@@ -87,9 +131,22 @@ class RepositoryChecker {
             throw new \Exception('Could not detect repository state.');
         }
 
-        foreach (file($this->sourcesList) as $line) {
-            if (strstr(trim($line), $this->oldAptRepository)) {
-                return true;
+        $isDeb882 = $this->isDeb822Present();
+        if ($isDeb882) {
+            // Probably overkill as nobody should use the old repository in the new deb822 format
+            foreach (file($this->deb822Sources) as $line) {
+                if (strstr(trim($line), $this->oldAptRepository)) {
+                    return true;
+                }
+            }
+        }
+
+        $isOldSourceList = $this->isOldSourceListPresent();
+        if ($isOldSourceList) {
+            foreach (file($this->sourcesList) as $line) {
+                if (strstr(trim($line), $this->oldAptRepository)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -98,14 +155,21 @@ class RepositoryChecker {
     /**
      * @return string
      */
-    public function getSourcesList() {
+    public function getDeb822Source(): string {
+        return $this->deb822Sources;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSourcesList(): string {
         return $this->sourcesList;
     }
 
     /**
      * @return string
      */
-    public function getRepoKey() {
+    public function getRepoKey(): string {
         return $this->newAptKey;
     }
 }

@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 namespace App\Model\Table;
 
@@ -56,6 +57,7 @@ use itnovum\openITCOCKPIT\Filter\TimeperiodsFilter;
  * @method \App\Model\Entity\Timeperiod findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin ContainerOwnedBehaviors
  */
 class TimeperiodsTable extends Table {
 
@@ -77,6 +79,7 @@ class TimeperiodsTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->belongsTo('Containers', [
             'foreignKey' => 'container_id',
@@ -147,7 +150,7 @@ class TimeperiodsTable extends Table {
     public function buildRules(RulesChecker $rules): RulesChecker {
         $rules->add($rules->isUnique(['uuid']));
         $rules->add($rules->existsIn(['container_id'], 'Containers'));
-        /** @var $entity Entity */
+        /** @var Entity $entity */
         $rules->add(function ($entity, $options) {
             if (empty($entity->timeperiod_timeranges)) {
                 return true;
@@ -493,7 +496,7 @@ class TimeperiodsTable extends Table {
 
         $container_ids = array_unique($container_ids);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $tenantContainerIds = [];
@@ -541,7 +544,7 @@ class TimeperiodsTable extends Table {
     public function checkTimeperiodIdForContainerPermissions($timeperiodId, $containerId, $fallbackTimeperiodId) {
         $tenantContainerIds = [];
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerId);
 

@@ -403,8 +403,8 @@ class AgentHttpClient {
             ],
             'verify'  => true,
             'proxy'   => [
-                'http'  => false,
-                'https' => false
+                'http'  => '',
+                'https' => ''
             ],
             'timeout' => 30
         ];

@@ -64,9 +64,9 @@ class ContactgroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
-        /** @var $ContactsToContactgroupsTable ContactsToContactgroupsTable */
+        /** @var ContactsToContactgroupsTable $ContactsToContactgroupsTable */
         $ContactsToContactgroupsTable = TableRegistry::getTableLocator()->get('ContactsToContactgroups');
 
         $ContactgroupsFilter = new ContactgroupsFilter($this->request);
@@ -74,7 +74,7 @@ class ContactgroupsController extends AppController {
 
         $MY_RIGHTS = [];
         if ($this->hasRootPrivileges === false) {
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
             //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
             // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
@@ -96,7 +96,7 @@ class ContactgroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
 
         if (!$ContactgroupsTable->existsById($id)) {
@@ -118,7 +118,7 @@ class ContactgroupsController extends AppController {
         }
 
         if ($this->request->is('post')) {
-            /** @var $ContactgroupsTable ContactgroupsTable */
+            /** @var ContactgroupsTable $ContactgroupsTable */
             $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
 
             /** @var ContainersTable $ContainersTable */
@@ -163,7 +163,7 @@ class ContactgroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
 
         if (!$ContactgroupsTable->existsById($id)) {
@@ -234,7 +234,7 @@ class ContactgroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
 
         /** @var ContainersTable $ContainersTable */
@@ -325,7 +325,7 @@ class ContactgroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
 
         $MY_RIGHTS = $this->MY_RIGHTS;
@@ -441,7 +441,7 @@ class ContactgroupsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
 
         if (!$ContactgroupsTable->existsById($id)) {
@@ -597,7 +597,7 @@ class ContactgroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
 
@@ -616,9 +616,9 @@ class ContactgroupsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
         $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerIds);

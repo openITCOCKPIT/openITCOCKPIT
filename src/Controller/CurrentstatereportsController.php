@@ -197,9 +197,9 @@ class CurrentstatereportsController extends AppController {
      */
     private function createReport(ServiceConditions $ServiceConditions, ServicestatusConditions $ServicestatusConditions, $pdf = false) {
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
         $User = new User($this->getUser());
         $services = [];
@@ -212,7 +212,7 @@ class CurrentstatereportsController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceForCurrentReportStatusengine3($ServiceConditions, $ServicestatusConditions);
         }
 

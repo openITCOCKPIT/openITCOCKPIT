@@ -373,7 +373,7 @@ class MapgeneratorsTable extends Table {
             $containers = [ROOT_CONTAINER];
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $containersWithChildsAndHostsForEachGivenContainerId = [];
@@ -544,7 +544,7 @@ class MapgeneratorsTable extends Table {
             return [];
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $containersWithChildsAndHostsForEachGivenContainerId = [];

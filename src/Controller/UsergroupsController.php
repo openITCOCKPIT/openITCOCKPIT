@@ -472,6 +472,99 @@ class UsergroupsController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['result']);
     }
 
+    public function append() {
+        if (!$this->isAngularJsRequest()) {
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
+        }
+
+        if ($this->request->is('post')) {
+            $id = $this->request->getData('Usergroup.id');
+            if (!$id) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', true);
+                $this->set('message', 'You have to select an user role');
+                $this->set('success', false);
+                $this->viewBuilder()->setOption('serialize', ['error', 'success', 'message']);
+                return;
+            }
+
+            $ldapgroupIds = $this->request->getData('Usergroup.ldapgroups._ids');
+            if (!is_array($ldapgroupIds)) {
+                $ldapgroupIds = [$ldapgroupIds];
+            }
+
+            if (empty($ldapgroupIds)) {
+                //No ldapgroups to add
+                return;
+            }
+
+            /** @var UsergroupsTable $UsergroupsTable */
+            $UsergroupsTable = TableRegistry::getTableLocator()->get('Usergroups');
+
+            if (!$UsergroupsTable->existsById($id)) {
+                throw new NotFoundException(__('User group not found'));
+            }
+
+            $usergroup = $UsergroupsTable->find()
+                ->contain([
+                    'Aros'       => [
+                        'Acos'
+                    ],
+                    'Ldapgroups' => [
+                        'fields' => [
+                            'Ldapgroups.id'
+                        ]
+                    ]
+                ])
+                ->where([
+                    'Usergroups.id' => $id
+                ])
+                ->disableHydration()
+                ->firstOrFail();
+
+            $usergroup['ldapgroups'] = [
+                '_ids' => Hash::extract($usergroup, 'ldapgroups.{n}.id')
+            ];
+
+            $usergroup = [
+                'Usergroup' => $usergroup
+            ];
+
+            //Merge new ldapgroups with existing ldapgroups from usergroup
+            $ldapgroupIds = array_unique(array_merge(
+                $usergroup['Usergroup']['ldapgroups']['_ids'],
+                $ldapgroupIds
+            ));
+
+
+            $usergroupEntity = $UsergroupsTable->get($id);
+
+            $usergroupEntity->setAccess('id', false);
+            $usergroupEntity = $UsergroupsTable->patchEntity($usergroupEntity, [
+                'ldapgroups' => [
+                    '_ids' => $ldapgroupIds
+                ]
+            ]);
+
+            $usergroupEntity->id = $id;
+            $UsergroupsTable->save($usergroupEntity);
+            if ($usergroupEntity->hasErrors()) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', $usergroupEntity->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            } else {
+                //No errors
+                if ($this->isJsonRequest()) {
+                    $this->serializeCake4Id($usergroupEntity); // REST API ID serialization
+                    return;
+                }
+            }
+            $this->set('usergroup', $usergroupEntity);
+            $this->viewBuilder()->setOption('serialize', ['usergroup']);
+        }
+    }
+
     /****************************
      *       AJAX METHODS       *
      ****************************/
@@ -491,7 +584,7 @@ class UsergroupsController extends AppController {
             $LdapgroupFilter = new LdapgroupFilter($this->request);
             $where = $LdapgroupFilter->ajaxFilter();
 
-            /** @var $LdapgroupsTable LdapgroupsTable */
+            /** @var LdapgroupsTable $LdapgroupsTable */
             $LdapgroupsTable = TableRegistry::getTableLocator()->get('Ldapgroups');
             $ldapgroups = $LdapgroupsTable->getLdapgroupsForAngular($where, $selected);
 

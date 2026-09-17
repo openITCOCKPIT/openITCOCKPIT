@@ -188,8 +188,8 @@ class GraphiteLoader {
             ];
         } else {
             $options['proxy'] = [
-                'http'  => false,
-                'https' => false
+                'http'  => '',
+                'https' => ''
             ];
         }
 

@@ -110,9 +110,13 @@ class MyRightsFactory {
             foreach ($ContainersTable->getChildren($container['container_id']) as $childContainer) {
                 $MY_RIGHTS[] = (int)$childContainer['id'];
                 $MY_RIGHTS_LEVEL[(int)$childContainer['id']] = $container['permission_level'];
+                // ITC-3418 Container authorizations are not properly implemented
+                // do not override existing permissions with lower permission levels from parent containers
+                if (isset($containerPermissions[$childContainer['id']]) && $containerPermissions[$childContainer['id']]['_joinData']['permission_level'] > $container['permission_level']) {
+                    $MY_RIGHTS_LEVEL[(int)$childContainer['id']] = $containerPermissions[$childContainer['id']]['_joinData']['permission_level'];
+                }
             }
         }
-
         $userPermissions = [
             'MY_RIGHTS'         => array_unique($MY_RIGHTS),
             'MY_RIGHTS_LEVEL'   => $MY_RIGHTS_LEVEL,

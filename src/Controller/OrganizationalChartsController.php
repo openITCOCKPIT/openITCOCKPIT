@@ -65,7 +65,7 @@ class OrganizationalChartsController extends AppController {
         $User = new User($this->getUser());
         $UserTime = $User->getUserTime();
 
-        /** @var $OrganizationalChartsTable OrganizationalChartsTable */
+        /** @var OrganizationalChartsTable $OrganizationalChartsTable */
         $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
 
 
@@ -312,7 +312,7 @@ class OrganizationalChartsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $OrganizationalChartsTable OrganizationalChartsTable */
+        /** @var OrganizationalChartsTable $OrganizationalChartsTable */
         $OrganizationalChartsTable = TableRegistry::getTableLocator()->get('OrganizationalCharts');
 
         if (!$OrganizationalChartsTable->existsById($id)) {
@@ -436,7 +436,7 @@ class OrganizationalChartsController extends AppController {
             $MY_RIGHTS = $this->MY_RIGHTS;
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $containers = $ContainersTable->getContainersByIdsGroupByType($MY_RIGHTS, [], [CT_TENANT, CT_LOCATION, CT_NODE]);
 

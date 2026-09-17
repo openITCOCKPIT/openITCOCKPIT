@@ -157,6 +157,12 @@ class InstallSeed extends \Migrations\BaseSeed {
                 'interval' => '60',
                 'enabled'  => '1',
             ],
+            [
+                'task'     => 'LdapUserImport',
+                'plugin'   => 'Core',
+                'interval' => '1440',
+                'enabled'  => '0',
+            ],
         ];
 
         //Check if records exists

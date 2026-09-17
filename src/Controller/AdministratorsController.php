@@ -59,7 +59,7 @@ class AdministratorsController extends AppController {
         $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
         $systemsetting = $SystemsettingsTable->findAsArray();
 
-        /** @var $RegistersTable RegistersTable */
+        /** @var RegistersTable $RegistersTable */
         $RegistersTable = TableRegistry::getTableLocator()->get('Registers');
         $License = $RegistersTable->getLicense();
 
@@ -313,7 +313,7 @@ class AdministratorsController extends AppController {
 
 
         //Check if load cronjob exists
-        /** @var $CronjobsTable CronjobsTable */
+        /** @var CronjobsTable $CronjobsTable */
         $CronjobsTable = TableRegistry::getTableLocator()->get('Cronjobs');
 
         if (!$CronjobsTable->checkForCronjob('CpuLoad', 'Core')) {

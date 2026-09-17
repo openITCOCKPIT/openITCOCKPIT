@@ -100,8 +100,8 @@ class SystemMetricsCommand extends Command implements CronjobInterface {
         $params = [
             'form_params' => $dataToSend,
             'proxy'       => [
-                'http'  => false,
-                'https' => false
+                'http'  => '',
+                'https' => ''
             ]
         ];
 

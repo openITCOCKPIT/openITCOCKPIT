@@ -389,7 +389,7 @@ class AgentResponseToServices {
                     $servicetemplatecommandargumentvalues[2]['value'] = $this->shortCommandargumentValue($deviceName); //sda
                     $services[] = $this->getServiceStruct(
                         $agentcheck['servicetemplate_id'],
-                        sprintf('Disk stats of: %s', $deviceName),
+                        sprintf('Disk statistics of: %s', $deviceName),
                         $servicetemplatecommandargumentvalues
                     );
                 }
@@ -477,7 +477,7 @@ class AgentResponseToServices {
 
                     $services[] = $this->getServiceStruct(
                         $agentcheck['servicetemplate_id'],
-                        sprintf('Network stats of: %s', $nicName),
+                        sprintf('Network statistics of: %s', $nicName),
                         $servicetemplatecommandargumentvalues
                     );
                 }

@@ -222,7 +222,7 @@ class AgentchecksTable extends Table {
         }
 
         //Lookup for the tenant container of $container_id
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $tenantContainerIds = [];

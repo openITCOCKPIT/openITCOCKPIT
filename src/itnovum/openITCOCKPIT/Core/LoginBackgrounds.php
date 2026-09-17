@@ -26,8 +26,6 @@
 namespace itnovum\openITCOCKPIT\Core;
 
 
-use itnovum\openITCOCKPIT\Core\Views\Logo;
-
 class LoginBackgrounds {
 
     /**
@@ -202,7 +200,7 @@ class LoginBackgrounds {
                 ]
             ],
 
-            'christmas' => [
+            'christmas'               => [
                 'description' => __('Merry Christmas'),
                 'particles'   => 'snow',
                 'images'      => [
@@ -216,7 +214,7 @@ class LoginBackgrounds {
                     ]
                 ]
             ],
-            'cat_day' => [
+            'cat_day'                 => [
                 'description' => __('International Cat Day'),
                 'particles'   => 'default',
                 'images'      => [
@@ -230,7 +228,7 @@ class LoginBackgrounds {
                     ]
                 ]
             ],
-            'chocolate_day' => [
+            'chocolate_day'           => [
                 'description' => __('International Chocolate Day'),
                 'particles'   => 'default',
                 'images'      => [
@@ -244,7 +242,7 @@ class LoginBackgrounds {
                     ]
                 ]
             ],
-            'women_day' => [
+            'women_day'               => [
                 'description' => __('International Women\'s Day'),
                 'particles'   => 'stars',
                 'images'      => [
@@ -257,7 +255,21 @@ class LoginBackgrounds {
                         'credit' => 'Photo by Christina @ wocintechchat.com on Unsplash'
                     ]
                 ]
-            ]
+            ],
+            'football_world_cup_2026' => [
+                'description' => __('Football World Cup'),
+                'particles'   => 'football',
+                'images'      => [
+                    [
+                        'image'  => 'john-o-nolan-o_gJAkcKJmM-unsplash.jpg',
+                        'credit' => 'Photo by John O\'Nolan on Unsplash'
+                    ],
+                    [
+                        'image'  => 'vladislav-igumnov-x4ddjxwGzPE-unsplash.jpg',
+                        'credit' => 'Photo by Vladislav Igumnov on Unsplash'
+                    ]
+                ]
+            ],
         ];
     }
 
@@ -309,6 +321,7 @@ class LoginBackgrounds {
 
     /**
      * @return string
+     * @throws \Exception
      */
     public function getSeason() {
         $season = 'winter';
@@ -399,6 +412,15 @@ class LoginBackgrounds {
         // Christmas 24.12 - 26.12
         if ($today === '24.12' || $today === '25.12' || $today === '26.12') {
             $season = 'christmas';
+        }
+
+        // Football WM 2026
+        $today = new \DateTimeImmutable(date('Y-m-d'));   // current date, 00:00:00
+        $wmStart = new \DateTimeImmutable('2026-06-11');
+        $wmEnd = new \DateTimeImmutable('2026-07-19');
+
+        if ($today >= $wmStart && $today <= $wmEnd) {
+            $season = 'football_world_cup_2026';
         }
 
         return $season;

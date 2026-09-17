@@ -160,7 +160,7 @@ class WizardsController extends AppController {
             }
         }
 
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         $servicetemplates = $ServicetemplatesTable->getServicetemplatesByContainerId($this->MY_RIGHTS, 'list');
@@ -391,9 +391,9 @@ class WizardsController extends AppController {
 
         $hosttemplateType = GENERIC_HOST;
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
 
         if (!$ContainersTable->existsById($containerId)) {
@@ -420,7 +420,7 @@ class WizardsController extends AppController {
         $masterInstanceName = $SystemsettingsTable->getMasterInstanceName();
         $satellites = [];
         if (Plugin::isLoaded('DistributeModule')) {
-            /** @var $SatellitesTable SatellitesTable */
+            /** @var SatellitesTable $SatellitesTable */
             $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
 
             $satellites = $SatellitesTable->getSatellitesAsListWithDescription($this->MY_RIGHTS);
@@ -451,7 +451,7 @@ class WizardsController extends AppController {
         $wizardTypeId = $this->request->getQuery('typeId', 'linux');
         $includeDisabled = $this->request->getQuery('includeDisabled') === 'true';
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $HostFilter = new HostFilter($this->request);

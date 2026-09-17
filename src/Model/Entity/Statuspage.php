@@ -39,6 +39,7 @@ use Cake\ORM\Entity;
  * @property string|null $description
  * @property string|null $public_title
  * @property string|null $public_identifier
+ * @property int $public_refresh
  * @property bool $public
  * @property bool $show_downtimes
  * @property bool $show_downtime_comments
@@ -70,6 +71,7 @@ class Statuspage extends Entity {
         'description'                   => true,
         'public_title'                  => true,
         'public_identifier'             => true,
+        'public_refresh'                => true,
         'public'                        => true,
         'show_downtimes'                => true,
         'show_downtime_comments'        => true,

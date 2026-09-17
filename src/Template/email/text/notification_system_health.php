@@ -36,13 +36,16 @@
 // @formatter:off
 
 /**
- * @var \App\View\AppView $this
+ * @var AppView $this
  * @var string $systemname
- * @var \itnovum\openITCOCKPIT\Core\Views\HoststatusIcon $StatusIcon
+ * @var HoststatusIcon $StatusIcon
+ * @var HoststatusIcon $StatusSatelliteIcon
  * @var string $systemAddress
  * @var array $systemHealth
+ *  @var string $satelliteState
  *
  */
+use App\View\AppView;use itnovum\openITCOCKPIT\Core\Views\HoststatusIcon;
 
 ?>
 System health is <?= $StatusIcon->getHumanState() ?>!
@@ -81,16 +84,12 @@ Output:
 <?php echo __('Performance data processer NPCD is not running!'); ?>
 <?= PHP_EOL ?>
 <?php endif; ?>
-<?php if (!$systemHealth['isSudoServerRunning']): ?>
-<?php echo __('Service sudo_server is not running!'); ?>
-<?= PHP_EOL ?>
-<?php endif; ?>
 <?php if (!$systemHealth['isOitcCmdRunning']): ?>
 <?php echo __('Service oitc_cmd is not running!'); ?>
 <?= PHP_EOL ?>
 <?php endif; ?>
-<?php if (!$systemHealth['isPushNotificationRunning']): ?>
-<?php echo __('Service push_notification is not running!'); ?>
+<?php if (!$systemHealth['isWebsocketServerRunning']): ?>
+<?php echo __('Service openitcockpit-websocket is not running!'); ?>
 <?= PHP_EOL ?>
 <?php endif; ?>
 <?php if (!$systemHealth['isNodeJsServerRunning']): ?>
@@ -104,14 +103,6 @@ Output:
 $systemHealth['load']['load15']); ?>
 <?= PHP_EOL ?>
 <?php endif; ?>
-<?php foreach ($systemHealth['satellites'] as $satellite): ?>
-<?php if ($satellite['satellite_status']['status'] !== 1): ?>
-<?php echo __('Sync status'); ?><?php echo __('failed') ?>
-<?= PHP_EOL ?>
-<?= h($satellite['name']); ?>, <?php echo __('last seen') ?> <?= h($satellite['satellite_status']['last_seen']); ?>
-<?= PHP_EOL ?>
-<?php endif; ?>
-<?php endforeach; ?>
 <?php if ($systemHealth['memory_usage']['memory']['state'] !== 'ok'): ?>
 <?php echo __('High memory usage.'); ?> <?= h($systemHealth['memory_usage']['memory']['percentage']); ?>%
 <?= PHP_EOL ?>
@@ -120,7 +111,7 @@ $systemHealth['load']['load15']); ?>
 <?php echo __('High Swap usage'); ?> <?= h($systemHealth['memory_usage']['swap']['percentage']); ?>%
 <?= PHP_EOL ?>
 <?php endif; ?>
-<?php foreach ($systemHealth['disk_usage'] as $disk): ?>
+<?php foreach ($systemHealth['disk_usage'] ?? [] as $disk): ?>
 <?php if ($disk['state'] !== 'ok'): ?>
 <?php echo __('Low disk space left for mountpoint:'); ?>
 "<?= h($disk['mountpoint']); ?>"
@@ -140,6 +131,49 @@ $systemHealth['load']['load15']); ?>
 <?php echo __('Could not detect system health status.'); ?>
 <?php endif; ?>
 <?= PHP_EOL ?>
+<?php endif; ?>
+<?= PHP_EOL ?>
+<?php if ($systemHealth['isDistributeModuleInstalled'] && !$satelliteState != 'unknown'): ?>
+    <?= __('Satellites System Health') ?> is <?= $StatusSatelliteIcon->getHumanState() ?>!
+    <?= PHP_EOL ?>
+    Time: <?php echo date('H:i:s T'); ?>
+    <?= PHP_EOL ?>
+    State: <?= $StatusSatelliteIcon->getHumanState(); ?>
+    <?= PHP_EOL ?>
+<?php foreach ($systemHealth['satellites'] ?? [] as $satellite): ?>
+    <?php if ($satellite['satellite_status']['status'] !== 1): ?>
+        <?php echo __('Sync status'); ?><?php echo __('failed') ?>
+        <?= PHP_EOL ?>
+        <?= h($satellite['name']); ?>, <?php echo __('last seen') ?> <?= h($satellite['satellite_status']['last_seen']); ?>
+        <?= PHP_EOL ?>
+    <?php endif; ?>
+    <?php if ($satelliteState == 'warning' || $satelliteState == 'critical'): ?>
+        <?php if (isset($satellite['satellite_information']['system_health'])): ?>
+            <?php  $satellite_health = $satellite['satellite_information']['system_health']; ?>
+            <?php if (($satellite_health['memory']['memory']['state'] ?? 'ok') !== 'ok'): ?>
+                <?= h($satellite['name']); ?>, <?php echo __('High memory usage.'); ?> <?= h($satellite_health['memory']['memory']['percentage']); ?>%
+                <?= PHP_EOL ?>
+            <?php endif; ?>
+            <?php if (($satellite_health['memory']['swap']['state'] ?? 'ok') !== 'ok'): ?>
+                <?= h($satellite['name']); ?>, <?php echo __('High Swap usage'); ?> <?= h($satellite_health['memory']['swap']['percentage']); ?>%
+                <?= PHP_EOL ?>
+            <?php endif; ?>
+            <?php foreach ($satellite_health['disks'] ?? [] as $disk): ?>
+                <?php if (($disk['state'] ?? 'ok') !== 'ok'): ?>
+                    <?= h($satellite['name']); ?>, <?php echo __('Low disk space left for mountpoint:'); ?> "<?= h($disk['mountpoint']); ?>" <?= h($disk['use_percentage']); ?>%
+                    <?= PHP_EOL ?>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            <?php if ($satellite_health['cpu_state'] !== 'ok'): ?>
+                <?= h($satellite['name']); ?>, <?php echo __('Current CPU load is too high!'); ?>
+                <?= PHP_EOL ?>
+                <?= h($satellite_health['cpu_load1']); ?>, <?= h($satellite_health['cpu_load5']); ?>, <?= h(
+                    $satellite_health['cpu_load15']); ?>
+                <?= PHP_EOL ?>
+            <?php endif; ?>
+        <?php endif; ?>
+        <?php endif; ?>
+<?php endforeach; ?>
 <?php endif; ?>
 
 <?php //@formatter:on ?>

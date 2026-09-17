@@ -136,7 +136,7 @@ class RotationsController extends AppController {
 
         /** @var MapsTable $MapsTable */
         $MapsTable = TableRegistry::getTableLocator()->get('MapModule.Maps');
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $containerIds = $this->request->getQuery('containerIds');
@@ -164,7 +164,7 @@ class RotationsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {

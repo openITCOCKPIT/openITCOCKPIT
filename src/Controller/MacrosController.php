@@ -45,7 +45,7 @@ class MacrosController extends AppController {
 
     public function index() {
         $TableLocator = $this->getTableLocator();
-        /** @var $Macros MacrosTable */
+        /** @var MacrosTable $Macros */
         $Macros = $TableLocator->get('Macros');
 
         if ($this->isJsonRequest() && !$this->isAngularJsRequest()) {
@@ -72,7 +72,7 @@ class MacrosController extends AppController {
         }
 
         $TableLocator = $this->getTableLocator();
-        /** @var $Macros MacrosTable */
+        /** @var MacrosTable $Macros */
         $Macros = $TableLocator->get('Macros');
 
         $macro = $Macros->newEmptyEntity();
@@ -99,7 +99,7 @@ class MacrosController extends AppController {
         }
 
         $TableLocator = $this->getTableLocator();
-        /** @var $Macros MacrosTable */
+        /** @var MacrosTable $Macros */
         $Macros = $TableLocator->get('Macros');
 
         if (!$Macros->exists($id)) {
@@ -131,7 +131,7 @@ class MacrosController extends AppController {
         }
 
         $TableLocator = $this->getTableLocator();
-        /** @var $Macros MacrosTable */
+        /** @var MacrosTable $Macros */
         $Macros = $TableLocator->get('Macros');
 
         if (!$Macros->existsById($id)) {
@@ -158,7 +158,7 @@ class MacrosController extends AppController {
         $include = $this->request->getQuery('include');
 
         $TableLocator = $this->getTableLocator();
-        /** @var $Macros MacrosTable */
+        /** @var MacrosTable $Macros */
         $Macros = $TableLocator->get('Macros');
 
         $availableMacroNames = array_values($Macros->getAvailableMacroNames());

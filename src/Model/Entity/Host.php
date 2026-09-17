@@ -245,7 +245,7 @@ class Host extends Entity {
     public function getParentHostsForSatCfgAsArray() {
         $parenthosts = [];
         foreach ($this->parenthosts as $parenthost) {
-            /** @var $parenthost Host */
+            /** @var Host $parenthost */
             if ($parenthost->get('disabled') === 0 && $parenthost->get('satellite_id') === $this->get('satellite_id')) {
                 $parenthosts[] = $parenthost->get('uuid');
             }
@@ -302,7 +302,7 @@ class Host extends Entity {
     public function getContactsforCfg() {
         $contacts = [];
         foreach ($this->get('contacts') as $contact) {
-            /** @var $contact Contact */
+            /** @var Contact $contact */
             $contacts[] = $contact->get('uuid');
         }
         return implode(',', $contacts);
@@ -314,7 +314,7 @@ class Host extends Entity {
     public function getContactgroupsforCfg() {
         $contactgroups = [];
         foreach ($this->get('contactgroups') as $contactgroup) {
-            /** @var $contactgroup Contactgroup */
+            /** @var Contactgroup $contactgroup */
             $contactgroups[] = $contactgroup->get('uuid');
         }
         return implode(',', $contactgroups);

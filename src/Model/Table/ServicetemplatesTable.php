@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 namespace App\Model\Table;
 
@@ -29,6 +30,7 @@ use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Lib\Traits\PluginManagerTableTrait;
+use App\Model\Behavior\ContainerOwnedBehavior;
 use App\Model\Entity\Changelog;
 use App\Model\Entity\Servicetemplate;
 use Cake\Core\Plugin;
@@ -67,6 +69,7 @@ use itnovum\openITCOCKPIT\Filter\ServicetemplateFilter;
  * @method \App\Model\Entity\Servicetemplate findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin ContainerOwnedBehavior
  */
 class ServicetemplatesTable extends Table {
 
@@ -90,6 +93,7 @@ class ServicetemplatesTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->belongsToMany('Contactgroups', [
             'className'        => 'Contactgroups',
@@ -525,15 +529,15 @@ class ServicetemplatesTable extends Table {
             'EventhandlerCommand'
         ];
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
 
         if (!empty($dataToParse['Servicetemplate']['contacts']['_ids'])) {
@@ -990,7 +994,7 @@ class ServicetemplatesTable extends Table {
         }
 
         //Lookup for the tenant container of $container_id
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $tenantContainerIds = [];
@@ -1849,7 +1853,7 @@ class ServicetemplatesTable extends Table {
         if ($newServicetemplate['Servicetemplate']['command_id'] != $oldServicetemplate['Servicetemplate']['command_id'] &&
             !empty($oldServicetemplate['Servicetemplate']['servicetemplatecommandargumentvalues'])) {
             $oldCommandId = $oldServicetemplate['Servicetemplate']['command_id'];
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
             $ServicesTable->updateServiceCommandIdIfServiceHasOwnCommandArguments($entity->get('id'), $oldCommandId);
         }
@@ -1857,7 +1861,7 @@ class ServicetemplatesTable extends Table {
         if ($newServicetemplate['Servicetemplate']['eventhandler_command_id'] != $oldServicetemplate['Servicetemplate']['eventhandler_command_id'] &&
             !empty($oldServicetemplate['Servicetemplate']['servicetemplateeventcommandargumentvalues'])) {
             $oldEventhandlerCommandId = $oldServicetemplate['Servicetemplate']['eventhandler_command_id'];
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
             $ServicesTable->updateServiceEventhandlerCommandIdIfServiceHasOwnEventhandlerCommandArguments($entity->get('id'), $oldEventhandlerCommandId);
         }

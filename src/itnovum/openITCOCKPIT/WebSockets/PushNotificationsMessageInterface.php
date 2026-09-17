@@ -40,6 +40,8 @@ use Ratchet\WebSocket\WsConnection;
 /**
  * Class PushNotificationsMessageInterface
  * @package itnovum\openITCOCKPIT\Core\System
+ * @deprecated The PushNotificationsCommand is deprecated and was replaced by
+ * https://github.com/openITCOCKPIT/openITCOCKPIT-websocket
  */
 class PushNotificationsMessageInterface implements MessageComponentInterface {
 

@@ -97,7 +97,7 @@ class InstantreportCreator {
     public function createReport($instantReportId, $fromDate, $toDate) {
         $UserTime = $this->UserTime;
         $reportData = [];
-        /** @var $InstantreportsTable InstantreportsTable */
+        /** @var InstantreportsTable $InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
         $MY_RIGHTS = [];
         if (!$this->hasRootPrivileges) {
@@ -107,7 +107,7 @@ class InstantreportCreator {
             throw new NotFoundException(__('Instant report not found'));
         }
         $instantReport = $InstantreportsTable->getInstantreportByIdCake4($instantReportId);
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
         $timeperiod = $TimeperiodsTable->getTimeperiodWithTimerangesById($instantReport->get('timeperiod_id'));
         if (empty($timeperiod['Timeperiod']['timeperiod_timeranges'])) {
@@ -159,7 +159,7 @@ class InstantreportCreator {
 
         $globalDowntimes = [];
         if ($instantReport->get('downtimes') === 1) {
-            /** @var $SystemfailuresTable SystemfailuresTable */
+            /** @var SystemfailuresTable $SystemfailuresTable */
             $SystemfailuresTable = TableRegistry::getTableLocator()->get('Systemfailures');
             $globalDowntimes = $SystemfailuresTable->getSystemfailuresForReporting(
                 $fromDate,
@@ -246,7 +246,7 @@ class InstantreportCreator {
                     );
                 }
                 //Process conditions
-                /** @var $StatehistoryHostConditions StatehistoryHostConditions */
+                /** @var StatehistoryHostConditions $StatehistoryHostConditions */
                 $StatehistoryHostConditions = new StatehistoryHostConditions();
                 $StatehistoryHostConditions->setOrder(['StatehistoryHosts.state_time' => 'asc']);
                 if ($instantReport->get('reflection') === 2) { // type 2 hard state only
@@ -406,7 +406,7 @@ class InstantreportCreator {
                     }
                     $serviceUuid = $service['uuid'];
 
-                    /** @var $StatehistoryServiceConditions StatehistoryServiceConditions */
+                    /** @var StatehistoryServiceConditions $StatehistoryServiceConditions */
                     $StatehistoryServiceConditions = new StatehistoryServiceConditions();
                     $StatehistoryServiceConditions->setOrder(['StatehistoryServices.state_time' => 'asc']);
                     if ($instantReport->get('reflection') === 2) { // type 2 hard state only

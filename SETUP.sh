@@ -198,10 +198,9 @@ mkdir -p /opt/openitc/var/prometheus/victoria-metrics
 echo "Enable new systemd services"
 systemctl daemon-reload
 systemctl enable\
- sudo_server.service\
  oitc_cmd.service\
  gearman_worker.service\
- push_notification.service\
+ openitcockpit-websocket.service\
  openitcockpit-node.service\
  openitcockpit-graphing.service\
  oitc_cronjobs.timer
@@ -359,6 +358,8 @@ if [[ $STATUSENGINE_VERSION == "Statusengine3" ]]; then
     /opt/openitc/statusengine3/worker/bin/Console.php database --update
 fi
 
+# Statusengine 4 does not need any extra setup as it uses the CakePHP migrations and openITCOCKPIT to create partitions
+
 echo "---------------------------------------------------------------"
 echo "Configure Grafana"
 systemctl restart openitcockpit-graphing.service
@@ -400,10 +401,9 @@ systemctl restart\
  statusengine.service\
  nagios.service\
  nginx.service\
- sudo_server.service\
  oitc_cmd.service\
  gearman_worker.service\
- push_notification.service\
+ openitcockpit-websocket.service\
  openitcockpit-node.service\
  oitc_cronjobs.timer
 

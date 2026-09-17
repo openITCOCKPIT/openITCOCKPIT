@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 namespace App\Model\Table;
 
@@ -29,6 +30,7 @@ use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Lib\Traits\PluginManagerTableTrait;
+use App\Model\Behavior\ContainerOwnedBehavior;
 use App\Model\Entity\Changelog;
 use App\Model\Entity\Hosttemplate;
 use App\Model\Entity\User;
@@ -64,6 +66,7 @@ use itnovum\openITCOCKPIT\Filter\HosttemplateFilter;
  * @method \App\Model\Entity\Hosttemplate findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin ContainerOwnedBehavior
  */
 class HosttemplatesTable extends Table {
 
@@ -86,6 +89,7 @@ class HosttemplatesTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->belongsToMany('Contactgroups', [
             'className'        => 'Contactgroups',
@@ -894,15 +898,15 @@ class HosttemplatesTable extends Table {
             'CheckCommand',
         ];
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
 
         if (!empty($dataToParse['Hosttemplate']['contacts']['_ids'])) {
@@ -967,7 +971,7 @@ class HosttemplatesTable extends Table {
      * @return bool
      */
     public function allowDelete($hosttemplateId) {
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $count = $HostsTable->find()
@@ -1477,7 +1481,7 @@ class HosttemplatesTable extends Table {
         if ($newHosttemplate['Hosttemplate']['command_id'] != $oldHosttemplate['Hosttemplate']['command_id'] &&
             !empty($oldHosttemplate['Hosttemplate']['hosttemplatecommandargumentvalues'])) {
             $oldCommandId = $oldHosttemplate['Hosttemplate']['command_id'];
-            /** @var $HostsTable HostsTable */
+            /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
             $HostsTable->updateHostCommandIdIfHostHasOwnCommandArguments($entity->get('id'), $oldCommandId);
         }

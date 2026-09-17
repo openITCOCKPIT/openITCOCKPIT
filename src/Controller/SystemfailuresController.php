@@ -52,7 +52,7 @@ class SystemfailuresController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $SystemfailuresTable SystemfailuresTable */
+        /** @var SystemfailuresTable $SystemfailuresTable */
         $SystemfailuresTable = TableRegistry::getTableLocator()->get('Systemfailures');
 
         $SystemfailuresFilter = new SystemfailuresFilter($this->request);
@@ -90,7 +90,7 @@ class SystemfailuresController extends AppController {
         }
 
         if ($this->request->is('post')) {
-            /** @var $SystemfailuresTable SystemfailuresTable */
+            /** @var SystemfailuresTable $SystemfailuresTable */
             $SystemfailuresTable = TableRegistry::getTableLocator()->get('Systemfailures');
 
             $requestData = $this->request->getData('Systemfailure', []);
@@ -141,7 +141,7 @@ class SystemfailuresController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $SystemfailuresTable SystemfailuresTable */
+        /** @var SystemfailuresTable $SystemfailuresTable */
         $SystemfailuresTable = TableRegistry::getTableLocator()->get('Systemfailures');
 
         if (!$SystemfailuresTable->existsById($id)) {

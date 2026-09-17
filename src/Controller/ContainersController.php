@@ -75,7 +75,7 @@ class ContainersController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if (!$ContainersTable->existsById($id)) {
@@ -104,7 +104,7 @@ class ContainersController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         $container = $ContainersTable->newEntity($this->request->getData('Container'));
 
@@ -155,7 +155,7 @@ class ContainersController extends AppController {
         }
         if ($this->request->is('post')) {
 
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
             $containerId = (int)$this->request->getData('Container.id', 0);
 
@@ -226,7 +226,7 @@ class ContainersController extends AppController {
             return;
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
         /** @var  $TenantsTable TenantsTable */
         $TenantsTable = TableRegistry::getTableLocator()->get('Tenants');
@@ -375,7 +375,7 @@ class ContainersController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
@@ -424,7 +424,7 @@ class ContainersController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $this->set('paths', $ContainersTable->easyPath($ContainersTable->resolveChildrenOfContainerIds($id), OBJECT_NODE));
@@ -439,7 +439,7 @@ class ContainersController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $ContainersTable->acquireLock();
@@ -512,7 +512,7 @@ class ContainersController extends AppController {
 
         $onlyWithWritePermissions = $this->request->getQuery('onlyWritePermissions') === 'true';
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
@@ -548,7 +548,7 @@ class ContainersController extends AppController {
             return;
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if (!$ContainersTable->existsById($id)) {
@@ -582,7 +582,7 @@ class ContainersController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         $containerIds = $this->request->getQuery('containerIds', []);
@@ -596,7 +596,7 @@ class ContainersController extends AppController {
 
         $satellites = [];
         if (Plugin::isLoaded('DistributeModule')) {
-            /** @var $SatellitesTable SatellitesTable */
+            /** @var SatellitesTable $SatellitesTable */
             $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
             $satellites = $SatellitesTable->getSatellitesAsListWithDescription($containerIds);
         }
@@ -606,5 +606,41 @@ class ContainersController extends AppController {
         $this->viewBuilder()->setOption('serialize', [
             'satellites'
         ]);
+    }
+
+    public function loadContainersByContainerIds() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var ContainersTable $ContainersTable */
+        $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+
+        $containerIds = $this->request->getQuery('containerIds', []);
+
+        foreach ($containerIds as $containerId) {
+            if (!$ContainersTable->existsById($containerId)) {
+                throw new NotFoundException(__('Invalid container'));
+            }
+        }
+
+        $removeRoot = true;
+        if (in_array(ROOT_CONTAINER, $containerIds)) {
+            $removeRoot = false;
+        }
+
+        $containerIds = $ContainersTable->resolveChildrenOfContainerIds($containerIds, true);
+
+        if ($removeRoot) {
+            unset($containerIds[0]);
+        }
+
+        //$containers = $ContainersTable->easyPath($containerIds, CT_TENANT, [], true);
+        $containers = $ContainersTable->easyPath($containerIds, OBJECT_HOST, [], $this->hasRootPrivileges, [CT_HOSTGROUP]);
+        $containers = Api::makeItJavaScriptAble($containers);
+
+        $this->set('containers', $containers);
+        $this->viewBuilder()->setOption('serialize', ['containers']);
+
     }
 }

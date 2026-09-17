@@ -73,13 +73,13 @@ class InstantreportsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
         $InstantreportFilter = new InstantreportFilter($this->request);
-        /** @var $InstantreportsTable InstantreportsTable */
+        /** @var InstantreportsTable $InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
 
         $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $InstantreportFilter->getPage());
         $MY_RIGHTS = [];
         if ($this->hasRootPrivileges === false) {
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
             //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
             // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
@@ -101,11 +101,11 @@ class InstantreportsController extends AppController {
         if (!$this->isApiRequest()) {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
-        /** @var $InstantreportsTable InstantreportsTable */
+        /** @var InstantreportsTable $InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
         if ($this->request->is('post') && $this->isAngularJsRequest()) {
 
-            /** @var $TimeperiodsTable TimeperiodsTable */
+            /** @var TimeperiodsTable $TimeperiodsTable */
             $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
             $timeperiod = $TimeperiodsTable->getTimeperiodWithTimerangesById($this->request->getData('Instantreport.timeperiod_id', 0));
 
@@ -141,7 +141,7 @@ class InstantreportsController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $InstantreportsTable InstantreportsTable */
+        /** @var InstantreportsTable $InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
 
         if (!$InstantreportsTable->existsById($id)) {
@@ -161,7 +161,7 @@ class InstantreportsController extends AppController {
 
         if ($this->request->is('post') || $this->request->is('put')) {
 
-            /** @var $TimeperiodsTable TimeperiodsTable */
+            /** @var TimeperiodsTable $TimeperiodsTable */
             $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
             $timeperiod = $TimeperiodsTable->getTimeperiodWithTimerangesById($this->request->getData('Instantreport.timeperiod_id'));
 
@@ -270,7 +270,7 @@ class InstantreportsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $InstantreportsTable InstantreportsTable */
+        /** @var InstantreportsTable $InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
 
         if (!$InstantreportsTable->exists($id)) {
@@ -326,7 +326,7 @@ class InstantreportsController extends AppController {
         $instantreportId = $this->request->getQuery('data.instantreport_id', 0);
 
 
-        /** @var $InstantreportsTable InstantreportsTable */
+        /** @var InstantreportsTable $InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
         if (!$InstantreportsTable->existsById($instantreportId)) {
             throw new NotFoundException('Instant report not found!');
@@ -401,7 +401,7 @@ class InstantreportsController extends AppController {
         if (!$this->isAngularJsRequest()) {
             throw new MethodNotAllowedException();
         }
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
@@ -420,12 +420,12 @@ class InstantreportsController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $InstantreportsTable InstantreportsTable */
+        /** @var InstantreportsTable $InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
 
         $MY_RIGHTS = [];
         if ($this->hasRootPrivileges === false) {
-            /** @var $ContainersTable ContainersTable */
+            /** @var ContainersTable $ContainersTable */
             //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
             //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
             // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to

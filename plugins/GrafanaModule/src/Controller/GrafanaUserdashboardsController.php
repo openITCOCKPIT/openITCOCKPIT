@@ -908,7 +908,7 @@ class GrafanaUserdashboardsController extends AppController {
         /** @var GrafanaApiConfiguration $GrafanaApiConfiguration */
         $GrafanaApiConfiguration = GrafanaApiConfiguration::fromArray($grafanaConfiguration);
 
-        /** @var $ProxiesTable ProxiesTable */
+        /** @var ProxiesTable $ProxiesTable */
         $ProxiesTable = TableRegistry::getTableLocator()->get('Proxies');
 
         $client = $GrafanaConfigurationsTable->testConnection($GrafanaApiConfiguration, $ProxiesTable->getSettings());

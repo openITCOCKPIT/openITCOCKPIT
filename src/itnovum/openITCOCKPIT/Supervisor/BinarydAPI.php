@@ -24,8 +24,8 @@ class BinarydAPI {
         $this->Client = new Client([
             'base_uri' => $address,
             'proxy'    => [
-                'http'  => false,
-                'https' => false
+                'http'  => '',
+                'https' => ''
             ]
         ]);
     }

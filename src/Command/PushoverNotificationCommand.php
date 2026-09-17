@@ -341,14 +341,14 @@ class PushoverNotificationCommand extends Command {
                 'message' => $message
             ],
             'proxy'       => [
-                'http'  => false,
-                'https' => false
+                'http'  => '',
+                'https' => ''
             ]
         ];
 
         $params['proxy'] = [
-            'http'  => false,
-            'https' => false
+            'http'  => '',
+            'https' => ''
         ];
         if ($this->useProxy) {
             /** @var ProxiesTable $ProxiesTable */

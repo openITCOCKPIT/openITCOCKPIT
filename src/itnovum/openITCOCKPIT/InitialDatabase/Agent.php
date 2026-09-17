@@ -2386,7 +2386,7 @@ class Agent extends Importer {
             [
                 'uuid'                                      => 'e5d848f5-a323-4bfe-9ec5-1c5cdf138abf',
                 'template_name'                             => 'OITC_AGENT_NET_IO',
-                'name'                                      => 'Network Stats',
+                'name'                                      => 'Network Statistics',
                 'container_id'                              => ROOT_CONTAINER,
                 'servicetemplatetype_id'                    => OITC_AGENT_SERVICE,
                 'check_period_id'                           => '1',

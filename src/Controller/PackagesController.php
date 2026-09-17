@@ -564,7 +564,7 @@ class PackagesController extends AppController {
         }
         $hostId = (int)$hostId;
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->existsById($hostId)) {
@@ -605,7 +605,7 @@ class PackagesController extends AppController {
         }
         $hostId = (int)$hostId;
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->existsById($hostId)) {
@@ -648,7 +648,7 @@ class PackagesController extends AppController {
         }
         $hostId = (int)$hostId;
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->existsById($hostId)) {
@@ -685,7 +685,7 @@ class PackagesController extends AppController {
         }
         $hostId = (int)$hostId;
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->existsById($hostId)) {
@@ -721,7 +721,7 @@ class PackagesController extends AppController {
         }
         $hostId = (int)$hostId;
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HostsTable->existsById($hostId)) {

@@ -183,7 +183,7 @@ class SystemHealthUsersTable extends Table {
 
         $user = $query->first();
 
-        /** @var $UsersTable UsersTable */
+        /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
         $query = $UsersTable->find()
             ->where([
@@ -257,7 +257,7 @@ class SystemHealthUsersTable extends Table {
      */
     public function getSystemHealthUsersIndex(SystemHealthUsersFilter $SystemHealthUsersFilter, $PaginateOMat = null, $MY_RIGHTS = []) {
         //Get all user ids where container assigned are made directly at the user
-        /** @var $UsersTable UsersTable */
+        /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
         $query = $UsersTable->find()
             ->select([

@@ -365,7 +365,7 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'ups',
                 'title'       => __('Uninterruptible Power Supply'),
                 'description' => __('Add your UPS for monitoring by specifying the device details'),
-                'image'       => 'ups.jpg',
+                'image'       => 'ups.png',
                 'category'    => ['hardware'],
                 'active'      => true
             ],
@@ -373,7 +373,7 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'printer',
                 'title'       => __('Printer'),
                 'description' => __('Add your printers for monitoring by specifying the device details'),
-                'image'       => 'printer.jpg',
+                'image'       => 'printer.png',
                 'category'    => ['hardware'],
                 'active'      => true
             ],
@@ -533,7 +533,7 @@ class WizardAssignmentsTable extends Table {
                 'type_id'     => 'network-interfaces',
                 'title'       => __('Network Interfaces'),
                 'description' => __('A comprehensive solution for monitoring diverse network infrastructure and interfaces like: Switch, Router, Firewall, Access Point, ...'),
-                'image'       => 'network_extended.jpg',
+                'image'       => 'network_extended.png',
                 'category'    => ['linux', 'network'],
                 'active'      => true
             ],
@@ -663,6 +663,22 @@ class WizardAssignmentsTable extends Table {
                 'description' => __('Monitor your SonicWall via SNMP.'),
                 'image'       => 'sonicwall.svg',
                 'category'    => ['cloud', 'network'],
+                'active'      => true
+            ],
+            'symantec-mail-gateway'        => [
+                'type_id'     => 'symantec-mail-gateway',
+                'title'       => __('Symantec Mail Gateway'),
+                'description' => __('Monitor your Symantec Mail Gateway via SNMP.'),
+                'image'       => 'symantec.svg',
+                'category'    => ['network', 'mail'],
+                'active'      => true
+            ],
+            'arista-network'               => [
+                'type_id'     => 'arista-network',
+                'title'       => __('Arista Network'),
+                'description' => __('Monitor your Arista network via SNMP.'),
+                'image'       => 'arista-networks.svg',
+                'category'    => ['network', 'hardware'],
                 'active'      => true
             ]
         ];

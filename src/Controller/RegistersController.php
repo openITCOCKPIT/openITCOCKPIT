@@ -66,8 +66,8 @@ class RegistersController extends AppController {
 
 
             $isCommunityLicense = false;
-            if ($hasLicense && isset($licenseResponse['license']->license)) {
-                if ($licenseResponse['license']->license == $RegistersTable->getCommunityLicenseKey()) {
+            if ($hasLicense && isset($licenseResponse['license']['license'])) {
+                if ($licenseResponse['license']['license'] == $RegistersTable->getCommunityLicenseKey()) {
                     $isCommunityLicense = true;
                 }
             }
@@ -86,7 +86,7 @@ class RegistersController extends AppController {
 
             $licenseResponse = $RegistersTable->checkLicenseKey($license);
             if ($licenseResponse['success'] === true) {
-                if (is_object($licenseResponse['license']) && property_exists($licenseResponse['license'], 'license')) {
+                if (isset($licenseResponse['license']['license'])) {
                     //license is valid
 
                     $licenseEntity = $RegistersTable->getLicenseEntity();
@@ -119,7 +119,7 @@ class RegistersController extends AppController {
                     }
 
                     $isCommunityLicense = false;
-                    if ($licenseResponse['license']->license == $RegistersTable->getCommunityLicenseKey()) {
+                    if ($licenseResponse['license']['license'] == $RegistersTable->getCommunityLicenseKey()) {
                         $isCommunityLicense = true;
                     }
 

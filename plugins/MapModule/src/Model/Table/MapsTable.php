@@ -47,6 +47,8 @@ use App\Model\Table\HostgroupsTable;
 use App\Model\Table\HostsTable;
 use App\Model\Table\ServicegroupsTable;
 use App\Model\Table\ServicesTable;
+use App\Model\Table\StatuspagegroupsTable;
+use App\Model\Table\StatuspagesTable;
 use Cake\Core\Plugin;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\Exception\RecordNotFoundException;
@@ -1013,6 +1015,123 @@ class MapsTable extends Table {
     }
 
     /**
+     * @param HoststatusTableInterface $HoststatusTable
+     * @param ServicestatusTableInterface $ServicestatusTable
+     * @param string $type
+     * @param array $object
+     * @param array $hosts
+     * @param array $services
+     * @return array
+     */
+    public function getStatuspageInformation(HoststatusTableInterface $HoststatusTable, ServicestatusTableInterface $ServicestatusTable, string $type, array $object, array $hosts, array $services): array {
+        $object = [
+            'id'          => $object['id'],
+            'name'        => $object['name'],
+            'description' => $object['description']
+        ];
+
+        if (empty($hosts) && empty($services)) {
+            return [
+                'icon'                                                         => $this->errorIcon,
+                'color'                                                        => 'text-primary',
+                'background'                                                   => 'bg-not-monitored',
+                $type === 'statuspagegroup' ? 'Statuspagegroup' : 'Statuspage' => $object
+            ];
+        }
+
+        $hostsUuids = Hash::extract($hosts, '{s}.uuid');
+
+        $HoststatusFields = new HoststatusFields(new DbBackend());
+        $HoststatusFields->currentState()->scheduledDowntimeDepth()->problemHasBeenAcknowledged();
+        $hoststatusByUuids = $HoststatusTable->byUuids($hostsUuids, $HoststatusFields);
+        $hoststatus = new Hoststatus([]);
+        if (empty($hoststatusByUuids)) {
+            $icon = $this->errorIcon;
+            $color = $hoststatus->HostStatusColor();
+            $background = $hoststatus->HostStatusBackgroundColor();
+            $iconProperty = $icon;
+        } else {
+            $worstHostState = array_values(
+                Hash::sort($hoststatusByUuids, '{s}.Hoststatus.current_state', 'desc')
+            );
+            if (!empty($worstHostState)) {
+                $hoststatus = new Hoststatus($worstHostState[0]['Hoststatus']);
+            }
+            $icon = $this->hostIcons[$hoststatus->currentState()];
+            $color = $hoststatus->HostStatusColor();
+            $background = $hoststatus->HostStatusBackgroundColor();
+            $iconProperty = $icon;
+
+
+            if ($hoststatus->isAcknowledged()) {
+                $iconProperty = $this->ackIcon;
+            }
+
+            if ($hoststatus->isInDowntime()) {
+                $iconProperty = $this->downtimeIcon;
+            }
+
+            if ($hoststatus->isAcknowledged() && $hoststatus->isInDowntime()) {
+                $iconProperty = $this->ackAndDowntimeIcon;
+            }
+            if ($hoststatus->currentState() > 0) {
+                return [
+                    'icon'                                                         => $icon,
+                    'icon_property'                                                => $iconProperty,
+                    'color'                                                        => $color,
+                    'background'                                                   => $background,
+                    $type === 'statuspagegroup' ? 'Statuspagegroup' : 'Statuspage' => $object
+                ];
+            }
+        }
+
+        $servicesUuids = Hash::extract($services, '{s}.uuid');
+        $ServicestatusFields = new ServicestatusFields(new DbBackend());
+        $ServicestatusFields->currentState()->scheduledDowntimeDepth()->problemHasBeenAcknowledged();
+        $ServicestatusConditions = new ServicestatusConditions(new DbBackend());
+        $servicestatus = $ServicestatusTable->byUuids($servicesUuids, $ServicestatusFields, $ServicestatusConditions);
+        if (!empty($servicestatus)) {
+            $worstServiceState = array_values(
+                Hash::sort($servicestatus, '{s}.Servicestatus.current_state', 'desc')
+            );
+            $servicestatus = new Servicestatus($worstServiceState[0]['Servicestatus']);
+            $serviceIcon = $this->serviceIcons[$servicestatus->currentState()];
+
+            $serviceIconProperty = $serviceIcon;
+            if ($servicestatus->isAcknowledged()) {
+                $serviceIconProperty = $this->ackIcon;
+            }
+
+            if ($servicestatus->isInDowntime()) {
+                $serviceIconProperty = $this->downtimeIcon;
+            }
+
+            if ($servicestatus->isAcknowledged() && $servicestatus->isInDowntime()) {
+                $serviceIconProperty = $this->ackAndDowntimeIcon;
+            }
+            return [
+                'icon'                                                         => $serviceIcon,
+                'icon_property'                                                => $serviceIconProperty,
+                'isAcknowledged'                                               => $servicestatus->isAcknowledged(),
+                'isInDowntime'                                                 => $servicestatus->isInDowntime(),
+                'color'                                                        => $servicestatus->ServiceStatusColor(),
+                'background'                                                   => $servicestatus->ServiceStatusBackgroundColor(),
+                $type === 'statuspagegroup' ? 'Statuspagegroup' : 'Statuspage' => $object
+            ];
+        }
+        return [
+            'icon'                                                         => $icon,
+            'icon_property'                                                => $iconProperty,
+            'isAcknowledged'                                               => $hoststatus->isAcknowledged(),
+            'isInDowntime'                                                 => $hoststatus->isInDowntime(),
+            'color'                                                        => $color,
+            'background'                                                   => $background,
+            $type === 'statuspagegroup' ? 'Statuspagegroup' : 'Statuspage' => $object
+        ];
+    }
+
+
+    /**
      * @param $dependentMapsIds
      * @param HostgroupsTable $HostgroupsTable
      * @param ServicegroupsTable $ServicegroupsTable
@@ -1074,12 +1193,16 @@ class MapsTable extends Table {
             ->toArray();
 
         $mapElementsByCategory = [
-            'host'         => [],
-            'hostgroup'    => [],
-            'service'      => [],
-            'servicegroup' => []
+            'host'            => [],
+            'hostgroup'       => [],
+            'service'         => [],
+            'servicegroup'    => [],
+            'statuspage'      => [],
+            'statuspagegroup' => [],
         ];
         $allDependentMapElements = Hash::filter($allDependentMapElements);
+
+
         foreach ($allDependentMapElements as $allDependentMapElementArray) {
             foreach ($allDependentMapElementArray as $mapElementData) {
                 if (is_array($mapElementData)) {
@@ -1089,6 +1212,7 @@ class MapsTable extends Table {
                 }
             }
         }
+
 
         $hostIds = $mapElementsByCategory['host'];
         $serviceIds = $mapElementsByCategory['service'];
@@ -1112,10 +1236,54 @@ class MapsTable extends Table {
                 );
             }
         }
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+        if (!empty($mapElementsByCategory['statuspage'])) {
+            $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds($mapElementsByCategory['statuspage'], $MY_RIGHTS);
+            $statuspageHostIds = Hash::extract($hostsAndServices['hosts'], '{s}.id');
+            if (!empty($statuspageHostIds)) {
+                $hostIds = array_merge(
+                    $hostIds,
+                    $statuspageHostIds
+                );
+            }
+
+            $statuspageServiceIds = Hash::extract($hostsAndServices['services'], '{s}.id');
+
+            if (!empty($statuspageHostIds)) {
+                $serviceIds = array_merge(
+                    $serviceIds,
+                    $statuspageServiceIds
+                );
+            }
+        }
+
+        if (!empty($mapElementsByCategory['statuspagegroup'])) {
+            /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+            $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+            $statuspagesIds = $StatuspagegroupsTable->getStatuspagesByStatuspagegroupIds($mapElementsByCategory['statuspagegroup'], $MY_RIGHTS);
+            if (!empty($statuspagesIds)) {
+                $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds($statuspagesIds, $MY_RIGHTS);
+                $statuspageHostIds = Hash::extract($hostsAndServices['hosts'], '{s}.id');
+                if (!empty($statuspageHostIds)) {
+                    $hostIds = array_merge(
+                        $hostIds,
+                        $statuspageHostIds
+                    );
+                }
+                $statuspageServiceIds = Hash::extract($hostsAndServices['services'], '{s}.id');
+                if (!empty($statuspageHostIds)) {
+                    $serviceIds = array_merge(
+                        $serviceIds,
+                        $statuspageServiceIds
+                    );
+                }
+            }
+        }
 
         return [
-            'hostIds'    => $hostIds,
-            'serviceIds' => $serviceIds
+            'hostIds'    => array_unique($hostIds),
+            'serviceIds' => array_unique($serviceIds)
         ];
     }
 
@@ -1409,28 +1577,34 @@ class MapsTable extends Table {
     /**
      * @param HoststatusTableInterface $HoststatusTable
      * @param ServicestatusTableInterface $ServicestatusTable
-     * @param array $map
+     * @param string $type
+     * @param array $object
      * @param array $hosts
      * @param array $services
      * @return array
      */
-    public function getMapInformationForSummaryIcon(HoststatusTableInterface $HoststatusTable, ServicestatusTableInterface $ServicestatusTable, array $map, array $hosts, array $services) {
+    public function getInformationForSummaryIcon(HoststatusTableInterface $HoststatusTable, ServicestatusTableInterface $ServicestatusTable, string $type, array $object, array $hosts, array $services): array {
         $bitMaskHostState = 0;
         $bitMaskServiceState = 0;
+        $ObjectKey = match ($type) {
+            'map' => 'Map',
+            'statuspage' => 'Statuspage',
+            'statuspagegroup' => 'Statuspagegroup'
+        };
 
         if (empty($hosts) && empty($services)) {
             return [
                 'BitMaskHostState'    => $bitMaskHostState,
                 'BitMaskServiceState' => $bitMaskServiceState,
-                'Map'                 => $map
+                $ObjectKey            => $object
             ];
         }
         $HoststatusFields = new HoststatusFields(new DbBackend());
         $HoststatusFields->currentState();
         $ServicestatusFields = new ServicestatusFields(new DbBackend());
         $ServicestatusFields->currentState();
-        $hostsUuids = Hash::extract($hosts, '{n}.Host.uuid');
-        $servicesUuids = Hash::extract($services, '{n}.Service.uuid');
+        $hostsUuids = Hash::extract($hosts, '{*}.uuid');
+        $servicesUuids = Hash::extract($services, '{*}.uuid');
         $hoststatus = $HoststatusTable->byUuid($hostsUuids, $HoststatusFields);
         $servicestatus = $ServicestatusTable->byUuid($servicesUuids, $ServicestatusFields);
 
@@ -1439,7 +1613,7 @@ class MapsTable extends Table {
             return [
                 'BitMaskHostState'    => $bitMaskHostState,
                 'BitMaskServiceState' => $bitMaskServiceState,
-                'Map'                 => $map
+                $ObjectKey            => $object
             ];
         }
         foreach ($hoststatus as $statusDetails) {
@@ -1451,7 +1625,7 @@ class MapsTable extends Table {
         return [
             'BitMaskHostState'    => $bitMaskHostState,
             'BitMaskServiceState' => $bitMaskServiceState,
-            'Map'                 => $map
+            $ObjectKey            => $object
         ];
     }
 
@@ -1869,7 +2043,6 @@ class MapsTable extends Table {
     /**
      * @param HostsTable $HostsTable
      * @param HoststatusTableInterface $HoststatusTable
-     * @param ServicesTable $ServicesTable
      * @param ServicestatusTableInterface $ServicestatusTable
      * @param array $map
      * @param array $hosts
@@ -1878,7 +2051,7 @@ class MapsTable extends Table {
      * @param bool $summaryStateItem
      * @return array
      */
-    public function getMapSummary(HostsTable $HostsTable, HoststatusTableInterface $HoststatusTable, ServicesTable $ServicesTable, ServicestatusTableInterface $ServicestatusTable, array $map, array $hosts, array $services, UserTime $UserTime, bool $summaryStateItem) {
+    public function getMapSummary(HostsTable $HostsTable, HoststatusTableInterface $HoststatusTable, ServicestatusTableInterface $ServicestatusTable, array $map, array $hosts, array $services, UserTime $UserTime, bool $summaryStateItem) {
         $cumulatedHostState = null;
         $cumulatedServiceState = null;
         $notOkHosts = [];
@@ -2491,7 +2664,7 @@ class MapsTable extends Table {
      * @param array $containerIds
      * @return array
      */
-    public function getRequiredContainerIdsForMap($mapId, array $containerIds) {
+    public function getRequiredContainerIdsForMap($mapId, array $containerIds): array {
         $requiredIds = [];
         if (empty($containerIds)) {
             return $requiredIds;
@@ -2517,7 +2690,7 @@ class MapsTable extends Table {
      * @param array $containerIds
      * @return array
      */
-    public function getRotationContainerIdsForMap(int $mapId, array $containerIds) {
+    public function getRotationContainerIdsForMap(int $mapId, array $containerIds): array {
         if (empty($containerIds)) {
             return [];
         }
@@ -2562,7 +2735,7 @@ class MapsTable extends Table {
      * @param array $contain
      * @return array
      */
-    public function getMapsAndItemsByIds($mapIds, $contain = []) {
+    public function getMapsAndItemsByIds($mapIds, $contain = []): array {
 
         if (empty($mapIds)) {
             return [];
@@ -2735,5 +2908,141 @@ class MapsTable extends Table {
             ->disableAutoFields()
             ->disableHydration();
         return $query->toArray();
+    }
+
+    /**
+     * @param HostsTable $HostsTable
+     * @param HoststatusTableInterface $HoststatusTable
+     * @param ServicestatusTableInterface $ServicestatusTable
+     * @param string $type //statuspage | statuspagegroup
+     * @param array $object //status page or status page group
+     * @param array $hosts
+     * @param array $services
+     * @param UserTime $UserTime
+     * @param bool $summaryStateItem
+     * @return array
+     */
+    public function getStatuspageSummary(HostsTable $HostsTable, HoststatusTableInterface $HoststatusTable, ServicestatusTableInterface $ServicestatusTable, string $type, array $object, array $hosts, array $services, UserTime $UserTime, bool $summaryStateItem): array {
+        $cumulatedHostState = null;
+        $cumulatedServiceState = null;
+        $notOkHosts = [];
+        $notOkServices = [];
+        $hostIdsGroupByState = [
+            0 => [],
+            1 => [],
+            2 => []
+        ];
+
+        $serviceIdsGroupByState = [
+            0 => [],
+            1 => [],
+            2 => [],
+            3 => []
+        ];
+        $counterForNotOkHostAndService = 0;
+        $limitForNotOkHostAndService = 20;
+
+        $HoststatusFields = new HoststatusFields(new DbBackend());
+        $HoststatusFields
+            ->currentState()
+            ->lastCheck()
+            ->isHardstate()
+            ->scheduledDowntimeDepth()
+            ->problemHasBeenAcknowledged()
+            ->activeChecksEnabled()
+            ->output();
+
+        $hostUuids = Hash::extract($hosts, '{s}.uuid');
+
+        $hoststatusByUuids = $HoststatusTable->byUuid($hostUuids, $HoststatusFields);
+        $hostStateSummary = $HostsTable->getHostStateSummary($hoststatusByUuids, false);
+
+        $ServicestatusFields = new ServicestatusFields(new DbBackend());
+        $ServicestatusFields
+            ->currentState()
+            ->lastCheck()
+            ->isHardstate()
+            ->scheduledDowntimeDepth()
+            ->problemHasBeenAcknowledged()
+            ->activeChecksEnabled()
+            ->output();
+        $ServicestatusConditions = new ServicestatusConditions(new DbBackend());
+
+        $servicesUuids = Hash::extract($services, '{s}.uuid');
+
+        $servicestatusResults = $ServicestatusTable->byUuid($servicesUuids, $ServicestatusFields, $ServicestatusConditions);
+        $ServicestatusObjects = Servicestatus::fromServicestatusByUuid($servicestatusResults);
+        $serviceStateSummary = ServiceStateSummary::getServiceStateSummary($ServicestatusObjects, false);
+        if (!empty($hoststatusByUuids)) {
+            $worstHostState = array_values(
+                $hoststatusByUuids = Hash::sort($hoststatusByUuids, '{s}.Hoststatus.current_state', 'desc')
+            );
+            $cumulatedHostState = (int)$worstHostState[0]['Hoststatus']['current_state'];
+            foreach ($hoststatusByUuids as $hostUuid => $hoststatusByUuid) {
+                $hostStatus = new Hoststatus($hoststatusByUuid['Hoststatus'], $UserTime);
+                $currentHostState = $hostStatus->currentState();
+
+                $hostIdsGroupByState[$currentHostState][] = $hosts[$hostUuid]['id'];
+                $host = new \itnovum\openITCOCKPIT\Core\Views\Host($hosts[$hostUuid]);
+                if ($counterForNotOkHostAndService <= $limitForNotOkHostAndService && $currentHostState > 0) {
+                    $notOkHosts[] = [
+                        'Hoststatus' => $hostStatus->toArray(),
+                        'Host'       => $host->toArray()
+                    ];
+                    $counterForNotOkHostAndService++;
+                }
+            }
+        }
+        if (!empty($servicestatusResults)) {
+            $worstServiceState = array_values(
+                $servicestatusResults = Hash::sort($servicestatusResults, '{s}.Servicestatus.current_state', 'desc')
+            );
+            $cumulatedServiceState = (int)$worstServiceState[0]['Servicestatus']['current_state'];
+            foreach ($servicestatusResults as $serviceUuid => $servicestatusByUuid) {
+                $serviceStatus = new Servicestatus($servicestatusByUuid['Servicestatus'], $UserTime);
+                $currentServiceState = $serviceStatus->currentState();
+                $serviceIdsGroupByState[$currentServiceState][] = $services[$serviceUuid]['id'];
+
+                $service = new \itnovum\openITCOCKPIT\Core\Views\Service($services[$serviceUuid]);
+                if ($counterForNotOkHostAndService <= $limitForNotOkHostAndService && $currentServiceState > 0) {
+                    $notOkServices[] = [
+                        'Servicestatus' => $serviceStatus->toArray(),
+                        'Service'       => $service->toArray()
+                    ];
+                    $counterForNotOkHostAndService++;
+                }
+            }
+        }
+
+        $CumulatedHostStatus = new Hoststatus([
+            'current_state' => $cumulatedHostState
+        ]);
+
+        $CumulatedHumanState = $CumulatedHostStatus->toArray()['humanState'];
+        if (($cumulatedHostState === 0 || is_null($cumulatedHostState)) && !is_null($cumulatedServiceState)) {
+            $CumulatedServiceStatus = new Servicestatus([
+                'current_state' => $cumulatedServiceState
+            ]);
+            $CumulatedHumanState = $CumulatedServiceStatus->toArray()['humanState'];
+        }
+
+        $object = [
+            'id'          => $object['id'],
+            'name'        => $object['name'],
+            'description' => $object['description'],
+            'object_id'   => $object['id']
+        ];
+
+
+        return [
+            $type === 'statuspagegroup' ? 'Statuspagegroup' : 'Statuspage' => $object,
+            'HostSummary'                                                  => $hostStateSummary,
+            'ServiceSummary'                                               => $serviceStateSummary,
+            'CumulatedHumanState'                                          => $CumulatedHumanState,
+            'NotOkHosts'                                                   => $notOkHosts,
+            'NotOkServices'                                                => $notOkServices,
+            'HostIdsGroupByState'                                          => $hostIdsGroupByState,
+            'ServiceIdsGroupByState'                                       => $serviceIdsGroupByState
+        ];
     }
 }

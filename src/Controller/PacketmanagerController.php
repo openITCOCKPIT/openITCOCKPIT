@@ -33,13 +33,12 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\itnovum\openITCOCKPIT\Core\PackagemanagerRequestHandler;
 use App\Model\Table\ProxiesTable;
 use App\Model\Table\RegistersTable;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\DnfRepositoryChecker;
-use itnovum\openITCOCKPIT\Core\Http;
-use itnovum\openITCOCKPIT\Core\PackagemanagerRequestBuilder;
 use itnovum\openITCOCKPIT\Core\RepositoryChecker;
 use itnovum\openITCOCKPIT\Core\System\Health\LsbRelease;
 use itnovum\openITCOCKPIT\Core\ValueObjects\License;
@@ -62,33 +61,20 @@ class PacketmanagerController extends AppController {
             $License = $RegistersTable->getLicense();
             $License = new License($License);
 
-            $packagemanagerRequestBuilder = new PackagemanagerRequestBuilder(ENVIRONMENT, $License->getLicense());
-            $http = new Http(
-                $packagemanagerRequestBuilder->getUrl(),
-                $packagemanagerRequestBuilder->getOptions(),
-                $ProxiesTable->getSettings()
-            );
+            $PackagemanagerRequestHandler = new PackagemanagerRequestHandler($License->getLicense());
+            $result = $PackagemanagerRequestHandler->loadModulesWithChangelog();
 
-            $http->sendRequest();
+            if (!isset($result['data']['modules'])) {
+                $result['data']['modules'] = [];
+            }
+            if (!isset($result['data']['changelog'])) {
+                $result['data']['changelog'] = [];
+            }
 
-            $result = [
-                'error'     => false,
-                'error_msg' => '',
-                'data'      => []
-            ];
-
-            if (!$http->error) {
-                if (strlen($http->data) > 0) {
-                    $result['data'] = json_decode($http->data, true);
-                    if (!empty($result['data']['changelog'])) {
-                        foreach ($result['data']['changelog'] as $index => $changelog) {
-                            $result['data']['changelog'][$index]['Changelog']['changes'] = nl2br($result['data']['changelog'][$index]['Changelog']['changes']);
-                        }
-                    }
+            if (!empty($result['data']['changelog'])) {
+                foreach ($result['data']['changelog'] as $index => $changelog) {
+                    $result['data']['changelog'][$index]['Changelog']['changes'] = nl2br($result['data']['changelog'][$index]['Changelog']['changes']);
                 }
-            } else {
-                $result['error'] = true;
-                $result['error_msg'] = $http->getLastError()['error'];
             }
 
             $installedModules = [];
@@ -132,6 +118,8 @@ class PacketmanagerController extends AppController {
             $result['data']['RepositoryChecker'] = new RepositoryChecker();
             $result['data']['DnfRepositoryChecker'] = new DnfRepositoryChecker();
             $result['data']['LsbRelease'] = $LsbRelease->getCodename();
+            $result['data']['isContainer'] = IS_CONTAINER;
+            $result['data']['php_version'] = PHP_VERSION;
             $result['data']['isDebianBased'] = $LsbRelease->isDebianBased();
             $result['data']['isRhelBased'] = $LsbRelease->isRhelBased();
             $result['data']['logoUrl'] = $Logo->getLogoForHtml();

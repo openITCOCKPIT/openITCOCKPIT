@@ -92,7 +92,7 @@ class AgentchecksController extends AppController {
         }
 
         if ($this->request->is('post')) {
-            /** @var $AgentchecksTable AgentchecksTable */
+            /** @var AgentchecksTable $AgentchecksTable */
             $AgentchecksTable = TableRegistry::getTableLocator()->get('Agentchecks');
             $agentcheck = $AgentchecksTable->newEmptyEntity();
             $agentcheck = $AgentchecksTable->patchEntity($agentcheck, $this->request->getData('Agentcheck'));

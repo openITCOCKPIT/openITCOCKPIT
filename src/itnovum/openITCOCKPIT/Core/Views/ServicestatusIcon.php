@@ -66,6 +66,11 @@ class ServicestatusIcon {
         4 => 'fas fa-question-circle' //Not found in monitoring
     ];
 
+    /**
+     * @deprecated
+     * Push notifications have been moved into a Go-based daemon
+     * https://github.com/openITCOCKPIT/openITCOCKPIT-websocket/
+     */
     private $pushIcon = [
         0 => 'ServicePushIconOK',
         1 => 'ServicePushIconWARNING',
@@ -198,6 +203,8 @@ class ServicestatusIcon {
 
     /**
      * @return string
+     * @deprecated Push notifications have been moved
+     * https://github.com/openITCOCKPIT/openITCOCKPIT-websocket/
      */
     public function getNotificationIcon() {
         $icon = $this->pushIcon[$this->state];

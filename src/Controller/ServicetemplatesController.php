@@ -70,7 +70,7 @@ class ServicetemplatesController extends AppController {
     use PluginManagerTableTrait;
 
     public function index() {
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         if (!$this->isAngularJsRequest()) {
@@ -114,7 +114,7 @@ class ServicetemplatesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         if (!$ServicetemplatesTable->existsById($id)) {
@@ -200,9 +200,9 @@ class ServicetemplatesController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
 
         if (!$ServicetemplatesTable->existsById($id)) {
@@ -342,7 +342,7 @@ class ServicetemplatesController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         $MY_RIGHTS = $this->MY_RIGHTS;
@@ -352,7 +352,7 @@ class ServicetemplatesController extends AppController {
 
         if ($this->request->is('get')) {
             $servicetemplates = $ServicetemplatesTable->getServicetemplatesForCopy(func_get_args(), $MY_RIGHTS);
-            /** @var $CommandsTable CommandsTable */
+            /** @var CommandsTable $CommandsTable */
             $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
             $commands = $CommandsTable->getCommandByTypeAsList(CHECK_COMMAND);
             $eventhandlerCommands = $CommandsTable->getCommandByTypeAsList(EVENTHANDLER_COMMAND);
@@ -473,11 +473,11 @@ class ServicetemplatesController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         if (!$ServicetemplatesTable->existsById($id)) {
@@ -571,7 +571,7 @@ class ServicetemplatesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
@@ -584,9 +584,9 @@ class ServicetemplatesController extends AppController {
         if (is_numeric($servicetemplateId)) {
             //Edit mode
 
-            /** @var $ServicetemplatesTable ServicetemplatesTable */
+            /** @var ServicetemplatesTable $ServicetemplatesTable */
             $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
-            /** @var $ServicesTable ServicesTable */
+            /** @var ServicesTable $ServicesTable */
             $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
             $servicetemplatesContainerId = $ServicetemplatesTable->getContainerIdById($servicetemplateId);
@@ -619,7 +619,7 @@ class ServicetemplatesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
         $commands = $CommandsTable->getCommandByTypeAsList(CHECK_COMMAND);
 
@@ -647,9 +647,9 @@ class ServicetemplatesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $CommandargumentsTable CommandargumentsTable */
+        /** @var CommandargumentsTable $CommandargumentsTable */
         $CommandargumentsTable = TableRegistry::getTableLocator()->get('Commandarguments');
 
         //ServicetemplatecommandargumentvaluesTable
@@ -663,7 +663,7 @@ class ServicetemplatesController extends AppController {
             //User passed an servicetemplateId, so we are in a non add mode!
             //Check if the servicetemplate has defined command arguments
 
-            /** @var $ServicetemplatecommandargumentvaluesTable ServicetemplatecommandargumentvaluesTable */
+            /** @var ServicetemplatecommandargumentvaluesTable $ServicetemplatecommandargumentvaluesTable */
             $ServicetemplatecommandargumentvaluesTable = TableRegistry::getTableLocator()->get('Servicetemplatecommandargumentvalues');
 
             $servicetemplateCommandArgumentValues = $ServicetemplatecommandargumentvaluesTable->getByServicetemplateIdAndCommandId($servicetemplateId, $commandId);
@@ -746,9 +746,9 @@ class ServicetemplatesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $CommandargumentsTable CommandargumentsTable */
+        /** @var CommandargumentsTable $CommandargumentsTable */
         $CommandargumentsTable = TableRegistry::getTableLocator()->get('Commandarguments');
 
         //ServicetemplateeventcommandargumentvaluesTable
@@ -763,7 +763,7 @@ class ServicetemplatesController extends AppController {
             //User passed an servicetemplateId, so we are in a non add mode!
             //Check if the servicetemplate has defined command arguments for the event handler
 
-            /** @var $ServicetemplateeventcommandargumentvaluesTable ServicetemplateeventcommandargumentvaluesTable */
+            /** @var ServicetemplateeventcommandargumentvaluesTable $ServicetemplateeventcommandargumentvaluesTable */
             $ServicetemplateeventcommandargumentvaluesTable = TableRegistry::getTableLocator()->get('Servicetemplateeventcommandargumentvalues');
 
             $servicetemplateEventhandlerCommandArgumentValues = $ServicetemplateeventcommandargumentvaluesTable->getByServicetemplateIdAndCommandId($servicetemplateId, $commandId);
@@ -813,15 +813,15 @@ class ServicetemplatesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
         if (!$ContainersTable->existsById($container_id)) {
@@ -862,9 +862,9 @@ class ServicetemplatesController extends AppController {
         $selected = $this->request->getQuery('selected');
         $ServicetemplateFilter = new ServicetemplateFilter($this->request);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         $containerIds = [ROOT_CONTAINER, $containerId];

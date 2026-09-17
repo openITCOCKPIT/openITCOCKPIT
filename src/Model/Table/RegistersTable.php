@@ -25,12 +25,10 @@
 
 namespace App\Model\Table;
 
+use App\itnovum\openITCOCKPIT\Core\PackagemanagerRequestHandler;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
-use itnovum\openITCOCKPIT\Core\FileDebugger;
-use itnovum\openITCOCKPIT\Core\Http;
-use itnovum\openITCOCKPIT\Core\PackagemanagerRequestBuilder;
 
 /**
  * Registers Model
@@ -117,36 +115,18 @@ class RegistersTable extends Table {
             ];
         }
 
-        $TableLocator = $this->getTableLocator();
-        /** @var ProxiesTable $Proxies */
-        $Proxies = $TableLocator->get('Proxies');
-
-        $packagemanagerRequestBuilder = new PackagemanagerRequestBuilder(ENVIRONMENT, $license);
-        $http = new Http(
-            $packagemanagerRequestBuilder->getUrlForLicenseCheck(),
-            $packagemanagerRequestBuilder->getOptions(),
-            $Proxies->getSettings()
-        );
-        $http->sendRequest();
-        $error = $http->getLastError();
-        $response = json_decode($http->data);
-
-        if (is_object($response)) {
-            //wrong spelled "license" comes from license server
-            if (property_exists($response, 'license')) {
-                if (!empty($response->license) && property_exists($response->license, 'License')) {
-                    if (!empty($response->license->License) && strtotime($response->license->License->expire) > time()) {
-                        return [
-                            'success' => true,
-                            'error'   => null,
-                            'license' => $response->license->License
-                        ];
-                    }
-                }
-            }
+        $PackagemanagerRequestHandler = new PackagemanagerRequestHandler($license);
+        $licenseResponse = $PackagemanagerRequestHandler->validateLicense();
+        if ($licenseResponse['error'] === false && isset($licenseResponse['license']['license']['License'])) {
+            return [
+                'success' => true,
+                'error'   => null,
+                'license' => $licenseResponse['license']['license']['License']
+            ];
         }
 
-        if ($error === false) {
+        if ($licenseResponse['error'] === false) {
+            // No HTTP error but we also did no license information back - so invalid
             return [
                 'success' => false,
                 'error'   => __('Invalid license key'),
@@ -154,9 +134,10 @@ class RegistersTable extends Table {
             ];
         }
 
+        // Some HTTP error
         return [
             'success' => false,
-            'error'   => $error,
+            'error'   => $licenseResponse['error_msg'],
             'license' => null
         ];
     }

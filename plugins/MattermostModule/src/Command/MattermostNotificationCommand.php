@@ -575,8 +575,8 @@ class MattermostNotificationCommand extends Command {
             ];
         } else {
             $options['proxy'] = [
-                'http'  => false,
-                'https' => false
+                'http'  => '',
+                'https' => ''
             ];
         }
 

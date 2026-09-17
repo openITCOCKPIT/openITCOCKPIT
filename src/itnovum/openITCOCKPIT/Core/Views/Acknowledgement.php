@@ -25,8 +25,6 @@
 
 namespace itnovum\openITCOCKPIT\Core\Views;
 
-use Cake\I18n\DateTime;
-
 abstract class Acknowledgement {
 
 
@@ -70,6 +68,11 @@ abstract class Acknowledgement {
      * @var int
      */
     private $state;
+
+    /**
+     * @var int|string
+     */
+    private $end_time;
 
     /**
      * @var UserTime|null
@@ -120,6 +123,11 @@ abstract class Acknowledgement {
             $this->state = (int)$data['state'];
         }
 
+        $this->end_time = 0;
+        if (isset($data['end_time'])) {
+            $this->end_time = (int)$data['end_time'];
+        }
+
         $this->UserTime = $UserTime;
 
         $this->allowEdit = $allowEdit;
@@ -167,6 +175,29 @@ abstract class Acknowledgement {
         }
 
         return $this->entry_time;
+    }
+
+    /**
+     * @return int|string
+     */
+    public function getEndTime() {
+        if (!is_numeric($this->end_time)) {
+            // This should never happen as end_time is a new bigint field in the database and did not exist back in the NDO days.
+            if ($this->end_time instanceof \Cake\I18n\DateTime) {
+                $this->end_time = $this->end_time->timestamp;
+            } else {
+                $this->end_time = strtotime($this->end_time);
+            }
+        }
+
+        return $this->end_time;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasEndTime(): bool {
+        return $this->end_time > 0;
     }
 
     /**
@@ -220,6 +251,13 @@ abstract class Acknowledgement {
         } else {
             $arr['entry_time'] = $this->getEntryTime();
         }
+
+        if ($this->UserTime !== null) {
+            $arr['end_time'] = $this->UserTime->format($this->getEndTime());
+        } else {
+            $arr['end_time'] = $this->getEndTime();
+        }
+        $arr['hasEndTime'] = $this->hasEndTime();
 
         return $arr;
     }

@@ -66,7 +66,7 @@ class HosttemplatesController extends AppController {
     use PluginManagerTableTrait;
 
     public function index() {
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
         if (!$this->isAngularJsRequest()) {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
@@ -110,7 +110,7 @@ class HosttemplatesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
 
         if (!$HosttemplatesTable->existsById($id)) {
@@ -150,7 +150,7 @@ class HosttemplatesController extends AppController {
             $this->viewBuilder()->setOption('serialize', ['types']);
         }
         if ($this->request->is('post')) {
-            /** @var $HosttemplatesTable HosttemplatesTable */
+            /** @var HosttemplatesTable $HosttemplatesTable */
             $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
 
             $hosttemplate = $HosttemplatesTable->newEmptyEntity();
@@ -189,9 +189,9 @@ class HosttemplatesController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
 
         if (!$HosttemplatesTable->existsById($id)) {
@@ -317,7 +317,7 @@ class HosttemplatesController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
 
         $MY_RIGHTS = $this->MY_RIGHTS;
@@ -327,7 +327,7 @@ class HosttemplatesController extends AppController {
 
         if ($this->request->is('get')) {
             $hosttemplates = $HosttemplatesTable->getHosttemplatesForCopy(func_get_args(), $MY_RIGHTS);
-            /** @var $CommandsTable CommandsTable */
+            /** @var CommandsTable $CommandsTable */
             $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
             $commands = $CommandsTable->getCommandByTypeAsList(HOSTCHECK_COMMAND);
             $this->set('hosttemplates', $hosttemplates);
@@ -439,9 +439,9 @@ class HosttemplatesController extends AppController {
             throw new \Cake\Http\Exception\MethodNotAllowedException();
         }
 
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if (!$HosttemplatesTable->existsById($id)) {
@@ -501,15 +501,15 @@ class HosttemplatesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
-        /** @var $HostgroupsTable HostgroupsTable */
+        /** @var HostgroupsTable $HostgroupsTable */
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
 
         if (!$ContainersTable->existsById($container_id)) {
@@ -582,7 +582,7 @@ class HosttemplatesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
@@ -595,9 +595,9 @@ class HosttemplatesController extends AppController {
         if (is_numeric($hosttemplateId)) {
             //Edit mode
 
-            /** @var $HosttemplatesTable HosttemplatesTable */
+            /** @var HosttemplatesTable $HosttemplatesTable */
             $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-            /** @var $HostsTable HostsTable */
+            /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
             $hosttemplatesContainerId = $HosttemplatesTable->getContainerIdById($hosttemplateId);
@@ -630,7 +630,7 @@ class HosttemplatesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
         $commands = $CommandsTable->getCommandByTypeAsList(HOSTCHECK_COMMAND);
 
@@ -647,9 +647,9 @@ class HosttemplatesController extends AppController {
             throw new MethodNotAllowedException();
         }
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $CommandargumentsTable CommandargumentsTable */
+        /** @var CommandargumentsTable $CommandargumentsTable */
         $CommandargumentsTable = TableRegistry::getTableLocator()->get('Commandarguments');
 
         //HosttemplatecommandargumentvaluesTable
@@ -664,7 +664,7 @@ class HosttemplatesController extends AppController {
             //User passed an hosttemplateId, so we are in a non add mode!
             //Check if the hosttemplate has defined command arguments
 
-            /** @var $HosttemplatecommandargumentvaluesTable HosttemplatecommandargumentvaluesTable */
+            /** @var HosttemplatecommandargumentvaluesTable $HosttemplatecommandargumentvaluesTable */
             $HosttemplatecommandargumentvaluesTable = TableRegistry::getTableLocator()->get('Hosttemplatecommandargumentvalues');
 
             $hosttemplateCommandArgumentValues = $HosttemplatecommandargumentvaluesTable->getByHosttemplateIdAndCommandId($hosttemplateId, $commandId);
@@ -750,9 +750,9 @@ class HosttemplatesController extends AppController {
         $containerId = $this->request->getQuery('containerId');
         $HosttemplateFilter = new HosttemplateFilter($this->request);
 
-        /** @var $ContainersTable ContainersTable */
+        /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
 
         $containerIds = [ROOT_CONTAINER, $containerId];

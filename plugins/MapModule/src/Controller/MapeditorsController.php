@@ -38,6 +38,8 @@ use App\Model\Table\HostgroupsTable;
 use App\Model\Table\HostsTable;
 use App\Model\Table\ServicegroupsTable;
 use App\Model\Table\ServicesTable;
+use App\Model\Table\StatuspagegroupsTable;
+use App\Model\Table\StatuspagesTable;
 use App\Model\Table\WidgetsTable;
 use Cake\Core\Plugin;
 use Cake\Datasource\Exception\RecordNotFoundException;
@@ -56,7 +58,9 @@ use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Core\Views\Host;
 use itnovum\openITCOCKPIT\Core\Views\Service;
 use itnovum\openITCOCKPIT\Exceptions\NotIntException;
+use itnovum\openITCOCKPIT\Filter\GenericFilter;
 use itnovum\openITCOCKPIT\Filter\MapFilter;
+use itnovum\openITCOCKPIT\Filter\StatuspagesFilter;
 use itnovum\openITCOCKPIT\Maps\MapForAngular;
 use itnovum\openITCOCKPIT\Maps\ValueObjects\Mapgadget;
 use itnovum\openITCOCKPIT\Maps\ValueObjects\Mapicon;
@@ -396,9 +400,6 @@ class MapeditorsController extends AppController {
                     /** @var MapitemsTable $MapitemsTable */
                     $MapitemsTable = TableRegistry::getTableLocator()->get('MapModule.Mapitems');
 
-                    /** @var MapsummaryitemsTable $MapsummaryitemsTable */
-                    $MapsummaryitemsTable = TableRegistry::getTableLocator()->get('MapModule.Mapsummaryitems');
-
                     /** @var HostgroupsTable $HostgroupsTable */
                     $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
                     /** @var ServicegroupsTable $ServicegroupsTable */
@@ -489,6 +490,100 @@ class MapeditorsController extends AppController {
                     break;
                 }
                 break;
+            case 'statuspage':
+                /** @var StatuspagesTable $StatuspagesTable */
+                $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+                try {
+                    $statuspage = $StatuspagesTable->get($objectId)->toArray();
+                    if (empty($statuspage)) {
+                        //Empty map
+                        $allowView = true;
+                        $properties = $MapsTable->getStatuspageInformation(
+                            $HoststatusTable,
+                            $ServicestatusTable,
+                            $type,
+                            $statuspage,
+                            [],
+                            []
+                        );
+                    }
+                    if (!empty($statuspage)) {
+                        if ($this->hasRootPrivileges === false) {
+                            if (!$this->allowedByContainerId($statuspage['container_id'], false)) {
+                                $allowView = false;
+                                break;
+                            }
+                        }
+                        $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds([$objectId], $MY_RIGHTS);
+                        $allowView = true;
+                        $properties = $MapsTable->getStatuspageInformation(
+                            $HoststatusTable,
+                            $ServicestatusTable,
+                            $type,
+                            $statuspage,
+                            $hostsAndServices['hosts'],
+                            $hostsAndServices['services']
+                        );
+                    }
+
+                    break;
+                } catch (RecordNotFoundException $exception) {
+                    $allowView = false;
+                }
+                break;
+
+            case 'statuspagegroup':
+                /** @var StatuspagesTable $StatuspagesTable */
+                $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+                try {
+
+                    /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+                    $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+                    $statuspageGroup = $StatuspagegroupsTable->get($objectId, contain: [
+                        'StatuspagesMemberships'
+                    ])->toArray();
+                    if (empty($statuspageGroup) || empty($statuspageGroup['statuspages_membership'])) {
+                        //Empty map
+                        $allowView = true;
+                        $properties = $MapsTable->getStatuspageInformation(
+                            $HoststatusTable,
+                            $ServicestatusTable,
+                            $type,
+                            $statuspageGroup,
+                            [],
+                            []
+                        );
+                    }
+                    if (!empty($statuspageGroup)) {
+                        if ($this->hasRootPrivileges === false) {
+                            if (!$this->allowedByContainerId($statuspageGroup['container_id'], false)) {
+                                $allowView = false;
+                                break;
+                            }
+                        }
+                        $statuspageIds = array_unique(
+                            Hash::extract($statuspageGroup, 'statuspages_memberships.{n}.statuspage_id')
+                        );
+
+                        $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds($statuspageIds, $MY_RIGHTS);
+                        $allowView = true;
+                        $properties = $MapsTable->getStatuspageInformation(
+                            $HoststatusTable,
+                            $ServicestatusTable,
+                            $type,
+                            $statuspageGroup,
+                            $hostsAndServices['hosts'],
+                            $hostsAndServices['services']
+                        );
+                    }
+
+
+                    break;
+                } catch
+                (RecordNotFoundException $exception) {
+                    $allowView = false;
+                }
+                break;
             default:
                 throw new RuntimeException('Unknown map item type');
         }
@@ -565,11 +660,16 @@ class MapeditorsController extends AppController {
         /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
-        switch ($this->request->getQuery('type')) {
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        $type = $this->request->getQuery('type');
+        switch ($type) {
             case 'host':
-
                 $host = $HostsTable->getHostsWithServicesByIdsForMapeditor($objectId, $MY_RIGHTS, true);
-
                 if (!empty($host) && isset($host[0])) {
                     if ($this->hasRootPrivileges === false) {
                         if (!$this->allowedByContainerId(Hash::extract($host[0]->toArray(), 'hosts_to_containers_sharing.{n}.id'), false)) {
@@ -593,8 +693,6 @@ class MapeditorsController extends AppController {
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
                 $service = $ServicesTable->getServiceById($objectId)->toArray();
-                $host = $HostsTable->getHostById($service['host_id']);
-
                 if (!empty($service)) {
                     if ($this->hasRootPrivileges === false) {
                         if (!$this->allowedByContainerId(Hash::extract($service, 'host.hosts_to_containers_sharing.{n}.id'), false)) {
@@ -692,7 +790,6 @@ class MapeditorsController extends AppController {
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
                 /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-
                 $map = $MapsTable->getMapsForMapsummaryitems($objectId, $mapId, false);
                 if (!empty($map)) {
                     if ($this->hasRootPrivileges === false) {
@@ -701,7 +798,6 @@ class MapeditorsController extends AppController {
                             break;
                         }
                     }
-
                     //fetch all dependent map items after permissions check
                     $mapSummaryItemToResolve = $MapsummaryitemsTable->getMapsummaryitemsForMaps($map['id'], $mapId);
                     if (!empty($mapSummaryItemToResolve)) {
@@ -716,7 +812,6 @@ class MapeditorsController extends AppController {
                             $dependentMapsIds = $this->getDependendMaps($mapIdGroupByMapId, $objectId);
                         }
                         $dependentMapsIds[] = $objectId;
-
                         // resolve all Elements (host and/or services of dependent map)
                         $allDependentMapElementsFromSubMaps['mapsummaryitem'] = $MapsTable->getAllDependentMapsElements(
                             $dependentMapsIds,
@@ -798,9 +893,13 @@ class MapeditorsController extends AppController {
                     }
                     $allowView = true;
 
-                    $properties = $MapsTable->getMapInformationForSummaryIcon(
+                    $hosts = Hash::extract($hosts, '{n}.Host');
+                    $services = Hash::extract($services, '{n}.Service');
+
+                    $properties = $MapsTable->getInformationForSummaryIcon(
                         $HoststatusTable,
                         $ServicestatusTable,
+                        $type,
                         $map,
                         $hosts,
                         $services
@@ -809,9 +908,59 @@ class MapeditorsController extends AppController {
                 }
                 $allowView = false;
                 break;
-            default:
-                throw new RuntimeException('Unknown map item type');
+            case 'statuspage':
+                $statuspage = $StatuspagesTable->get($objectId)->toArray();
+                if (!empty($statuspage)) {
+                    if ($this->hasRootPrivileges === false) {
+                        if (!$this->allowedByContainerId($statuspage['container_id'], false)) {
+                            break;
+                        }
+                    }
+                    $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds([$objectId], $MY_RIGHTS);
+
+                    $allowView = true;
+                    $properties = $MapsTable->getInformationForSummaryIcon(
+                        $HoststatusTable,
+                        $ServicestatusTable,
+                        $type,
+                        $statuspage,
+                        $hostsAndServices['hosts'],
+                        $hostsAndServices['services']
+                    );
+                    break;
+                }
+                $allowView = false;
                 break;
+            case 'statuspagegroup':
+                $statuspageGroup = $StatuspagegroupsTable->get($objectId, contain: [
+                    'StatuspagesMemberships'
+                ])->toArray();
+                if (!empty($statuspageGroup)) {
+                    if ($this->hasRootPrivileges === false) {
+                        if (!$this->allowedByContainerId($statuspageGroup['container_id'], false)) {
+                            break;
+                        }
+                    }
+                    $statuspageIds = Hash::extract($statuspageGroup, 'statuspages_memberships.{n}.statuspage_id');
+
+                    $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds($statuspageIds, $MY_RIGHTS);
+
+                    $allowView = true;
+                    $properties = $MapsTable->getInformationForSummaryIcon(
+                        $HoststatusTable,
+                        $ServicestatusTable,
+                        $type,
+                        $statuspageGroup,
+                        $hostsAndServices['hosts'],
+                        $hostsAndServices['services']
+                    );
+                    break;
+                }
+                $allowView = false;
+                break;
+            default:
+
+                throw new RuntimeException('Unknown map item type');
         }
 
         $this->set('type', $this->request->getQuery('type'));
@@ -876,12 +1025,17 @@ class MapeditorsController extends AppController {
         $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
         /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
 
         $HoststatusTable = $this->DbBackend->getHoststatusTable();
         $ServicestatusTable = $this->DbBackend->getServicestatusTable();
 
         $MY_RIGHTS = $this->hasRootPrivileges ? [] : $this->MY_RIGHTS;
-        switch ($this->request->getQuery('type')) {
+        $type = $this->request->getQuery('type');
+        switch ($type) {
             case 'host':
                 /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
@@ -1126,7 +1280,6 @@ class MapeditorsController extends AppController {
                     $summary = $MapsTable->getMapSummary(
                         $HostsTable,
                         $HoststatusTable,
-                        $ServicesTable,
                         $ServicestatusTable,
                         $map,
                         $hosts,
@@ -1141,10 +1294,75 @@ class MapeditorsController extends AppController {
                     return;
                 }
                 throw new NotFoundException('Map not found!');
-                break;
+            case 'statuspage':
+                try {
+                    $statuspage = $StatuspagesTable->get($objectId)->toArray();
+                    if (!empty($statuspage)) {
+                        if ($this->hasRootPrivileges === false) {
+                            if (!$this->allowedByContainerId($statuspage['container_id'], false)) {
+                                break;
+                            }
+                        }
+                        $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds([$objectId], $MY_RIGHTS);
+                        $summary = $MapsTable->getStatuspageSummary(
+                            $HostsTable,
+                            $HoststatusTable,
+                            $ServicestatusTable,
+                            $type,
+                            $statuspage,
+                            $hostsAndServices['hosts'],
+                            $hostsAndServices['services'],
+                            $UserTime,
+                            $summaryStateItem
+                        );
+
+                        $this->set('type', 'statuspage');
+                        $this->set('summary', $summary);
+                        $this->viewBuilder()->setOption('serialize', ['statuspage', 'summary']);
+                    }
+                    break;
+                } catch (RecordNotFoundException $exception) {
+                    throw new NotFoundException('Status page not found!');
+                }
+            case 'statuspagegroup':
+                try {
+                    $statuspageGroup = $StatuspagegroupsTable->get($objectId, contain: [
+                        'StatuspagesMemberships'
+                    ])->toArray();
+
+                    if (empty($statuspageGroup)) {
+                        throw new NotFoundException('Status page group not found!');
+                    }
+
+                    if ($this->hasRootPrivileges === false) {
+                        if (!$this->allowedByContainerId($statuspageGroup['container_id'], false)) {
+                            break;
+                        }
+                    }
+                    $statuspageIds = Hash::extract($statuspageGroup, 'statuspages_memberships.{n}.statuspage_id');
+
+                    $hostsAndServices = $StatuspagesTable->getStatuspageWithHostsAndServicesByIds($statuspageIds, $MY_RIGHTS);
+                    $summary = $MapsTable->getStatuspageSummary(
+                        $HostsTable,
+                        $HoststatusTable,
+                        $ServicestatusTable,
+                        $type,
+                        $statuspageGroup,
+                        $hostsAndServices['hosts'],
+                        $hostsAndServices['services'],
+                        $UserTime,
+                        $summaryStateItem
+                    );
+
+                    $this->set('type', 'statuspagegroup');
+                    $this->set('summary', $summary);
+                    $this->viewBuilder()->setOption('serialize', ['statuspagegroup', 'summary']);
+                    break;
+                } catch (RecordNotFoundException $exception) {
+                    throw new NotFoundException('Status page not found!');
+                }
             default:
                 throw new RuntimeException('Unknown map item type');
-                break;
         }
 
     }
@@ -1337,6 +1555,56 @@ class MapeditorsController extends AppController {
 
         $this->set('maps', $maps);
         $this->viewBuilder()->setOption('serialize', ['maps']);
+    }
+
+    public function loadStatuspagesByString() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $selected = $this->request->getQuery('selected');
+
+        $StatuspagesFilter = new StatuspagesFilter($this->request);
+
+        /** @var StatuspagesTable $StatuspagesTable */
+        $StatuspagesTable = TableRegistry::getTableLocator()->get('Statuspages');
+
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $statuspages = Api::makeItJavaScriptAble(
+            $StatuspagesTable->getStatuspagesForAngular($selected, $StatuspagesFilter, $MY_RIGHTS)
+        );
+
+        $this->set('statuspages', $statuspages);
+        $this->viewBuilder()->setOption('serialize', ['statuspages']);
+    }
+
+    public function loadStatuspagegroupsByString() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        $selected = $this->request->getQuery('selected');
+
+        $GenericFilter = new GenericFilter($this->request);
+
+        /** @var StatuspagegroupsTable $StatuspagegroupsTable */
+        $StatuspagegroupsTable = TableRegistry::getTableLocator()->get('Statuspagegroups');
+
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $statuspagegroups = Api::makeItJavaScriptAble(
+            $StatuspagegroupsTable->getStatuspagegroupsForAngular($selected, $GenericFilter, $MY_RIGHTS)
+        );
+
+        $this->set('statuspagegroups', $statuspagegroups);
+        $this->viewBuilder()->setOption('serialize', ['statuspagegroups']);
     }
 
     public function saveItem() {

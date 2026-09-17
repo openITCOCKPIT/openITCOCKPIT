@@ -63,7 +63,7 @@ class ServicechecksController extends AppController {
         $session = $this->request->getSession();
         $session->close();
 
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
         if (!$ServicesTable->existsById($id)) {

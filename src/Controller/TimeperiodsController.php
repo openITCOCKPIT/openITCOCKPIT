@@ -498,22 +498,22 @@ class TimeperiodsController extends AppController {
         $objects['Hostdependencies'] = $HostdependenciesTable->getHostdependenciesByTimeperiodId($id, $MY_RIGHTS, false);
 
         //Checking host escalations
-        /** @var $HostescalationsTable HostescalationsTable */
+        /** @var HostescalationsTable $HostescalationsTable */
         $HostescalationsTable = TableRegistry::getTableLocator()->get('Hostescalations');
         $objects['Hostescalations'] = $HostescalationsTable->getHostescalationsByTimeperiodId($id, $MY_RIGHTS, false);
 
         //Checking host
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
         $objects['Hosts'] = $HostsTable->getHostsByTimeperiodId($id, $MY_RIGHTS, false);
 
         //Check if the time period is used by host templates
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
         $objects['Hosttemplates'] = $HosttemplatesTable->getHosttemplatesByTimeperiodId($id, $MY_RIGHTS, false);
 
         //Check if the time period is used by instant reports
-        /** @var $InstantreportsTable InstantreportsTable */
+        /** @var InstantreportsTable $InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
         $objects['Instantreports'] = $InstantreportsTable->getInstantreportsByTimeperiodId($id, $MY_RIGHTS, false);
 
@@ -523,17 +523,17 @@ class TimeperiodsController extends AppController {
         $objects['Servicedependencies'] = $ServicedependenciesTable->getServicedependenciesByTimeperiodId($id, $MY_RIGHTS, false);
 
         //Checking service escalations
-        /** @var $ServiceescalationsTable ServiceescalationsTable */
+        /** @var ServiceescalationsTable $ServiceescalationsTable */
         $ServiceescalationsTable = TableRegistry::getTableLocator()->get('Serviceescalations');
         $objects['Serviceescalations'] = $ServiceescalationsTable->getServiceescalationsByTimeperiodId($id, $MY_RIGHTS, false);
 
         //Checking service
-        /** @var $ServicesTable ServicesTable */
+        /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
         $objects['Services'] = $ServicesTable->getServicesByTimeperiodId($id, $MY_RIGHTS, false);
 
         //Check if the time period is used by service templates
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
         $objects['Servicetemplates'] = $ServicetemplatesTable->getServicetemplatesByTimeperiodId($id, $MY_RIGHTS, false);
 
@@ -545,7 +545,7 @@ class TimeperiodsController extends AppController {
         //check if the time period is used in auto reports
         if (Plugin::isLoaded('AutoreportModule')) {
             $objects['Autoreports'] = [];
-            /** @var $AutoreportsTable AutoreportsTable */
+            /** @var AutoreportsTable $AutoreportsTable */
             $AutoreportsTable = TableRegistry::getTableLocator()->get('AutoreportModule.Autoreports');
             $objects['Autoreports'] = $AutoreportsTable->getAutoreportsByTimeperiodId($id, $MY_RIGHTS, false);
         }

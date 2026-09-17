@@ -33,13 +33,18 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\Table\ContainersTable;
+use App\Model\Table\FilterBookmarksAllocationsTable;
 use App\Model\Table\FilterBookmarksTable;
+use App\Model\Table\UsergroupsTable;
+use App\Model\Table\UsersTable;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
+use itnovum\openITCOCKPIT\Core\AngularJS\Api;
 use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 
@@ -84,8 +89,14 @@ class FilterBookmarksController extends AppController {
             }
         }
         $this->set('bookmark', $bookmark ?? null);
-        $filterBookmarks = $FilterBookmarksTable->getFilterByUser($User->getId(), $plugin, $controller, $action);
-        $this->set('bookmarks', $filterBookmarks);
+        $allFilterBookmarks = $FilterBookmarksTable->getAllBookmarksByUser($User, $plugin, $controller, $action);
+
+        foreach ($allFilterBookmarks as $key => $filterbookmark) {
+            if($filterbookmark['ownership']  && $filterbookmark['filter_bookmark_allocation'] && $filterbookmark['filter_bookmark_allocation'] !== null) {
+                $allFilterBookmarks[$key]['filter_bookmark_allocation']['allowEdit'] =  $this->isWritableContainer($filterbookmark['filter_bookmark_allocation']['container_id']);
+            }
+        }
+        $this->set('bookmarks', $allFilterBookmarks);
         $this->viewBuilder()->setOption('serialize', ['bookmarks', 'bookmark']);
     }
 

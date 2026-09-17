@@ -37,7 +37,6 @@ use Authentication\Authenticator\AbstractAuthenticator;
 use Authentication\Authenticator\Result;
 use Authentication\Authenticator\ResultInterface;
 use Authentication\Authenticator\StatelessInterface;
-use Cake\I18n\DateTime;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Psr\Http\Message\ServerRequestInterface;
@@ -53,17 +52,29 @@ class ApikeyAuthenticator extends AbstractAuthenticator implements StatelessInte
     public function authenticate(ServerRequestInterface $request): ResultInterface {
         $data = ['apikey' => null];
 
+        // Looking for the official "Authorization: X-OITC-API <api-key>" Header
         if (!empty($request->getHeaderLine('Authorization'))) {
             $authHeaderKey = $this->getConfig('apikeyPrefix');
             $data['apikey'] = trim(substr($request->getHeaderLine($this->getConfig('header')), strlen($authHeaderKey)));
         }
 
+        // Looking for the custom "X-OITC-API: <api-key>" Header
+        // This is used in case the "Authorization" is already in use by Microsoft Entra (or so)
+        if (!empty($request->getHeaderLine($this->getConfig('apikeyPrefix')))) {
+            $data['apikey'] = trim($request->getHeaderLine($this->getConfig('apikeyPrefix')));
+        }
+
+        // Looking for a Cookie with the API key
+        // For example Nginx could add a cookie with an API key, this was used in the past to display maps in iframes.
+        // (it's not recommended to use this hack anymore)
+        // add_header Set-Cookie "Authorization=X-OITC-API [API-KEY];Domain=$host;Path=/;Max-Age=3600";
         $cookies = $request->getCookieParams();
         if (!empty($cookies['Authorization'])) {
             $authHeaderKey = $this->getConfig('apikeyPrefix');
             $data['apikey'] = trim(substr($cookies['Authorization'], strlen($authHeaderKey)));
         }
 
+        // Check the query string for ?apikey=<apikey> value. Last resort.
         if (isset($request->getQueryParams()[$this->getConfig('queryParam')])) {
             $data['apikey'] = trim($request->getQueryParams()[$this->getConfig('queryParam')]);
         }
@@ -92,7 +103,7 @@ class ApikeyAuthenticator extends AbstractAuthenticator implements StatelessInte
      */
     public function saveLastUseDate($apiKey) {
 
-        /** @var $ApikeysTable ApikeysTable */
+        /** @var ApikeysTable $ApikeysTable */
         $ApikeysTable = TableRegistry::getTableLocator()->get('Apikeys');
         $apiKeyId = $ApikeysTable->getIdByApiKey($apiKey);
 

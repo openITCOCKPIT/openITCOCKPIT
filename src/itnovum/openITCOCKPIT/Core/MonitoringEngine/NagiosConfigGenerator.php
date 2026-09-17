@@ -494,7 +494,7 @@ class NagiosConfigGenerator {
      * @param null|string $uuid
      */
     public function exportHosts($uuid = null) {
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         if ($uuid !== null) {
@@ -533,7 +533,7 @@ class NagiosConfigGenerator {
         $HosttemplatesCache = new KeyValueStore();
 
         foreach ($hosts as $host) {
-            /** @var $host \App\Model\Entity\Host */
+            /** @var \App\Model\Entity\Host $host */
 
             if (!$this->conf['minified']) {
                 $file = new File($this->conf['path'] . $this->conf['hosts'] . $host->get('uuid') . $this->conf['suffix']);
@@ -2259,7 +2259,7 @@ class NagiosConfigGenerator {
      * @throws \Exception
      */
     public function exportTimeperiods($uuid = null) {
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
         /** @var CalendarsTable $CalendarsTable */
         $CalendarsTable = TableRegistry::getTableLocator()->get('Calendars');
@@ -2746,7 +2746,7 @@ class NagiosConfigGenerator {
             $file->create();
         }
 
-        /** @var $Macro MacrosTable */
+        /** @var MacrosTable $Macro */
         $Macro = TableRegistry::getTableLocator()->get('Macros');
         $macros = $Macro->getAllMacros();
 
@@ -2925,7 +2925,7 @@ class NagiosConfigGenerator {
         return true; // @todo fix me
         $basePath = Configure::read('rrd.path');
 
-        /** @var $DeletedHostsTable DeletedHostsTable */
+        /** @var DeletedHostsTable $DeletedHostsTable */
         $DeletedHostsTable = TableRegistry::getTableLocator()->get('DeletedHosts');
 
         /** @var ConfigurationFilesTable $ConfigurationFilesTable */
@@ -2962,7 +2962,7 @@ class NagiosConfigGenerator {
         return true; // @todo fix me
         $basePath = Configure::read('rrd.path');
 
-        /** @var $DeletedServicesTable DeletedServicesTable */
+        /** @var DeletedServicesTable $DeletedServicesTable */
         $DeletedServicesTable = TableRegistry::getTableLocator()->get('DeletedServices');
 
         /** @var ConfigurationFilesTable $ConfigurationFilesTable */
@@ -3201,7 +3201,7 @@ class NagiosConfigGenerator {
     private function createOitcAgentJsonConfig(int $satelliteId) {
         /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
         /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');

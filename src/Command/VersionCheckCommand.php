@@ -33,16 +33,15 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\itnovum\openITCOCKPIT\Core\PackagemanagerRequestHandler;
 use App\Model\Table\ProxiesTable;
 use App\Model\Table\RegistersTable;
-use Cake\Console\Arguments;
 use Cake\Command\Command;
+use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\ORM\TableRegistry;
-use itnovum\openITCOCKPIT\Core\Http;
 use itnovum\openITCOCKPIT\Core\Interfaces\CronjobInterface;
-use itnovum\openITCOCKPIT\Core\PackagemanagerRequestBuilder;
 use itnovum\openITCOCKPIT\Core\ValueObjects\License;
 
 /**
@@ -90,27 +89,21 @@ class VersionCheckCommand extends Command implements CronjobInterface {
 
         $License = $RegistersTable->getLicense();
         $License = new License($License);
-        $packagemanagerRequestBuilder = new PackagemanagerRequestBuilder(ENVIRONMENT, $License->getLicense());
-        $http = new Http(
-            $packagemanagerRequestBuilder->getUrl(),
-            $packagemanagerRequestBuilder->getOptions(),
-            $ProxiesTable->getSettings()
-        );
-        //Send https request
-        $http->sendRequest();
+
+        $PackagemanagerRequestHandler = new PackagemanagerRequestHandler($License->getLicense());
+        $response = $PackagemanagerRequestHandler->loadModulesWithChangelog();
         $availableVersion = '???';
-        if (!$http->error) {
-            if ($http->data) {
-                $data = json_decode($http->data);
-                if (property_exists($data, 'version')) {
-                    $availableVersion = $data->version;
-                }
-            }
-        } else {
+        if ($response['error'] === false && isset($response['data']['version'])) {
+            $availableVersion = $response['data']['version'];
+        }
+
+        if ($response['error']) {
+            // Some HTTP error happen
             //Force new line
             $io->out('');
-            $io->error($http->getLastError()['error']);
+            $io->error($response['error_msg']);
         }
+
         return $availableVersion;
     }
 

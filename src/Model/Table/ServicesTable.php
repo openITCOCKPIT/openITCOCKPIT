@@ -883,17 +883,17 @@ class ServicesTable extends Table {
         ];
 
 
-        /** @var $CommandsTable CommandsTable */
+        /** @var CommandsTable $CommandsTable */
         $CommandsTable = TableRegistry::getTableLocator()->get('Commands');
-        /** @var $ContactsTable ContactsTable */
+        /** @var ContactsTable $ContactsTable */
         $ContactsTable = TableRegistry::getTableLocator()->get('Contacts');
-        /** @var $ContactgroupsTable ContactgroupsTable */
+        /** @var ContactgroupsTable $ContactgroupsTable */
         $ContactgroupsTable = TableRegistry::getTableLocator()->get('Contactgroups');
-        /** @var $TimeperiodsTable TimeperiodsTable */
+        /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
-        /** @var $ServicegroupsTable ServicegroupsTable */
+        /** @var ServicegroupsTable $ServicegroupsTable */
         $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
 
@@ -1511,7 +1511,7 @@ class ServicesTable extends Table {
     public function __delete(Service $Service, User $User) {
         $servicename = $Service->get('name');
 
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         if ($servicename === null || $servicename === '') {
@@ -1523,9 +1523,9 @@ class ServicesTable extends Table {
         $servicedependenciesToDelete = [];
 
         if (!empty($servicedependencies)) {
-            /** @var $ServicedependenciesTable ServicedependenciesTable */
+            /** @var ServicedependenciesTable $ServicedependenciesTable */
             $ServicedependenciesTable = TableRegistry::getTableLocator()->get('Servicedependencies');
-            /** @var  $servicedependency Servicedependency */
+            /** @var Servicedependency $servicedependency */
             foreach ($servicedependencies as $servicedependency) {
                 $servicedependencyId = $servicedependency->get('servicedependency_id');
                 $servicedependencyIsBroken = $ServicedependenciesTable->isServicedependencyBroken(
@@ -1541,9 +1541,9 @@ class ServicesTable extends Table {
         $serviceescalations = $Service->get('serviceescalations_service_memberships');
         $serviceescalationsToDelete = [];
         if (!empty($serviceescalations)) {
-            /** @var $ServiceescalationsTable ServiceescalationsTable */
+            /** @var ServiceescalationsTable $ServiceescalationsTable */
             $ServiceescalationsTable = TableRegistry::getTableLocator()->get('Serviceescalations');
-            /** @var $serviceescalation Serviceescalation */
+            /** @var Serviceescalation $serviceescalation */
             foreach ($serviceescalations as $serviceescalation) {
                 $serviceescalationId = $serviceescalation->get('serviceescalation_id');
                 $serviceescalationIsBroken = $ServiceescalationsTable->isServiceescalationBroken(
@@ -1560,13 +1560,13 @@ class ServicesTable extends Table {
             return false;
         }
 
-        /** @var $HostsTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $DocumentationsTable DocumentationsTable */
+        /** @var DocumentationsTable $DocumentationsTable */
         $DocumentationsTable = TableRegistry::getTableLocator()->get('Documentations');
-        /** @var $DeletedServicesTable DeletedServicesTable */
+        /** @var DeletedServicesTable $DeletedServicesTable */
         $DeletedServicesTable = TableRegistry::getTableLocator()->get('DeletedServices');
-        /** @var $ChangelogsTable ChangelogsTable */
+        /** @var ChangelogsTable $ChangelogsTable */
         $ChangelogsTable = TableRegistry::getTableLocator()->get('Changelogs');
 
         $host = $HostsTable->get($Service->get('host_id'));
@@ -1622,11 +1622,11 @@ class ServicesTable extends Table {
      * @return void
      */
     public function __deactivate(Service $Service, User $User, array $host = []) {
-        /** @var $ChangelogsTable ChangelogsTable */
+        /** @var ChangelogsTable $ChangelogsTable */
         $ChangelogsTable = TableRegistry::getTableLocator()->get('Changelogs');
 
         if (empty($host)) {
-            /** @var $HostsTable HostsTable */
+            /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
             $host = $HostsTable->find()
                 ->select([
@@ -2850,7 +2850,7 @@ class ServicesTable extends Table {
      */
     public function _clenupServiceEscalationAndDependency($servicedependenciesMembershipToDelete = [], $serviceescalationsMembershipToDelete = []) {
         if (!empty($servicedependenciesMembershipToDelete)) {
-            /** @var $ServicedependenciesTable ServicedependenciesTable */
+            /** @var ServicedependenciesTable $ServicedependenciesTable */
             $ServicedependenciesTable = TableRegistry::getTableLocator()->get('Servicedependencies');
             foreach ($servicedependenciesMembershipToDelete as $servicedependencyMembership) {
                 if ($ServicedependenciesTable->existsById($servicedependencyMembership->get('servicedependency_id'))) {
@@ -3369,7 +3369,7 @@ class ServicesTable extends Table {
     }
 
     public function getAllOitcAgentServicesByHostIdForExport($hostId): array {
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         $query = $this->find()
@@ -4727,11 +4727,11 @@ class ServicesTable extends Table {
      * ]
      */
     public function createServiceByServicetemplateIds($servicetemplateIds, $hostId, $userId = 0) {
-        /** @var $HosttemplatesTable HosttemplatesTable */
+        /** @var HosttemplatesTable $HosttemplatesTable */
         $HosttemplatesTable = TableRegistry::getTableLocator()->get('Hosttemplates');
-        /** @var $HosttemplatesTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
-        /** @var $ServicetemplatesTable ServicetemplatesTable */
+        /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
         $host = $HostsTable->get($hostId);
@@ -4821,7 +4821,7 @@ class ServicesTable extends Table {
         if (!is_array($servicetemplateIds)) {
             $servicetemplateIds = [$servicetemplateIds];
         }
-        /** @var $HosttemplatesTable HostsTable */
+        /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
         $host = $HostsTable->get($hostId);

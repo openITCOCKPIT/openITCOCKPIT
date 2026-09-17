@@ -39,6 +39,7 @@ use App\Model\Table\UsercontainerrolesTable;
 use App\Model\Table\UsersTable;
 use Cake\Cache\Cache;
 use Cake\Http\Exception\MethodNotAllowedException;
+use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
@@ -371,6 +372,81 @@ class UsercontainerrolesController extends AppController {
         $this->viewBuilder()->setOption('serialize', ['result']);
     }
 
+    public function append() {
+        if (!$this->isAngularJsRequest()) {
+            throw new \Cake\Http\Exception\MethodNotAllowedException();
+        }
+
+        if ($this->request->is('post')) {
+            $id = $this->request->getData('Usercontainerrole.id');
+            if (!$id) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', true);
+                $this->set('message', 'You have to select an user container role');
+                $this->set('success', false);
+                $this->viewBuilder()->setOption('serialize', ['error', 'success', 'message']);
+                return;
+            }
+
+            $ldapgroupIds = $this->request->getData('Usercontainerrole.ldapgroups._ids');
+            if (!is_array($ldapgroupIds)) {
+                $ldapgroupIds = [$ldapgroupIds];
+            }
+
+            if (empty($ldapgroupIds)) {
+                //No ldapgroups to add
+                return;
+            }
+
+            /** @var UsercontainerrolesTable $UsercontainerrolesTable */
+            $UsercontainerrolesTable = TableRegistry::getTableLocator()->get('Usercontainerroles');
+
+            if (!$UsercontainerrolesTable->existsById($id)) {
+                throw new NotFoundException(__('Invalid User Container Role'));
+            }
+
+            $usercontainerrole = $UsercontainerrolesTable->getUserContainerRoleForEdit($id);
+            if (!empty($usercontainerrole['containers']['_ids'])) {
+                if (!$this->allowedByContainerId($usercontainerrole['containers']['_ids'])) {
+                    $this->render403();
+                    return;
+                }
+            }
+
+            //Merge new ldapgroups with existing ldapgroups from usercontainerrole
+            $ldapgroupIds = array_unique(array_merge(
+                $usercontainerrole['Usercontainerrole']['ldapgroups']['_ids'],
+                $ldapgroupIds
+            ));
+
+
+            $usercontainerroleEntity = $UsercontainerrolesTable->get($id);
+
+            $usercontainerroleEntity->setAccess('id', false);
+            $usercontainerroleEntity = $UsercontainerrolesTable->patchEntity($usercontainerroleEntity, [
+                'ldapgroups' => [
+                    '_ids' => $ldapgroupIds
+                ]
+            ]);
+            $usercontainerroleEntity->id = $id;
+            $UsercontainerrolesTable->save($usercontainerroleEntity);
+            if ($usercontainerroleEntity->hasErrors()) {
+                $this->response = $this->response->withStatus(400);
+                $this->set('error', $usercontainerroleEntity->getErrors());
+                $this->viewBuilder()->setOption('serialize', ['error']);
+                return;
+            } else {
+                //No errors
+                if ($this->isJsonRequest()) {
+                    $this->serializeCake4Id($usercontainerroleEntity); // REST API ID serialization
+                    return;
+                }
+            }
+            $this->set('usercontainerrole', $usercontainerroleEntity);
+            $this->viewBuilder()->setOption('serialize', ['usercontainerrole']);
+        }
+    }
+
     /****************************
      *       AJAX METHODS       *
      ****************************/
@@ -390,7 +466,7 @@ class UsercontainerrolesController extends AppController {
             $LdapgroupFilter = new LdapgroupFilter($this->request);
             $where = $LdapgroupFilter->ajaxFilter();
 
-            /** @var $LdapgroupsTable LdapgroupsTable */
+            /** @var LdapgroupsTable $LdapgroupsTable */
             $LdapgroupsTable = TableRegistry::getTableLocator()->get('Ldapgroups');
             $ldapgroups = $LdapgroupsTable->getLdapgroupsForAngular($where, $selected);
 

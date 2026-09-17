@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today AVENDIS GmbH
 //
 // This file is dual licensed
 //
@@ -22,7 +23,6 @@
 //     License agreement and license key will be shipped with the order
 //     confirmation.
 
-use Cake\Http\Middleware\CsrfProtectionMiddleware;
 use Cake\Routing\Route\InflectedRoute;
 use Cake\Routing\RouteBuilder;
 
@@ -55,47 +55,6 @@ $routes->setRouteClass(InflectedRoute::class);
 $routes->setExtensions(['json', 'html', 'pdf', 'png', 'zip']);
 
 $routes->scope('/', function (RouteBuilder $builder) {
-    // Register scoped middleware for in scopes.
-    $csrf = new CsrfProtectionMiddleware([
-        'httponly' => true,
-        'secure'   => true
-    ]);
-
-    // Token check will be skipped when callback returns `true`.
-    $csrf->skipCheckCallback(function ($request) {
-        // Skip token check for API URLs.
-        if (get_class($request) !== 'Cake\\Http\\ServerRequest') {
-            // I'm not sure if $request can be something else because the docs is not clear about this
-            return false;
-        }
-
-        if (strtolower($request->getParam('controller')) === 'hosts' && $request->getParam('action') === 'index') {
-            // Disable CSRF check for /hosts/index ITC-2640
-            return true;
-        }
-
-        if (strtolower($request->getParam('controller')) === 'services' && $request->getParam('action') === 'index') {
-            // Disable CSRF check for /services/index ITC-3349
-            return true;
-        }
-
-        // Keep CSRF checks enabled
-        return false;
-    });
-
-    $builder->registerMiddleware('csrf', $csrf);
-
-    /*
-     * Apply a middleware to the current route scope.
-     * Requires middleware to be registered through `Application::routes()` with `registerMiddleware()`
-     */
-    if (
-        (!isset($_SERVER['HTTP_AUTHORIZATION']) || (isset($_SERVER['HTTP_AUTHORIZATION']) && strpos($_SERVER['HTTP_AUTHORIZATION'], 'X-OITC-API') === false)) &&
-        (!isset($_SERVER['QUERY_STRING']) || (isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'], 'apikey') === false))) {
-
-        $builder->applyMiddleware('csrf');
-    }
-
     /*
      * Fireup the AngularJS application
      */

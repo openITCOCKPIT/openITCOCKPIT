@@ -317,5 +317,11 @@ return [
      */
     'Session'   => [
         'defaults' => env('OITC_SESSION_DEFAULTS', 'php'),
+        'ini'      => [
+            'session.cookie_httponly' => 1,
+            'session.cookie_secure'   => 1,
+            'session.cookie_samesite' => 'Lax',
+            'session.use_strict_mode' => 1
+        ]
     ],
 ];

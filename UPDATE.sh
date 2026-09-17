@@ -308,7 +308,7 @@ if [ "$CURRENT_LOGENTRY_COLUMN_TYPE" = "varchar(1024)" ]; then
 
     # Perfdata is 2048 because of bionic
     # Row size too large. The maximum row size for the used table type, not counting BLOBs, is 65535. This includes storage overhead, check the manual. You have to change some columns to TEXT or BLOBs
-    mysql --defaults-extra-file=${INIFILE} -e "ALTER TABLE statusengine_servicestatus CHANGE long_output long_output VARCHAR(8192) DEFAULT NULL, CHANGE perfdata perfdata VARCHAR(2084) DEFAULT NULL"
+    mysql --defaults-extra-file=${INIFILE} -e "ALTER TABLE statusengine_servicestatus CHANGE long_output long_output VARCHAR(8192) DEFAULT NULL, CHANGE perfdata perfdata VARCHAR(2048) DEFAULT NULL"
 fi
 
 echo "Checking column end_time on statusengine_host_acknowledgements"
@@ -326,6 +326,9 @@ if [ "$SERVICE_ACK_END_TIME_EXISTS" = "0" ]; then
     echo "Adding end_time column to statusengine_service_acknowledgements..."
     mysql --defaults-extra-file="${INIFILE}" -e "ALTER TABLE \`statusengine_service_acknowledgements\` ADD COLUMN \`end_time\` BIGINT NOT NULL DEFAULT 0"
 fi
+
+# Enforce migration to Statusengine4
+mysql --defaults-extra-file="${INIFILE}" -e "UPDATE \`configuration_files\` SET \`value\`='Statusengine4' WHERE \`config_file\`='DbBackend' AND \`key\`='dbbackend' AND \`value\`='Statusengine3';"
 
 # Upgrade to Checkmk 2 in Docker Container
 mysql --defaults-extra-file=${INIFILE} -e "UPDATE commands SET command_line = '\$USER1\$/checkmk_http_client -H \$HOSTNAME\$' WHERE name = 'check_mk_active' AND command_line LIKE 'PYTHONPATH=/opt/openitc/check_mk/lib/python OMD_ROOT=/opt/openitc/check_mk%';"

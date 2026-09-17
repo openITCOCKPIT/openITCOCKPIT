@@ -27,8 +27,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use Cake\Console\Arguments;
 use Cake\Command\Command;
+use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use itnovum\openITCOCKPIT\Core\DbBackend;
@@ -66,7 +66,7 @@ class StatusengineVersionCommand extends Command {
             exit(0);
         }
 
-        $io->out('Statusengine3');
+        $io->out('Statusengine4');
         exit(0);
     }
 }

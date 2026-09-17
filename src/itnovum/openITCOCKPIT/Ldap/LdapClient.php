@@ -328,6 +328,9 @@ class LdapClient {
     }
 
     /**
+     * This method will query a single LDAP user by its sAMAccountName and return the user data as an associative array.
+     * There is no check for required fields, it an attribute is missing, it will be empty in the result array!
+     *
      * @param string $sAMAccountName
      * @return array|null
      */
@@ -377,20 +380,49 @@ class LdapClient {
                 $memberOf = $entry['memberof'] ?? [];
             }
 
+            // Extract the first value safely from the LDAP property arrays
+            $givenName = '';
+            if (isset($entry['givenname'])) {
+                $givenName = is_array($entry['givenname'])
+                    ? ($entry['givenname'][0] ?? '')
+                    : ($entry['givenname'] ?? '');
+            }
+
+            $sn = '';
+            if (isset($entry['sn'])) {
+                $sn = is_array($entry['sn'])
+                    ? ($entry['sn'][0] ?? '')
+                    : ($entry['sn'] ?? '');
+            }
+
+            $samAccountName = '';
+            if (isset($entry['samaccountname'])) {
+                $samAccountName = is_array($entry['samaccountname'])
+                    ? ($entry['samaccountname'][0] ?? '')
+                    : ($entry['samaccountname'] ?? '');
+            }
+
+            $email = '';
+            if (isset($entry['mail'])) {
+                $email = is_array($entry['mail'])
+                    ? ($entry['mail'][0] ?? '')
+                    : ($entry['mail'] ?? '');
+            }
+
             $user = [
-                'givenname'      => $entry['givenname'][0],
-                'sn'             => $entry['sn'][0],
-                'samaccountname' => $entry['samaccountname'][0],
-                'email'          => $entry['mail'][0],
+                'givenname'      => $givenName,
+                'sn'             => $sn,
+                'samaccountname' => $samAccountName,
+                'email'          => $email,
                 'company'        => $company,
                 'department'     => $department,
                 'dn'             => $userDn,
                 'memberof'       => $memberOf,
                 'display_name'   => sprintf(
                     '%s, %s (%s)',
-                    $entry['givenname'][0],
-                    $entry['sn'][0],
-                    $entry['samaccountname'][0]
+                    $givenName,
+                    $sn,
+                    $samAccountName
                 )
             ];
 
@@ -646,21 +678,34 @@ class LdapClient {
                     }
 
                     // Extract the first value safely from the LDAP property arrays
-                    $givenName = is_array($entryArray['givenname'])
-                        ? ($entryArray['givenname'][0] ?? '')
-                        : $entryArray['givenname'];
+                    $givenName = '';
+                    if (isset($entryArray['givenname'])) {
+                        $givenName = is_array($entryArray['givenname'])
+                            ? ($entryArray['givenname'][0] ?? '')
+                            : $entryArray['givenname'];
+                    }
 
-                    $sn = is_array($entryArray['sn'])
-                        ? ($entryArray['sn'][0] ?? '')
-                        : $entryArray['sn'];
+                    $sn = '';
+                    if (isset($entryArray['sn'])) {
+                        $sn = is_array($entryArray['sn'])
+                            ? ($entryArray['sn'][0] ?? '')
+                            : $entryArray['sn'];
+                    }
 
-                    $samAccountName = is_array($entryArray['samaccountname'])
-                        ? ($entryArray['samaccountname'][0] ?? '')
-                        : $entryArray['samaccountname'];
+                    $samAccountName = '';
+                    if (isset($entryArray['samaccountname'])) {
+                        $samAccountName = is_array($entryArray['samaccountname'])
+                            ? ($entryArray['samaccountname'][0] ?? '')
+                            : $entryArray['samaccountname'];
+                    }
 
-                    $email = is_array($entryArray['mail'])
-                        ? ($entryArray['mail'][0] ?? '')
-                        : $entryArray['mail'];
+                    $email = '';
+                    if (isset($entryArray['mail'])) {
+                        $email = is_array($entryArray['mail'])
+                            ? ($entryArray['mail'][0] ?? '')
+                            : $entryArray['mail'];
+                    }
+
 
                     $result[] = [
                         'givenname'      => $givenName,

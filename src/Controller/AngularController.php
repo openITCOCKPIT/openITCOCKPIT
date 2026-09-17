@@ -236,7 +236,7 @@ class AngularController extends AppController {
 
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
@@ -330,7 +330,7 @@ class AngularController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
             $hoststatus = $HostsTable->getHostsWithStatusByConditionsStatusengine3($containerIdsForQuery, []);
@@ -801,8 +801,7 @@ class AngularController extends AppController {
 
         return match ($satellites_state) {
             1 => 'ok',
-            2 => 'warning',
-            3 => 'critical',
+            2, 3 => 'critical',//2 => 'warning'
             default => 'unknown',
         };
     }

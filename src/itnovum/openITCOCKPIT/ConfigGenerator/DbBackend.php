@@ -27,7 +27,6 @@ namespace itnovum\openITCOCKPIT\ConfigGenerator;
 
 
 use App\itnovum\openITCOCKPIT\ConfigGenerator\ContainerConfigInterface;
-use Cake\Core\Configure;
 
 class DbBackend extends ConfigGenerator implements ConfigInterface, ContainerConfigInterface {
 
@@ -53,7 +52,7 @@ class DbBackend extends ConfigGenerator implements ConfigInterface, ContainerCon
     protected $defaults = [
         'string' => [
             //'dbbackend' => 'Nagios', // Statusengine 2 / NDOUtils
-            'dbbackend' => 'Statusengine3' // Statusengine 3
+            'dbbackend' => 'Statusengine4' // Statusengine 4
         ]
     ];
 
@@ -69,8 +68,8 @@ class DbBackend extends ConfigGenerator implements ConfigInterface, ContainerCon
         if (isset($data['string']) && is_array($data['string'])) {
             foreach ($data['string'] as $field => $value) {
                 if ($field === 'dbbackend') {
-                    if (!in_array($value, ['Nagios', 'Crate', 'Statusengine3'], true)) {
-                        $error[$fakeModelName][$field][] = __('Value out of range (Nagios, Crate, Statusengine3)');
+                    if (!in_array($value, ['Nagios', 'Crate', 'Statusengine3', 'Statusengine4'], true)) {
+                        $error[$fakeModelName][$field][] = __('Value out of range (Nagios, Crate, Statusengine3, Statusengine4)');
                     }
                 }
             }
@@ -110,7 +109,7 @@ class DbBackend extends ConfigGenerator implements ConfigInterface, ContainerCon
         return [
             [
                 'key'   => 'dbbackend',
-                'value' => env('OITC_DB_BACKEND', 'Statusengine3'),
+                'value' => env('OITC_DB_BACKEND', 'Statusengine4'),
             ]
         ];
     }

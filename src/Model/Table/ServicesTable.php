@@ -4235,6 +4235,7 @@ class ServicesTable extends Table {
                     'conditions' => 'Hosttemplates.id = Hosts.hosttemplate_id',
                 ]
             ]);
+
         if (!empty($MY_RIGHTS)) {
             $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
                 'HostsToContainersSharing.host_id = Hosts.id'
@@ -4260,6 +4261,9 @@ class ServicesTable extends Table {
             $conditions['Hostgroup'] = Hash::filter($conditions['Hostgroup']);
         }
         if (!empty($conditions['Hostgroup'])) {
+            if (!empty($conditions['Hostgroup']['_ids'])) {
+                $hostgroupIds = explode(',', $conditions['Hostgroup']['_ids']);
+            }
             $hostGroupsWhere = [];
             if (!empty($hostgroupIds)) {
                 $hostGroupsWhere[] = ['hg.id IN' => $hostgroupIds];

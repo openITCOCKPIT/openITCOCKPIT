@@ -156,8 +156,7 @@ class UserTime {
         };
 
         $format = $closure($duration);
-
-        return $zero->diff($seconds)->format($format);
+        return $zero->diff($seconds)->format($format ?? '%yY %mM %dD %hh %im %ss');
     }
 
     /**

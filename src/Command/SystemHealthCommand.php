@@ -336,7 +336,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
             $satellite['satellite_information'] = [
                 'satellite_id'  => $satellite['id'],
-                'system_health' => $parsedHealth
+                'system_health' => $parsedHealth ?? []
             ];
             $updatedSatellites[] = $satellite;
         }

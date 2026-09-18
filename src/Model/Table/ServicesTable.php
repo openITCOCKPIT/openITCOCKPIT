@@ -4227,6 +4227,12 @@ class ServicesTable extends Table {
                     'type'       => 'INNER',
                     'alias'      => 'Hosts',
                     'conditions' => 'Hosts.id = Services.host_id',
+                ],
+                'hosttemplates'    => [
+                    'table'      => 'hosttemplates',
+                    'type'       => 'INNER',
+                    'alias'      => 'Hosttemplates',
+                    'conditions' => 'Hosttemplates.id = Hosts.hosttemplate_id',
                 ]
             ]);
         if (!empty($MY_RIGHTS)) {
@@ -4447,6 +4453,24 @@ class ServicesTable extends Table {
             }
         }
 
+        if (!empty($conditions['Host']['keywords'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
+                $conditions['Host']['keywords'],
+                'string',
+                'RLIKE'
+            );
+        }
+
+        if (!empty($conditions['Host']['not_keywords'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
+                $conditions['Host']['not_keywords'],
+                'string',
+                'NOT RLIKE'
+            );
+        }
+
         if (!empty($conditions['Service']['servicename'])) {
             if (isset($conditions['Service']['servicename_regex']) && $conditions['Service']['servicename_regex'] === true || $conditions['Service']['servicename_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Service']['servicename'])) {
@@ -4464,6 +4488,24 @@ class ServicesTable extends Table {
                     'servicename LIKE' => sprintf('%%%s%%', $conditions['Service']['servicename'])
                 ]);
             }
+        }
+
+        if (!empty($conditions['Service']['keywords'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
+                $conditions['Service']['keywords'],
+                'string',
+                'RLIKE'
+            );
+        }
+
+        if (!empty($conditions['Service']['not_keywords'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
+                $conditions['Service']['not_keywords'],
+                'string',
+                'NOT RLIKE'
+            );
         }
 
         if (!empty($conditions['servicepriority'])) {

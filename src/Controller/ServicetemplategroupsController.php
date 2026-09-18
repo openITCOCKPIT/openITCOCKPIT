@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -139,6 +140,11 @@ class ServicetemplategroupsController extends AppController {
         $servicetemplategroup->set('uuid', UUID::v4());
         $servicetemplategroup->get('container')->set('containertype_id', CT_SERVICETEMPLATEGROUP);
 
+        if (!$this->isWritableContainer($servicetemplategroup->container->parent_id)) {
+            $this->render403();
+            return;
+        }
+
         /** @var ContainersTable $ContainersTable */
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
@@ -210,10 +216,17 @@ class ServicetemplategroupsController extends AppController {
                 'Containers'
             ]);
             $servicetemplategroupEntity->setAccess('uuid', false);
-            $servicetemplategroupEntity = $ServicetemplategroupsTable->patchEntity($servicetemplategroupEntity, $this->request->getData('Servicetemplategroup'));
+            $data = $this->request->getData('Servicetemplategroup');
+            unset($data['container']['lft'], $data['container']['rght']);
+            $servicetemplategroupEntity = $ServicetemplategroupsTable->patchEntity($servicetemplategroupEntity, $data);
             $servicetemplategroupEntity->id = $id;
 
             $requestData = $this->request->getData();
+
+            if (!$this->isWritableContainer($servicetemplategroupEntity->container->parent_id)) {
+                $this->render403();
+                return;
+            }
 
             $servicetemplategroupEntity = $ServicetemplategroupsTable->updateServicetemplategroup(
                 $servicetemplategroupEntity,

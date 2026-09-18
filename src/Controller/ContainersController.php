@@ -23,12 +23,6 @@
 //     License agreement and license key will be shipped with the order
 //     confirmation.
 
-// 2.
-//  If you purchased an openITCOCKPIT Enterprise Edition you can use this file
-//  under the terms of the openITCOCKPIT Enterprise Edition license agreement.
-//  License agreement and license key will be shipped with the order
-//  confirmation.
-
 declare(strict_types=1);
 
 namespace App\Controller;
@@ -175,7 +169,9 @@ class ContainersController extends AppController {
 
             $container->setAccess('id', false);
             $container->setAccess('parent_id', false);
-            $container = $ContainersTable->patchEntity($container, $this->request->getData('Container'));
+            $containerData = $this->request->getData('Container');
+            unset($containerData['lft'], $containerData['rght']);
+            $container = $ContainersTable->patchEntity($container, $containerData);
 
             $ContainersTable->save($container);
             if ($container->hasErrors()) {

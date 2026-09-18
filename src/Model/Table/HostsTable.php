@@ -2015,6 +2015,42 @@ class HostsTable extends Table {
     }
 
     /**
+     * @param array $ids
+     * @return array
+     */
+    public function getHostsForNotificationCalc($ids = []) {
+        $query = $this->find()
+            ->select([
+                'Hosts.id',
+                'Hosts.name',
+                'Hosts.hosttemplate_id',
+                'Hosts.check_interval',
+                'Hosts.retry_interval',
+                'Hosts.max_check_attempts',
+            ])
+            ->contain([
+                'Hosttemplates' => [
+                    'fields' => [
+                        'Hosttemplates.id',
+                        'Hosttemplates.check_interval',
+                        'Hosttemplates.retry_interval',
+                        'Hosttemplates.max_check_attempts',
+                    ]
+                ]
+            ])
+            ->where(['Hosts.id IN' => $ids])
+            ->orderBy(['Hosts.id' => 'asc'])
+            ->disableHydration()
+            ->all();
+
+        $result = $query->toArray();
+        if (empty($result)) {
+            return [];
+        }
+        return $result;
+    }
+
+    /**
      * @param array $containerIds
      * @return array
      */

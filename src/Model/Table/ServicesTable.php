@@ -45,6 +45,7 @@ use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Cache\ObjectsCache;
 use itnovum\openITCOCKPIT\Core\Comparison\ServiceComparisonForSave;
 use itnovum\openITCOCKPIT\Core\ServiceConditions;
+use itnovum\openITCOCKPIT\Core\Servicestatus;
 use itnovum\openITCOCKPIT\Core\ServicestatusConditions;
 use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -3981,7 +3982,6 @@ class ServicesTable extends Table {
      * @return int
      */
     public function getServiceIdsBySelectedStatusExtendedStatusengine3($MY_RIGHTS, $conditions) {
-
         $query = $this->find();
         $query
             ->select([
@@ -4187,6 +4187,362 @@ class ServicesTable extends Table {
         $result = $query->all();
 
         return $this->emptyArrayIfNull(Hash::extract($result->toArray(), '{n}.id'));
+    }
+
+
+    /**
+     * @param $MY_RIGHTS
+     * @param $conditions
+     * @return array
+     */
+    public function getServicesWithExtendedStatusByConditionsStatusengine3($MY_RIGHTS, $conditions): array {
+        $query = $this->find();
+        $where = [];
+        $query
+            ->select([
+                'Hosts.id',
+                'Hosts.name',
+                'Services.id',
+                'Services.uuid',
+                'servicename'     => $query->func()->coalesce(['Services.name' => 'identifier', 'Servicetemplates.name' => 'identifier']),
+                'servicepriority' => $query->func()->coalesce(['Services.priority' => 'identifier', 'Servicetemplates.priority' => 'identifier']),
+                'tags'            => $query->func()->coalesce(['Services.tags' => 'identifier', 'Servicetemplates.tags' => 'identifier']),
+                'Servicestatus.current_state',
+                'Servicestatus.scheduled_downtime_depth',
+                'Servicestatus.active_checks_enabled',
+                'Servicestatus.problem_has_been_acknowledged',
+                'Servicestatus.last_hard_state_change',
+                'Servicestatus.last_state_change',
+                'Servicestatus.status_update_time',
+                'Servicestatus.last_time_ok',
+                'Servicestatus.last_time_critical',
+                'Servicestatus.last_time_unknown'
+            ]);
+        $query->where([
+            'Services.disabled' => 0
+        ])
+            ->join([
+                'b'                => [
+                    'table'      => 'statusengine_servicestatus',
+                    'type'       => 'INNER',
+                    'alias'      => 'Servicestatus',
+                    'conditions' => 'Servicestatus.service_description = Services.uuid',
+                ],
+                'servicetemplates' => [
+                    'table'      => 'servicetemplates',
+                    'type'       => 'INNER',
+                    'alias'      => 'Servicetemplates',
+                    'conditions' => 'Servicetemplates.id = Services.servicetemplate_id',
+                ],
+                'hosts'            => [
+                    'table'      => 'hosts',
+                    'type'       => 'INNER',
+                    'alias'      => 'Hosts',
+                    'conditions' => 'Hosts.id = Services.host_id',
+                ],
+                'hosttemplates'    => [
+                    'table'      => 'hosttemplates',
+                    'type'       => 'INNER',
+                    'alias'      => 'Hosttemplates',
+                    'conditions' => 'Hosttemplates.id = Hosts.hosttemplate_id',
+                ]
+            ]);
+
+        if (!empty($MY_RIGHTS)) {
+            $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
+                'HostsToContainersSharing.host_id = Hosts.id'
+            ]);
+            $query->where([
+                'HostsToContainersSharing.container_id IN' => $MY_RIGHTS
+            ]);
+            if (!empty($conditions['Container']['_ids'])) {
+                $query->where([
+                    'HostsToContainersSharing.container_id IN' => $conditions['Container']['_ids']
+                ]);
+            }
+        } else if (!empty($conditions['Container']['_ids'])) {
+            $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
+                'HostsToContainersSharing.host_id = Hosts.id'
+            ]);
+            $containerIds = explode(',', $conditions['Container']['_ids']);
+            $query->where([
+                'HostsToContainersSharing.container_id IN' => $containerIds
+            ]);
+        }
+        if (!empty($conditions['Hostgroup'])) {
+            $conditions['Hostgroup'] = Hash::filter($conditions['Hostgroup']);
+        }
+        if (!empty($conditions['Hostgroup'])) {
+            if (!empty($conditions['Hostgroup']['_ids'])) {
+                $hostgroupIds = explode(',', $conditions['Hostgroup']['_ids']);
+            }
+            $hostGroupsWhere = [];
+            if (!empty($hostgroupIds)) {
+                $hostGroupsWhere[] = ['hg.id IN' => $hostgroupIds];
+            }
+            if (!empty($conditions['Hostgroup']['keywords'])) {
+                $hostGroupsWhere[] = new ComparisonExpression(
+                    'hg.tags',
+                    $conditions['Hostgroup']['keywords'],
+                    'string',
+                    'RLIKE'
+
+                );
+            }
+
+            if (!empty($conditions['Hostgroup']['not_keywords'])) {
+                $hostGroupsWhere[] = new ComparisonExpression(
+                    'hg.tags',
+                    $conditions['Hostgroup']['not_keywords'],
+                    'string',
+                    'NOT RLIKE'
+                );
+            }
+            // Direct assignment Host -> Hostgroup
+            $path1 = TableRegistry::getTableLocator()->get('HostsToHostgroups')->find();
+            $path1->select([
+                'host_id'       => 'HostsToHostgroups.host_id',
+                // newExpr() forces CakePHP to treat the string as raw SQL without automatic backticks
+                'hostgroup_ids' => $path1->newExpr('GROUP_CONCAT(DISTINCT HostsToHostgroups.hostgroup_id)'),
+                'host_count'    => $path1->newExpr('COUNT(DISTINCT hg.id)')
+            ])
+                ->join([
+                    'table'      => 'hostgroups',
+                    'alias'      => 'hg',
+                    'type'       => 'INNER',
+                    'conditions' => 'hg.id = HostsToHostgroups.hostgroup_id'
+                ])
+                ->where($hostGroupsWhere)
+                ->groupBy(['HostsToHostgroups.host_id']);
+
+            // Assignment via Template -> Hostgroup
+            $path2 = TableRegistry::getTableLocator()->get('Hosts')->find();
+            $path2->select([
+                'host_id'       => 'Hosts.id',
+                // Using newExpr() here as well to protect the aggregation expressions
+                'hostgroup_ids' => $path2->newExpr('GROUP_CONCAT(DISTINCT ht2hg.hostgroup_id)'),
+                'host_count'    => $path2->newExpr('COUNT(DISTINCT hg.id)')
+            ])
+                ->join([
+                    'table'      => 'hosttemplates_to_hostgroups',
+                    'alias'      => 'ht2hg',
+                    'type'       => 'INNER',
+                    'conditions' => 'ht2hg.hosttemplate_id = Hosts.hosttemplate_id'
+                ])
+                ->join([
+                    'table'      => 'hostgroups',
+                    'alias'      => 'hg',
+                    'type'       => 'INNER',
+                    'conditions' => 'hg.id = ht2hg.hostgroup_id'
+                ])
+                ->where($hostGroupsWhere)
+                ->groupBy(['Hosts.id']);
+
+            // Combine both query paths using UNION ALL
+            $unionQuery = $path1->unionAll($path2);
+
+            // Extend base query with union
+            $query
+                // Fetch the pre-aggregated fields flat from the ValidHosts subquery
+                ->select([
+                    'hostgroup_ids' => 'ValidHosts.hostgroup_ids',
+                    'host_count'    => 'ValidHosts.host_count'
+                ])
+                ->join([
+                    // Attach the filtered and pre-aggregated UNION table as an INNER JOIN
+                    'ValidHosts' => [
+                        'table'      => $unionQuery,
+                        'type'       => 'INNER',
+                        'alias'      => 'ValidHosts',
+                        'conditions' => 'ValidHosts.host_id = Hosts.id',
+                    ]
+                ])
+                ->groupBy([
+                    'Services.id'
+                ]);
+        }
+
+        if (!empty($conditions['Servicegroup'])) {
+            $conditions['Servicegroup'] = Hash::filter($conditions['Servicegroup']);
+        }
+        if (!empty($conditions['Servicegroup'])) {
+            $servicegroupIds = [];
+            $serviceGroupsWhere = [];
+            if (!empty($conditions['Servicegroup']['_ids'])) {
+                $servicegroupIds = explode(',', $conditions['Servicegroup']['_ids']);
+            }
+            if (!empty($servicegroupIds)) {
+                $serviceGroupsWhere[] = ['sg.id IN' => $servicegroupIds];
+            }
+            if (!empty($conditions['Servicegroup']['keywords'])) {
+                $serviceGroupsWhere[] = new ComparisonExpression(
+                    'sg.tags',
+                    $conditions['Servicegroup']['keywords'],
+                    'string',
+                    'RLIKE'
+
+                );
+            }
+            if (!empty($conditions['Servicegroup']['not_keywords'])) {
+                $serviceGroupsWhere[] = new ComparisonExpression(
+                    'sg.tags',
+                    $conditions['Servicegroup']['not_keywords'],
+                    'string',
+                    'NOT RLIKE'
+                );
+            }
+
+            // Direct assignment Service -> Servicegroup
+            $path1 = TableRegistry::getTableLocator()->get('ServicesToServicegroups')->find();
+            $path1->select([
+                'service_id'       => 'ServicesToServicegroups.service_id',
+                'servicegroup_ids' => $path1->newExpr('GROUP_CONCAT(DISTINCT ServicesToServicegroups.servicegroup_id)'),
+                'service_count'    => $path1->newExpr('COUNT(DISTINCT sg.id)')
+            ])
+                ->join([
+                    'table'      => 'servicegroups',
+                    'alias'      => 'sg',
+                    'type'       => 'INNER',
+                    'conditions' => 'sg.id = ServicesToServicegroups.servicegroup_id'
+                ])
+                ->where($serviceGroupsWhere)
+                ->groupBy(['ServicesToServicegroups.service_id']);
+
+            // Assignment via Template -> Servicegroup
+            $path2 = $this->find();
+            $path2->select([
+                'service_id'       => 'Services.id',
+                'servicegroup_ids' => $path2->newExpr('GROUP_CONCAT(DISTINCT st2sg.servicegroup_id)'),
+                'service_count'    => $path2->newExpr('COUNT(DISTINCT sg.id)')
+            ])
+                ->join([
+                    'table'      => 'servicetemplates_to_servicegroups',
+                    'alias'      => 'st2sg',
+                    'type'       => 'INNER',
+                    'conditions' => 'st2sg.servicetemplate_id = Services.servicetemplate_id'
+                ])
+                ->join([
+                    'table'      => 'servicegroups',
+                    'alias'      => 'sg',
+                    'type'       => 'INNER',
+                    'conditions' => 'sg.id = st2sg.servicegroup_id'
+                ])
+                ->where($serviceGroupsWhere)
+                ->groupBy(['Services.id']);
+
+            // Combine both query paths using UNION ALL
+            $unionQuery = $path1->unionAll($path2);
+
+            // Extend base query with union
+            $query
+                ->select([
+                    'servicegroup_ids' => 'ValidServices.servicegroup_ids',
+                    'service_count'    => 'ValidServices.service_count'
+                ])
+                ->join([
+                    'ValidServices' => [
+                        'table'      => $unionQuery,
+                        'type'       => 'INNER',
+                        'alias'      => 'ValidServices',
+                        'conditions' => 'ValidServices.service_id = Services.id',
+                    ]
+                ])
+                ->groupBy([
+                    'Services.id'
+                ]);
+
+
+        }
+
+        if (!empty($conditions['Host']['name'])) {
+            if (isset($conditions['Host']['name_regex']) && $conditions['Host']['name_regex'] === true || $conditions['Host']['name_regex'] === 'true') {
+                if ($this->isValidRegularExpression($conditions['Host']['name'])) {
+                    $where[] = new ComparisonExpression(
+                        'Hosts.name',
+                        $conditions['Host']['name'],
+                        'string',
+                        'RLIKE'
+                    );
+                }
+            } else {
+                $where['Hosts.name LIKE'] = sprintf('%%%s%%', $conditions['Host']['name']);
+            }
+        }
+
+        if (!empty($conditions['Host']['keywords'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
+                $conditions['Host']['keywords'],
+                'string',
+                'RLIKE'
+            );
+        }
+
+        if (!empty($conditions['Host']['not_keywords'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
+                $conditions['Host']['not_keywords'],
+                'string',
+                'NOT RLIKE'
+            );
+        }
+
+        if (!empty($conditions['Service']['servicename'])) {
+            if (isset($conditions['Service']['servicename_regex']) && $conditions['Service']['servicename_regex'] === true || $conditions['Service']['servicename_regex'] === 'true') {
+                if ($this->isValidRegularExpression($conditions['Service']['servicename'])) {
+                    $query->having([
+                        new ComparisonExpression(
+                            'servicename',
+                            $conditions['Service']['servicename'],
+                            'string',
+                            'RLIKE'
+                        )
+                    ]);
+                }
+            } else {
+                $query->having([
+                    'servicename LIKE' => sprintf('%%%s%%', $conditions['Service']['servicename'])
+                ]);
+            }
+        }
+
+        if (!empty($conditions['Service']['keywords'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
+                $conditions['Service']['keywords'],
+                'string',
+                'RLIKE'
+            );
+        }
+
+        if (!empty($conditions['Service']['not_keywords'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Services.tags IS NULL OR Services.tags=""), Servicetemplates.tags, Services.tags)',
+                $conditions['Service']['not_keywords'],
+                'string',
+                'NOT RLIKE'
+            );
+        }
+
+        if (!empty($conditions['servicepriority'])) {
+            $where[] = new ComparisonExpression(
+                'IF((Services.priority IS NULL), Servicetemplates.priority, Services.priority)',
+                $conditions['servicepriority'],
+                'integer[]',
+                'IN'
+            );
+        }
+
+        $query->andWhere($where);
+        $query->groupBy('Services.id');
+
+        $query->disableHydration();
+        $result = $query->all();
+        if (!$result === null) {
+            return [];
+        }
+
+        return $result->toArray();
     }
 
 
@@ -6292,6 +6648,381 @@ class ServicesTable extends Table {
 
         return $query->toArray();
 
+    }
+
+    /**
+     * @param array $servicestatus
+     * @param int $timestampFrom
+     * @param int $timestampTo
+     * @param array $serviceConditions
+     * @param string $UserTimeZone
+     * @return array
+     */
+    public function getServiceStateSummaryWithLastTimeStats(array $servicestatus, int $timestampFrom, int $timestampTo, array $serviceConditions, string $UserTimeZone): array {
+        $serviceStateSummary = [
+            'state'                  => [
+                0            => 0,
+                1            => 0,
+                2            => 0,
+                3            => 0,
+                'serviceIds' => [
+                    0 => [],
+                    1 => [],
+                    2 => [],
+                    3 => []
+                ]
+            ],
+            'acknowledged'           => [
+                0            => 0,
+                1            => 0,
+                2            => 0,
+                3            => 0,
+                'serviceIds' => [
+                    0 => [],
+                    1 => [],
+                    2 => [],
+                    3 => []
+                ]
+            ],
+            'in_downtime'            => [
+                0            => 0,
+                1            => 0,
+                2            => 0,
+                3            => 0,
+                'serviceIds' => [
+                    0 => [],
+                    1 => [],
+                    2 => [],
+                    3 => []
+                ]
+            ],
+            'not_handled'            => [
+                0                 => 0,
+                1                 => 0,
+                2                 => 0,
+                3                 => 0,
+                'serviceIds'      => [
+                    0 => [],
+                    1 => [],
+                    2 => [],
+                    3 => []
+                ],
+                'totalServiceIds' => []
+            ],
+            'passive'                => [
+                0            => 0,
+                1            => 0,
+                2            => 0,
+                3            => 0,
+                'serviceIds' => [
+                    0 => [],
+                    1 => [],
+                    2 => [],
+                    3 => []
+                ]
+            ],
+            'total'                  => 0,
+            'cumulative_state'       => -1, // not monitored
+            'lastTimeAlwaysOk'       => [
+                'count' => 0,
+                'ids'   => []
+            ],
+            'lastTimeAlwaysCritical' => [
+                'count' => 0,
+                'ids'   => []
+            ],
+            'recovered'              => [
+                'count' => 0,
+                'ids'   => []
+            ],
+            'failed'                 => [
+                'count' => 0,
+                'ids'   => []
+            ],
+            'tagsOverview'           => [],
+            'buckets'                => [
+                'ok'       => [],
+                'warning'  => [],
+                'critical' => [],
+                'unknown'  => []
+            ],
+            'from'                   => $timestampFrom,
+            'to'                     => $timestampTo,
+            'userTimezone'           => $UserTimeZone
+        ];
+        if (empty($servicestatus)) {
+            return $serviceStateSummary;
+        }
+
+        $serviceStateSummary['buckets'] = $this->groupServicestatusByStateAndTimeBuckets($servicestatus, 'c');
+        foreach ($servicestatus as $service) {
+            //Check for random exit codes like 255...
+            if ($service['Servicestatus']['current_state'] > 3) {
+                $service['Servicestatus']['current_state'] = 3;
+            }
+            $service['Servicestatus'] = new Servicestatus($service['Servicestatus']);
+            $tags = Hash::filter(explode(',', $service['tags']));
+
+            if (!empty($tags)) {
+                foreach ($tags as $tag) {
+                    if (!empty($serviceConditions['keywords']) && !preg_match(sprintf('`%s`', $serviceConditions['keywords']), $tag)) {
+                        continue;
+                    }
+                    if (!isset($serviceStateSummary['tagsOverview'][$tag])) {
+                        $serviceStateSummary['tagsOverview'][$tag] = [
+                            'state'            => [
+                                0            => 0,
+                                1            => 0,
+                                2            => 0,
+                                3            => 0,
+                                'serviceIds' => [
+                                    0 => [],
+                                    1 => [],
+                                    2 => [],
+                                    3 => []
+                                ]
+                            ],
+                            'acknowledged'     => [
+                                0            => 0,
+                                1            => 0,
+                                2            => 0,
+                                3            => 0,
+                                'serviceIds' => [
+                                    0 => [],
+                                    1 => [],
+                                    2 => [],
+                                    3 => []
+                                ]
+                            ],
+                            'in_downtime'      => [
+                                0            => 0,
+                                1            => 0,
+                                2            => 0,
+                                3            => 0,
+                                'serviceIds' => [
+                                    0 => [],
+                                    1 => [],
+                                    2 => [],
+                                    3 => []
+                                ]
+                            ],
+                            'not_handled'      => [
+                                1                 => 0,
+                                2                 => 0,
+                                3                 => 0,
+                                'serviceIds'      => [
+                                    1 => [],
+                                    2 => [],
+                                    3 => []
+                                ],
+                                'totalServiceIds' => []
+                            ],
+                            'passive'          => [
+                                0            => 0,
+                                1            => 0,
+                                2            => 0,
+                                3            => 0,
+                                'serviceIds' => [
+                                    0 => [],
+                                    1 => [],
+                                    2 => [],
+                                    3 => []
+                                ]
+                            ],
+                            'total'            => 0,
+                            'serviceIds'       => [],
+                            'cumulative_state' => -1, // not monitored
+                        ];
+                    }
+                    $serviceStateSummary['tagsOverview'][$tag]['state'][$service['Servicestatus']->currentState()]++;
+                    $serviceStateSummary['tagsOverview'][$tag]['state']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+
+                    if ($service['Servicestatus']->currentState() > 0) {
+                        if ($service['Servicestatus']->isAcknowledged()) {
+                            $serviceStateSummary['tagsOverview'][$tag]['acknowledged'][$service['Servicestatus']->currentState()]++;
+                            $serviceStateSummary['tagsOverview'][$tag]['acknowledged']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+                        } else if (!$service['Servicestatus']->isInDowntime()) {
+                            $serviceStateSummary['tagsOverview'][$tag]['not_handled'][$service['Servicestatus']->currentState()]++;
+                            $serviceStateSummary['tagsOverview'][$tag]['not_handled']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+                            $serviceStateSummary['tagsOverview'][$tag]['not_handled']['totalServiceIds'][] = $service['id'];
+                        }
+                    }
+
+                    if ($service['Servicestatus']->isInDowntime()) {
+                        $serviceStateSummary['tagsOverview'][$tag]['in_downtime'][$service['Servicestatus']->currentState()]++;
+                        $serviceStateSummary['tagsOverview'][$tag]['in_downtime']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+                    }
+                    if (!$service['Servicestatus']->isActiveChecksEnabled()) {
+                        $serviceStateSummary['tagsOverview'][$tag]['passive'][$service['Servicestatus']->currentState()]++;
+                        $serviceStateSummary['tagsOverview'][$tag]['passive']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+                    }
+                    if ($serviceStateSummary['tagsOverview'][$tag]['cumulative_state'] < $service['Servicestatus']->currentState()) {
+                        $serviceStateSummary['tagsOverview'][$tag]['cumulative_state'] = $service['Servicestatus']->currentState();
+                    }
+                    $serviceStateSummary['tagsOverview'][$tag]['total']++;
+                    $serviceStateSummary['tagsOverview'][$tag]['serviceIds'][] = $service['id'];
+                }
+            }
+
+            if ($service['Servicestatus']->currentState() === 0) {
+                if ($service['Servicestatus']->getLastStateChange() <= $timestampFrom
+                    && $service['Servicestatus']->getLastTimeCritical() <= $timestampFrom) {
+                    $serviceStateSummary['lastTimeAlwaysOk']['count']++;
+                    $serviceStateSummary['lastTimeAlwaysOk']['ids'][] = $service['id'];
+                }
+
+                if (isset($service['statehistory'][0])) {
+                    if ($service['statehistory'][0]['state'] > 0 &&
+                        date('d.m.Y H:i:s', $service['statehistory'][0]['state_time']) < $service['Servicestatus']->getLastStateChange()) {
+                        $serviceStateSummary['recovered']['count']++;
+                        $serviceStateSummary['recovered']['ids'][] = $service['id'];
+                    }
+                }
+            } else if ($service['Servicestatus']->currentState() === 2) {
+                if ($service['Servicestatus']->getLastStateChange() <= $timestampFrom
+                    && $service['Servicestatus']->getLastTimeOk() <= $timestampFrom) {
+                    $serviceStateSummary['lastTimeAlwaysCritical']['count']++;
+                    $serviceStateSummary['lastTimeAlwaysCritical']['ids'][] = $service['id'];
+                }
+                if (isset($service['statehistory'][0])) {
+                    if ($service['statehistory'][0]['state'] === 0 &&
+                        date('d.m.Y H:i:s', $service['statehistory'][0]['state_time']) < $service['Servicestatus']->getLastStateChange()) {
+                        $serviceStateSummary['failed']['count']++;
+                        $serviceStateSummary['failed']['ids'][] = $service['id'];
+                    }
+                }
+            }
+
+            $serviceStateSummary['state'][$service['Servicestatus']->currentState()]++;
+            $serviceStateSummary['state']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+            if ($service['Servicestatus']->currentState() > 0) {
+                if ($service['Servicestatus']->isAcknowledged()) {
+                    $serviceStateSummary['acknowledged'][$service['Servicestatus']->currentState()]++;
+                    $serviceStateSummary['acknowledged']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+                } else if (!$service['Servicestatus']->isInDowntime()) {
+                    $serviceStateSummary['not_handled'][$service['Servicestatus']->currentState()]++;
+                    $serviceStateSummary['not_handled']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+                    $serviceStateSummary['not_handled']['totalServiceIds'][] = $service['id'];
+                }
+            }
+
+            if ($service['Servicestatus']->isInDowntime()) {
+                $serviceStateSummary['in_downtime'][$service['Servicestatus']->currentState()]++;
+                $serviceStateSummary['in_downtime']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+            }
+            if (!$service['Servicestatus']->isActiveChecksEnabled()) {
+                $serviceStateSummary['passive'][$service['Servicestatus']->currentState()]++;
+                $serviceStateSummary['passive']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+            }
+
+            if ($serviceStateSummary['cumulative_state'] < $service['Servicestatus']->currentState()) {
+                $serviceStateSummary['cumulative_state'] = $service['Servicestatus']->currentState();
+            }
+            $serviceStateSummary['total']++;
+            $serviceStateSummary['totalServiceIds'][] = $service['id'];
+        }
+        uksort($serviceStateSummary['tagsOverview'], 'strcasecmp');
+        return $serviceStateSummary;
+    }
+
+    /**
+     * Will group the servicestatus into hour and 10 minute buckets for each state for the last 24 hours.
+     *
+     * @param array $servicestatusList
+     * @param string $dateFormat The date format to use for the time buckets. Default is 'U' (Unix timestamp).
+     * @return array|array[]
+     */
+    public function groupServicestatusByStateAndTimeBuckets(array $servicestatusList, string $dateFormat = 'U'): array {
+        $now = time();
+        $from = $now - 86400; // 24 hours ago
+
+        $stateLabels = [
+            -1 => 'not_in_monitoring',
+            0  => 'ok',
+            1  => 'warning',
+            2  => 'critical',
+            3  => 'unknown'
+        ];
+
+        $result = [
+            0 => [],
+            1 => [],
+            2 => [],
+            3 => [],
+        ];
+
+        foreach ($servicestatusList as $key => $servicestatus) {
+            $servicestatus['Servicestatus'] = new Servicestatus($servicestatus['Servicestatus']);
+            foreach ($servicestatus['statehistory'] as $stateHistory) {
+                $state = $stateHistory['state'];
+
+                $timestamp = (int)$stateHistory['state_time'] ?? 0;
+                if ($timestamp < $from || $timestamp > $now) {
+                    continue;
+                }
+                // Get full hour timestamp for the given timestamp
+                $hourStartTs = (int)(floor($timestamp / 3600) * 3600);
+                $hourKey = date($dateFormat, $hourStartTs);
+
+                // 10 minutes slot (bucket) in the hour: 00,10,20,30,40,50
+                $minute = (int)date('i', $timestamp);
+                $tenMin = (int)(floor($minute / 10) * 10);
+                //$tenMinKey = str_pad((string)$tenMin, 2, '0', STR_PAD_LEFT);
+
+                $result[$state][$hourKey][$tenMin][] = $servicestatus;
+            }
+        }
+        $reformatedData =
+            [
+                'ok'       => [],
+                'warning'  => [],
+                'critical' => [],
+                'unknown'  => [],
+                'min'      => 0,
+                'max'      => null
+            ];
+
+        $result = Hash::remove($result, '{n}.{s}.{n}.{n}.statehistory');
+
+        foreach ($result as $state => $servicestatusDetails) {
+            $reformatedData[$stateLabels[$state]] = [];
+            foreach ($servicestatusDetails as $date => $serviceStatusByMinutes) {
+                foreach ($serviceStatusByMinutes as $minute => $serviceStatusArray) {
+                    $sizeofHostStatusArray = sizeof($serviceStatusArray);
+                    $statusDetails = [];
+
+                    $maxDetails = 10; // for limit check
+                    foreach ($serviceStatusArray as $key => $serviceStatusDetails) {
+                        if ($key > $maxDetails) {
+                            break;
+                        }
+                        $statusDetails[$serviceStatusDetails['id']] = [
+                            'id'              => $serviceStatusDetails['id'],
+                            'serviceUuid'     => $serviceStatusDetails['uuid'],
+                            'name'            => sprintf('%s/%s',
+                                $serviceStatusDetails['Hosts']['name'],
+                                $serviceStatusDetails['servicename']
+                            ),
+                            'servicepriority' => $serviceStatusDetails['servicepriority'],
+                            'current_state'   => $serviceStatusDetails['Servicestatus']->currentState(),
+                        ];
+                    }
+                    $statusDetails = array_values($statusDetails);
+                    if (is_null($reformatedData['max']) || $minute > $reformatedData['max']) {
+                        $reformatedData['max'] = $minute;
+                    }
+                    $reformatedData[$stateLabels[$state]][] = [
+                        $date,
+                        $minute,
+                        $sizeofHostStatusArray,
+                        'statusDetails' => $statusDetails
+                    ];
+                }
+            }
+        }
+
+        $reformatedData['max'] = is_null($reformatedData['max']) ? 60 : (int)$reformatedData['max'];
+        return $reformatedData;
     }
 
 }

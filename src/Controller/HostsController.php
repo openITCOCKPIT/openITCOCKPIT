@@ -100,7 +100,6 @@ use itnovum\openITCOCKPIT\Core\StatehistoryHostConditions;
 use itnovum\openITCOCKPIT\Core\Timeline\AcknowledgementSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\DowntimeSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\Groups;
-use itnovum\openITCOCKPIT\Core\Timeline\NotificationsContactSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\NotificationSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\StatehistorySerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\TimeRangeSerializer;
@@ -139,6 +138,7 @@ class HostsController extends AppController {
 
     public function index() {
         $User = new User($this->getUser());
+
         /** @var SystemsettingsTable $SystemsettingsTable */
         $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
         $masterInstanceName = $SystemsettingsTable->getMasterInstanceName();
@@ -3024,25 +3024,20 @@ class HostsController extends AppController {
             return;
         }
 
-        /** @var TimeperiodsTable $TimeperiodsTable */
-        $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
-
         $timeperiodId = $host->get('check_period_id');
         if ($timeperiodId === null || $timeperiodId === '') {
             $timeperiodId = $host->get('hosttemplate')->get('check_period_id');
         }
 
+        /** @var TimeperiodsTable $TimeperiodsTable */
+        $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
         $checkTimePeriod = $TimeperiodsTable->getTimeperiodWithTimerangesById($timeperiodId);
-
-        $notify_period_time_id = $host->get('notify_period_id');
-        if ($notify_period_time_id === null || $notify_period_time_id === '') {
-            $notify_period_time_id = $host->get('hosttemplate')->get('notify_period_id');
-        }
-        $notifyTimePeriod = $TimeperiodsTable->getTimeperiodWithTimerangesById($notify_period_time_id);
 
         $User = new User($this->getUser());
         $UserTime = $User->getUserTime();
         $offset = $UserTime->getUserTimeToServerOffset();
+
+
         $Groups = new Groups();
         $this->set('groups', $Groups->serialize(true));
 
@@ -3070,32 +3065,15 @@ class HostsController extends AppController {
         }
 
         /*************  TIME RANGES *************/
-        $timeRangesCheckPeriod = DaterangesCreator::createDateRanges(
+        $timeRanges = DaterangesCreator::createDateRanges(
             $start,
             $end,
             $checkTimePeriod['Timeperiod']['timeperiod_timeranges']
         );
-        $timeRangesNotifyPeriod = DaterangesCreator::createDateRanges(
-            $start,
-            $end,
-            $notifyTimePeriod['Timeperiod']['timeperiod_timeranges']
-        );
 
-
-        $TimeRangeSerializer = new TimeRangeSerializer($timeRangesCheckPeriod, $UserTime);
+        $TimeRangeSerializer = new TimeRangeSerializer($timeRanges, $UserTime);
         $this->set('timeranges', $TimeRangeSerializer->serialize());
-
-
-        $TimeRangePeriodSerializer = new TimeRangeSerializer(
-            $timeRangesNotifyPeriod,
-            $UserTime,
-            'bg-notification-period',
-            (new Groups())->getNotificationContactId()
-        );
-
-        $this->set('notification_timeranges', $TimeRangePeriodSerializer->serialize());
-        unset($TimeRangeSerializer, $timeRangesCheckPeriod, $timeRangesNotifyPeriod, $TimeRangePeriodSerializer);
-
+        unset($TimeRangeSerializer, $timeRanges);
 
         $hostUuid = $host->get('uuid');
 
@@ -3247,55 +3225,6 @@ class HostsController extends AppController {
         $AcknowledgementSerializer = new AcknowledgementSerializer($acknowledgementRecords, $UserTime);
         $this->set('acknowledgements', $AcknowledgementSerializer->serialize());
 
-        $hostContacts = $host->get('contacts');
-        if (empty($hostContact)) {
-            $hostContacts = $host->get('hosttemplate')->get('contacts');
-        }
-
-
-        $hostContactgroups = $host->get('contactgroups');
-        if (empty($hostContactgroups)) {
-            $hostContactgroups = $host->get('hosttemplate')->get('contactgroups');
-        }
-        if (!empty($hostContactgroups)) {
-            foreach ($hostContactgroups as $contactgroup) {
-                $contactgroupContacts = $contactgroup->get('contacts');
-                if (!empty($contactgroupContacts)) {
-                    foreach ($contactgroupContacts as $contact) {
-                        $hostContacts[] = $contact;
-                    }
-                }
-            }
-        }
-        $contactNotificationPeriodIdsByContacts = [];
-        $filteredContacts = [];
-        if (!empty($hostContacts)) {
-            foreach ($hostContacts as $contact) {
-                $filteredContacts[$contact->get('id')] = $contact->toArray();
-                $hostTimeperiodId = $contact->get('host_timeperiod_id');
-                $contactNotificationPeriodIdsByContacts[$hostTimeperiodId] = $hostTimeperiodId;
-            }
-        }
-        $filteredContacts = Hash::remove($filteredContacts, '{n}._joinData');
-        $contactNotificationPeriods = $TimeperiodsTable->getTimeperiodsByIdsForTimeline(
-            $contactNotificationPeriodIdsByContacts
-        );
-
-        $timerangesForContactNotificationPeriods = [];
-        if (!empty($contactNotificationPeriods)) {
-            foreach ($contactNotificationPeriods as $contactNotificationPeriod) {
-                $timerangesForContactNotificationPeriods[$contactNotificationPeriod['id']] = DaterangesCreator::createDateRanges(
-                    $start,
-                    $end,
-                    $contactNotificationPeriod['timeperiod_timeranges']
-                );
-            }
-        }
-
-        $NotificationsContactSerializer = new NotificationsContactSerializer($timerangesForContactNotificationPeriods, $filteredContacts, $contactNotificationPeriods, $UserTime);
-
-        $this->set('notifications_contact', $NotificationsContactSerializer->serialize());
-
         $start += $offset;
         $end += $offset;
 
@@ -3309,8 +3238,6 @@ class HostsController extends AppController {
             'downtimes',
             'notifications',
             'acknowledgements',
-            'notifications_contact',
-            'notification_timeranges',
             'timeranges'
         ]);
     }

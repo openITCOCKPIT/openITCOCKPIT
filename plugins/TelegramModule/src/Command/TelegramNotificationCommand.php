@@ -522,6 +522,7 @@ class TelegramNotificationCommand extends BaseCommand {
     }
 
     private function sendMessage($text, InlineKeyboardMarkup $inlineKeyboardMarkup = null) {
+        var_dump($text);
         if ($this->telegramChats->count() > 0) {
             $this->telegramChats->each(function ($chat, $key) use ($text, $inlineKeyboardMarkup) {
                 if (is_array($chat)) {
@@ -548,6 +549,9 @@ class TelegramNotificationCommand extends BaseCommand {
                     }
                 }
             });
+        } else {
+            echo chr(10) . ' Keine Chats!';
+            echo chr(10);
         }
     }
 

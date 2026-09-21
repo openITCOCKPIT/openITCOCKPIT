@@ -729,7 +729,7 @@ class AngularController extends AppController {
                 $this->setSatellitesHealthState($satellite_status);
             }
 
-            // Check user satellite_information ['RAM,Disks,CPU']
+            // Check user satellite_information ['RAM,Disks,CPU'] 
             $health = $cache['satellites'][$index]['satellite_information']['system_health'] ?? [];
             if ($health) {
 

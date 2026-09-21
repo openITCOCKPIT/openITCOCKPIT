@@ -33,34 +33,22 @@ class TimeRangeSerializer {
     /**
      * @var array
      */
-    private array $records;
+    private $records;
 
     /**
      * @var UserTime
      */
-    private UserTime $UserTime;
+    private $UserTime;
+
 
     /**
-     * @var string
-     */
-    private string $className;
-
-    /**
-     * @var int|null
-     */
-    private ?int $groupId;
-
-    /**
-     * @param $timeRangeRecords
+     * AcknowledgementSerializer constructor.
+     * @param array $acknowledgementRecords
      * @param UserTime $UserTime
-     * @param string $className
-     * @param string $groupId
      */
-    public function __construct($timeRangeRecords, UserTime $UserTime, string $className = '', int|null $groupId = null) {
+    public function __construct($timeRangeRecords, UserTime $UserTime) {
         $this->records = $timeRangeRecords;
         $this->UserTime = $UserTime;
-        $this->className = $className;
-        $this->groupId = $groupId;
     }
 
     public function serialize() {
@@ -69,11 +57,9 @@ class TimeRangeSerializer {
 
         for ($i = 0; $i < $size; $i++) {
             $records[] = [
-                'start'     => $this->UserTime->customFormat('Y-m-d H:i:s', $this->records[$i]['start']),
-                'end'       => $this->UserTime->customFormat('Y-m-d H:i:s', $this->records[$i]['end']),
-                'type'      => 'background',
-                'className' => $this->className,
-                'group'     => $this->groupId
+                'start' => $this->UserTime->customFormat('Y-m-d H:i:s', $this->records[$i]['start']),
+                'end'   => $this->UserTime->customFormat('Y-m-d H:i:s', $this->records[$i]['end']),
+                'type'  => 'background'
             ];
         }
 

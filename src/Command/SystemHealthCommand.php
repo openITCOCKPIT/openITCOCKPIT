@@ -317,20 +317,21 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             }
 
             $parsedHealth = $healthMap[$satellite['id']] ?? null;
+
             if (!empty($parsedHealth) && is_array($parsedHealth)) {
+                $cpu_cores = (int)$parsedHealth['cpu_cores'];
+                $cpu_load15 = (float)$parsedHealth['cpu_load15'];
 
-                //CPU
-                if (isset($parsedHealth['cpu_cores'], $parsedHealth['cpu_load15'])) {
-                    $cores_warning = $parsedHealth['cpu_cores'] - 2 ?: 1;
-                    if ($cores_warning < $parsedHealth['cpu_load15']) {
-                        $parsedHealth['cpu_state'] = 'warning';
+                $cpu_usage_ratio = $cpu_load15 / $cpu_cores;
 
-                    } else if ($parsedHealth['cpu_cores'] < $parsedHealth['cpu_load15']) {
-                        $parsedHealth['cpu_state'] = 'critical';
+                $parsedHealth['cpu_state'] = 'ok';
 
-                    } else {
-                        $parsedHealth['cpu_state'] = 'ok';
-                    }
+                if ($cpu_usage_ratio >= 0.70) {
+                    $parsedHealth['cpu_state'] = 'warning';
+                }
+
+                if ($cpu_usage_ratio > 1.00) {
+                    $parsedHealth['cpu_state'] = 'critical';
                 }
             }
 

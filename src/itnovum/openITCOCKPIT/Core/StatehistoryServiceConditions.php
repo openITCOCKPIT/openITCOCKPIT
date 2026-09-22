@@ -46,6 +46,11 @@ class StatehistoryServiceConditions extends ListSettingsConditions {
     protected $serviceUuid;
 
     /**
+     * @var array
+     */
+    protected $serviceUuids = [];
+
+    /**
      * @var bool
      */
     private $useLimit = true;
@@ -63,10 +68,24 @@ class StatehistoryServiceConditions extends ListSettingsConditions {
     }
 
     /**
+     * @param array $hostUuids
+     */
+    public function setServiceUuids(array $serviceUuids): void {
+        $this->serviceUuids = $serviceUuids;
+    }
+
+    /**
      * @return string
      */
     public function getServiceUuid() {
         return $this->serviceUuid;
+    }
+
+    /**
+     * @return array
+     */
+    public function getServiceUuids(): array {
+        return $this->serviceUuids;
     }
 
     /**
@@ -109,4 +128,3 @@ class StatehistoryServiceConditions extends ListSettingsConditions {
         return $this->hardStateTypeAndOkState;
     }
 }
-

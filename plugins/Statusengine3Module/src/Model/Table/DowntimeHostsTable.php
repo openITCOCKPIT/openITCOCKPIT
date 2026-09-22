@@ -118,6 +118,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
                 'DowntimeHosts.comment_data',
                 'DowntimeHosts.entry_time',
                 'DowntimeHosts.scheduled_start_time',
+                'DowntimeHosts.actual_start_time',
                 'DowntimeHosts.scheduled_end_time',
                 'DowntimeHosts.actual_end_time',
                 'DowntimeHosts.duration',

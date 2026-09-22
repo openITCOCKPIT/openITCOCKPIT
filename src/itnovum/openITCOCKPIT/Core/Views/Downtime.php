@@ -58,6 +58,11 @@ class Downtime {
     /**
      * @var int|string
      */
+    private $actualStartTime;
+
+    /**
+     * @var int|string
+     */
     private $actualEndTime;
 
     /**
@@ -124,6 +129,10 @@ class Downtime {
 
         if (isset($downtime['actual_end_time'])) {
             $this->actualEndTime = $downtime['actual_end_time'];
+        }
+
+        if (isset($downtime['actual_start_time'])) {
+            $this->actualStartTime = $downtime['actual_start_time'];
         }
 
         if (isset($downtime['duration'])) {
@@ -216,6 +225,24 @@ class Downtime {
             }
         }
         return $this->scheduledEndTime;
+    }
+
+    /**
+     * @return int
+     */
+    public function getActualStartTime() {
+        if ($this->actualStartTime === null) {
+            return 0;
+        }
+
+        if (!is_numeric($this->actualStartTime)) {
+            if ($this->actualStartTime instanceof \Cake\I18n\DateTime) {
+                $this->actualStartTime = $this->actualStartTime->timestamp;
+            } else {
+                $this->actualStartTime = strtotime($this->actualStartTime);
+            }
+        }
+        return $this->actualStartTime;
     }
 
     /**
@@ -317,12 +344,14 @@ class Downtime {
         if ($this->UserTime !== null) {
             $arr['scheduledStartTime'] = $this->UserTime->format($this->getScheduledStartTime());
             $arr['scheduledEndTime'] = $this->UserTime->format($this->getScheduledEndTime());
+            $arr['actualStartTime'] = $this->UserTime->format($this->getActualStartTime());
             $arr['actualEndTime'] = $this->UserTime->format($this->getActualEndTime());
             $arr['entryTime'] = $this->UserTime->format($this->getEntryTime());
             $arr['durationHuman'] = $this->UserTime->secondsInHumanShort($this->getDuration());
         } else {
             $arr['scheduledStartTime'] = $this->getScheduledStartTime();
             $arr['scheduledEndTime'] = $this->getScheduledEndTime();
+            $arr['actualStartTime'] = $this->getActualStartTime();
             $arr['actualEndTime'] = $this->getActualEndTime();
             $arr['entryTime'] = $this->getEntryTime();
             $arr['durationHuman'] = $this->getDuration();

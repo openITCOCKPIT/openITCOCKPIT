@@ -244,11 +244,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         if (Plugin::isLoaded('DistributeModule')) {
             $data['isDistributeModuleInstalled'] = true;
             // @var SatellitesTable $SatellitesTable
-            //$SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
-            //$data['satellites'] = $SatellitesTable->getSatellitesStatusWithHealth(new SatelliteFilter(new ServerRequest()));
-
             $data['satellites'] = $this->getSatellitesStatusWithHealth();
-
         }
 
         return $data;
@@ -322,23 +318,31 @@ class SystemHealthCommand extends Command implements CronjobInterface {
                 $cpu_cores = (int)$parsedHealth['cpu_cores'];
                 $cpu_load15 = (float)$parsedHealth['cpu_load15'];
 
-                $cpu_usage_ratio = $cpu_load15 / $cpu_cores;
+                if (($cpu_cores - 2) <= 0) {
+                    $cpu_cores_warning = 1;
+                } else {
+                    $cpu_cores_warning = $cpu_cores - 2;
+                }
 
                 $parsedHealth['cpu_state'] = 'ok';
 
-                if ($cpu_usage_ratio >= 0.70) {
+                if ($cpu_load15 == 1 && $cpu_cores_warning == 1) {
                     $parsedHealth['cpu_state'] = 'warning';
                 }
 
-                if ($cpu_usage_ratio > 1.00) {
+                if ($cpu_load15 > $cpu_cores_warning) {
+                    $parsedHealth['cpu_state'] = 'warning';
+                }
+
+                if ($cpu_load15 > $cpu_cores) {
                     $parsedHealth['cpu_state'] = 'critical';
                 }
-            }
 
-            $satellite['satellite_information'] = [
-                'satellite_id'  => $satellite['id'],
-                'system_health' => $parsedHealth ?? []
-            ];
+                $satellite['satellite_information'] = [
+                    'satellite_id'  => $satellite['id'],
+                    'system_health' => $parsedHealth ?? []
+                ];
+            }
             $updatedSatellites[] = $satellite;
         }
 

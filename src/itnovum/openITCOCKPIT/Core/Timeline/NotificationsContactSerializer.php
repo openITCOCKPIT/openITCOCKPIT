@@ -114,7 +114,7 @@ class NotificationsContactSerializer {
                     $result[] = [
                         'start'     => $start,
                         'end'       => $end,
-                        'type'      => 'box',
+                        //'type'      => 'box',
                         'className' => "vis-items " . ($isEnabled ? ' ' : 'vis-items-disabled '),
                         'content'   => $content,
                         'title'     => $title,

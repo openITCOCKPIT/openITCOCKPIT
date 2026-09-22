@@ -3092,7 +3092,7 @@ class HostsController extends AppController {
             'bg-notification-period',
             (new Groups())->getNotificationContactId()
         );
-
+        //dd($TimeRangePeriodSerializer->serialize());
         $this->set('notification_timeranges', $TimeRangePeriodSerializer->serialize());
         unset($TimeRangeSerializer, $timeRangesCheckPeriod, $timeRangesNotifyPeriod, $TimeRangePeriodSerializer);
 

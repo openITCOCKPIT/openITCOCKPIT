@@ -88,23 +88,18 @@ class NotificationsContactSerializer {
                 $related_user = $contactsCollection->firstMatch(['host_timeperiod_id' => $timeperiod_id]);
 
                 foreach ($this->notificationTimerange[$timeperiod_id] as $timerangeItem) {
-                    $content = '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs  items-center">';
+                    $content = '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs">';
 
                     if (isset($related_user)) {
                         $isEnabled = ($related_user['host_notifications_enabled'] ?? 0) === 1;
-                        $content .= $related_user['name'] !== '' ? '<b class="item-title mx-1">' . $related_user['name'] . '</b><br/>' : '';
-                        $content .= '<b class="badge badge-envelope bg-light margin-right position-relative d-inline-flex align-items-center justify-content-center px-1 mx-1">
-                                        <i class="fa-solid fa-envelope fs-5"></i>
-                                        <i class="fa-solid ' . ($isEnabled ? 'fa-check text-success' : 'fa-xmark text-danger') . ' position-absolute bottom-0 end-0 " style=""></i>
-                                     </b>';
+                        $content .= $related_user['name'] !== '' ? '<b class="item-title">' . $related_user['name'] . '</b><br>' : '';
+                        $content .= '<b class="badge badge-envelope bg-light  text-dark m-1 "><i class="fa-solid fa-envelope text-primary"></i><i class="fa-solid ms-1 ' . ($isEnabled ? 'fa-check text-success' : 'fa-times text-danger') . '"></i></b> ';
 
-                        if ($isEnabled) {
-                            $content .= $related_user['notify_host_recovery'] === 1 ? '<b class="badge bg-success me-1">R</b> ' : '';
-                            $content .= $related_user['notify_host_down'] === 1 ? '<b class="badge bg-danger me-1">D</b> ' : '';
-                            $content .= $related_user['notify_host_unreachable'] === 1 ? '<b class="badge bg-secondary me-1">U</b> ' : '';
-                            $content .= $related_user['notify_host_flapping'] === 1 ? '<b class="badge bg-primary me-1"><i class="fa-solid fa-circle"></i></b> ' : '';
-                            $content .= $related_user['notify_host_downtime'] === 1 ? '<b class="badge bg-primary me-1"><i class="fa-solid fa-power-off"></i></b></b> ' : '';
-                        }
+                        $content .= $related_user['notify_host_recovery'] === 1 ? '<b class="badge bg-success me-1">R</b> ' : '';
+                        $content .= $related_user['notify_host_down'] === 1 ? '<b class="badge bg-danger me-1">D</b> ' : '';
+                        $content .= $related_user['notify_host_unreachable'] === 1 ? '<b class="badge bg-secondary me-1">U</b> ' : '';
+                        $content .= $related_user['notify_host_flapping'] === 1 ? '<b class="badge bg-primary me-1"><i class="fa-solid fa-circle"></i></b> ' : '';
+                        $content .= $related_user['notify_host_downtime'] === 1 ? '<b class="badge bg-primary me-1"><i class="fa-solid fa-power-off"></i></b></b> ' : '';
                     }
 
                     $content .= '</b>';
@@ -119,7 +114,7 @@ class NotificationsContactSerializer {
                     $result[] = [
                         'start'     => $start,
                         'end'       => $end,
-                        //'type'      => 'box',
+                        'type'      => 'box',
                         'className' => "vis-items " . ($isEnabled ? ' ' : 'vis-items-disabled '),
                         'content'   => $content,
                         'title'     => $title,

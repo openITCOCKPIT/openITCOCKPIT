@@ -3080,11 +3080,10 @@ class HostsController extends AppController {
             $end,
             $notifyTimePeriod['Timeperiod']['timeperiod_timeranges']
         );
-        //dd($notifyTimePeriod['Timeperiod']['timeperiod_timeranges']);
+
 
         $TimeRangeSerializer = new TimeRangeSerializer($timeRangesCheckPeriod, $UserTime);
         $this->set('timeranges', $TimeRangeSerializer->serialize());
-        unset($TimeRangeSerializer, $timeRanges);
 
 
         $TimeRangePeriodSerializer = new TimeRangeSerializer(
@@ -3093,8 +3092,7 @@ class HostsController extends AppController {
             'bg-notification-period',
             (new Groups())->getNotificationContactId()
         );
-        //dd($timeRangesNotifyPeriod);
-        //dd($TimeRangePeriodSerializer->serialize());
+
         $this->set('notification_timeranges', $TimeRangePeriodSerializer->serialize());
         unset($TimeRangeSerializer, $timeRangesCheckPeriod, $timeRangesNotifyPeriod, $TimeRangePeriodSerializer);
 
@@ -3293,7 +3291,7 @@ class HostsController extends AppController {
                 );
             }
         }
-        //dd($timerangesForContactNotificationPeriods);
+
         $NotificationsContactSerializer = new NotificationsContactSerializer($timerangesForContactNotificationPeriods, $filteredContacts, $contactNotificationPeriods, $UserTime);
 
         $this->set('notifications_contact', $NotificationsContactSerializer->serialize());

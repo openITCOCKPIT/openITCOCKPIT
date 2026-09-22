@@ -798,6 +798,34 @@ class TimeperiodsTable extends Table {
      * @param $ids
      * @return array
      */
+    public function getTimeperiodsByIdsForTimeline($ids) {
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+        $query = $this->find()
+            ->contain([
+                'TimeperiodTimeranges',
+                'Calendars'          => 'CalendarHolidays',
+                'ExcludedTimePeriod' => function ($query) {
+                    return $query->select([
+                        'ExcludedTimePeriod.uuid',
+                        'ExcludedTimePeriod.name'
+                    ])
+                        ->disableAutoFields()
+                        ->disableHydration();
+                }
+            ])
+            ->where([
+                'Timeperiods.id IN' => $ids
+            ])
+            ->disableHydration();
+        return $this->emptyArrayIfNull($query->toArray());
+    }
+
+    /**
+     * @param $ids
+     * @return array
+     */
     public function getExcludedTimeperiodIdsForExport($ids) {
         if (!is_array($ids)) {
             $ids = [$ids];

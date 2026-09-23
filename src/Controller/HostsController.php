@@ -3081,7 +3081,6 @@ class HostsController extends AppController {
             $notifyTimePeriod['Timeperiod']['timeperiod_timeranges']
         );
 
-
         $TimeRangeSerializer = new TimeRangeSerializer($timeRangesCheckPeriod, $UserTime);
         $this->set('timeranges', $TimeRangeSerializer->serialize());
 
@@ -3092,7 +3091,6 @@ class HostsController extends AppController {
             'bg-notification-period',
             (new Groups())->getNotificationContactId()
         );
-
         $this->set('notification_timeranges', $TimeRangePeriodSerializer->serialize());
         unset($TimeRangeSerializer, $timeRangesCheckPeriod, $timeRangesNotifyPeriod, $TimeRangePeriodSerializer);
 
@@ -3247,11 +3245,12 @@ class HostsController extends AppController {
         $AcknowledgementSerializer = new AcknowledgementSerializer($acknowledgementRecords, $UserTime);
         $this->set('acknowledgements', $AcknowledgementSerializer->serialize());
 
+        /*************  Contacts Notification Period *************/
         $hostContacts = $host->get('contacts');
-        if (empty($hostContact)) {
+
+        if (empty($hostContacts)) {
             $hostContacts = $host->get('hosttemplate')->get('contacts');
         }
-
 
         $hostContactgroups = $host->get('contactgroups');
         if (empty($hostContactgroups)) {
@@ -3276,6 +3275,7 @@ class HostsController extends AppController {
                 $contactNotificationPeriodIdsByContacts[$hostTimeperiodId] = $hostTimeperiodId;
             }
         }
+
         $filteredContacts = Hash::remove($filteredContacts, '{n}._joinData');
         $contactNotificationPeriods = $TimeperiodsTable->getTimeperiodsByIdsForTimeline(
             $contactNotificationPeriodIdsByContacts
@@ -3293,8 +3293,32 @@ class HostsController extends AppController {
         }
 
         $NotificationsContactSerializer = new NotificationsContactSerializer($timerangesForContactNotificationPeriods, $filteredContacts, $contactNotificationPeriods, $UserTime);
-
         $this->set('notifications_contact', $NotificationsContactSerializer->serialize());
+
+        /*************  Contacts Notification Time Range *************/
+        $reslutsNotiPeriod = [];
+
+        if (!empty($timerangesForContactNotificationPeriods)) {
+            foreach ($timerangesForContactNotificationPeriods as $notificationPeriods) {
+                foreach ($notificationPeriods as $nPeriod) {
+                    if (!isset($nPeriod['start']) || !isset($nPeriod['end'])) {
+                        continue;
+                    }
+                    $reslutsNotiPeriod[] = $nPeriod;
+                }
+            }
+        }
+
+        if (!empty($reslutsNotiPeriod)) {
+            $TimeRangePeriodSerializer_new = new TimeRangeSerializer(
+                $reslutsNotiPeriod,
+                $UserTime,
+                'bg-notification-period',
+                (new Groups())->getNotificationContactId()
+            );
+            $this->set('notification_timeranges', $TimeRangePeriodSerializer_new->serialize());
+            unset($reslutsNotiPeriod, $TimeRangePeriodSerializer_new);
+        }
 
         $start += $offset;
         $end += $offset;

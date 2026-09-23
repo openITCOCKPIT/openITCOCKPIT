@@ -476,18 +476,12 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
         foreach ($dataForEmail['satellites'] ?? [] as $satellite) {
 
-            if (isset($satellite['status'])) {
-                $satellite_status = "";
-                if (is_numeric($satellite['status'])) {
-                    $satellite_status = $this->getSatellitesState($satellite['status']);
-                } else if (is_string($satellite['status'])) {
-                    $satellite_status = $satellite['status'];
-                }
-
+            if ($satellite['status'] != 1) {
+                $satellite_status = $this->getSatellitesState($satellite['status']);
                 $this->setSatellitesHealthState($satellite_status);
             }
 
-            $satInfo = $satellite['satellite_information'] ?? [];
+            $satInfo = $satellite['satellite_information'] ?? null;
 
             if (!$satInfo || empty($satInfo['system_health'])) {
                 continue;

@@ -33,7 +33,7 @@ class NotificationsContactSerializer {
     /**
      * @var array
      */
-    private array $notificationTimerange;
+    private array $notificationTimeRange;
 
     /**
      * @var array
@@ -43,7 +43,7 @@ class NotificationsContactSerializer {
     /**
      * @var array
      */
-    private array $contactNotificationPeriods;
+    private array $timePeriodNames;
 
     /**
      * @var UserTime
@@ -60,73 +60,71 @@ class NotificationsContactSerializer {
      * NotificationContactSerializer constructor.
      * @param array $notificationContactRecords
      * @param array $filteredContacts
-     * @param array $contactNotificationPeriods
+     * @param array $timePeriodNames
      * @param UserTime $UserTime
      */
 
-    public function __construct(array $notificationContactRecords, array $filteredContacts, array $contactNotificationPeriods, UserTime $UserTime) {
+    public function __construct(array $notificationContactRecords, array $filteredContacts, array $timePeriodNames, UserTime $UserTime) {
 
-        $this->notificationTimerange = $notificationContactRecords;
+        $this->notificationTimeRange = $notificationContactRecords;
         $this->filteredContacts = $filteredContacts;
-        $this->contactNotificationPeriods = $contactNotificationPeriods;
-        $this->userTime = $UserTime;
+        $this->timePeriodNames = $timePeriodNames;
 
+        $this->userTime = $UserTime;
         $this->groupId = (new Groups())->getNotificationContactId();
     }
 
     public function serialize(): array {
         $result = [];
 
-        foreach ($this->contactNotificationPeriods as $period) {
+        foreach ($this->filteredContacts as $related_user) {
+            $host_timeperiod_id = $related_user['host_timeperiod_id']; // [2,3,4]
 
-            $timeperiod_id = $period['id'];
-            $periodName = $period['name'];
+            if (isset($host_timeperiod_id) && !empty($this->notificationTimeRange[$host_timeperiod_id])) {
+                foreach ($this->notificationTimeRange[$host_timeperiod_id] as $timeRange) {
 
-            if (isset($timeperiod_id)) {
+                    $periodName = "";
 
-                foreach ($this->filteredContacts as $related_user) {
-
-                    if (isset($related_user)) {
-
-                        foreach ($this->notificationTimerange[$timeperiod_id] as $timeRangeItem) {
-                            $content = '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs">';
-
-                            $isEnabled = ($related_user['host_notifications_enabled'] ?? 0) === 1;
-                            $content .= $related_user['name'] !== '' ? '<b class="item-title mx-1">' . $related_user['name'] . '</b><br/>' : '';
-                            $content .= '<b class="badge badge-envelope bg-light margin-right position-relative d-inline-flex align-items-center justify-content-center px-1 mx-1"><i class="fa-solid fa-envelope fs-6  " ></i><i class="fa-solid badge-marke ' . ($isEnabled ? 'fa-check text-success' : 'fa-xmark text-danger') . ' position-absolute bottom-0 end-0 fs-6 " ></i></b>';
-
-                            if ($isEnabled) {
-                                $content .= $related_user['notify_host_recovery'] === 1 ? '<b class="badge bg-success me-1">R</b> ' : '';
-                                $content .= $related_user['notify_host_down'] === 1 ? '<b class="badge bg-danger me-1">D</b> ' : '';
-                                $content .= $related_user['notify_host_unreachable'] === 1 ? '<b class="badge bg-secondary me-1">U</b> ' : '';
-                                $content .= $related_user['notify_host_flapping'] === 1 ? '<b class="badge bg-primary me-1"><i class="fa-solid fa-circle"></i></b> ' : '';
-                                $content .= $related_user['notify_host_downtime'] === 1 ? '<b class="badge bg-primary me-1"><i class="fa-solid fa-power-off"></i></b></b> ' : '';
-                            }
-
-                            $content .= '</b>';
-
-                            $start = $this->userTime->customFormat('Y-m-d H:i:s', $timeRangeItem['start']) ?? '';
-                            $end = $this->userTime->customFormat('Y-m-d H:i:s', $timeRangeItem['end']) ?? '';
-                            $start_label = $this->userTime->customFormat('H:i', $timeRangeItem['start']) ?? '';
-                            $end_label = $this->userTime->customFormat('H:i', $timeRangeItem['end']) ?? '';
-
-                            $title = sprintf('<b class="vis-item-content-username">%s - </b><i class="vis-item-contact-title"><b>%s %s <i>%s</i>:</b>  (%s - %s)</i>', h($related_user['name']), ($isEnabled ? __('Active') : __('Inactive')), __('Timeperiod'), h($periodName), h($start_label), h($end_label));
-
-                            $result[] = [
-                                'start'     => $start,
-                                'end'       => $end,
-                                //'type'      => 'box',
-                                'className' => "vis-items " . ($isEnabled ? ' ' : 'vis-items-disabled '),
-                                'content'   => $content,
-                                'title'     => $title,
-                                'group'     => $this->groupId
-                            ];
-                        }
+                    if (isset($this->timePeriodNames[$host_timeperiod_id])) {
+                        $periodName = $this->timePeriodNames[$host_timeperiod_id];
                     }
+
+                    $content = '<b class="not-xss-filtered-html timeline-contact-badge d-inline-block lh-1 fs-xs">';
+
+                    $isEnabled = ($related_user['host_notifications_enabled'] ?? 0) === 1;
+                    $content .= $related_user['name'] !== '' ? '<b class="item-title mx-1">' . $related_user['name'] . '</b><br/>' : '';
+                    $content .= '<b class="badge badge-envelope bg-light margin-right position-relative d-inline-flex align-items-center justify-content-center px-1 mx-1"><i class="fa-solid fa-envelope fs-6  " ></i><i class="fa-solid badge-marke ' . ($isEnabled ? 'fa-check text-success' : 'fa-xmark text-danger') . ' position-absolute bottom-0 end-0 fs-6 " ></i></b>';
+
+                    if ($isEnabled) {
+                        $content .= $related_user['notify_host_recovery'] === 1 ? '<b class="badge bg-success me-1">R</b> ' : '';
+                        $content .= $related_user['notify_host_down'] === 1 ? '<b class="badge bg-danger me-1">D</b> ' : '';
+                        $content .= $related_user['notify_host_unreachable'] === 1 ? '<b class="badge bg-secondary me-1">U</b> ' : '';
+                        $content .= $related_user['notify_host_flapping'] === 1 ? '<b class="badge bg-primary me-1"><i class="fa-solid fa-circle"></i></b> ' : '';
+                        $content .= $related_user['notify_host_downtime'] === 1 ? '<b class="badge bg-primary me-1"><i class="fa-solid fa-power-off"></i></b></b> ' : '';
+                    }
+
+                    $content .= '</b>';
+
+                    $start = $this->userTime->customFormat('Y-m-d H:i:s', $timeRange['start']) ?? '';
+                    $end = $this->userTime->customFormat('Y-m-d H:i:s', $timeRange['end']) ?? '';
+                    $start_label = $this->userTime->customFormat('H:i', $timeRange['start']) ?? '';
+                    $end_label = $this->userTime->customFormat('H:i', $timeRange['end']) ?? '';
+
+                    $title = sprintf('<b class="vis-item-content-username">%s - </b><i class="vis-item-contact-title"><b>%s %s <i>[%s]</i>:</b>  (%s - %s)</i>', h($related_user['name']), ($isEnabled ? __('Active') : __('Inactive')), __('Timeperiod'), h($periodName), h($start_label), h($end_label));
+
+                    $result[] = [
+                        'start'     => $start,
+                        'end'       => $end,
+                        //'type'      => 'box',
+                        'className' => "vis-items " . ($isEnabled ? ' ' : 'vis-items-disabled '),
+                        'content'   => $content,
+                        'title'     => $title,
+                        'group'     => $this->groupId
+                    ];
                 }
             }
         }
-
+        
         return $result;
     }
 }

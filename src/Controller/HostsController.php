@@ -3075,24 +3075,25 @@ class HostsController extends AppController {
             $end,
             $checkTimePeriod['Timeperiod']['timeperiod_timeranges']
         );
-        $timeRangesNotifyPeriod = DaterangesCreator::createDateRanges(
-            $start,
-            $end,
-            $notifyTimePeriod['Timeperiod']['timeperiod_timeranges']
-        );
 
         $TimeRangeSerializer = new TimeRangeSerializer($timeRangesCheckPeriod, $UserTime);
         $this->set('timeranges', $TimeRangeSerializer->serialize());
+        unset($TimeRangeSerializer, $timeRangesCheckPeriod);
 
+        /*$timeRangesNotifyPeriod = DaterangesCreator::createDateRanges(
+            $start,
+            $end,
+            $notifyTimePeriod['Timeperiod']['timeperiod_timeranges']
+        );*/
 
-        $TimeRangePeriodSerializer = new TimeRangeSerializer(
+        /*$TimeRangePeriodSerializer = new TimeRangeSerializer(
             $timeRangesNotifyPeriod,
             $UserTime,
             'bg-notification-period',
             (new Groups())->getNotificationContactId()
-        );
-        $this->set('notification_timeranges', $TimeRangePeriodSerializer->serialize());
-        unset($TimeRangeSerializer, $timeRangesCheckPeriod, $timeRangesNotifyPeriod, $TimeRangePeriodSerializer);
+        );*/
+        //$this->set('notification_timeranges', $TimeRangePeriodSerializer->serialize());
+        //unset($TimeRangeSerializer, $timeRangesCheckPeriod, $timeRangesNotifyPeriod, $TimeRangePeriodSerializer);
 
 
         $hostUuid = $host->get('uuid');
@@ -3282,6 +3283,7 @@ class HostsController extends AppController {
         );
 
         $timerangesForContactNotificationPeriods = [];
+        $timePeriodNames = [];
         if (!empty($contactNotificationPeriods)) {
             foreach ($contactNotificationPeriods as $contactNotificationPeriod) {
                 $timerangesForContactNotificationPeriods[$contactNotificationPeriod['id']] = DaterangesCreator::createDateRanges(
@@ -3289,11 +3291,14 @@ class HostsController extends AppController {
                     $end,
                     $contactNotificationPeriod['timeperiod_timeranges']
                 );
+
+                $timePeriodNames[$contactNotificationPeriod['id']] = $contactNotificationPeriod['name'];
             }
         }
 
-        $NotificationsContactSerializer = new NotificationsContactSerializer($timerangesForContactNotificationPeriods, $filteredContacts, $contactNotificationPeriods, $UserTime);
+        $NotificationsContactSerializer = new NotificationsContactSerializer($timerangesForContactNotificationPeriods, $filteredContacts, $timePeriodNames, $UserTime);
         $this->set('notifications_contact', $NotificationsContactSerializer->serialize());
+        unset($contactNotificationPeriods, $filteredContacts);
 
         /*************  Contacts Notification Time Range *************/
         $reslutsNotiPeriod = [];

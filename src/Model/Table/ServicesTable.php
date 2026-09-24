@@ -3544,6 +3544,83 @@ class ServicesTable extends Table {
                 'Services.id' => $id
             ])
             ->contain([
+                'Contacts'         => function (Query $query) {
+                    return $query->select([
+                        'Contacts.id',
+                        'Contacts.name',
+                        'Contacts.email',
+                        'Contacts.service_timeperiod_id',
+                        'Contacts.service_notifications_enabled',
+                        'Contacts.notify_service_recovery',
+                        'Contacts.notify_service_warning',
+                        'Contacts.notify_service_unknown',
+                        'Contacts.notify_service_critical',
+                        'Contacts.notify_service_flapping',
+                        'Contacts.notify_service_downtime'
+                    ]);
+                },
+                'Contactgroups'    => function (Query $query) {
+                    return $query->contain([
+                        'Contacts' => function (Query $query) {
+                            return $query->select([
+                                'Contacts.id',
+                                'Contacts.name',
+                                'Contacts.email',
+                                'Contacts.service_timeperiod_id',
+                                'Contacts.service_notifications_enabled',
+                                'Contacts.notify_service_recovery',
+                                'Contacts.notify_service_warning',
+                                'Contacts.notify_service_unknown',
+                                'Contacts.notify_service_critical',
+                                'Contacts.notify_service_flapping',
+                                'Contacts.notify_service_downtime'
+                            ]);
+                        }
+                    ]);
+                },
+                'Servicetemplates' => function (Query $query) {
+                    $query->select([
+                        'Servicetemplates.id',
+                        'Servicetemplates.check_period_id',
+                        'Servicetemplates.notify_period_id'
+                    ])->contain([
+                        'Contacts'      => function (Query $query) {
+                            return $query->select([
+                                'Contacts.id',
+                                'Contacts.name',
+                                'Contacts.email',
+                                'Contacts.service_timeperiod_id',
+                                'Contacts.service_notifications_enabled',
+                                'Contacts.notify_service_recovery',
+                                'Contacts.notify_service_warning',
+                                'Contacts.notify_service_unknown',
+                                'Contacts.notify_service_critical',
+                                'Contacts.notify_service_flapping',
+                                'Contacts.notify_service_downtime'
+                            ]);
+                        },
+                        'Contactgroups' => function (Query $query) {
+                            return $query->contain([
+                                'Contacts' => function (Query $query) {
+                                    return $query->select([
+                                        'Contacts.id',
+                                        'Contacts.name',
+                                        'Contacts.email',
+                                        'Contacts.service_timeperiod_id',
+                                        'Contacts.service_notifications_enabled',
+                                        'Contacts.notify_service_recovery',
+                                        'Contacts.notify_service_warning',
+                                        'Contacts.notify_service_unknown',
+                                        'Contacts.notify_service_critical',
+                                        'Contacts.notify_service_flapping',
+                                        'Contacts.notify_service_downtime'
+                                    ]);
+                                }
+                            ]);
+                        }
+                    ]);
+                    return $query;
+                },
                 'Hosts'            => function (Query $query) {
                     $query->select([
                         'Hosts.id',
@@ -3551,16 +3628,85 @@ class ServicesTable extends Table {
                         'Hosts.container_id'
                     ])
                         ->contain([
-                            'HostsToContainersSharing'
+                            'HostsToContainersSharing',
+                            'Contacts'      => function (Query $query) {
+                                return $query->select([
+                                    'Contacts.id',
+                                    'Contacts.name',
+                                    'Contacts.email',
+                                    'Contacts.service_timeperiod_id',
+                                    'Contacts.service_notifications_enabled',
+                                    'Contacts.notify_service_recovery',
+                                    'Contacts.notify_service_warning',
+                                    'Contacts.notify_service_unknown',
+                                    'Contacts.notify_service_critical',
+                                    'Contacts.notify_service_flapping',
+                                    'Contacts.notify_service_downtime'
+                                ]);
+                            },
+                            'Contactgroups' => function (Query $query) {
+                                return $query->contain([
+                                    'Contacts' => function (Query $query) {
+                                        return $query->select([
+                                            'Contacts.id',
+                                            'Contacts.name',
+                                            'Contacts.email',
+                                            'Contacts.service_timeperiod_id',
+                                            'Contacts.service_notifications_enabled',
+                                            'Contacts.notify_service_recovery',
+                                            'Contacts.notify_service_warning',
+                                            'Contacts.notify_service_unknown',
+                                            'Contacts.notify_service_critical',
+                                            'Contacts.notify_service_flapping',
+                                            'Contacts.notify_service_downtime'
+                                        ]);
+                                    }
+                                ]);
+                            },
+                            'Hosttemplates' => function (Query $query) {
+                                $query->select([
+                                    'Hosttemplates.id',
+                                    'Hosttemplates.check_period_id',
+                                    'Hosttemplates.notify_period_id'
+                                ])->contain([
+                                    'Contacts'      => function (Query $query) {
+                                        return $query->select([
+                                            'Contacts.id',
+                                            'Contacts.name',
+                                            'Contacts.email',
+                                            'Contacts.service_timeperiod_id',
+                                            'Contacts.service_notifications_enabled',
+                                            'Contacts.notify_service_recovery',
+                                            'Contacts.notify_service_warning',
+                                            'Contacts.notify_service_unknown',
+                                            'Contacts.notify_service_critical',
+                                            'Contacts.notify_service_flapping',
+                                            'Contacts.notify_service_downtime'
+                                        ]);
+                                    },
+                                    'Contactgroups' => function (Query $query) {
+                                        return $query->contain([
+                                            'Contacts' => function (Query $query) {
+                                                return $query->select([
+                                                    'Contacts.id',
+                                                    'Contacts.name',
+                                                    'Contacts.email',
+                                                    'Contacts.service_timeperiod_id',
+                                                    'Contacts.service_notifications_enabled',
+                                                    'Contacts.notify_service_recovery',
+                                                    'Contacts.notify_service_warning',
+                                                    'Contacts.notify_service_unknown',
+                                                    'Contacts.notify_service_critical',
+                                                    'Contacts.notify_service_flapping',
+                                                    'Contacts.notify_service_downtime'
+                                                ]);
+                                            }
+                                        ]);
+                                    }
+                                ]);
+                                return $query;
+                            }
                         ]);
-                    return $query;
-                },
-                'Servicetemplates' => function (Query $query) {
-                    $query->select([
-                        'Servicetemplates.id',
-                        'Servicetemplates.check_period_id',
-                        'Servicetemplates.notify_period_id'
-                    ]);
                     return $query;
                 }
             ])

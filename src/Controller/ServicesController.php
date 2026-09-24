@@ -2422,7 +2422,7 @@ class ServicesController extends AppController {
         }
 
         $service = $ServicesTable->getServiceByIdForTimeline($id);
-
+        dd($service);
         if (!$this->allowedByContainerId($service->getContainerIds(), false)) {
             $this->render403();
             return;
@@ -2713,11 +2713,67 @@ class ServicesController extends AppController {
         $AcknowledgementSerializer = new AcknowledgementSerializer($acknowledgementRecords, $UserTime);
         $this->set('acknowledgements', $AcknowledgementSerializer->serialize());
 
+        /*************  Contacts Notification Period *************/
+        $hostContacts = $service->get('contacts');
+        dd($hostContacts);
+        if (empty($hostContacts)) {
+            $hostContacts = $service->get('hosttemplate')->get('contacts');
+        }
+
+        /*$hostContactgroups = $host->get('contactgroups');
+        if (empty($hostContactgroups)) {
+            $hostContactgroups = $host->get('hosttemplate')->get('contactgroups');
+        }
+        if (!empty($hostContactgroups)) {
+            foreach ($hostContactgroups as $contactgroup) {
+                $contactgroupContacts = $contactgroup->get('contacts');
+                if (!empty($contactgroupContacts)) {
+                    foreach ($contactgroupContacts as $contact) {
+                        $hostContacts[] = $contact;
+                    }
+                }
+            }
+        }
+        $contactNotificationPeriodIdsByContacts = [];
+        $filteredContacts = [];
+        if (!empty($hostContacts)) {
+            foreach ($hostContacts as $contact) {
+                $filteredContacts[$contact->get('id')] = $contact->toArray();
+                $hostTimeperiodId = $contact->get('host_timeperiod_id');
+                $contactNotificationPeriodIdsByContacts[$hostTimeperiodId] = $hostTimeperiodId;
+            }
+        }
+
+        $filteredContacts = Hash::remove($filteredContacts, '{n}._joinData');
+        $contactNotificationPeriods = $TimeperiodsTable->getTimeperiodsByIdsForTimeline(
+            $contactNotificationPeriodIdsByContacts
+        );
+
+        $timerangesForContactNotificationPeriods = [];
+        $timePeriodNames = [];
+        if (!empty($contactNotificationPeriods)) {
+            foreach ($contactNotificationPeriods as $contactNotificationPeriod) {
+                $timerangesForContactNotificationPeriods[$contactNotificationPeriod['id']] = DaterangesCreator::createDateRanges(
+                    $start,
+                    $end,
+                    $contactNotificationPeriod['timeperiod_timeranges']
+                );
+
+                $timePeriodNames[$contactNotificationPeriod['id']] = $contactNotificationPeriod['name'];
+            }
+        }
+
+        $NotificationsContactSerializer = new NotificationsContactSerializer($timerangesForContactNotificationPeriods, $filteredContacts, $timePeriodNames, $UserTime);
+        $this->set('notifications_contact', $NotificationsContactSerializer->serialize());
+        unset($contactNotificationPeriods, $filteredContacts);
+*/
+
         $start += $offset;
         $end += $offset;
 
         $this->set('start', $start);
         $this->set('end', $end);
+        $this->set('notification_timeranges', []);
         $this->viewBuilder()->setOption('serialize', [
             'start',
             'end',
@@ -2727,7 +2783,9 @@ class ServicesController extends AppController {
             'downtimes',
             'notifications',
             'acknowledgements',
-            'timeranges'
+            'timeranges',
+            'notifications_contact',
+            'notification_timeranges'
         ]);
     }
 

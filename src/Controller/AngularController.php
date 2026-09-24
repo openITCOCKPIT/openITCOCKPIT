@@ -717,16 +717,21 @@ class AngularController extends AppController {
             } else {
                 $cache['satellites'][$index]['allow_edit'] = $this->isWritableContainer($satellite['container_id']);
             }
-            if ($cache['satellites'][$index]['status'] != 1) {
 
-                $satellite_status = $this->getSatellitesState($cache['satellites'][$index]['status']);
+            if (isset($cache['satellites'][$index]['status'])) {
+                $satellite_status = "";
+                if (is_numeric($cache['satellites'][$index]['status'])) {
+                    $satellite_status = $this->getSatellitesState($cache['satellites'][$index]['status']);
+                } else if (is_string($cache['satellites'][$index]['status'])) {
+                    $satellite_status = $cache['satellites'][$index]['status'];
+                }
+                
                 $this->setSatellitesHealthState($satellite_status);
             }
 
             // Check user satellite_information ['RAM,Disks,CPU']
             $health = $cache['satellites'][$index]['satellite_information']['system_health'] ?? null;
-            if ($health) {
-
+            if (isset($health)) {
                 // RAM
                 if (isset($health['memory']['memory']['state'])) {
                     $this->setSatellitesHealthState($health['memory']['memory']['state']);

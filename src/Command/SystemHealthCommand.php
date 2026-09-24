@@ -300,7 +300,9 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             ->combine('satellite_id', function ($row) {
                 if (is_string($row['system_health'])) {
                     $decoded = json_decode($row['system_health'], true);
-                    return $decoded !== null ? $decoded : @unserialize($row['system_health']);
+                    if ($decoded !== null) {
+                        return $decoded;
+                    }
                 }
                 return $row['system_health'];
             })

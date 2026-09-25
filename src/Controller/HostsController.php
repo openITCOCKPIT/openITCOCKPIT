@@ -3042,6 +3042,7 @@ class HostsController extends AppController {
 
         $User = new User($this->getUser());
         $UserTime = $User->getUserTime();
+        $UserTimeUTC = new UserTime('UTC', $User->getDateformat());
         $offset = $UserTime->getUserTimeToServerOffset();
         $Groups = new Groups();
         $this->set('groups', $Groups->serialize(true));
@@ -3296,7 +3297,7 @@ class HostsController extends AppController {
             }
         }
 
-        $NotificationsContactSerializer = new NotificationsContactSerializer($timerangesForContactNotificationPeriods, $filteredContacts, $timePeriodNames, $UserTime);
+        $NotificationsContactSerializer = new NotificationsContactSerializer($timerangesForContactNotificationPeriods, $filteredContacts, $timePeriodNames, $UserTimeUTC);
         $this->set('notifications_contact', $NotificationsContactSerializer->serialize());
         unset($contactNotificationPeriods, $filteredContacts);
 
@@ -3317,7 +3318,7 @@ class HostsController extends AppController {
         if (!empty($reslutsNotiPeriod)) {
             $TimeRangePeriodSerializer_new = new TimeRangeSerializer(
                 $reslutsNotiPeriod,
-                $UserTime,
+                $UserTimeUTC,
                 'bg-notification-period',
                 (new Groups())->getNotificationContactId()
             );

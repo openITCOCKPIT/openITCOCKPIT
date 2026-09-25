@@ -124,7 +124,7 @@ class NotificationsContactSerializer {
                 }
             }
         }
-        
+
         return $result;
     }
 }

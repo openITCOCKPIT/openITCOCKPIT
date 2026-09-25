@@ -99,6 +99,7 @@ use itnovum\openITCOCKPIT\Core\StatehistoryServiceConditions;
 use itnovum\openITCOCKPIT\Core\Timeline\AcknowledgementSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\DowntimeSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\Groups;
+use itnovum\openITCOCKPIT\Core\Timeline\NotificationsContactServicesSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\NotificationSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\StatehistorySerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\TimeRangeSerializer;
@@ -119,6 +120,7 @@ use itnovum\openITCOCKPIT\Core\Views\PerfdataChecker;
 use itnovum\openITCOCKPIT\Core\Views\Service;
 use itnovum\openITCOCKPIT\Core\Views\StatehistoryHost;
 use itnovum\openITCOCKPIT\Core\Views\StatehistoryService;
+use itnovum\openITCOCKPIT\Core\Views\UserTime;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\ServiceFilter;
 use itnovum\openITCOCKPIT\Graphite\GraphiteConfig;
@@ -2422,7 +2424,7 @@ class ServicesController extends AppController {
         }
 
         $service = $ServicesTable->getServiceByIdForTimeline($id);
-        dd($service);
+
         if (!$this->allowedByContainerId($service->getContainerIds(), false)) {
             $this->render403();
             return;
@@ -2439,6 +2441,8 @@ class ServicesController extends AppController {
 
         $User = new User($this->getUser());
         $UserTime = $User->getUserTime();
+        $UserTimeUTC = new UserTime('UTC', $User->getDateformat());
+
         $offset = $UserTime->getUserTimeToServerOffset();
 
         $Groups = new Groups();
@@ -2714,32 +2718,47 @@ class ServicesController extends AppController {
         $this->set('acknowledgements', $AcknowledgementSerializer->serialize());
 
         /*************  Contacts Notification Period *************/
-        $hostContacts = $service->get('contacts');
-        dd($hostContacts);
-        if (empty($hostContacts)) {
-            $hostContacts = $service->get('hosttemplate')->get('contacts');
+        $serviceContacts = $service->get('contacts');
+
+        if (empty($serviceContacts)) {
+            $serviceContacts = $service->get('servicetemplate')->get('contacts');
+        }
+        if (empty($serviceContacts)) {
+            $serviceContacts = $service->get('host')->get('contacts');
+        }
+        if (empty($serviceContacts)) {
+            $serviceContacts = $service->get('host')->get('hosttemplate')->get('contacts');
         }
 
-        /*$hostContactgroups = $host->get('contactgroups');
-        if (empty($hostContactgroups)) {
-            $hostContactgroups = $host->get('hosttemplate')->get('contactgroups');
+        $serviceContactgroups = $service->get('contactgroups');
+
+        if (empty($serviceContactgroups)) {
+            $serviceContactgroups = $service->get('servicetemplate')->get('contactgroups');
         }
-        if (!empty($hostContactgroups)) {
-            foreach ($hostContactgroups as $contactgroup) {
+        if (empty($serviceContactgroups)) {
+            $serviceContactgroups = $service->get('host')->get('contactgroups');
+        }
+        if (empty($serviceContactgroups)) {
+            $serviceContactgroups = $service->get('host')->get('hosttemplate')->get('contactgroups');
+        }
+
+        if (!empty($serviceContactgroups)) {
+            foreach ($serviceContactgroups as $contactgroup) {
                 $contactgroupContacts = $contactgroup->get('contacts');
                 if (!empty($contactgroupContacts)) {
                     foreach ($contactgroupContacts as $contact) {
-                        $hostContacts[] = $contact;
+                        $serviceContacts[] = $contact;
                     }
                 }
             }
         }
+
         $contactNotificationPeriodIdsByContacts = [];
         $filteredContacts = [];
-        if (!empty($hostContacts)) {
-            foreach ($hostContacts as $contact) {
+        if (!empty($serviceContacts)) {
+            foreach ($serviceContacts as $contact) {
                 $filteredContacts[$contact->get('id')] = $contact->toArray();
-                $hostTimeperiodId = $contact->get('host_timeperiod_id');
+                $hostTimeperiodId = $contact->get('service_timeperiod_id');
                 $contactNotificationPeriodIdsByContacts[$hostTimeperiodId] = $hostTimeperiodId;
             }
         }
@@ -2763,17 +2782,39 @@ class ServicesController extends AppController {
             }
         }
 
-        $NotificationsContactSerializer = new NotificationsContactSerializer($timerangesForContactNotificationPeriods, $filteredContacts, $timePeriodNames, $UserTime);
+        $NotificationsContactSerializer = new NotificationsContactServicesSerializer($timerangesForContactNotificationPeriods, $filteredContacts, $timePeriodNames, $UserTimeUTC);
         $this->set('notifications_contact', $NotificationsContactSerializer->serialize());
         unset($contactNotificationPeriods, $filteredContacts);
-*/
+
+        /*************  Contacts Notification Time Range *************/
+        $reslutsNotiPeriod = [];
+
+        if (!empty($timerangesForContactNotificationPeriods)) {
+            foreach ($timerangesForContactNotificationPeriods as $notificationPeriods) {
+                foreach ($notificationPeriods as $nPeriod) {
+                    if (!isset($nPeriod['start']) || !isset($nPeriod['end'])) {
+                        continue;
+                    }
+                    $reslutsNotiPeriod[] = $nPeriod;
+                }
+            }
+        }
+
+        $TimeRangePeriodSerializer_new = new TimeRangeSerializer(
+            $reslutsNotiPeriod,
+            $UserTimeUTC,
+            'bg-notification-period',
+            (new Groups())->getNotificationContactId()
+        );
+        $this->set('notification_timeranges', $TimeRangePeriodSerializer_new->serialize());
+        unset($reslutsNotiPeriod, $TimeRangePeriodSerializer_new);
 
         $start += $offset;
         $end += $offset;
 
         $this->set('start', $start);
         $this->set('end', $end);
-        $this->set('notification_timeranges', []);
+
         $this->viewBuilder()->setOption('serialize', [
             'start',
             'end',

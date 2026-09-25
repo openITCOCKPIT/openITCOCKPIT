@@ -3018,7 +3018,7 @@ class HostsController extends AppController {
         }
 
         $host = $HostsTable->getHostByIdForTimeline($id);
-        dd($host);
+        
         if (!$this->allowedByContainerId($host->getContainerIds(), false)) {
             $this->render403();
             return;

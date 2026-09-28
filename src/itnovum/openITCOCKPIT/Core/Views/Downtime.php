@@ -26,8 +26,6 @@
 namespace itnovum\openITCOCKPIT\Core\Views;
 
 
-use Cake\I18n\DateTime;
-
 class Downtime {
 
     /**
@@ -69,6 +67,11 @@ class Downtime {
      * @var int
      */
     private $duration;
+
+    /**
+     * @var int
+     */
+    private $actualDuration;
 
     /**
      * @var bool
@@ -137,6 +140,10 @@ class Downtime {
 
         if (isset($downtime['duration'])) {
             $this->duration = (int)$downtime['duration'];
+        }
+
+        if (isset($downtime['actual_duration'])) {
+            $this->actualDuration = (int)$downtime['actual_duration'];
         }
 
         if (isset($downtime['was_started'])) {
@@ -271,6 +278,13 @@ class Downtime {
     }
 
     /**
+     * @return int
+     */
+    public function getActualDuration() {
+        return $this->actualDuration;
+    }
+
+    /**
      * @return bool
      */
     public function wasStarted() {
@@ -348,6 +362,7 @@ class Downtime {
             $arr['actualEndTime'] = $this->UserTime->format($this->getActualEndTime());
             $arr['entryTime'] = $this->UserTime->format($this->getEntryTime());
             $arr['durationHuman'] = $this->UserTime->secondsInHumanShort($this->getDuration());
+            $arr['actualDurationHuman'] = $this->UserTime->secondsInHumanShort($this->getActualDuration());
         } else {
             $arr['scheduledStartTime'] = $this->getScheduledStartTime();
             $arr['scheduledEndTime'] = $this->getScheduledEndTime();
@@ -355,6 +370,7 @@ class Downtime {
             $arr['actualEndTime'] = $this->getActualEndTime();
             $arr['entryTime'] = $this->getEntryTime();
             $arr['durationHuman'] = $this->getDuration();
+            $arr['actualDurationHuman'] = $this->UserTime->secondsInHumanShort($this->getActualDuration());
         }
         $arr['isCancellable'] = $this->isCancellable();
         $arr['isRunning'] = $this->isRunning();

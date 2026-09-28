@@ -112,26 +112,27 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
      * @return array|void
      */
     public function getDowntimes(DowntimeHostConditions $DowntimeHostConditions, ?PaginateOMat $PaginateOMat = null) {
-        $query = $this->find()
-            ->select([
-                'DowntimeHosts.author_name',
-                'DowntimeHosts.comment_data',
-                'DowntimeHosts.entry_time',
-                'DowntimeHosts.scheduled_start_time',
-                'DowntimeHosts.actual_start_time',
-                'DowntimeHosts.scheduled_end_time',
-                'DowntimeHosts.actual_end_time',
-                'DowntimeHosts.duration',
-                'DowntimeHosts.was_started',
-                'DowntimeHosts.internal_downtime_id',
-                'DowntimeHosts.was_cancelled',
+        $query = $this->find();
+        $query->select([
+            'DowntimeHosts.author_name',
+            'DowntimeHosts.comment_data',
+            'DowntimeHosts.entry_time',
+            'DowntimeHosts.scheduled_start_time',
+            'DowntimeHosts.actual_start_time',
+            'DowntimeHosts.scheduled_end_time',
+            'DowntimeHosts.actual_end_time',
+            'DowntimeHosts.duration',
+            'DowntimeHosts__actual_duration' => $query->newExpr('DowntimeHosts.actual_end_time - DowntimeHosts.actual_start_time'),
+            'DowntimeHosts.was_started',
+            'DowntimeHosts.internal_downtime_id',
+            'DowntimeHosts.was_cancelled',
 
-                'Hosts.id',
-                'Hosts.uuid',
-                'Hosts.name',
+            'Hosts.id',
+            'Hosts.uuid',
+            'Hosts.name',
 
-                'HostsToContainers.container_id',
-            ])
+            'HostsToContainers.container_id',
+        ])
             ->innerJoin(
                 ['Hosts' => 'hosts'],
                 ['DowntimeHosts.hostname = Hosts.uuid']

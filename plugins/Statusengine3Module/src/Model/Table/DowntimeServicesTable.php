@@ -123,6 +123,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
             'DowntimeServices.scheduled_end_time',
             'DowntimeServices.actual_end_time',
             'DowntimeServices.duration',
+            'DowntimeServices__actual_duration' => $query->newExpr('DowntimeServices.actual_end_time - DowntimeServices.actual_start_time'),
             'DowntimeServices.was_started',
             'DowntimeServices.internal_downtime_id',
             'DowntimeServices.was_cancelled',

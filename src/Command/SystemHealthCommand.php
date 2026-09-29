@@ -244,11 +244,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         if (Plugin::isLoaded('DistributeModule')) {
             $data['isDistributeModuleInstalled'] = true;
             // @var SatellitesTable $SatellitesTable
-            //$SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
-            //$data['satellites'] = $SatellitesTable->getSatellitesStatusWithHealth(new SatelliteFilter(new ServerRequest()));
-
             $data['satellites'] = $this->getSatellitesStatusWithHealth();
-
         }
 
         return $data;
@@ -304,7 +300,9 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             ->combine('satellite_id', function ($row) {
                 if (is_string($row['system_health'])) {
                     $decoded = json_decode($row['system_health'], true);
-                    return $decoded !== null ? $decoded : @unserialize($row['system_health']);
+                    if ($decoded !== null) {
+                        return $decoded;
+                    }
                 }
                 return $row['system_health'];
             })
@@ -317,27 +315,36 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             }
 
             $parsedHealth = $healthMap[$satellite['id']] ?? null;
+
             if (!empty($parsedHealth) && is_array($parsedHealth)) {
+                $cpu_cores = (int)$parsedHealth['cpu_cores'];
+                $cpu_load15 = (float)$parsedHealth['cpu_load15'];
 
-                //CPU
-                if (isset($parsedHealth['cpu_cores'], $parsedHealth['cpu_load15'])) {
-                    $cores_warning = $parsedHealth['cpu_cores'] - 2 ?: 1;
-                    if ($cores_warning < $parsedHealth['cpu_load15']) {
-                        $parsedHealth['cpu_state'] = 'warning';
-
-                    } else if ($parsedHealth['cpu_cores'] < $parsedHealth['cpu_load15']) {
-                        $parsedHealth['cpu_state'] = 'critical';
-
-                    } else {
-                        $parsedHealth['cpu_state'] = 'ok';
-                    }
+                if (($cpu_cores - 2) <= 0) {
+                    $cpu_cores_warning = 1;
+                } else {
+                    $cpu_cores_warning = $cpu_cores - 2;
                 }
-            }
 
-            $satellite['satellite_information'] = [
-                'satellite_id'  => $satellite['id'],
-                'system_health' => $parsedHealth
-            ];
+                $parsedHealth['cpu_state'] = 'ok';
+
+                if ($cpu_load15 == 1 && $cpu_cores_warning == 1) {
+                    $parsedHealth['cpu_state'] = 'warning';
+                }
+
+                if ($cpu_load15 > $cpu_cores_warning) {
+                    $parsedHealth['cpu_state'] = 'warning';
+                }
+
+                if ($cpu_load15 > $cpu_cores) {
+                    $parsedHealth['cpu_state'] = 'critical';
+                }
+
+                $satellite['satellite_information'] = [
+                    'satellite_id'  => $satellite['id'],
+                    'system_health' => $parsedHealth ?? []
+                ];
+            }
             $updatedSatellites[] = $satellite;
         }
 
@@ -471,12 +478,18 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
         foreach ($dataForEmail['satellites'] ?? [] as $satellite) {
 
-            if ($satellite['status'] != 1) {
-                $satellite_status = $this->getSatellitesState($satellite['status']);
+            if (isset($satellite['status'])) {
+                $satellite_status = "";
+                if (is_numeric($satellite['status'])) {
+                    $satellite_status = $this->getSatellitesState($satellite['status']);
+                } else if (is_string($satellite['status'])) {
+                    $satellite_status = $satellite['status'];
+                }
+
                 $this->setSatellitesHealthState($satellite_status);
             }
 
-            $satInfo = $satellite['satellite_information'] ?? null;
+            $satInfo = $satellite['satellite_information'] ?? [];
 
             if (!$satInfo || empty($satInfo['system_health'])) {
                 continue;

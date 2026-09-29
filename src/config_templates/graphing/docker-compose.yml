@@ -81,7 +81,7 @@ services:
         max-size: "200k"
         max-file: "10"
   mysql:
-    image: mysql:latest
+    image: mysql:lts
     environment:
       - MYSQL_ROOT_PASSWORD=grafana_root
       - MYSQL_DATABASE=grafana

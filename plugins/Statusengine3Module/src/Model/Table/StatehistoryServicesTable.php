@@ -226,4 +226,63 @@ class StatehistoryServicesTable extends Table implements StatehistoryServiceTabl
 
         return $statehistoryRecords;
     }
+
+    public function getStatehistoryByUuids(StatehistoryServiceConditions $StatehistoryServiceConditions, $enableHydration = true) {
+        if (empty($StatehistoryServiceConditions->getServiceUuids())) {
+            return [];
+        }
+        $query = $this->find()
+            ->select([
+                'StatehistoryServices.service_description',
+                'StatehistoryServices.state',
+                'StatehistoryServices.state_time',
+                'StatehistoryServices.state_change',
+                'StatehistoryServices.last_state'
+            ])
+            ->where([
+                'StatehistoryServices.service_description IN' => $StatehistoryServiceConditions->getServiceUuids(),
+                'StatehistoryServices.state_time >'           => $StatehistoryServiceConditions->getFrom()
+            ])
+            ->orderBy($StatehistoryServiceConditions->getOrder());
+
+        if ($StatehistoryServiceConditions->hasConditions()) {
+            $query->andWhere($StatehistoryServiceConditions->getConditions());
+        }
+        if (!empty($StatehistoryServiceConditions->getStates())) {
+            $query->andWhere([
+                'StatehistoryServices.state IN' => $StatehistoryServiceConditions->getStates()
+            ]);
+        }
+        if (!empty($StatehistoryServiceConditions->getStateTypes())) {
+            $query->andWhere([
+                'StatehistoryServices.is_hardstate IN' => $StatehistoryServiceConditions->getStateTypes()
+            ]);
+        }
+        if ($StatehistoryServiceConditions->hardStateTypeAndOkState()) {
+            $query->andWhere([
+                'OR' => [
+                    'StatehistoryServices.is_hardstate' => 1,
+                    'StatehistoryServices.state'        => 0
+                ]
+            ]);
+        }
+
+        $query->enableHydration($enableHydration)
+            ->all();
+
+        $result = $this->emptyArrayIfNull($query->toArray());
+        if (empty($result)) {
+            return [];
+        }
+
+        $statehistoryRecords = [];
+        foreach ($result as $record) {
+            if (!isset($statehistoryRecords[$record['service_description']])) {
+                $statehistoryRecords[$record['service_description']] = [];
+            }
+            $statehistoryRecords[$record['service_description']][] = $record;
+        }
+
+        return $statehistoryRecords;
+    }
 }

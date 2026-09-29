@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 namespace App\Model\Table;
 
@@ -56,6 +57,7 @@ use itnovum\openITCOCKPIT\Filter\TimeperiodsFilter;
  * @method \App\Model\Entity\Timeperiod findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin ContainerOwnedBehaviors
  */
 class TimeperiodsTable extends Table {
 
@@ -77,6 +79,7 @@ class TimeperiodsTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->belongsTo('Containers', [
             'foreignKey' => 'container_id',

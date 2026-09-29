@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 namespace App\Model\Table;
 
@@ -29,6 +30,7 @@ use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Lib\Traits\PluginManagerTableTrait;
+use App\Model\Behavior\ContainerOwnedBehavior;
 use App\Model\Entity\Changelog;
 use App\Model\Entity\Servicetemplate;
 use Cake\Core\Plugin;
@@ -67,6 +69,7 @@ use itnovum\openITCOCKPIT\Filter\ServicetemplateFilter;
  * @method \App\Model\Entity\Servicetemplate findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin ContainerOwnedBehavior
  */
 class ServicetemplatesTable extends Table {
 
@@ -90,6 +93,7 @@ class ServicetemplatesTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->belongsToMany('Contactgroups', [
             'className'        => 'Contactgroups',

@@ -37,6 +37,7 @@ use App\itnovum\openITCOCKPIT\Core\Dashboards\DelayedPassiveHostsJson;
 use App\itnovum\openITCOCKPIT\Core\Dashboards\DelayedPassiveServicesJson;
 use App\itnovum\openITCOCKPIT\Core\Dashboards\HostStatusOverviewExtendedJson;
 use App\itnovum\openITCOCKPIT\Core\Dashboards\HostsTopAlertJson;
+use App\itnovum\openITCOCKPIT\Core\Dashboards\OperationsSummaryJson;
 use App\itnovum\openITCOCKPIT\Core\Dashboards\ServiceStatusOverviewExtendedJson;
 use App\itnovum\openITCOCKPIT\Core\Dashboards\ServicesTopAlertJson;
 use App\itnovum\openITCOCKPIT\Perfdata\NagiosAdapter;
@@ -75,9 +76,12 @@ use itnovum\openITCOCKPIT\Core\HoststatusConditions;
 use itnovum\openITCOCKPIT\Core\HoststatusFields;
 use itnovum\openITCOCKPIT\Core\Servicestatus;
 use itnovum\openITCOCKPIT\Core\ServicestatusFields;
+use itnovum\openITCOCKPIT\Core\StatehistoryHostConditions;
+use itnovum\openITCOCKPIT\Core\StatehistoryServiceConditions;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Core\Views\Host;
 use itnovum\openITCOCKPIT\Core\Views\Service;
+use itnovum\openITCOCKPIT\Perfdata\UnitScaler;
 use ParsedownExtra;
 use PrometheusModule\Lib\PrometheusAdapter;
 use RuntimeException;
@@ -1511,6 +1515,14 @@ class DashboardsController extends AppController {
                     $adapter = new NagiosAdapter();
                     $newPerfdata['Perfdata'][$metric] = $service['Perfdata'][$metric];
                     $newPerfdata['Perfdata'][$metric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata)->toArray();
+
+                    $current = $newPerfdata['Perfdata'][$metric]['datasource']['setup']['metric']['value'];
+                    $unit = $newPerfdata['Perfdata'][$metric]['datasource']['setup']['metric']['unit'];
+
+                    if (isset($current) && ($unit !== null && $unit !== '')) {
+                        $newPerfdata['Perfdata'] = $this->getPerfdataUnitScalerTacho($newPerfdata['Perfdata'], $metric);
+                    }
+
                 }
             }
 
@@ -1596,6 +1608,7 @@ class DashboardsController extends AppController {
             $metrics = array_keys($service['Perfdata']);
             $newPerfdata = [];
             foreach ($metrics as $metric) {
+
                 if (Plugin::isLoaded('PrometheusModule') && $service['Service']['serviceType'] === PROMETHEUS_SERVICE) {
                     $PrometheusPerfdataLoader = new \PrometheusModule\Lib\PrometheusPerfdataLoader();
                     $Service = new Service($service);
@@ -1610,12 +1623,22 @@ class DashboardsController extends AppController {
                     $newPerfdata['Perfdata'][$indexMetric]['metric'] = $indexMetric;
                     $newPerfdata['Perfdata'][$indexMetric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata[$metric])->toArray();
                 } else {
+
                     $PerfdataParser = new PerfdataParser($service['Servicestatus']['perfdata']);
+                    //dd($PerfdataParser);
                     $perfdata = $PerfdataParser->parse();
                     $perfdata = $perfdata[$metric] ?? [];
                     $adapter = new NagiosAdapter();
                     $newPerfdata['Perfdata'][$metric] = $service['Perfdata'][$metric];
                     $newPerfdata['Perfdata'][$metric]['datasource']['setup'] = $adapter->getPerformanceData(new Service($service), $perfdata)->toArray();
+
+                    $current = $newPerfdata['Perfdata'][$metric]['datasource']['setup']['metric']['value'];
+                    $unit = $newPerfdata['Perfdata'][$metric]['datasource']['setup']['metric']['unit'];
+
+                    if (isset($current) && ($unit !== null && $unit !== '')) {
+                        $newPerfdata['Perfdata'] = $this->getPerfdataUnitScalerCylinder($newPerfdata['Perfdata'], $metric);
+                    }
+
                 }
             }
 
@@ -1671,6 +1694,104 @@ class DashboardsController extends AppController {
             return;
         }
         throw new MethodNotAllowedException();
+    }
+
+    private function getPerfdataUnitScalerCylinder($perfdata, $metric) {
+
+        $setup = &$perfdata[$metric]['datasource']['setup'];
+        $unit = $setup['metric']['unit'];
+        $current = $setup['metric']['value'];
+
+        $gaugeData = [
+            'datasource' => [
+                'unit' => $unit,
+                'warn' => $setup['warn']['low'],
+                'crit' => $setup['crit']['low'],
+                'min'  => $setup['scale']['min'],
+                'max'  => $setup['scale']['max'],
+            ],
+            'data'       => [
+                $current
+            ]
+        ];
+
+        $unitScaler = new UnitScaler($gaugeData);
+        $scaledGauge = $unitScaler->scale();
+        if ($scaledGauge) {
+            $scaledAct = $scaledGauge['data'][0] ?? $current;
+
+            $max = $scaledGauge['datasource']['max'];
+            $min = $scaledGauge['datasource']['min'];
+            $critical = $scaledGauge['datasource']['crit'];
+            $warn = $scaledGauge['datasource']['warn'];
+            $unit = $scaledGauge['datasource']['unit'];
+
+            $perfdata[$metric]['current'] = $scaledAct;
+            $perfdata[$metric]['warning'] = $warn;
+            $perfdata[$metric]['critical'] = $critical;
+            $perfdata[$metric]['min'] = $min;
+            $perfdata[$metric]['max'] = $max;
+            $perfdata[$metric]['unit'] = $unit;
+
+            $setup['metric']['value'] = $scaledAct;
+            $setup['warn']['low'] = $warn;
+            $setup['crit']['low'] = $critical;
+            $setup['scale']['min'] = $min;
+            $setup['scale']['max'] = $max;
+            $setup['metric']['unit'] = $unit;
+
+        }
+
+        return $perfdata;
+    }
+
+    private function getPerfdataUnitScalerTacho($perfdata, $metric) {
+
+        $setup = &$perfdata[$metric]['datasource']['setup'];
+        $unit = $setup['metric']['unit'];
+        $current = $setup['metric']['value'];
+
+        $gaugeData = [
+            'datasource' => [
+                'unit' => $unit,
+                'warn' => $setup['warn']['low'],
+                'crit' => $setup['crit']['low'],
+                'min'  => $setup['scale']['min'],
+                'max'  => $setup['scale']['max'],
+            ],
+            'data'       => [
+                $current
+            ]
+        ];
+
+        $unitScaler = new UnitScaler($gaugeData);
+        $scaledGauge = $unitScaler->scale();
+        if ($scaledGauge) {
+            $scaledAct = $scaledGauge['data'][0] ?? $current;
+
+            $max = $scaledGauge['datasource']['max'];
+            $min = $scaledGauge['datasource']['min'];
+            $critical = $scaledGauge['datasource']['crit'];
+            $warn = $scaledGauge['datasource']['warn'];
+            $unit = $scaledGauge['datasource']['unit'];
+
+            $perfdata[$metric]['current'] = $scaledAct;
+            $perfdata[$metric]['warning'] = $warn;
+            $perfdata[$metric]['critical'] = $critical;
+            $perfdata[$metric]['min'] = $min;
+            $perfdata[$metric]['max'] = $max;
+            $perfdata[$metric]['unit'] = $unit;
+
+            $setup['metric']['value'] = $scaledAct;
+            $setup['metric']['unit'] = $unit;
+            $setup['warn']['low'] = $warn;
+            $setup['crit']['low'] = $critical;
+            $setup['scale']['min'] = $min;
+            $setup['scale']['max'] = $max;
+
+        }
+
+        return $perfdata;
     }
 
     private function getServicestatusByServiceId($id) {
@@ -1818,7 +1939,7 @@ class DashboardsController extends AppController {
                 throw new MissingDbBackendException('MissingDbBackendException');
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
@@ -1921,7 +2042,7 @@ class DashboardsController extends AppController {
                 throw new MissingDbBackendException('MissingDbBackendException');
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
@@ -2062,7 +2183,7 @@ class DashboardsController extends AppController {
                 throw new MissingDbBackendException('MissingDbBackendException');
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
@@ -2169,7 +2290,7 @@ class DashboardsController extends AppController {
                 throw new MissingDbBackendException('MissingDbBackendException');
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var ServicesTable $ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
@@ -2406,7 +2527,7 @@ class DashboardsController extends AppController {
                         throw new MissingDbBackendException('MissingDbBackendException');
                     }
 
-                    if ($this->DbBackend->isStatusengine3()) {
+                    if ($this->DbBackend->isStatusengine4()) {
                         /** @var HostsTable $HostsTable */
                         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
                         $hoststatus = $HostsTable->getHostsWithStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
@@ -2438,7 +2559,7 @@ class DashboardsController extends AppController {
                         throw new MissingDbBackendException('MissingDbBackendException');
                     }
 
-                    if ($this->DbBackend->isStatusengine3()) {
+                    if ($this->DbBackend->isStatusengine4()) {
                         /** @var ServicesTable $ServicesTable */
                         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
                         $servicestatus = $ServicesTable->getServicesWithStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
@@ -2611,7 +2732,7 @@ class DashboardsController extends AppController {
         if ($this->DbBackend->isCrateDb()) {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
             $hoststatus = $HostsTable->getHostsForDesktopWithStatusByConditionsStatusengine3($MY_RIGHTS, $hostsConfig);
@@ -2733,6 +2854,232 @@ class DashboardsController extends AppController {
             return;
         }
 
+        throw new MethodNotAllowedException();
+    }
+
+    /**
+     * @throws MissingDbBackendException
+     */
+    public function operationsSummaryWidget() {
+        if (!$this->isAngularJsRequest()) {
+            throw new MethodNotAllowedException();
+        }
+        $widgetId = (int)$this->request->getQuery('widgetId');
+        $type = $this->request->getQuery('type');
+        $OperationsSummaryJson = new OperationsSummaryJson();
+
+        /** @var WidgetsTable $WidgetsTable */
+        $WidgetsTable = TableRegistry::getTableLocator()->get('Widgets');
+
+        if (!$WidgetsTable->existsById($widgetId)) {
+            throw new NotFoundException('Widget not found');
+        }
+
+        $widget = $WidgetsTable->get($widgetId);
+
+        if ($this->request->is('get')) {
+            $MY_RIGHTS = [];
+            if ($this->hasRootPrivileges === false) {
+                /** @var ContainersTable $ContainersTable */
+                //$ContainersTable = TableRegistry::getTableLocator()->get('Containers');
+                //$MY_RIGHTS = $ContainersTable->resolveChildrenOfContainerIds($this->MY_RIGHTS);
+                // ITC-2863 $this->MY_RIGHTS is already resolved and contains all containerIds a user has access to
+                $MY_RIGHTS = $this->MY_RIGHTS;
+            }
+
+            $data = [];
+            if ($widget->get('json_data') !== null && $widget->get('json_data') !== '') {
+                $data = json_decode($widget->get('json_data'), true);
+            }
+            $config = $OperationsSummaryJson->standardizedData($data);
+
+            $conditions = $config;
+            // Migrate keyword / tags from JSON string to SQL RLIKE query string
+            foreach (['Host', 'Service', 'Hostgroup', 'Servicegroup'] as $tableName) {
+                foreach (['keywords', 'not_keywords'] as $field) {
+                    if (empty($conditions[$tableName][$field])) {
+                        $conditions[$tableName][$field] = [];
+                    }
+
+                    if (isset($conditions[$tableName][$field]) && is_string($conditions[$tableName][$field])) {
+                        $arr = explode(',', $conditions[$tableName][$field]);
+                        $conditions[$tableName][$field] = [];
+                        if (!empty($arr)) {
+                            $conditions[$tableName][$field] = sprintf('.*(%s).*', implode('|', $arr));
+                        }
+                    }
+                }
+            }
+            $containerIds = [];
+            $hostgroupIds = [];
+            $servicegroupIds = [];
+            if (!empty($config['Hostgroup']['_ids'])) {
+                foreach (explode(',', $config['Hostgroup']['_ids']) as $hostgroupId) {
+                    $hostgroupIds[] = (int)$hostgroupId;
+                }
+            }
+            if (!empty($config['Servicegroup']['_ids'])) {
+                foreach (explode(',', $config['Servicegroup']['_ids']) as $servicegroupId) {
+                    $servicegroupIds[] = (int)$servicegroupId;
+                }
+            }
+            if (!empty($config['Container']['_ids'])) {
+                foreach (explode(',', $config['Container']['_ids']) as $containerId) {
+                    $containerIds[] = (int)$containerId;
+                }
+            }
+            $config['Container']['_ids'] = $containerIds;
+            $config['Hostgroup']['_ids'] = $hostgroupIds;
+            $config['Servicegroup']['_ids'] = $servicegroupIds;
+
+            $now = time();
+            $timestampFrom = $now - 24 * 60 * 60;
+            $timestampTo = $now;
+            $User = new User($this->getUser());
+            $UserTime = $User->getUserTime();
+            $userTimezone = $UserTime->getUserTimezone();
+
+            switch ($type) {
+                case 'hosts':
+                    $hoststatusSummary = [];
+                    if ($this->DbBackend->isNdoUtils()) {
+                        /** @var HostsTable $HostsTable */
+                        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+                        $hoststatus = $HostsTable->getHostsWithStatusByConditions($MY_RIGHTS, $conditions);
+                        $hoststatusSummary = $HostsTable->getHostStateSummary($hoststatus);
+
+                    }
+
+                    if ($this->DbBackend->isCrateDb()) {
+                        throw new MissingDbBackendException('MissingDbBackendException');
+                    }
+
+                    if ($this->DbBackend->isStatusengine4()) {
+                        /** @var HostsTable $HostsTable */
+                        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+                        $StatehistoryHostsTable = $this->DbBackend->getStatehistoryHostsTable();
+
+                        //Process conditions
+                        $Conditions = new StatehistoryHostConditions();
+
+
+                        $hoststatus = $HostsTable->getHostsWithExtendedStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
+                        $hostUuids = Hash::extract($hoststatus, '{n}.uuid');
+                        $Conditions->setFrom($timestampFrom);
+                        $Conditions->setHostUuids($hostUuids);
+                        $Conditions->setOrder(['StatehistoryHosts.state_time' => 'asc']);
+                        $Conditions->setHardStateTypeAndUpState(true);
+                        $statehistoriesHost = $StatehistoryHostsTable->getStatehistoryByUuids(
+                            $Conditions,
+                            false
+                        );
+                        foreach ($hoststatus as $key => $host) {
+                            $hostUuid = $host['uuid'];
+                            if (isset($statehistoriesHost[$hostUuid])) {
+                                $hoststatus[$key]['statehistory'] = $statehistoriesHost[$hostUuid];
+                            } else {
+                                $hoststatus[$key]['statehistory'] = [];
+                            }
+                        }
+                        $hoststatusSummary = $HostsTable->getHostStateSummaryWithLastTimeStats(
+                            $hoststatus,
+                            $timestampFrom,
+                            $timestampTo,
+                            $conditions['Host'],
+                            $userTimezone
+                        );
+                    }
+
+                    $this->set('config', $config);
+                    $this->set('hoststatusSummary', $hoststatusSummary);
+                    $this->viewBuilder()->setOption('serialize', [
+                        'config',
+                        'hoststatusSummary'
+                    ]);
+                    break;
+                case 'services':
+                    /** @var ServicesTable $ServicesTable */
+                    $ServicesTable = TableRegistry::getTableLocator()->get('Services');
+                    $servicestatusSummary = [];
+                    if ($this->DbBackend->isNdoUtils()) {
+
+                        $servicestatus = $ServicesTable->getServicesWithStatusByConditions($MY_RIGHTS, $conditions);
+                        $servicestatusSummary = $ServicesTable->getServiceStateSummary($servicestatus);
+                    }
+
+                    if ($this->DbBackend->isCrateDb()) {
+                        throw new MissingDbBackendException('MissingDbBackendException');
+                    }
+
+                    if ($this->DbBackend->isStatusengine4()) {
+                        $StatehistoryServicesTable = $this->DbBackend->getStatehistoryServicesTable();
+
+                        //Process conditions
+                        $Conditions = new StatehistoryServiceConditions();
+
+                        $servicestatus = $ServicesTable->getServicesWithExtendedStatusByConditionsStatusengine3($MY_RIGHTS, $conditions);
+                        $serviceUuids = Hash::extract($servicestatus, '{n}.uuid');
+                        $Conditions->setFrom($timestampFrom);
+                        $Conditions->setServiceUuids($serviceUuids);
+                        $Conditions->setOrder(['StatehistoryServices.state_time' => 'asc']);
+                        $Conditions->setHardStateTypeAndOkState(true);
+                        $statehistoriesService = $StatehistoryServicesTable->getStatehistoryByUuids(
+                            $Conditions,
+                            false
+                        );
+
+                        foreach ($servicestatus as $key => $service) {
+                            $serviceUuid = $service['uuid'];
+                            if (isset($statehistoriesService[$serviceUuid])) {
+                                $servicestatus[$key]['statehistory'] = $statehistoriesService[$serviceUuid];
+                            } else {
+                                $servicestatus[$key]['statehistory'] = [];
+                            }
+                        }
+                        $servicestatusSummary = $ServicesTable->getServiceStateSummaryWithLastTimeStats(
+                            $servicestatus,
+                            $timestampFrom,
+                            $timestampTo,
+                            $conditions['Service'],
+                            $userTimezone
+                        );
+                    }
+
+                    $this->set('config', $config);
+                    $this->set('servicestatusSummary', $servicestatusSummary);
+                    $this->viewBuilder()->setOption('serialize', [
+                        'config',
+                        'servicestatusSummary'
+                    ]);
+                    break;
+            }
+            return;
+        }
+
+
+        if ($this->request->is('post')) {
+            /** @var DashboardTabsTable $DashboardTabsTable */
+            $DashboardTabsTable = TableRegistry::getTableLocator()->get('DashboardTabs');
+
+            $User = new User($this->getUser());
+
+            if (!$DashboardTabsTable->isOwnedByUser($widget->dashboard_tab_id, $User->getId())) {
+                throw new ForbiddenException();
+            }
+
+            $config = $OperationsSummaryJson->standardizedData($this->request->getData());
+            $widget = $WidgetsTable->patchEntity($widget, [
+                'json_data' => json_encode($config)
+            ]);
+            $WidgetsTable->save($widget);
+            if ($widget->hasErrors()) {
+                return $this->serializeCake4ErrorMessage($widget);
+            }
+
+            $this->set('sucess', true);
+            $this->viewBuilder()->setOption('sucess', ['config']);
+            return;
+        }
         throw new MethodNotAllowedException();
     }
 }

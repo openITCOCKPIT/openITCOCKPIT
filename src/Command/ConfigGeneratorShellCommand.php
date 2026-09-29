@@ -227,6 +227,7 @@ class ConfigGeneratorShellCommand extends Command {
                 break;
 
             case 'StatusengineCfg':
+            case 'Statusengine4Cfg':
                 $command = $systemsettings['INIT']['INIT.STATUSENGINE_RESTART'];
                 $this->restartService($command, 'Restart Statusengine service', $io);
                 break;

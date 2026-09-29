@@ -27,14 +27,13 @@ namespace itnovum\openITCOCKPIT\ConfigGenerator;
 
 
 use App\itnovum\openITCOCKPIT\ConfigGenerator\ContainerConfigInterface;
-use itnovum\openITCOCKPIT\Core\System\Health\MonitoringEngine;
 
 /**
  * Class NSTAMaster
  * NSTA written in Go by Johannes
  * @package itnovum\openITCOCKPIT\ConfigGenerator
  */
-class NSTAMaster extends ConfigGenerator implements ConfigInterface,ContainerConfigInterface {
+class NSTAMaster extends ConfigGenerator implements ConfigInterface, ContainerConfigInterface {
 
     protected $templateDir = 'NSTA';
 
@@ -135,7 +134,7 @@ class NSTAMaster extends ConfigGenerator implements ConfigInterface,ContainerCon
     public function writeToFile($dbRecords) {
         $config = $this->mergeDbResultWithDefaultConfiguration($dbRecords);
 
-        if($config['bool']['use_nginx_proxy'] == 1){
+        if ($config['bool']['use_nginx_proxy'] == 1) {
             //This is only configureable if the user is not going to use the openITCOCKPIT default nginx config
             $config['string']['listen_http'] = '127.0.0.1:7473';
             $config['string']['listen_https'] = '127.0.0.1:7474';
@@ -145,6 +144,9 @@ class NSTAMaster extends ConfigGenerator implements ConfigInterface,ContainerCon
 
 
         $configToExport = [];
+        $FileHeader = new FileHeader();
+        $configToExport['STATIC_FILE_HEADER'] = $FileHeader->getHeader($this->commentChar);
+
         foreach ($config as $type => $fields) {
             foreach ($fields as $key => $value) {
                 switch ($type) {

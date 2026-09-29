@@ -80,30 +80,26 @@ if [[ -d /opt/openitc/frontend/plugins/MapModule/webroot/img/ ]]; then
     chown -R www-data:www-data /opt/openitc/frontend/plugins/MapModule/webroot/img/
 fi
 
-# It is important that the statusengine-worker container is already up and running and has created all
-# the Statusengine related MySQL tables, because the setup will add partitions to the tables
-echo "Checking if Statusengine Tables where already created..."
+echo "Checking if MySQL is online..."
 COUNTER=0
 MYSQL_ONLINE=0
 
 set +e
 while [ "$COUNTER" -lt 30 ]; do
-    #Is Grafana Server Online?
-    OUTPUT=$(mysql "--defaults-extra-file=$INIFILE" -e "SELECT 1 FROM statusengine_nodes;" -B -s 2>/dev/null)
-
-    if [ "$OUTPUT" ]; then
-        echo "Tables are present."
+    if mysqladmin --defaults-extra-file="$INIFILE" ping --silent >/dev/null 2>&1; then
+        echo "MySQL is online."
         MYSQL_ONLINE=1
         break
     fi
-    echo "Waiting for Statusengine to create tables..."
+
+    echo "Waiting for MySQL to become available..."
     COUNTER=$((COUNTER + 1))
     sleep 1
 done
 
 if [[ "$MYSQL_ONLINE" == 0 ]]; then
     echo "ERROR!"
-    echo "Statusengine tables are missing! ABORT!"
+    echo "MySQL is not reachable! ABORT!"
     exit 1
 fi
 set -e

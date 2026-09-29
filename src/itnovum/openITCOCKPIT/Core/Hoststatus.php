@@ -131,6 +131,17 @@ class Hoststatus {
     private $last_time_up;
 
     /**
+     * @var string
+     */
+    private $last_time_down;
+
+    /**
+     * @var string
+     */
+    private $last_time_unreachable;
+
+
+    /**
      * @var UserTime|null
      */
     private $UserTime;
@@ -224,6 +235,14 @@ class Hoststatus {
 
         if (isset($data['last_time_up'])) {
             $this->last_time_up = $data['last_time_up'];
+        }
+
+        if (isset($data['last_time_down'])) {
+            $this->last_time_down = $data['last_time_down'];
+        }
+
+        if (isset($data['last_time_unreachable'])) {
+            $this->last_time_unreachable = $data['last_time_unreachable'];
         }
 
         $this->UserTime = $UserTime;
@@ -457,6 +476,20 @@ class Hoststatus {
         return $this->last_time_up;
     }
 
+    public function getLastTimeDown() {
+        if (!is_numeric($this->last_time_down) && !is_null($this->last_time_down)) {
+            return strtotime($this->last_time_down);
+        }
+        return $this->last_time_down;
+    }
+
+    public function getLastTimeUnreachable() {
+        if (!is_numeric($this->last_time_unreachable) && !is_null($this->last_time_unreachable)) {
+            return strtotime($this->last_time_unreachable);
+        }
+        return $this->last_time_unreachable;
+    }
+
     /**
      * @return bool
      */
@@ -477,6 +510,8 @@ class Hoststatus {
             $arr['lastHardStateChange'] = $this->UserTime->format($this->getLastHardStateChange());
             $arr['last_state_change'] = $this->UserTime->format($this->getLastStateChange());
             $arr['last_time_up'] = $this->UserTime->format($this->getLastTimeUp());
+            $arr['last_time_down'] = $this->UserTime->format($this->getLastTimeDown());
+            $arr['last_time_unreachable'] = $this->UserTime->format($this->getLastTimeUnreachable());
             $arr['lastCheck'] = $this->UserTime->format($this->getLastCheck());
             $arr['nextCheck'] = $this->UserTime->format($this->getNextCheck());
             $arr['lastHardStateChangeInWords'] = $this->UserTime->secondsInHumanShort(time() - $this->getLastHardStateChange());
@@ -487,6 +522,8 @@ class Hoststatus {
             $arr['lastHardStateChange'] = $this->getLastHardStateChange();
             $arr['last_state_change'] = $this->getLastStateChange();
             $arr['last_time_up'] = $this->getLastTimeUp();
+            $arr['last_time_down'] = $this->getLastTimeDown();
+            $arr['last_time_unreachable'] = $this->getLastTimeUnreachable();
             $arr['lastCheck'] = $this->getLastCheck();
             $arr['nextCheck'] = $this->getNextCheck();
         }

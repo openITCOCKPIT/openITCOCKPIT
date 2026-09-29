@@ -358,6 +358,8 @@ if [[ $STATUSENGINE_VERSION == "Statusengine3" ]]; then
     /opt/openitc/statusengine3/worker/bin/Console.php database --update
 fi
 
+# Statusengine 4 does not need any extra setup as it uses the CakePHP migrations and openITCOCKPIT to create partitions
+
 echo "---------------------------------------------------------------"
 echo "Configure Grafana"
 systemctl restart openitcockpit-graphing.service

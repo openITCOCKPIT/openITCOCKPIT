@@ -52,4 +52,7 @@ interface StatehistoryServiceTableInterface {
      * @return \itnovum\openITCOCKPIT\Core\Views\StatehistoryService[]
      */
     public function getRecordsForReporting(StatehistoryServiceConditions $StatehistoryServiceConditions);
+
+    public function getStatehistoryByUuids(StatehistoryServiceConditions $StatehistoryServiceConditions, $enableHydration = false);
+
 }

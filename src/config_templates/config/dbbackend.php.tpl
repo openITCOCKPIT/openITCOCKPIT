@@ -11,4 +11,5 @@ return [
  * - Nagios
  * - Crate
  * - Statusengine3
+ * - Statusengine4
  */

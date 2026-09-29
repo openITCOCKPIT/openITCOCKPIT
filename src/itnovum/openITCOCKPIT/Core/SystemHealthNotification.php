@@ -47,6 +47,8 @@ class SystemHealthNotification {
      */
     private $state;
 
+    private $satellites_state;
+
     /**
      * @var array
      */
@@ -56,9 +58,10 @@ class SystemHealthNotification {
      * @param array $mailingList
      * @param string $state
      */
-    public function __construct(array $mailingList, string $state) {
+    public function __construct(array $mailingList, string $state, string $satellites_state) {
         $this->mailingList = $mailingList;
         $this->state = $state;
+        $this->satellites_state = $satellites_state;
     }
 
     /**
@@ -85,6 +88,11 @@ class SystemHealthNotification {
         return $this->state;
     }
 
+    public function getSatellitesState(): string {
+        return $this->satellites_state;
+    }
+
+
     /**
      * @param string $state
      * @return void
@@ -104,8 +112,8 @@ class SystemHealthNotification {
     /**
      * @return ServicestatusIcon
      */
-    private function getStatusIcon() {
-        switch (strtoupper($this->state)) {
+    private function getStatusIcon($state) {
+        switch (strtoupper($state)) {
             case 'OK':
                 $stateId = 0;
                 break;
@@ -133,7 +141,13 @@ class SystemHealthNotification {
             /** @var SystemsettingsTable $SystemsettingsTable */
             $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
             $systemsettings = $SystemsettingsTable->findAsArray();
-            $statusIcon = $this->getStatusIcon();
+            $statusIcon = $this->getStatusIcon($this->state);
+            $statusSatelliteIcon = $this->getStatusIcon($this->satellites_state);
+            $subject = $statusIcon->getEmoji() . ' ' . __('System health is {0}', $this->getState());
+
+            if ($this->data['isDistributeModuleInstalled'] ?? 0 == 1) {
+                $subject .= ' , ' . $statusSatelliteIcon->getEmoji() . ' ' . __('Satellites System Health is {0}', $this->getSatellitesState());
+            }
 
             foreach ($this->getMailingList() as $email => $name) {
 
@@ -142,7 +156,7 @@ class SystemHealthNotification {
                 $Mailer = new Mailer();
                 $Mailer->setFrom($systemsettings['MONITORING']['MONITORING.FROM_ADDRESS'], $systemsettings['MONITORING']['MONITORING.FROM_NAME']);
                 $Mailer->addTo($email, $name);
-                $Mailer->setSubject($statusIcon->getEmoji() . ' ' . __('System health is {0}', $this->getState()));
+                $Mailer->setSubject($subject);
                 $Mailer->setEmailFormat('both');
                 $Mailer->setAttachments([
                     'logo.png' => [
@@ -156,6 +170,8 @@ class SystemHealthNotification {
                     ->setTemplate('notification_system_health')
                     ->setVar('systemname', $systemsettings['FRONTEND']['FRONTEND.SYSTEMNAME'])
                     ->setVar('StatusIcon', $statusIcon)
+                    ->setVar('StatusSatelliteIcon', $statusSatelliteIcon)
+                    ->setVar('satelliteState', $this->getSatellitesState())
                     ->setVar('systemAddress', $systemsettings['SYSTEM']['SYSTEM.ADDRESS'])
                     ->setVar('systemHealth', $this->data);
 

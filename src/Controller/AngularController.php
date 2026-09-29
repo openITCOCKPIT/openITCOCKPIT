@@ -78,7 +78,11 @@ class AngularController extends AppController {
 
     private $state = 'unknown';
 
+    private $satellites_state = 'unknown';
+
     private $errorCount = 0;
+
+    private $errorCountSatellites = 0;
 
     /**
      * @throws Exception
@@ -232,7 +236,7 @@ class AngularController extends AppController {
 
             }
 
-            if ($this->DbBackend->isStatusengine3()) {
+            if ($this->DbBackend->isStatusengine4()) {
                 /** @var HostsTable $HostsTable */
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
@@ -326,7 +330,7 @@ class AngularController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             /** @var HostsTable $HostsTable */
             $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
             $hoststatus = $HostsTable->getHostsWithStatusByConditionsStatusengine3($containerIdsForQuery, []);
@@ -696,20 +700,69 @@ class AngularController extends AppController {
             $this->setHealthState($disk['state']);
         }
 
-        if (Plugin::isLoaded('DistributeModule')) {
-            $User = new User($this->getUser());
-            $UserTime = $User->getUserTime();
-            foreach (($cache['satellites'] ?? []) as $index => $satellite) {
-                // Put date to users time-zone
-                if (!empty($cache['satellites'][$index]['satellite_status']['last_seen'])) {
-                    $date = $UserTime->format($cache['satellites'][$index]['satellite_status']['last_seen']);
-                    $cache['satellites'][$index]['satellite_status']['last_seen'] = $date;
+
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $cache['satellites'] = array_filter($cache['satellites'], function ($satellite) use ($MY_RIGHTS) {
+            if ($MY_RIGHTS && $satellite['container_id'] && !in_array($satellite['container_id'], $MY_RIGHTS)) {
+                return false;
+            }
+            return true;
+        });
+        $cache['satellites'] = array_values($cache['satellites']);
+
+        foreach (($cache['satellites'] ?? []) as $index => $satellite) {
+
+            // Put date to users time-zone
+            if (!empty($cache['satellites'][$index]['satellite_status']['last_seen'])) {
+                $date = $UserTime->format($cache['satellites'][$index]['satellite_status']['last_seen']);
+                $cache['satellites'][$index]['satellite_status']['last_seen'] = $date;
+            }
+            // Check if user may edit satellite
+            if ($this->hasRootPrivileges) {
+                $cache['satellites'][$index]['allow_edit'] = true;
+            } else {
+                $cache['satellites'][$index]['allow_edit'] = $this->isWritableContainer($satellite['container_id']);
+            }
+
+            if (isset($cache['satellites'][$index]['status'])) {
+                $satellite_status = "";
+                if (is_numeric($cache['satellites'][$index]['status'])) {
+                    $satellite_status = $this->getSatellitesState($cache['satellites'][$index]['status']);
+                } else if (is_string($cache['satellites'][$index]['status'])) {
+                    $satellite_status = $cache['satellites'][$index]['status'];
                 }
-                // Check if user may edit satellite
-                if ($this->hasRootPrivileges) {
-                    $cache['satellites'][$index]['allow_edit'] = true;
-                } else {
-                    $cache['satellites'][$index]['allow_edit'] = $this->isWritableContainer($satellite['container_id']);
+
+                $this->setSatellitesHealthState($satellite_status);
+            }
+
+            // Check user satellite_information ['RAM,Disks,CPU']
+            $health = $cache['satellites'][$index]['satellite_information']['system_health'] ?? null;
+            if (isset($health)) {
+                // RAM
+                if (isset($health['memory']['memory']['state'])) {
+                    $this->setSatellitesHealthState($health['memory']['memory']['state']);
+                }
+                if (isset($health['memory']['swap']['state'])) {
+                    $this->setSatellitesHealthState($health['memory']['swap']['state']);
+                }
+                // Disks
+                if (!empty($health['disks']) && is_array($health['disks'])) {
+                    foreach ($health['disks'] as $disk) {
+                        if (isset($disk['state'])) {
+                            $this->setSatellitesHealthState($disk['state']);
+                        }
+                    }
+                }
+                // CPU
+                if (isset($health['cpu_cores'], $health['cpu_load15'], $health['cpu_state'])) {
+                    $this->setSatellitesHealthState($health['cpu_state']);
                 }
             }
         }
@@ -718,7 +771,10 @@ class AngularController extends AppController {
         $UserTime = new UserTime($user->get('timezone'), $user->get('dateformat'));
         $cache['update'] = $UserTime->format($cache['update']);
         $cache['state'] = $this->state;
+        $cache['satellites_state'] = $this->satellites_state;
         $cache['errorCount'] = $this->errorCount;
+        $cache['errorCountSatellites'] = $this->errorCountSatellites;
+
         $this->set('status', $cache);
         $this->viewBuilder()->setOption('serialize', ['status']);
     }
@@ -740,6 +796,35 @@ class AngularController extends AppController {
 
         $this->state = $state;
     }
+
+
+    private function setSatellitesHealthState($satellites_state) {
+        if ($satellites_state !== 'ok') {
+            $this->errorCountSatellites++;
+        }
+        //Do not overwrite critical with ok or warning
+        if ($this->satellites_state === 'critical') {
+            return;
+        }
+        //Do not overwrite warning with ok
+        if ($this->satellites_state === 'warning' && $satellites_state !== 'critical') {
+            return;
+        }
+        $this->satellites_state = $satellites_state;
+    }
+
+    private function getSatellitesState($satellites_state): string {
+        if (!isset($satellites_state)) {
+            return 'unknown';
+        }
+
+        return match ($satellites_state) {
+            1 => 'ok',
+            2, 3 => 'critical',//2 => 'warning'
+            default => 'unknown',
+        };
+    }
+
 
     /**
      * @param int $up up|ok

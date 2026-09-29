@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 namespace App\Model\Table;
 
@@ -73,6 +74,7 @@ class ServicedependenciesTable extends Table {
     public function initialize(array $config): void {
         parent::initialize($config);
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->setTable('servicedependencies');
         $this->setPrimaryKey('id');

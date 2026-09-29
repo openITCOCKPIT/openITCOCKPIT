@@ -74,6 +74,8 @@ class Servicestatus {
 
     private $last_time_ok;
 
+    private $last_time_critical;
+
     /**
      * @var UserTime|null
      */
@@ -173,6 +175,10 @@ class Servicestatus {
 
         if (isset($data['last_time_ok'])) {
             $this->last_time_ok = $data['last_time_ok'];
+        }
+
+        if (isset($data['last_time_critical'])) {
+            $this->last_time_critical = $data['last_time_critical'];
         }
 
         $this->UserTime = $UserTime;
@@ -432,6 +438,13 @@ class Servicestatus {
         return $this->last_time_ok;
     }
 
+    public function getLastTimeCritical() {
+        if (!is_numeric($this->last_time_critical) && !is_null($this->last_time_critical)) {
+            return strtotime($this->last_time_critical);
+        }
+        return $this->last_time_critical;
+    }
+
     /**
      * @return bool
      */
@@ -456,6 +469,7 @@ class Servicestatus {
             $arr['lastHardStateChange'] = $this->UserTime->format($this->getLastHardStateChange());
             $arr['last_state_change'] = $this->UserTime->format($this->getLastStateChange());
             $arr['last_time_ok'] = $this->UserTime->format($this->getLastTimeOk());
+            $arr['last_time_critical'] = $this->UserTime->format($this->getLastTimeCritical());
             $arr['lastCheck'] = $this->UserTime->format($this->getLastCheck());
             $arr['nextCheck'] = $this->UserTime->format($this->getNextCheck());
             $arr['lastHardStateChangeInWords'] = $this->UserTime->secondsInHumanShort(time() - $this->getLastHardStateChange());
@@ -466,6 +480,7 @@ class Servicestatus {
             $arr['lastHardStateChange'] = $this->getLastHardStateChange();
             $arr['last_state_change'] = $this->getLastStateChange();
             $arr['last_time_ok'] = $this->getLastTimeOk();
+            $arr['last_time_critical'] = $this->getLastTimeCritical();
             $arr['lastCheck'] = $this->getLastCheck();
             $arr['nextCheck'] = $this->getNextCheck();
         }

@@ -51,7 +51,11 @@ use itnovum\openITCOCKPIT\Agent\AgentConfiguration;
 class AgentCommand extends Command {
 
     const RC_UP = 0;
-    const RC_DOWN = 1;
+    // Host checks must exit with code >= 2 to mark a host as DOWN.
+    // Naemon maps exit code 1 to WARNING and downgrades WARNING to UP
+    // unless use_aggressive_host_checking is enabled (see naemon-core
+    // checks_host.c, update_host_state_post_check).
+    const RC_DOWN = 2;
     const RC_UNREACHABLE = 2;
 
     const RC_OK = 0;

@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -34,6 +35,7 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use App\Model\Behavior\ContainerOwnedBehavior;
 use Cake\Database\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -67,6 +69,7 @@ use itnovum\openITCOCKPIT\Filter\BookmarkAllocationsFilter;
  * @method \App\Model\Entity\FilterBookmarkAllocation[]|\Cake\Datasource\ResultSetInterface deleteManyOrFail(iterable $entities, $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin ContainerOwnedBehavior
  */
 class FilterBookmarkAllocationsTable extends Table {
 
@@ -85,6 +88,7 @@ class FilterBookmarkAllocationsTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->belongsTo('FilterBookmarks', [
             'foreignKey' => 'filter_bookmark_id',

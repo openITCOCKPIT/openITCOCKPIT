@@ -42,6 +42,7 @@ class BackendWhitelist implements BackendWhitelistInterface {
      * @return bool
      */
     public function isWhitelisted(string $controller, string $action, string $plugin = ''): bool {
+        //dd(['controller' => $controller, 'action' => $action, 'plugin' => $plugin]);
         if (empty($plugin)) {
             // Check core whitelist
             $whitelist = $this->getWhitelistedActions();

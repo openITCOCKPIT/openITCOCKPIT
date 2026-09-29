@@ -179,6 +179,13 @@ class ConfigurationFilesController extends AppController {
     /**
      * @throws \Exception
      */
+    public function Statusengine4Cfg() {
+        $this->__sharedControllerAction('itnovum\openITCOCKPIT\ConfigGenerator\Statusengine4Cfg', 'Statusengine4Cfg');
+    }
+
+    /**
+     * @throws \Exception
+     */
     public function GraphiteWeb() {
         $this->__sharedControllerAction('itnovum\openITCOCKPIT\ConfigGenerator\GraphiteWeb', 'GraphiteWeb');
     }

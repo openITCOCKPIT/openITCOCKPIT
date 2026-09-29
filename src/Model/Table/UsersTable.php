@@ -1336,6 +1336,7 @@ class UsersTable extends Table {
 
             $imgsize = getimagesize($tmpImageFull);
             if (!isset($imgsize[0])) {
+                unlink($tmpImageFull);
                 // Not an image at all?
                 return false;
             }
@@ -1373,6 +1374,7 @@ class UsersTable extends Table {
                     break;
                 default:
                     //Filetype not supported!
+                    unlink($tmpImageFull);
                     return false;
                     break;
             }

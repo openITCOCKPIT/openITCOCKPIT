@@ -56,8 +56,12 @@ LogData = "statusngin_logentries"
 ##Vhost = "/"
 ##Timeout = 30
 ##Exchange = "statusengine"
-##DurableExchange = false
-##DurableQueues = false
+## Durable queues and exchange. Required by RabbitMQ 4, which refuses to declare a queue
+## that is neither durable nor exclusive. This stores queue and exchange *definitions* on
+## disk, not the events: messages are published transient, so the queues still buffer in
+## RAM and are still emptied by a restart of RabbitMQ.
+##DurableExchange = true
+##DurableQueues = true
 ##SSL = false
 ##SSL_verify = true
 ##SSL_cacert = ""
@@ -97,6 +101,29 @@ LogData = "statusngin_logentries"
 # If next_schedule of a service or host is in the past during startup, we reschedule
 # the service/host within $StartupScheduleMax seconds instead of the check_intervall of the host/service.
 #StartupScheduleMax = 30
+
+[Worker]
+# These two bound how long one run of the worker - the part that reads WorkerCommand,
+# WorkerOCHP and WorkerOCSP and applies the results - may keep the monitoring core busy.
+# The worker runs inside the core's event loop, so while it works, the core does nothing
+# else: it schedules no checks, reaps no results and reads no external commands.
+#
+# Time budget for one run, in milliseconds. 0 means unbounded.
+# When a run stops here with messages still queued, the core is asked to run the worker
+# again on its very next event loop pass, so this costs the core a little latency and
+# next to no throughput. A run can overshoot by the message it is busy with: a bulk
+# message is one job that has already been acknowledged and cannot be abandoned half way,
+# so the real guarantee is "budget plus one message".
+# Has no effect when built for nagios, which cannot reschedule the worker early.
+#MaxRuntimeMilliseconds = 100
+#
+# Upper limit of messages one run may take off the queues.
+# Note that this counts messages as they arrive from gearman or rabbitmq, NOT the check
+# results inside them - one bulk message of 200 check results counts as 1. Leave the time
+# budget above as the real bound; this is a second, coarser ceiling.
+# Unlike MaxRuntimeMilliseconds, 0 does not mean unbounded here - it means one message per
+# run. That is not a useful setting; leave it alone and use the time budget.
+#MaxWorkerMessagesPerInterval = 1000000
 
 [Bulk]
 ## Maximum number of messages in one bulk message

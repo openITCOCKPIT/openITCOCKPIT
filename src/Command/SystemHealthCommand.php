@@ -45,7 +45,6 @@ use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Plugin;
 use Cake\Http\ServerRequest;
 use Cake\ORM\TableRegistry;
-use DistributeModule\Model\Table\SatellitesTable;
 use itnovum\openITCOCKPIT\Core\Interfaces\CronjobInterface;
 use itnovum\openITCOCKPIT\Core\System\Gearman;
 use itnovum\openITCOCKPIT\Core\System\Health\CpuLoad;
@@ -59,6 +58,7 @@ use itnovum\openITCOCKPIT\Filter\SatelliteFilter;
 class SystemHealthCommand extends Command implements CronjobInterface {
 
     private $state = 'unknown';
+    private $satellites_state = 'unknown';
 
     /**
      * Hook method for defining this command's option parser.
@@ -243,12 +243,113 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
         if (Plugin::isLoaded('DistributeModule')) {
             $data['isDistributeModuleInstalled'] = true;
-            /** @var SatellitesTable $SatellitesTable */
-            $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
-            $data['satellites'] = $SatellitesTable->getSatellitesStatus(new SatelliteFilter(new ServerRequest()));
+            // @var SatellitesTable $SatellitesTable
+            $data['satellites'] = $this->getSatellitesStatusWithHealth();
         }
 
         return $data;
+    }
+
+    public function getSatellitesStatusWithHealth(): array {
+
+        $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
+
+        $SatelliteFilter = new SatelliteFilter(new ServerRequest());
+        $where = $SatelliteFilter->statusFilter();
+        $having = [];
+        if (isset($where['status IN'])) {
+            $having['status IN'] = $where['status IN'];
+            unset($where['status IN']);
+        }
+
+        $query = $SatellitesTable->find('all');
+        $satellitesArray = $query->select([
+            'Satellites.id',
+            'Satellites.name',
+            'Satellites.description',
+            'Satellites.address',
+            'Satellites.container_id',
+            'Satellites.timezone',
+            'Satellites.sync_method',
+            'SatelliteStatus.status',
+            'SatelliteStatus.last_error',
+            'SatelliteStatus.last_export',
+            'SatelliteStatus.last_seen',
+            'SatelliteStatus.satellite_id',
+            'status' => $query->newExpr('IF(SatelliteStatus.status IS NULL, 0, SatelliteStatus.status)')
+        ])
+            ->where($where)
+            ->having($having)
+            ->contain(['SatelliteStatus'])
+            ->orderBy($SatelliteFilter->getOrderForPaginator('Satellites.name', 'asc'))
+            ->disableHydration()
+            ->toArray();
+
+        if (empty($satellitesArray)) {
+            return [];
+        }
+        $satelliteIds = array_column($satellitesArray, 'id');
+        $SatelliteInformationTable = TableRegistry::getTableLocator()->get('DistributeModule.SatelliteInformation');
+        $updatedSatellites = [];
+
+        $healthMap = $SatelliteInformationTable->find()
+            ->select(['satellite_id', 'system_health'])
+            ->where(['satellite_id IN' => $satelliteIds])
+            ->disableHydration()
+            ->all()
+            ->combine('satellite_id', function ($row) {
+                if (is_string($row['system_health'])) {
+                    $decoded = json_decode($row['system_health'], true);
+                    if ($decoded !== null) {
+                        return $decoded;
+                    }
+                }
+                return $row['system_health'];
+            })
+            ->toArray();
+
+        foreach ($satellitesArray as $satellite) {
+
+            if (!isset($satellite['satellite_status'])) {
+                continue;
+            }
+
+            $parsedHealth = $healthMap[$satellite['id']] ?? null;
+
+            if (!empty($parsedHealth) && is_array($parsedHealth)) {
+                $cpu_cores = (int)$parsedHealth['cpu_cores'];
+                $cpu_load15 = (float)$parsedHealth['cpu_load15'];
+
+                if (($cpu_cores - 2) <= 0) {
+                    $cpu_cores_warning = 1;
+                } else {
+                    $cpu_cores_warning = $cpu_cores - 2;
+                }
+
+                $parsedHealth['cpu_state'] = 'ok';
+
+                if ($cpu_load15 == 1 && $cpu_cores_warning == 1) {
+                    $parsedHealth['cpu_state'] = 'warning';
+                }
+
+                if ($cpu_load15 > $cpu_cores_warning) {
+                    $parsedHealth['cpu_state'] = 'warning';
+                }
+
+                if ($cpu_load15 > $cpu_cores) {
+                    $parsedHealth['cpu_state'] = 'critical';
+                }
+
+                $satellite['satellite_information'] = [
+                    'satellite_id'  => $satellite['id'],
+                    'system_health' => $parsedHealth ?? []
+                ];
+            }
+            $updatedSatellites[] = $satellite;
+        }
+
+        return $updatedSatellites;
+
     }
 
     public function sendHealthNotification($data, $sendingMail) {
@@ -273,6 +374,20 @@ class SystemHealthCommand extends Command implements CronjobInterface {
                     break;
             }
 
+            switch (strtoupper($this->satellites_state)) {
+                case 'OK':
+                    $notify_on_recovery = 1;
+                    break;
+                case 'WARNING':
+                    $notify_on_warning = 1;
+                    break;
+                case 'CRITICAL':
+                    $notify_on_critical = 1;
+                    break;
+                default:
+                    break;
+            }
+
             if (!$notify_on_recovery && !$notify_on_critical && !$notify_on_warning) {
                 return;
             }
@@ -281,7 +396,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             $SystemHealthUsersTable = TableRegistry::getTableLocator()->get('SystemHealthUsers');
             $users = $SystemHealthUsersTable->getUsersForNotifications($notify_on_warning, $notify_on_critical, $notify_on_recovery);
 
-            $systemHealthNotification = new SystemHealthNotification($users, $this->state);
+            $systemHealthNotification = new SystemHealthNotification($users, $this->state, $this->satellites_state);
             $systemHealthNotification->setData($data);
             $systemHealthNotification->sendNotification();
 
@@ -296,7 +411,9 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
         $cache = Cache::read('system_health', 'permissions');
         $sendingMail = false;
-        if (!empty($cache) && !empty($cache['previousState']) && $cache['previousState'] !== $this->state) {
+
+        if ((!empty($cache) && !empty($cache['previousState']) && $cache['previousState'] !== $this->state) ||
+            (!empty($cache) && !empty($cache['previousSatellitesState']) && $cache['previousSatellitesState'] !== $this->satellites_state)) {
             $sendingMail = true;
         }
         $io->out($sendingMail ? 'true' : 'false', 0);
@@ -359,6 +476,49 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             $this->setHealthState('warning');
         }
 
+        foreach ($dataForEmail['satellites'] ?? [] as $satellite) {
+
+            if (isset($satellite['status'])) {
+                $satellite_status = "";
+                if (is_numeric($satellite['status'])) {
+                    $satellite_status = $this->getSatellitesState($satellite['status']);
+                } else if (is_string($satellite['status'])) {
+                    $satellite_status = $satellite['status'];
+                }
+
+                $this->setSatellitesHealthState($satellite_status);
+            }
+
+            $satInfo = $satellite['satellite_information'] ?? [];
+
+            if (!$satInfo || empty($satInfo['system_health'])) {
+                continue;
+            }
+
+            $systemHealth = $satInfo['system_health'];
+            // RAM
+            if (isset($systemHealth['memory']['memory']['state'])) {
+                $this->setSatellitesHealthState($systemHealth['memory']['memory']['state']);
+            }
+            if (isset($systemHealth['memory']['swap']['state'])) {
+                $this->setSatellitesHealthState($systemHealth['memory']['swap']['state']);
+            }
+            // Disks
+            if (!empty($systemHealth['disks']) && is_array($systemHealth['disks'])) {
+                foreach ($systemHealth['disks'] as $disk) {
+                    if (isset($disk['state'])) {
+                        $this->setSatellitesHealthState($disk['state']);
+                    }
+                }
+            }
+
+            //CPU
+            if (isset($systemHealth['cpu_cores'], $systemHealth['cpu_load15'], $systemHealth['cpu_state'])) {
+                $this->setSatellitesHealthState($systemHealth['cpu_state']);
+            }
+
+        }
+
         $this->setHealthState($dataForEmail['memory_usage']['memory']['state']);
         $this->setHealthState($dataForEmail['memory_usage']['swap']['state']);
         $this->setHealthState($dataForEmail['load']['state']);
@@ -367,6 +527,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         }
 
         $dataForEmail['state'] = $this->state;
+        $dataForEmail['satellites_state'] = $this->satellites_state;
 
         return $dataForEmail;
 
@@ -387,8 +548,25 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         $this->state = $state;
     }
 
+    private function setSatellitesHealthState($satellites_state) {
+
+        //Do not overwrite critical with ok or warning
+        if ($this->satellites_state === 'critical') {
+            return;
+        }
+
+        //Do not overwrite warning with ok
+        if ($this->satellites_state === 'warning' && $satellites_state !== 'critical') {
+            return;
+        }
+
+        $this->satellites_state = $satellites_state;
+    }
+
     public function saveToCache($data) {
         $data['previousState'] = $this->state;
+        $data['previousSatellitesState'] = $this->satellites_state;
+
         $data['update'] = time();
 
         $redisHost = env('OITC_REDIS_HOST', '127.0.0.1');
@@ -398,4 +576,16 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         $Redis->connect($redisHost, $redisPort);
         $Redis->setex('permissions_system_health', 60 * 3, serialize($data));
     }
+
+    private function getSatellitesState($satellites_state): string {
+        if (!isset($satellites_state)) {
+            return 'unknown';
+        }
+        return match ($satellites_state) {
+            1 => 'ok',
+            2, 3 => 'critical',//2 => 'warning'
+            default => 'unknown',
+        };
+    }
+
 }

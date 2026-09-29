@@ -22,6 +22,7 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 // 2.
 //	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
@@ -33,6 +34,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\itnovum\openITCOCKPIT\Core\Merger\ServiceMergerForCheckValues;
 use App\Lib\Exceptions\MissingDbBackendException;
 use App\Lib\Interfaces\AcknowledgementHostsTableInterface;
 use App\Lib\Interfaces\AcknowledgementServicesTableInterface;
@@ -223,7 +225,7 @@ class ServicesController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceIndexStatusengine3($ServiceConditions, $PaginateOMat);
         }
 
@@ -378,7 +380,7 @@ class ServicesController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceIndexForPassiveServicesStatusengine3($ServiceConditions, $PaginateOMat);
         }
 
@@ -563,7 +565,7 @@ class ServicesController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceNotMonitoredStatusengine3($ServiceConditions, $PaginateOMat);
         }
 
@@ -754,6 +756,12 @@ class ServicesController extends AppController {
             }
 
             $host = $HostsTable->get($hostId);
+            $hostForPermissionCheck = $HostsTable->getHostByIdForPermissionCheck($hostId);
+            if (!$this->allowedByContainerId($hostForPermissionCheck->getContainerIds())) {
+                $this->render403();
+                return;
+            }
+
             $request = $this->request->getData();
             $request['Host'] = [
                 'id'   => $host->get('id'),
@@ -2119,7 +2127,7 @@ class ServicesController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceIndexStatusengine3($ServiceConditions);
         }
 
@@ -2236,7 +2244,7 @@ class ServicesController extends AppController {
             throw new MissingDbBackendException('MissingDbBackendException');
         }
 
-        if ($this->DbBackend->isStatusengine3()) {
+        if ($this->DbBackend->isStatusengine4()) {
             $services = $ServicesTable->getServiceIndexStatusengine3($ServiceConditions);
         }
 
@@ -3150,6 +3158,7 @@ class ServicesController extends AppController {
         $selected = $this->request->getQuery('selected');
         $containerId = $this->request->getQuery('containerId');
         $resolveContainerIds = $this->request->getQuery('resolveContainerIds', false);
+        $withCheckValues = $this->request->getQuery('withCheckValues', false); // to get check_period, max_check_attempts and retry_interval
 
         if (empty($containerId)) {
             $containerId = $this->MY_RIGHTS;
@@ -3190,9 +3199,19 @@ class ServicesController extends AppController {
         /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
-        $services = $ServicesTable->getServicesForAngularCake4($ServiceConditions, $selected, true);
+        $services = $ServicesTable->getServicesForAngularCake4($ServiceConditions, $selected, true, $withCheckValues);
         $reorderServicesArray = [];
         foreach ($services as $service) {
+
+            $mergedService = [];
+            if ($withCheckValues) {
+                $ServiceMergerForCheckValues = new ServiceMergerForCheckValues(
+                    $service,
+                    $service['_matchingData']['Servicetemplates'],
+                );
+                $mergedService = $ServiceMergerForCheckValues->getDataForView();
+            }
+
             if (!isset($reorderServicesArray[$service['_matchingData']['Hosts']['name']])) {
                 $reorderServicesArray[$service['_matchingData']['Hosts']['name']] = [
                     'label' => $service['_matchingData']['Hosts']['name'],
@@ -3209,6 +3228,13 @@ class ServicesController extends AppController {
                 'value'    => $service['id'],
                 'disabled' => ($service['disabled'] == 1)  // if needed can be configured by parameter
             ];
+
+            if ($withCheckValues && $mergedService) {
+                $lastElementIndex = array_key_last($reorderServicesArray[$service['_matchingData']['Hosts']['name']]['items']);
+                $reorderServicesArray[$service['_matchingData']['Hosts']['name']]['items'][$lastElementIndex]['check_interval'] = $mergedService['Service']['check_interval'];
+                $reorderServicesArray[$service['_matchingData']['Hosts']['name']]['items'][$lastElementIndex]['retry_interval'] = $mergedService['Service']['retry_interval'];
+                $reorderServicesArray[$service['_matchingData']['Hosts']['name']]['items'][$lastElementIndex]['max_check_attempts'] = $mergedService['Service']['max_check_attempts'];
+            }
         }
 
 

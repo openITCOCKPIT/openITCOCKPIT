@@ -209,6 +209,22 @@ done
 
 mysql --defaults-extra-file=${INIFILE} -e "ALTER DATABASE ${dbc_dbname} CHARACTER SET utf8mb4 COLLATE ${MYSQL_COLLATIONS};"
 
+echo "Checking column end_time on statusengine_host_acknowledgements"
+HOST_ACK_END_TIME_EXISTS=$(mysql "--defaults-extra-file=$INIFILE" -e "SELECT COUNT(*) FROM \`information_schema\`.\`COLUMNS\` WHERE \`TABLE_SCHEMA\`='${dbc_dbname}' AND \`TABLE_NAME\`='statusengine_host_acknowledgements' AND \`COLUMN_NAME\`='end_time'" -B -s 2>/dev/null)
+
+if [ "$HOST_ACK_END_TIME_EXISTS" = "0" ]; then
+    echo "Adding end_time column to statusengine_host_acknowledgements..."
+    mysql --defaults-extra-file="${INIFILE}" -e "ALTER TABLE \`statusengine_host_acknowledgements\` ADD COLUMN \`end_time\` BIGINT NOT NULL DEFAULT 0"
+fi
+
+echo "Checking column end_time on statusengine_service_acknowledgements"
+SERVICE_ACK_END_TIME_EXISTS=$(mysql "--defaults-extra-file=$INIFILE" -e "SELECT COUNT(*) FROM \`information_schema\`.\`COLUMNS\` WHERE \`TABLE_SCHEMA\`='${dbc_dbname}' AND \`TABLE_NAME\`='statusengine_service_acknowledgements' AND \`COLUMN_NAME\`='end_time'" -B -s 2>/dev/null)
+
+if [ "$SERVICE_ACK_END_TIME_EXISTS" = "0" ]; then
+    echo "Adding end_time column to statusengine_service_acknowledgements..."
+    mysql --defaults-extra-file="${INIFILE}" -e "ALTER TABLE \`statusengine_service_acknowledgements\` ADD COLUMN \`end_time\` BIGINT NOT NULL DEFAULT 0"
+fi
+
 echo "Delete AcknowledgePerMail Cronjob if exists"
 mysql --defaults-extra-file=${INIFILE} -e "DELETE FROM cronjobs WHERE task='AcknowledgePerMail' AND plugin='Core';"
 

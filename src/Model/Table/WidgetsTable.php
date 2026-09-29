@@ -391,6 +391,14 @@ class WidgetsTable extends Table {
                 'width'     => 3,
                 'height'    => 15
             ];
+            $widgets[] = [
+                'type_id'   => 42,
+                'title'     => __('Host Operations Summary (last 24 hours)'),
+                'icon'      => 'fas fa-magnifying-glass-chart',
+                'directive' => 'host-operations-summary-widget',
+                'width'     => 12,
+                'height'    => 30
+            ];
         }
 
         if (isset($ACL_PERMISSIONS['services']['index'])) {
@@ -452,6 +460,15 @@ class WidgetsTable extends Table {
                 'directive' => 'cylinder-widget',
                 'width'     => 3,
                 'height'    => 14
+            ];
+
+            $widgets[] = [
+                'type_id'   => 43,
+                'title'     => __('Service Operations Summary (last 24 hours)'),
+                'icon'      => 'fas fa-magnifying-glass-chart',
+                'directive' => 'service-operations-summary-widget',
+                'width'     => 12,
+                'height'    => 30
             ];
         }
 

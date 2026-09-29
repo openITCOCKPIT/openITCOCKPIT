@@ -22,11 +22,13 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
+//
 
 namespace App\Model\Table;
 
 use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use App\Model\Behavior\ContainerOwnedBehavior;
 use App\Model\Entity\Instantreport;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
@@ -52,6 +54,7 @@ use itnovum\openITCOCKPIT\Filter\InstantreportFilter;
  * @method \App\Model\Entity\Instantreport findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin ContainerOwnedBehavior
  */
 class InstantreportsTable extends Table {
     use Cake2ResultTableTrait;
@@ -71,6 +74,7 @@ class InstantreportsTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('ContainerOwned');
 
         $this->belongsTo('Containers', [
             'foreignKey' => 'container_id',

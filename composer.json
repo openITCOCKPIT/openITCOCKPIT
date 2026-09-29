@@ -71,6 +71,7 @@
         "symfony/process": "^5.4",
         "symfony/yaml": "^5.0",
         "tecnickcom/tcpdf": "^6.4",
+        "telegram-bot/api": "^2.3",
         "twig/twig": "^3.0"
     },
     "require-dev": {
@@ -90,7 +91,8 @@
         "psr-4": {
             "App\\": "src/",
             "itnovum\\openITCOCKPIT\\": "src/itnovum/openITCOCKPIT/",
-            "Statusengine\\": "src/Statusengine/"
+            "Statusengine\\": "src/Statusengine/",
+            "TelegramBot\\Api\\": "vendor/telegram-bot/api/src/"
         },
         "files": [
             "src/3rd/imageSmoothArc.php"

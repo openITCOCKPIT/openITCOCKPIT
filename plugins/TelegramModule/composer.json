@@ -1,0 +1,28 @@
+{
+    "name": "open-itcockpit/telegram-module",
+    "description": "TelegramModule plugin for openITCOCKPIT",
+    "type": "cakephp-plugin",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.1",
+        "telegram-bot/api": "^2.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "TelegramModule\\": "src/",
+            "TelegramBot\\Api\\": "vendor/telegram-bot/api/src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TelegramModule\\Test\\": "tests/",
+            "Cake\\Test\\": "vendor/cakephp/cakephp/tests/"
+        }
+    },
+    "scripts": {
+        "reuse": "reuse annotate",
+        "reuse-lint": "reuse lint",
+        "reuse-nix": "nix-shell -p reuse --command \"reuse annotate\"",
+        "reuse-lint-nix": "nix-shell -p reuse --command \"reuse lint\""
+    }
+}

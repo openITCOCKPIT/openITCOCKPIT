@@ -715,6 +715,7 @@ class AngularController extends AppController {
             }
             return true;
         });
+        $cache['satellites'] = array_values($cache['satellites']);
 
         foreach (($cache['satellites'] ?? []) as $index => $satellite) {
 
@@ -765,6 +766,7 @@ class AngularController extends AppController {
                 }
             }
         }
+
         $user = $this->getUser();
         $UserTime = new UserTime($user->get('timezone'), $user->get('dateformat'));
         $cache['update'] = $UserTime->format($cache['update']);

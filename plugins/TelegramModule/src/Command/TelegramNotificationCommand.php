@@ -521,8 +521,7 @@ class TelegramNotificationCommand extends BaseCommand {
         }
     }
 
-    private function sendMessage($text, InlineKeyboardMarkup $inlineKeyboardMarkup = null) {
-        var_dump($text);
+    private function sendMessage($text, InlineKeyboardMarkup|null $inlineKeyboardMarkup = null) {
         if ($this->telegramChats->count() > 0) {
             $this->telegramChats->each(function ($chat, $key) use ($text, $inlineKeyboardMarkup) {
                 if (is_array($chat)) {

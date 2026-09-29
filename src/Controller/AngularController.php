@@ -704,6 +704,18 @@ class AngularController extends AppController {
         $User = new User($this->getUser());
         $UserTime = $User->getUserTime();
 
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $cache['satellites'] = array_filter($cache['satellites'], function ($satellite) use ($MY_RIGHTS) {
+            if ($MY_RIGHTS && $satellite['container_id'] && !in_array($satellite['container_id'], $MY_RIGHTS)) {
+                return false;
+            }
+            return true;
+        });
+
         foreach (($cache['satellites'] ?? []) as $index => $satellite) {
 
             // Put date to users time-zone
@@ -725,7 +737,7 @@ class AngularController extends AppController {
                 } else if (is_string($cache['satellites'][$index]['status'])) {
                     $satellite_status = $cache['satellites'][$index]['status'];
                 }
-                
+
                 $this->setSatellitesHealthState($satellite_status);
             }
 

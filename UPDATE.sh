@@ -583,6 +583,9 @@ for srv in openitcockpit-graphing.service nginx.service nsta.service event-colle
   if systemctl is-active --quiet $srv; then
     echo "Restart service: $srv"
     systemctl restart $srv
+  elif systemctl is-enabled --quiet "$srv"; then
+    echo "Start service that is enabled but currently not running. Suspicious.: $srv"
+    systemctl start "$srv"
   fi
 done
 

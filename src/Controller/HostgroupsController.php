@@ -172,6 +172,11 @@ class HostgroupsController extends AppController {
             $hostgroup->set('uuid', UUID::v4());
             $hostgroup->get('container')->set('containertype_id', CT_HOSTGROUP);
 
+            if (!$this->isWritableContainer($hostgroup->get('container')->get('parent_id'))) {
+                $this->render403();
+                return;
+            }
+
             /** @var ContainersTable $ContainersTable */
             $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
@@ -246,7 +251,14 @@ class HostgroupsController extends AppController {
             ]);
 
             $hostgroupEntity->setAccess('uuid', false);
-            $hostgroupEntity = $HostgroupsTable->patchEntity($hostgroupEntity, $this->request->getData('Hostgroup'));
+            $data = $this->request->getData('Hostgroup');
+            unset($data['container']['lft'], $data['container']['rght']);
+            $hostgroupEntity = $HostgroupsTable->patchEntity($hostgroupEntity, $data);
+
+            if (!$this->isWritableContainer($hostgroupEntity->get('container')->get('parent_id'))) {
+                $this->render403();
+                return;
+            }
             $hostgroupEntity->id = $id;
 
             $requestData = $this->request->getData();

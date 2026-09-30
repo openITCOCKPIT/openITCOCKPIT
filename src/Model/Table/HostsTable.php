@@ -4591,11 +4591,76 @@ class HostsTable extends Table {
             ])
             ->contain([
                 'HostsToContainersSharing',
+                'Contacts'      => function (Query $query) {
+                    return $query->select([
+                        'Contacts.id',
+                        'Contacts.name',
+                        'Contacts.email',
+                        'Contacts.host_timeperiod_id',
+                        'Contacts.host_notifications_enabled',
+                        'Contacts.notify_host_recovery',
+                        'Contacts.notify_host_down',
+                        'Contacts.notify_host_unreachable',
+                        'Contacts.notify_host_flapping',
+                        'Contacts.notify_host_downtime'
+                    ]);
+                },
+                'Contactgroups' => function (Query $query) {
+                    return $query->contain([
+                        'Contacts' => function (Query $query) {
+                            return $query->select([
+                                'Contacts.id',
+                                'Contacts.name',
+                                'Contacts.email',
+                                'Contacts.host_timeperiod_id',
+                                'Contacts.host_notifications_enabled',
+                                'Contacts.notify_host_recovery',
+                                'Contacts.notify_host_down',
+                                'Contacts.notify_host_unreachable',
+                                'Contacts.notify_host_flapping',
+                                'Contacts.notify_host_downtime'
+                            ]);
+                        }
+                    ]);
+                },
                 'Hosttemplates' => function (Query $query) {
                     $query->select([
                         'Hosttemplates.id',
                         'Hosttemplates.check_period_id',
                         'Hosttemplates.notify_period_id'
+                    ])->contain([
+                        'Contacts'      => function (Query $query) {
+                            return $query->select([
+                                'Contacts.id',
+                                'Contacts.name',
+                                'Contacts.email',
+                                'Contacts.host_timeperiod_id',
+                                'Contacts.host_notifications_enabled',
+                                'Contacts.notify_host_recovery',
+                                'Contacts.notify_host_down',
+                                'Contacts.notify_host_unreachable',
+                                'Contacts.notify_host_flapping',
+                                'Contacts.notify_host_downtime'
+                            ]);
+                        },
+                        'Contactgroups' => function (Query $query) {
+                            return $query->contain([
+                                'Contacts' => function (Query $query) {
+                                    return $query->select([
+                                        'Contacts.id',
+                                        'Contacts.name',
+                                        'Contacts.email',
+                                        'Contacts.host_timeperiod_id',
+                                        'Contacts.host_notifications_enabled',
+                                        'Contacts.notify_host_recovery',
+                                        'Contacts.notify_host_down',
+                                        'Contacts.notify_host_unreachable',
+                                        'Contacts.notify_host_flapping',
+                                        'Contacts.notify_host_downtime'
+                                    ]);
+                                }
+                            ]);
+                        }
                     ]);
                     return $query;
                 }

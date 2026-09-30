@@ -1525,7 +1525,7 @@ class AgentconnectorController extends AppController {
                             'output'              => $pluginOutput,
                             'long_output'         => ($Plugin->getLongOutput() === '' ? null : $Plugin->getLongOutput()),
                             'check_type'          => 1, //https://github.com/naemon/naemon-core/blob/cec6e10cbee9478de04b4cf5af29e83d47b5cfd9/src/naemon/common.h#L330-L334
-                            'return_code'         => $Plugin->getStatuscode(),
+                            'return_code'         => (int)$Plugin->getStatuscode(),
                             'start_time'          => time(),
                             'end_time'            => time(),
                             'early_timeout'       => 0,

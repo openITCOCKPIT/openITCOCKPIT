@@ -124,6 +124,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
             'DowntimeServices.comment_data',
             'DowntimeServices.entry_time',
             'DowntimeServices.scheduled_start_time',
+            'DowntimeServices.actual_start_time',
             'DowntimeServices.scheduled_end_time',
             'DowntimeServices.duration',
             'DowntimeServices__actual_duration' => $query->newExpr('DowntimeServices.actual_end_time - DowntimeServices.actual_start_time'),

@@ -2917,22 +2917,14 @@ class NagiosConfigGenerator {
         return $this->_systemsettings['MONITORING']['MONITORING.AFTER_EXPORT'];
     }
 
-    public function deleteHostPerfdata() {
-        return true; // @todo fix me
-        $basePath = Configure::read('rrd.path');
-
-        /** @var DeletedHostsTable $DeletedHostsTable */
-        $DeletedHostsTable = TableRegistry::getTableLocator()->get('DeletedHosts');
-
+    protected function getGraphitePath(): string {
         /** @var ConfigurationFilesTable $ConfigurationFilesTable */
         $ConfigurationFilesTable = TableRegistry::getTableLocator()->get('ConfigurationFiles');
         $GraphingDocker = new GraphingDocker();
         $config = $GraphingDocker->mergeDbResultWithDefaultConfiguration($ConfigurationFilesTable->getConfigValuesByConfigFile($GraphingDocker->getDbKey()));
 
-        $wspPath = $config['string']['carbon_path'] . DS . 'openitcockpit' . DS; // Default: /var/lib/graphite/whisper/openitcockpit/
-
-        foreach ($DeletedHostsTable->getDeletedHostsWherePerfdataWasNotDeletedYet() as $deletedHost) {
-            /** @var \App\Model\Entity\DeletedHost $deletedHost */
+        return $config['string']['carbon_path'] . DS . 'openitcockpit' . DS;
+    }
 
             //Delete .rrd files (Rrdtool)
             if (is_dir($basePath . $deletedHost->get('uuid'))) {

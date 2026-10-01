@@ -818,8 +818,6 @@ class NagiosConfigGenerator {
         if ($this->dm === true) {
             $this->exportSatHostgroups();
         }
-
-        $this->deleteHostPerfdata();
     }
 
     /**
@@ -1526,8 +1524,6 @@ class NagiosConfigGenerator {
         if ($this->dm === true) {
             $this->exportSatServicegroups();
         }
-
-        $this->deleteServicePerfdata();
     }
 
     /**
@@ -2921,74 +2917,85 @@ class NagiosConfigGenerator {
         return $this->_systemsettings['MONITORING']['MONITORING.AFTER_EXPORT'];
     }
 
-    public function deleteHostPerfdata() {
-        return true; // @todo fix me
-        $basePath = Configure::read('rrd.path');
-
-        /** @var DeletedHostsTable $DeletedHostsTable */
-        $DeletedHostsTable = TableRegistry::getTableLocator()->get('DeletedHosts');
-
+    protected function getGraphitePath(): string {
         /** @var ConfigurationFilesTable $ConfigurationFilesTable */
         $ConfigurationFilesTable = TableRegistry::getTableLocator()->get('ConfigurationFiles');
         $GraphingDocker = new GraphingDocker();
         $config = $GraphingDocker->mergeDbResultWithDefaultConfiguration($ConfigurationFilesTable->getConfigValuesByConfigFile($GraphingDocker->getDbKey()));
 
-        $wspPath = $config['string']['carbon_path'] . DS . 'openitcockpit' . DS; // Default: /var/lib/graphite/whisper/openitcockpit/
+        return $config['string']['carbon_path'] . DS . 'openitcockpit' . DS;
+    }
+
+    /**
+     * I will remove the given $directory entirely and recursively.
+     * If any file is found that does not have the given $suffix, deleting is cancelled.
+     *
+     * @param string $directory I am the base directory which will be removed including all folders and files in it.
+     * @param string $suffix I am the suffix to compare the files in the given $directory with. If any other file exists, deleting is cancelled.
+     * @return bool
+     */
+    private function rmDir(string $directory, string $suffix): bool {
+        if (!is_dir($directory)) {
+            return true;
+        }
+        $DirectoryIterator = new \DirectoryIterator($directory);
+        foreach ($DirectoryIterator as $fileInfo) {
+            if ($fileInfo->isDot()) {
+                continue;
+            }
+            if ($fileInfo->isDir()) {
+                if (!$this->rmDir($fileInfo->getPathname(), $suffix)) {
+                    return false;
+                }
+            } else {
+                if (!file_exists($fileInfo->getPathName())) {
+                    return true;
+                }
+                if (!str_ends_with($fileInfo->getPathName(), $suffix)) {
+                    return false;
+                }
+                unlink($fileInfo->getPathname());
+            }
+        }
+        return true;
+    }
+
+    /**
+     * I will remove the Graphite Data for all deleted hosts, where this has not been done yet.
+     *
+     * @return void
+     */
+    public function deleteHostPerfdata(): void {
+        $wspPath = $this->getGraphitePath();
+
+        /** @var DeletedHostsTable $DeletedHostsTable */
+        $DeletedHostsTable = TableRegistry::getTableLocator()->get('DeletedHosts');
 
         foreach ($DeletedHostsTable->getDeletedHostsWherePerfdataWasNotDeletedYet() as $deletedHost) {
-            /** @var \App\Model\Entity\DeletedHost $deletedHost */
+            $folder = $deletedHost->get('uuid') . DS;
 
-            //Delete .rrd files (Rrdtool)
-            if (is_dir($basePath . $deletedHost->get('uuid'))) {
-                $folder = new Folder($basePath . $deletedHost->get('uuid'));
-                $folder->delete();
-                unset($folder);
-            }
+            // Recursively delete the directory with whisper files.
+            $this->rmDir($wspPath . $folder, 'wsp');
 
-            //Delete .wsp files (Graphite)
-            if (is_dir($wspPath . $deletedHost->get('uuid'))) {
-                $folder = new Folder($wspPath . $deletedHost->get('uuid'));
-                $folder->delete();
-                unset($folder);
-            }
-
-
+            // Store the fact that cleanup has been done.
             $deletedHost->set('deleted_perfdata', 1);
             $DeletedHostsTable->save($deletedHost);
         }
     }
 
-    public function deleteServicePerfdata() {
-        return true; // @todo fix me
-        $basePath = Configure::read('rrd.path');
+    public function deleteServicePerfdata(): void {
+        $wspPath = $this->getGraphitePath();
 
         /** @var DeletedServicesTable $DeletedServicesTable */
         $DeletedServicesTable = TableRegistry::getTableLocator()->get('DeletedServices');
 
-        /** @var ConfigurationFilesTable $ConfigurationFilesTable */
-        $ConfigurationFilesTable = TableRegistry::getTableLocator()->get('ConfigurationFiles');
-        $GraphingDocker = new GraphingDocker();
-        $config = $GraphingDocker->mergeDbResultWithDefaultConfiguration($ConfigurationFilesTable->getConfigValuesByConfigFile($GraphingDocker->getDbKey()));
-
-        $wspPath = $config['string']['carbon_path'] . DS . 'openitcockpit' . DS; // Default: /var/lib/graphite/whisper/openitcockpit/
-
         foreach ($DeletedServicesTable->getDeletedServicesWherePerfdataWasNotDeletedYet() as $deletedService) {
-            /** @var \App\Model\Entity\DeletedService $deletedService */
-            foreach (['rrd', 'xml'] as $extension) {
-                //Check if perfdata .rrd and .xml files still exists and if we need to delete them (Rrdtool)
-                $file = $basePath . $deletedService['DeletedService']['host_uuid'] . '/' . $deletedService['DeletedService']['uuid'] . '.' . $extension;
-                if (file_exists($file)) {
-                    unlink($file);
-                }
+            $folder = $deletedService->host_uuid . DS . $deletedService->uuid . DS;
 
-                //Checking for .wsp file (Graphite)
-                $wspFilesDir = $wspPath . $deletedService['DeletedService']['host_uuid'] . '/' . $deletedService['DeletedService']['uuid'];
-                if (is_dir($wspFilesDir)) {
-                    $folder = new Folder($wspFilesDir);
-                    $folder->delete();
-                    unset($folder);
-                }
-            }
+            // Recursively delete the directory with whisper files.
+            $this->rmDir($wspPath . $folder, 'wsp');
+
+            // Update the fact that old perfdata have been deleted.
             $deletedService->set('deleted_perfdata', 1);
             $DeletedServicesTable->save($deletedService);
         }

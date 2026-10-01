@@ -1732,6 +1732,10 @@ class GearmanWorkerCommand extends Command {
                     $successfully = 0;
                 }
             }
+
+            // Now we remove Graphite data from removed hosts.
+            $NagiosConfigGenerator->deleteServicePerfdata();
+            $NagiosConfigGenerator->deleteHostPerfdata();
         } else {
             //Error with new configuration :-(
             $successfully = 0;

@@ -818,8 +818,6 @@ class NagiosConfigGenerator {
         if ($this->dm === true) {
             $this->exportSatHostgroups();
         }
-
-        $this->deleteHostPerfdata();
     }
 
     /**
@@ -1526,8 +1524,6 @@ class NagiosConfigGenerator {
         if ($this->dm === true) {
             $this->exportSatServicegroups();
         }
-
-        $this->deleteServicePerfdata();
     }
 
     /**

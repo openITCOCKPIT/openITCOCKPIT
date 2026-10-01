@@ -2926,18 +2926,35 @@ class NagiosConfigGenerator {
         return $config['string']['carbon_path'] . DS . 'openitcockpit' . DS;
     }
 
-            //Delete .rrd files (Rrdtool)
-            if (is_dir($basePath . $deletedHost->get('uuid'))) {
-                $folder = new Folder($basePath . $deletedHost->get('uuid'));
-                $folder->delete();
-                unset($folder);
+    /**
+     * I will remove the given $directory entirely and recursively.
+     * If any file is found that does not have the given $suffix, deleting is cancelled.
+     *
+     * @param string $directory I am the base directory which will be removed including all folders and files in it.
+     * @param string $suffix I am the suffix to compare the files in the given $directory with. If any other file exists, deleting is cancelled.
+     * @return bool
+     */
+    private function rmDir(string $directory, string $suffix): bool {
+        if (!is_dir($directory)) {
+            return true;
+        }
+        $DirectoryIterator = new \DirectoryIterator($directory);
+        foreach ($DirectoryIterator as $fileInfo) {
+            if ($fileInfo->isDot()) {
+                continue;
             }
-
-            //Delete .wsp files (Graphite)
-            if (is_dir($wspPath . $deletedHost->get('uuid'))) {
-                $folder = new Folder($wspPath . $deletedHost->get('uuid'));
-                $folder->delete();
-                unset($folder);
+            if ($fileInfo->isDir()) {
+                if (!$this->rmDir($fileInfo->getPathname(), $suffix)) {
+                    return false;
+                }
+            } else {
+                if (!file_exists($fileInfo->getPathName())) {
+                    return true;
+                }
+                if (!str_ends_with($fileInfo->getPathName(), $suffix)) {
+                    return false;
+                }
+                unlink($fileInfo->getPathname());
             }
 
 

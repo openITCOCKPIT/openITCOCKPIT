@@ -1585,6 +1585,10 @@ class HostsController extends AppController {
         }
 
         $host = $HostsTable->getHostById($id);
+        if (!$this->allowedByContainerId($host->getContainerIds())) {
+            $this->render403();
+            return;
+        }
         $host->disabled = 1;
 
         if ($HostsTable->save($host)) {
@@ -1649,6 +1653,10 @@ class HostsController extends AppController {
         }
 
         $host = $HostsTable->getHostById($id);
+        if (!$this->allowedByContainerId($host->getContainerIds())) {
+            $this->render403();
+            return;
+        }
         $host->disabled = 0;
 
         if ($HostsTable->save($host)) {

@@ -709,60 +709,62 @@ class AngularController extends AppController {
             $MY_RIGHTS = $this->MY_RIGHTS;
         }
 
-        $cache['satellites'] = array_filter($cache['satellites'], function ($satellite) use ($MY_RIGHTS) {
-            if ($MY_RIGHTS && $satellite['container_id'] && !in_array($satellite['container_id'], $MY_RIGHTS)) {
-                return false;
-            }
-            return true;
-        });
-        $cache['satellites'] = array_values($cache['satellites']);
+        if (isset($cache['satellites'])) {
+            $cache['satellites'] = array_filter($cache['satellites'], function ($satellite) use ($MY_RIGHTS) {
+                if ($MY_RIGHTS && $satellite['container_id'] && !in_array($satellite['container_id'], $MY_RIGHTS)) {
+                    return false;
+                }
+                return true;
+            });
+            $cache['satellites'] = array_values($cache['satellites']);
 
-        foreach (($cache['satellites'] ?? []) as $index => $satellite) {
+            foreach (($cache['satellites'] ?? []) as $index => $satellite) {
 
-            // Put date to users time-zone
-            if (!empty($cache['satellites'][$index]['satellite_status']['last_seen'])) {
-                $date = $UserTime->format($cache['satellites'][$index]['satellite_status']['last_seen']);
-                $cache['satellites'][$index]['satellite_status']['last_seen'] = $date;
-            }
-            // Check if user may edit satellite
-            if ($this->hasRootPrivileges) {
-                $cache['satellites'][$index]['allow_edit'] = true;
-            } else {
-                $cache['satellites'][$index]['allow_edit'] = $this->isWritableContainer($satellite['container_id']);
-            }
-
-            if (isset($cache['satellites'][$index]['status'])) {
-                $satellite_status = "";
-                if (is_numeric($cache['satellites'][$index]['status'])) {
-                    $satellite_status = $this->getSatellitesState($cache['satellites'][$index]['status']);
-                } else if (is_string($cache['satellites'][$index]['status'])) {
-                    $satellite_status = $cache['satellites'][$index]['status'];
+                // Put date to users time-zone
+                if (!empty($cache['satellites'][$index]['satellite_status']['last_seen'])) {
+                    $date = $UserTime->format($cache['satellites'][$index]['satellite_status']['last_seen']);
+                    $cache['satellites'][$index]['satellite_status']['last_seen'] = $date;
+                }
+                // Check if user may edit satellite
+                if ($this->hasRootPrivileges) {
+                    $cache['satellites'][$index]['allow_edit'] = true;
+                } else {
+                    $cache['satellites'][$index]['allow_edit'] = $this->isWritableContainer($satellite['container_id']);
                 }
 
-                $this->setSatellitesHealthState($satellite_status);
-            }
+                if (isset($cache['satellites'][$index]['status'])) {
+                    $satellite_status = "";
+                    if (is_numeric($cache['satellites'][$index]['status'])) {
+                        $satellite_status = $this->getSatellitesState($cache['satellites'][$index]['status']);
+                    } else if (is_string($cache['satellites'][$index]['status'])) {
+                        $satellite_status = $cache['satellites'][$index]['status'];
+                    }
 
-            // Check user satellite_information ['RAM,Disks,CPU']
-            $health = $cache['satellites'][$index]['satellite_information']['system_health'] ?? null;
-            if (isset($health)) {
-                // RAM
-                if (isset($health['memory']['memory']['state'])) {
-                    $this->setSatellitesHealthState($health['memory']['memory']['state']);
+                    $this->setSatellitesHealthState($satellite_status);
                 }
-                if (isset($health['memory']['swap']['state'])) {
-                    $this->setSatellitesHealthState($health['memory']['swap']['state']);
-                }
-                // Disks
-                if (!empty($health['disks']) && is_array($health['disks'])) {
-                    foreach ($health['disks'] as $disk) {
-                        if (isset($disk['state'])) {
-                            $this->setSatellitesHealthState($disk['state']);
+
+                // Check user satellite_information ['RAM,Disks,CPU']
+                $health = $cache['satellites'][$index]['satellite_information']['system_health'] ?? null;
+                if (isset($health)) {
+                    // RAM
+                    if (isset($health['memory']['memory']['state'])) {
+                        $this->setSatellitesHealthState($health['memory']['memory']['state']);
+                    }
+                    if (isset($health['memory']['swap']['state'])) {
+                        $this->setSatellitesHealthState($health['memory']['swap']['state']);
+                    }
+                    // Disks
+                    if (!empty($health['disks']) && is_array($health['disks'])) {
+                        foreach ($health['disks'] as $disk) {
+                            if (isset($disk['state'])) {
+                                $this->setSatellitesHealthState($disk['state']);
+                            }
                         }
                     }
-                }
-                // CPU
-                if (isset($health['cpu_cores'], $health['cpu_load15'], $health['cpu_state'])) {
-                    $this->setSatellitesHealthState($health['cpu_state']);
+                    // CPU
+                    if (isset($health['cpu_cores'], $health['cpu_load15'], $health['cpu_state'])) {
+                        $this->setSatellitesHealthState($health['cpu_state']);
+                    }
                 }
             }
         }

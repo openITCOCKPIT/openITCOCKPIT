@@ -85,7 +85,7 @@ class ExternalCommands {
                     'Command' => 'schedule_check',
                     'Data'    => [
                         'host_name'     => $options['uuid'],
-                        'schedule_time' => $timestamp
+                        'schedule_time' => (int)$timestamp
                     ]
                 ];
                 $this->toQueue($payload, $options['satellite_id']);
@@ -98,7 +98,7 @@ class ExternalCommands {
                     'Command' => 'schedule_check',
                     'Data'    => [
                         'host_name'     => $options['uuid'],
-                        'schedule_time' => $timestamp
+                        'schedule_time' => (int)$timestamp
                     ]
                 ];
                 $this->toQueue($payload, $options['satellite_id']);
@@ -178,7 +178,7 @@ class ExternalCommands {
                         'output'        => $options['comment'],
                         'long_output'   => $options['long_output'],
                         'check_type'    => 1, //https://github.com/naemon/naemon-core/blob/cec6e10cbee9478de04b4cf5af29e83d47b5cfd9/src/naemon/common.h#L330-L334
-                        'return_code'   => $options['state'],
+                        'return_code'   => (int)$options['state'],
                         'start_time'    => time(),
                         'end_time'      => time(),
                         'early_timeout' => 0,
@@ -197,7 +197,7 @@ class ExternalCommands {
                     'output'        => $options['comment'],
                     'long_output'   => $options['long_output'],
                     'check_type'    => 1, //https://github.com/naemon/naemon-core/blob/cec6e10cbee9478de04b4cf5af29e83d47b5cfd9/src/naemon/common.h#L330-L334
-                    'return_code'   => $options['state'],
+                    'return_code'   => (int)$options['state'],
                     'start_time'    => time(),
                     'end_time'      => time(),
                     'early_timeout' => 0,
@@ -265,7 +265,7 @@ class ExternalCommands {
                         'output'              => $options['comment'],
                         'long_output'         => $options['long_output'],
                         'check_type'          => 1, //https://github.com/naemon/naemon-core/blob/cec6e10cbee9478de04b4cf5af29e83d47b5cfd9/src/naemon/common.h#L330-L334
-                        'return_code'         => $options['state'],
+                        'return_code'         => (int)$options['state'],
                         'start_time'          => time(),
                         'end_time'            => time(),
                         'early_timeout'       => 0,
@@ -285,7 +285,7 @@ class ExternalCommands {
                     'output'              => $options['comment'],
                     'long_output'         => $options['long_output'],
                     'check_type'          => 1, //https://github.com/naemon/naemon-core/blob/cec6e10cbee9478de04b4cf5af29e83d47b5cfd9/src/naemon/common.h#L330-L334
-                    'return_code'         => $options['state'],
+                    'return_code'         => (int)$options['state'],
                     'start_time'          => time(),
                     'end_time'            => time(),
                     'early_timeout'       => 0,
@@ -393,7 +393,7 @@ class ExternalCommands {
                 'Data'    => [
                     'host_name'           => $options['hostUuid'],
                     'service_description' => $options['serviceUuid'],
-                    'schedule_time'       => $timestamp,
+                    'schedule_time'       => (int)$timestamp,
                 ]
             ];
             $this->toQueue($payload, $options['satellite_id']);
@@ -1073,8 +1073,8 @@ class ExternalCommands {
                 'Command' => 'delete_downtime',
                 'Data'    => [
                     'host_name'  => $hostUuid,
-                    'start_time' => $downtime['scheduledStartTime'],
-                    'end_time'   => $downtime['scheduledEndTime'],
+                    'start_time' => (int)$downtime['scheduledStartTime'],
+                    'end_time'   => (int)$downtime['scheduledEndTime'],
                     'comment'    => $downtime['commentData']
                 ]
             ];
@@ -1108,8 +1108,8 @@ class ExternalCommands {
                 'Data'    => [
                     'host_name'           => $hostUuid,
                     'service_description' => $serviceUuid,
-                    'start_time'          => $downtime['scheduledStartTime'],
-                    'end_time'            => $downtime['scheduledEndTime'],
+                    'start_time'          => (int)$downtime['scheduledStartTime'],
+                    'end_time'            => (int)$downtime['scheduledEndTime'],
                     'comment'             => $downtime['commentData']
                 ]
             ];
@@ -1237,8 +1237,8 @@ class ExternalCommands {
                     'Command' => 'delete_downtime',
                     'Data'    => [
                         'host_name'  => $host->get('uuid'),
-                        'start_time' => $Downtime->getScheduledStartTime(),
-                        'end_time'   => $Downtime->getScheduledEndTime(),
+                        'start_time' => (int)$Downtime->getScheduledStartTime(),
+                        'end_time'   => (int)$Downtime->getScheduledEndTime(),
                         'comment'    => $Downtime->getCommentData()
                     ]
                 ];
@@ -1267,8 +1267,8 @@ class ExternalCommands {
                                 'Data'    => [
                                     'host_name'           => $host->get('uuid'),
                                     'service_description' => $serviceDowntimeArray['Services']['uuid'],
-                                    'start_time'          => $ServiceDowntime->getScheduledStartTime(),
-                                    'end_time'            => $ServiceDowntime->getScheduledEndTime(),
+                                    'start_time'          => (int)$ServiceDowntime->getScheduledStartTime(),
+                                    'end_time'            => (int)$ServiceDowntime->getScheduledEndTime(),
                                     'comment'             => $ServiceDowntime->getCommentData()
                                 ]
                             ];
@@ -1307,8 +1307,8 @@ class ExternalCommands {
                         'Data'    => [
                             'host_name'           => $host->get('uuid'),
                             'service_description' => $serviceDowntimeArray['Services']['uuid'],
-                            'start_time'          => $ServiceDowntime->getScheduledStartTime(),
-                            'end_time'            => $ServiceDowntime->getScheduledEndTime(),
+                            'start_time'          => (int)$ServiceDowntime->getScheduledStartTime(),
+                            'end_time'            => (int)$ServiceDowntime->getScheduledEndTime(),
                             'comment'             => $ServiceDowntime->getCommentData()
                         ]
                     ];
@@ -1354,7 +1354,7 @@ class ExternalCommands {
                         'Command' => 'schedule_check',
                         'Data'    => [
                             'host_name'     => $command['parameters']['hostUuid'],
-                            'schedule_time' => $command['parameters']['check_time'] ?? time()
+                            'schedule_time' => intval($command['parameters']['check_time'] ?? time())
                         ]
                     ];
                     $this->toQueue($payload, $satelliteId);
@@ -1377,7 +1377,7 @@ class ExternalCommands {
                         'Data'    => [
                             'host_name'           => $command['parameters']['hostUuid'],
                             'service_description' => $command['parameters']['serviceUuid'],
-                            'schedule_time'       => $command['parameters']['check_time'] ?? time()
+                            'schedule_time'       => intval($command['parameters']['check_time'] ?? time())
                         ]
                     ];
                     $this->toQueue($payload, $satelliteId);
@@ -1414,7 +1414,7 @@ class ExternalCommands {
                         'output'        => $command['parameters']['plugin_output'],
                         'long_output'   => $command['parameters']['long_output'],
                         'check_type'    => 1, //https://github.com/naemon/naemon-core/blob/cec6e10cbee9478de04b4cf5af29e83d47b5cfd9/src/naemon/common.h#L330-L334
-                        'return_code'   => $command['parameters']['status_code'],
+                        'return_code'   => (int)$command['parameters']['status_code'],
                         'start_time'    => time(),
                         'end_time'      => time(),
                         'early_timeout' => 0,

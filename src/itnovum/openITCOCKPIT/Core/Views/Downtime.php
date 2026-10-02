@@ -358,8 +358,14 @@ class Downtime {
         if ($this->UserTime !== null) {
             $arr['scheduledStartTime'] = $this->UserTime->format($this->getScheduledStartTime());
             $arr['scheduledEndTime'] = $this->UserTime->format($this->getScheduledEndTime());
-            $arr['actualStartTime'] = $this->UserTime->format($this->getActualStartTime());
-            $arr['actualEndTime'] = $this->UserTime->format($this->getActualEndTime());
+            $arr['actualStartTime'] = null;
+            if ($this->getActualStartTime() > 0) {
+                $arr['actualStartTime'] = $this->UserTime->format($this->getActualStartTime());
+            }
+            $arr['actualEndTime'] = null;
+            if ($this->getActualEndTime() > 0) {
+                $arr['actualEndTime'] = $this->UserTime->format($this->getActualEndTime());
+            }
             $arr['entryTime'] = $this->UserTime->format($this->getEntryTime());
             $arr['durationHuman'] = $this->UserTime->secondsInHumanShort($this->getDuration());
             $arr['actualDurationHuman'] = $this->UserTime->secondsInHumanShort($this->getActualDuration());

@@ -368,7 +368,10 @@ class Downtime {
             }
             $arr['entryTime'] = $this->UserTime->format($this->getEntryTime());
             $arr['durationHuman'] = $this->UserTime->secondsInHumanShort($this->getDuration());
-            $arr['actualDurationHuman'] = $this->UserTime->secondsInHumanShort($this->getActualDuration());
+            $arr['actualDurationHuman'] = null;
+            if ($this->getActualEndTime() > 0 && $this->getActualEndTime() > 0) {
+                $arr['actualDurationHuman'] = $this->UserTime->secondsInHumanShort($this->getActualDuration());
+            }
         } else {
             $arr['scheduledStartTime'] = $this->getScheduledStartTime();
             $arr['scheduledEndTime'] = $this->getScheduledEndTime();

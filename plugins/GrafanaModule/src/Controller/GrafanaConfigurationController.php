@@ -158,7 +158,7 @@ class GrafanaConfigurationController extends AppController {
                 //Resolve: ITC-2169 RVID: 5-445b21 - Medium - Server-Side Request Forgery
                 $message = __('Error while connecting to Grafana server.');
                 $message = __('For detailed information, please uncomment line {0} in {1}. Detailed output is disabled due to security reasons.', (__LINE__ + 1), __FILE__);
-                //$message = $client;
+                $message = $client;
 
                 if (is_object($client) && property_exists($client, 'message')) {
                     if ($client->message === 'Invalid API key') {

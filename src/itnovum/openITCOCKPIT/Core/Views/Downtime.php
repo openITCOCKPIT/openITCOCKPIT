@@ -69,7 +69,7 @@ class Downtime {
     private $duration;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $actualDuration;
 
@@ -135,7 +135,7 @@ class Downtime {
         }
 
         if (isset($downtime['actual_start_time'])) {
-            $this->actualStartTime = $downtime['actual_start_time'];
+            $this->actualStartTime = (int)$downtime['actual_start_time'];
         }
 
         if (isset($downtime['duration'])) {
@@ -238,18 +238,7 @@ class Downtime {
      * @return int
      */
     public function getActualStartTime() {
-        if ($this->actualStartTime === null) {
-            return 0;
-        }
-
-        if (!is_numeric($this->actualStartTime)) {
-            if ($this->actualStartTime instanceof \Cake\I18n\DateTime) {
-                $this->actualStartTime = $this->actualStartTime->timestamp;
-            } else {
-                $this->actualStartTime = strtotime($this->actualStartTime);
-            }
-        }
-        return $this->actualStartTime;
+        return $this->actualStartTime ?? 0;
     }
 
     /**
@@ -281,7 +270,7 @@ class Downtime {
      * @return int
      */
     public function getActualDuration() {
-        return $this->actualDuration;
+        return $this->actualDuration ?? 0;
     }
 
     /**
@@ -359,17 +348,17 @@ class Downtime {
             $arr['scheduledStartTime'] = $this->UserTime->format($this->getScheduledStartTime());
             $arr['scheduledEndTime'] = $this->UserTime->format($this->getScheduledEndTime());
             $arr['actualStartTime'] = null;
-            if ($this->getActualStartTime() > 0) {
+            if ($this->getActualStartTime()) {
                 $arr['actualStartTime'] = $this->UserTime->format($this->getActualStartTime());
             }
             $arr['actualEndTime'] = null;
-            if ($this->getActualEndTime() > 0) {
+            if ($this->getActualEndTime()) {
                 $arr['actualEndTime'] = $this->UserTime->format($this->getActualEndTime());
             }
             $arr['entryTime'] = $this->UserTime->format($this->getEntryTime());
             $arr['durationHuman'] = $this->UserTime->secondsInHumanShort($this->getDuration());
             $arr['actualDurationHuman'] = null;
-            if ($this->getActualEndTime() > 0 && $this->getActualEndTime() > 0) {
+            if ($this->getActualEndTime() && $this->getActualEndTime()) {
                 $arr['actualDurationHuman'] = $this->UserTime->secondsInHumanShort($this->getActualDuration());
             }
         } else {
@@ -379,7 +368,7 @@ class Downtime {
             $arr['actualEndTime'] = $this->getActualEndTime();
             $arr['entryTime'] = $this->getEntryTime();
             $arr['durationHuman'] = $this->getDuration();
-            $arr['actualDurationHuman'] = $this->UserTime->secondsInHumanShort($this->getActualDuration());
+            $arr['actualDurationHuman'] = $this->getActualDuration();
         }
         $arr['isCancellable'] = $this->isCancellable();
         $arr['isRunning'] = $this->isRunning();

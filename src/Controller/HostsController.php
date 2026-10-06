@@ -103,6 +103,7 @@ use itnovum\openITCOCKPIT\Core\Timeline\Groups;
 use itnovum\openITCOCKPIT\Core\Timeline\NotificationSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\StatehistorySerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\TimeRangeSerializer;
+use itnovum\openITCOCKPIT\Core\Timeperiods\NotificationPeriodResolver;
 use itnovum\openITCOCKPIT\Core\UserDefinedMacroReplacer;
 use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -3240,6 +3241,102 @@ class HostsController extends AppController {
             'acknowledgements',
             'timeranges'
         ]);
+    }
+
+    /**
+     * @param int|null $id
+     * @throws MissingDbBackendException
+     */
+    public function notificationsOverview($id = null) {
+        $session = $this->request->getSession();
+        $session->close();
+
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var HostsTable $HostsTable */
+        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+
+        if (!$HostsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid host'));
+        }
+
+        $host = $HostsTable->getHostByIdForNotificationPeriods($id);
+
+        if (!$this->allowedByContainerId($host->getContainerIds(), false)) {
+            $this->render403();
+            return;
+        }
+        $hosttemplate = $host->get('hosttemplate');
+        $notificationsEnabled = (bool)($host->get('notifications_enabled') ?? $hosttemplate->get('notifications_enabled'));
+
+        $hostTimeperiodId = $host->get('notify_period_id');
+        if (empty($hostTimeperiodId)) {
+            $hostTimeperiodId = $hosttemplate->get('notify_period_id');
+        }
+
+        /** @var TimeperiodsTable $TimeperiodsTable */
+        $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
+        $NotificationPeriodResolver = new NotificationPeriodResolver($TimeperiodsTable);
+
+        // Contacts and contact groups are inherited together from the host template (see HostMergerForView)
+        $contacts = $host->get('contacts') ?? [];
+        $contactgroups = $host->get('contactgroups') ?? [];
+        if (empty($contacts) && empty($contactgroups)) {
+            $contacts = $hosttemplate->get('contacts') ?? [];
+            $contactgroups = $hosttemplate->get('contactgroups') ?? [];
+        }
+
+        // Resolve contact groups into their contacts and remove duplicates by contact id
+        $resolvedContacts = [];
+        foreach ($contacts as $contact) {
+            $resolvedContacts[$contact->get('id')] = $contact;
+        }
+        foreach ($contactgroups as $contactgroup) {
+            foreach ($contactgroup->get('contacts') ?? [] as $contact) {
+                $resolvedContacts[$contact->get('id')] = $contact;
+            }
+        }
+
+        // Format as expected by the frontend (notification-period-overview.interfaces.ts)
+        $notificationPeriodHost = [
+            'id'                   => $host->get('id'),
+            'name'                 => $host->get('name'),
+            'notificationsEnabled' => $notificationsEnabled,
+            'notificationPeriod'   => $NotificationPeriodResolver->resolve($hostTimeperiodId),
+            'options'              => [
+                'down'        => (bool)($host->get('notify_on_down') ?? $hosttemplate->get('notify_on_down')),
+                'unreachable' => (bool)($host->get('notify_on_unreachable') ?? $hosttemplate->get('notify_on_unreachable')),
+                'recovery'    => (bool)($host->get('notify_on_recovery') ?? $hosttemplate->get('notify_on_recovery')),
+                'flapping'    => (bool)($host->get('notify_on_flapping') ?? $hosttemplate->get('notify_on_flapping')),
+                'downtime'    => (bool)($host->get('notify_on_downtime') ?? $hosttemplate->get('notify_on_downtime'))
+            ]
+        ];
+
+        $notificationPeriodContacts = [];
+        foreach ($resolvedContacts as $contact) {
+            $notificationPeriodContacts[] = [
+                'id'                   => $contact->get('id'),
+                'name'                 => $contact->get('name'),
+                'notificationsEnabled' => (bool)$contact->get('host_notifications_enabled'),
+                'notificationPeriod'   => $NotificationPeriodResolver->resolve($contact->get('host_timeperiod_id')),
+                'options'              => [
+                    'down'        => (bool)$contact->get('notify_host_down'),
+                    'unreachable' => (bool)$contact->get('notify_host_unreachable'),
+                    'recovery'    => (bool)$contact->get('notify_host_recovery'),
+                    'flapping'    => (bool)$contact->get('notify_host_flapping'),
+                    'downtime'    => (bool)$contact->get('notify_host_downtime')
+                ]
+            ];
+        }
+        //sort by name, mb_strtolower for correct sorting of specialchars
+        usort($notificationPeriodContacts, fn($a, $b) => strcmp(mb_strtolower($a['name'], 'UTF-8'), mb_strtolower($b['name'], 'UTF-8')));
+
+
+        $this->set('host', $notificationPeriodHost);
+        $this->set('contacts', $notificationPeriodContacts);
+        $this->viewBuilder()->setOption('serialize', ['host', 'contacts']);
     }
 
     public function getGrafanaIframeUrlForDatepicker() {

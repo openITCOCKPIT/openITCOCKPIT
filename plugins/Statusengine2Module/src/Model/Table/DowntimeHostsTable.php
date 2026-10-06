@@ -116,25 +116,28 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
      * @return array|void
      */
     public function getDowntimes(DowntimeHostConditions $DowntimeHostConditions, ?PaginateOMat $PaginateOMat = null) {
-        $query = $this->find()
-            ->select([
-                'DowntimeHosts.author_name',
-                'DowntimeHosts.comment_data',
-                'DowntimeHosts.entry_time',
-                'DowntimeHosts.scheduled_start_time',
-                'DowntimeHosts.scheduled_end_time',
-                'DowntimeHosts.duration',
-                'DowntimeHosts.was_started',
-                'DowntimeHosts.internal_downtime_id',
-                'DowntimeHosts.downtimehistory_id',
-                'DowntimeHosts.was_cancelled',
+        $query = $this->find();
+        $query->select([
+            'DowntimeHosts.author_name',
+            'DowntimeHosts.comment_data',
+            'DowntimeHosts.entry_time',
+            'DowntimeHosts.scheduled_start_time',
+            'DowntimeHosts.actual_start_time',
+            'DowntimeHosts.scheduled_end_time',
+            'DowntimeHosts.actual_end_time',
+            'DowntimeHosts.duration',
+            'DowntimeHosts__actual_duration' => $query->newExpr('DowntimeHosts.actual_end_time - DowntimeHosts.actual_start_time'),
+            'DowntimeHosts.was_started',
+            'DowntimeHosts.internal_downtime_id',
+            'DowntimeHosts.downtimehistory_id',
+            'DowntimeHosts.was_cancelled',
 
-                'Hosts.id',
-                'Hosts.uuid',
-                'Hosts.name',
+            'Hosts.id',
+            'Hosts.uuid',
+            'Hosts.name',
 
-                'HostsToContainers.container_id',
-            ])
+            'HostsToContainers.container_id',
+        ])
             ->innerJoin(
                 ['Objects' => 'nagios_objects'],
                 ['Objects.object_id = DowntimeHosts.object_id', 'DowntimeHosts.downtime_type = 2'] //Downtime.downtime_type = 2 Host downtime
@@ -349,8 +352,11 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
             'DowntimeHosts.comment_data',
             'DowntimeHosts.entry_time',
             'DowntimeHosts.scheduled_start_time',
+            'DowntimeHosts.actual_start_time',
             'DowntimeHosts.scheduled_end_time',
+            'DowntimeHosts.actual_end_time',
             'DowntimeHosts.duration',
+            'DowntimeHosts__actual_duration' => $query->newExpr('DowntimeHosts.actual_end_time - DowntimeHosts.actual_start_time'),
             'DowntimeHosts.was_started',
             'DowntimeHosts.internal_downtime_id',
             'DowntimeHosts.downtimehistory_id',

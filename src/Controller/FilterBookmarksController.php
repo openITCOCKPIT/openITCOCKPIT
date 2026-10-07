@@ -33,18 +33,16 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Model\Table\ContainersTable;
 use App\Model\Table\FilterBookmarksAllocationsTable;
 use App\Model\Table\FilterBookmarksTable;
-use App\Model\Table\UsergroupsTable;
-use App\Model\Table\UsersTable;
+use App\Model\Table\HostgroupsTable;
+use App\Model\Table\ServicegroupsTable;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
-use itnovum\openITCOCKPIT\Core\AngularJS\Api;
 use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 
@@ -92,12 +90,96 @@ class FilterBookmarksController extends AppController {
         $allFilterBookmarks = $FilterBookmarksTable->getAllBookmarksByUser($User, $plugin, $controller, $action);
 
         foreach ($allFilterBookmarks as $key => $filterbookmark) {
-            if($filterbookmark['ownership']  && $filterbookmark['filter_bookmark_allocation'] && $filterbookmark['filter_bookmark_allocation'] !== null) {
-                $allFilterBookmarks[$key]['filter_bookmark_allocation']['allowEdit'] =  $this->isWritableContainer($filterbookmark['filter_bookmark_allocation']['container_id']);
+            $allFilterBookmarks[$key]['filter'] = $this->sanitizeContainers($filterbookmark['filter']);
+            if ($filterbookmark['ownership'] && $filterbookmark['filter_bookmark_allocation'] && $filterbookmark['filter_bookmark_allocation'] !== null) {
+                $allFilterBookmarks[$key]['filter_bookmark_allocation']['allowEdit'] = $this->isWritableContainer($filterbookmark['filter_bookmark_allocation']['container_id']);
             }
         }
         $this->set('bookmarks', $allFilterBookmarks);
         $this->viewBuilder()->setOption('serialize', ['bookmarks', 'bookmark']);
+    }
+
+    /**
+     * I will remove all forbidden containers for Hostgroups and Servicegroups
+     * @param string|null $filter
+     * @return string|null
+     */
+    private function sanitizeContainers(?string $filter): ?string {
+        $decoded = json_decode((string)$filter, true);
+        if (!is_array($decoded)) {
+            // Empty or broken filter - nothing to remove
+            return $filter;
+        }
+
+        if (isset($decoded['Hostgroups']['id']) && is_array($decoded['Hostgroups']['id'])) {
+            $decoded['Hostgroups']['id'] = $this->keepAllowedHostgroups($decoded['Hostgroups']['id']);
+        }
+
+        if (isset($decoded['Servicegroups']['id']) && is_array($decoded['Servicegroups']['id'])) {
+            $decoded['Servicegroups']['id'] = $this->keepAllowedServicegroups($decoded['Servicegroups']['id']);
+        }
+
+        return json_encode($decoded);
+    }
+
+    /**
+     * I will keep the hostgroups that you can view.
+     *
+     * @param array $hostgroupIds
+     * @return array
+     */
+    private function keepAllowedHostgroups(array $hostgroupIds): array {
+        /** @var HostgroupsTable $HostgroupsTable */
+        $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
+
+        $allowedHostgroupIds = [];
+        foreach ($hostgroupIds as $hostgroupId) {
+            $HostgroupEntity = $HostgroupsTable->find()
+                ->where(['Hostgroups.id' => $hostgroupId])
+                ->contain('Containers')
+                ->first();
+
+            // In case the Servicegroup got deleted.
+            if ($HostgroupEntity === null) {
+                continue;
+            }
+
+            if ($this->hasRootPrivileges || in_array((int)$HostgroupEntity->container->parent_id, $this->MY_RIGHTS)) {
+                $allowedHostgroupIds[] = $hostgroupId;
+            }
+        }
+
+        return $allowedHostgroupIds;
+    }
+
+    /**
+     * I will keep the servicegroups that you can view.
+     *
+     * @param array $servicegroupIds
+     * @return array
+     */
+    private function keepAllowedServicegroups(array $servicegroupIds): array {
+        /** @var ServicegroupsTable $ServicegroupsTable */
+        $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
+
+        $allowedServicegroupIds = [];
+        foreach ($servicegroupIds as $servicegroupId) {
+            $ServicegroupEntity = $ServicegroupsTable->find()
+                ->where(['Servicegroups.id' => $servicegroupId])
+                ->contain('Containers')
+                ->first();
+
+            // In case the Servicegroup got deleted.
+            if ($ServicegroupEntity === null) {
+                continue;
+            }
+
+            if ($this->hasRootPrivileges || in_array((int)$ServicegroupEntity->container->parent_id, $this->MY_RIGHTS)) {
+                $allowedServicegroupIds[] = $servicegroupId;
+            }
+        }
+
+        return $allowedServicegroupIds;
     }
 
     public function add() {

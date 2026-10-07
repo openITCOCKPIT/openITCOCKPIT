@@ -318,6 +318,73 @@ class TimeperiodsTable extends Table {
     }
 
     /**
+     * Returns the given timeperiods incl. all timeperiods of their (recursive) exclude chain
+     * with their time ranges, as used by the notification period overview in the frontend.
+     *
+     * @param int[] $ids
+     * @return array
+     */
+    public function getTimeperiodsWithExcludesForNotificationOverview(array $ids): array {
+        $timeperiods = [];
+        $idsToLoad = array_values(array_unique(array_filter(array_map('intval', $ids))));
+
+        while (!empty($idsToLoad)) {
+            $rows = $this->find()
+                ->select([
+                    'Timeperiods.id',
+                    'Timeperiods.name',
+                    'Timeperiods.exclude_timeperiod_id'
+                ])
+                ->contain([
+                    'TimeperiodTimeranges' => function (Query $query) {
+                        return $query->select([
+                            'TimeperiodTimeranges.timeperiod_id',
+                            'TimeperiodTimeranges.day',
+                            'TimeperiodTimeranges.start',
+                            'TimeperiodTimeranges.end'
+                        ]);
+                    }
+                ])
+                ->where([
+                    'Timeperiods.id IN' => $idsToLoad
+                ])
+                ->disableHydration()
+                ->all();
+
+            $excludeIds = [];
+            foreach ($rows as $row) {
+                $id = (int)$row['id'];
+                $excludeId = (int)$row['exclude_timeperiod_id'];
+
+                $timeranges = [];
+                foreach ($row['timeperiod_timeranges'] as $timerange) {
+                    $timeranges[] = [
+                        'day'   => (int)$timerange['day'],
+                        'start' => $timerange['start'],
+                        'end'   => $timerange['end']
+                    ];
+                }
+
+                $timeperiods[$id] = [
+                    'id'                  => $id,
+                    'name'                => $row['name'],
+                    'excludeTimeperiodId' => $excludeId > 0 ? $excludeId : null,
+                    'timeranges'          => $timeranges
+                ];
+
+                if ($excludeId > 0) {
+                    $excludeIds[] = $excludeId;
+                }
+            }
+
+            // Load the exclude timeperiods in the next round – each timeperiod only once (loop protection)
+            $idsToLoad = array_values(array_unique(array_diff($excludeIds, array_keys($timeperiods))));
+        }
+
+        return array_values($timeperiods);
+    }
+
+    /**
      * @param int|array $containerIds
      * @return array
      */

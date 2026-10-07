@@ -4634,7 +4634,6 @@ class HostsTable extends Table {
                     return $query->select([
                         'Contacts.id',
                         'Contacts.name',
-                        'Contacts.email',
                         'Contacts.host_timeperiod_id',
                         'Contacts.host_notifications_enabled',
                         'Contacts.notify_host_recovery',
@@ -4646,17 +4645,10 @@ class HostsTable extends Table {
                 },
                 'Contactgroups' => function (Query $query) {
                     return $query->contain([
-                        'Containers' => function (Query $query) {
-                            return $query->select([
-                                'Containers.id',
-                                'Containers.name'
-                            ]);
-                        },
                         'Contacts' => function (Query $query) {
                             return $query->select([
                                 'Contacts.id',
                                 'Contacts.name',
-                                'Contacts.email',
                                 'Contacts.host_timeperiod_id',
                                 'Contacts.host_notifications_enabled',
                                 'Contacts.notify_host_recovery',
@@ -4684,7 +4676,6 @@ class HostsTable extends Table {
                             return $query->select([
                                 'Contacts.id',
                                 'Contacts.name',
-                                'Contacts.email',
                                 'Contacts.host_timeperiod_id',
                                 'Contacts.host_notifications_enabled',
                                 'Contacts.notify_host_recovery',
@@ -4696,17 +4687,10 @@ class HostsTable extends Table {
                         },
                         'Contactgroups' => function (Query $query) {
                             return $query->contain([
-                                'Containers' => function (Query $query) {
-                                    return $query->select([
-                                        'Containers.id',
-                                        'Containers.name'
-                                    ]);
-                                },
                                 'Contacts' => function (Query $query) {
                                     return $query->select([
                                         'Contacts.id',
                                         'Contacts.name',
-                                        'Contacts.email',
                                         'Contacts.host_timeperiod_id',
                                         'Contacts.host_notifications_enabled',
                                         'Contacts.notify_host_recovery',

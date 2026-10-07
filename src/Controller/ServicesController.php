@@ -68,8 +68,10 @@ use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\I18n\I18n;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
+use Collator;
 use CustomalertModule\Model\Table\CustomalertsTable;
 use DistributeModule\Model\Table\SatellitesTable;
 use EventcorrelationModule\Model\Table\EventcorrelationsTable;
@@ -103,7 +105,6 @@ use itnovum\openITCOCKPIT\Core\Timeline\Groups;
 use itnovum\openITCOCKPIT\Core\Timeline\NotificationSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\StatehistorySerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\TimeRangeSerializer;
-use itnovum\openITCOCKPIT\Core\Timeperiods\NotificationPeriodResolver;
 use itnovum\openITCOCKPIT\Core\UserDefinedMacroReplacer;
 use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -2778,7 +2779,6 @@ class ServicesController extends AppController {
 
         /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
-        $NotificationPeriodResolver = new NotificationPeriodResolver($TimeperiodsTable);
 
         // Contacts and contact groups are inherited together. The first level that has contacts or
         // contact groups wins: service → service template → host → host template (see ServiceMergerForView)
@@ -2809,7 +2809,7 @@ class ServicesController extends AppController {
             'name'                 => $service->get('name') ?? $servicetemplate->get('name'),
             'hostname'             => $host->get('name'),
             'notificationsEnabled' => $notificationsEnabled,
-            'notificationPeriod'   => $NotificationPeriodResolver->resolve($serviceTimeperiodId),
+            'notificationPeriodId' => (int)$serviceTimeperiodId,
             'options'              => [
                 'warning'  => (bool)($service->get('notify_on_warning') ?? $servicetemplate->get('notify_on_warning')),
                 'critical' => (bool)($service->get('notify_on_critical') ?? $servicetemplate->get('notify_on_critical')),
@@ -2826,7 +2826,7 @@ class ServicesController extends AppController {
                 'id'                   => $contact->get('id'),
                 'name'                 => $contact->get('name'),
                 'notificationsEnabled' => (bool)$contact->get('service_notifications_enabled'),
-                'notificationPeriod'   => $NotificationPeriodResolver->resolve($contact->get('service_timeperiod_id')),
+                'notificationPeriodId' => (int)$contact->get('service_timeperiod_id'),
                 'options'              => [
                     'warning'  => (bool)$contact->get('notify_service_warning'),
                     'critical' => (bool)$contact->get('notify_service_critical'),
@@ -2837,11 +2837,22 @@ class ServicesController extends AppController {
                 ]
             ];
         }
-        usort($notificationPeriodContacts, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+        // Sort by name according to the user's localekann ich die notify metohen, etwa  (e.g. "Ä" next to "A" in German), case-insensitive
+        $collator = new Collator(I18n::getLocale());
+        $collator->setStrength(Collator::SECONDARY);
+        usort($notificationPeriodContacts, fn($a, $b) => $collator->compare($a['name'], $b['name']));
 
         $this->set('service', $notificationPeriodService);
+        // All used timeperiods incl. their exclude chain – the frontend resolves the excludes
+        $timeperiodIds = array_merge(
+            [$notificationPeriodService['notificationPeriodId']],
+            array_column($notificationPeriodContacts, 'notificationPeriodId')
+        );
+        $timeperiods = $TimeperiodsTable->getTimeperiodsWithExcludesForNotificationOverview($timeperiodIds);
+
         $this->set('contacts', $notificationPeriodContacts);
-        $this->viewBuilder()->setOption('serialize', ['service', 'contacts']);
+        $this->set('timeperiods', $timeperiods);
+        $this->viewBuilder()->setOption('serialize', ['service', 'contacts', 'timeperiods']);
     }
 
     /****************************

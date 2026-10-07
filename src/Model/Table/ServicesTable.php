@@ -3573,13 +3573,12 @@ class ServicesTable extends Table {
      * @param $id
      * @return array|Service|null
      */
-        public function getServiceByIdForNotificationPeriods($id) {
+    public function getServiceByIdForNotificationPeriods($id) {
         // Service notification fields of the contacts
         $contacts = function (Query $query) {
             return $query->select([
                 'Contacts.id',
                 'Contacts.name',
-                'Contacts.email',
                 'Contacts.service_timeperiod_id',
                 'Contacts.service_notifications_enabled',
                 'Contacts.notify_service_recovery',
@@ -3592,13 +3591,7 @@ class ServicesTable extends Table {
         };
         $contactgroups = function (Query $query) use ($contacts) {
             return $query->contain([
-                'Containers' => function (Query $query) {
-                    return $query->select([
-                        'Containers.id',
-                        'Containers.name'
-                    ]);
-                },
-                'Contacts'   => $contacts
+                'Contacts' => $contacts
             ]);
         };
 

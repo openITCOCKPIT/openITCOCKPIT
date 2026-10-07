@@ -67,8 +67,10 @@ use Cake\Core\Plugin;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\I18n\I18n;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
+use Collator;
 use DistributeModule\Model\Table\SatellitesTable;
 use EventcorrelationModule\Model\Table\EventcorrelationsTable;
 use ImportModule\Model\Table\ImportedHostsTable;
@@ -103,7 +105,6 @@ use itnovum\openITCOCKPIT\Core\Timeline\Groups;
 use itnovum\openITCOCKPIT\Core\Timeline\NotificationSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\StatehistorySerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\TimeRangeSerializer;
-use itnovum\openITCOCKPIT\Core\Timeperiods\NotificationPeriodResolver;
 use itnovum\openITCOCKPIT\Core\UserDefinedMacroReplacer;
 use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -3278,7 +3279,6 @@ class HostsController extends AppController {
 
         /** @var TimeperiodsTable $TimeperiodsTable */
         $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
-        $NotificationPeriodResolver = new NotificationPeriodResolver($TimeperiodsTable);
 
         // Contacts and contact groups are inherited together from the host template (see HostMergerForView)
         $contacts = $host->get('contacts') ?? [];
@@ -3304,7 +3304,7 @@ class HostsController extends AppController {
             'id'                   => $host->get('id'),
             'name'                 => $host->get('name'),
             'notificationsEnabled' => $notificationsEnabled,
-            'notificationPeriod'   => $NotificationPeriodResolver->resolve($hostTimeperiodId),
+            'notificationPeriodId' => (int)$hostTimeperiodId,
             'options'              => [
                 'down'        => (bool)($host->get('notify_on_down') ?? $hosttemplate->get('notify_on_down')),
                 'unreachable' => (bool)($host->get('notify_on_unreachable') ?? $hosttemplate->get('notify_on_unreachable')),
@@ -3320,7 +3320,7 @@ class HostsController extends AppController {
                 'id'                   => $contact->get('id'),
                 'name'                 => $contact->get('name'),
                 'notificationsEnabled' => (bool)$contact->get('host_notifications_enabled'),
-                'notificationPeriod'   => $NotificationPeriodResolver->resolve($contact->get('host_timeperiod_id')),
+                'notificationPeriodId' => (int)$contact->get('host_timeperiod_id'),
                 'options'              => [
                     'down'        => (bool)$contact->get('notify_host_down'),
                     'unreachable' => (bool)$contact->get('notify_host_unreachable'),
@@ -3330,13 +3330,23 @@ class HostsController extends AppController {
                 ]
             ];
         }
-        //sort by name, mb_strtolower for correct sorting of specialchars
-        usort($notificationPeriodContacts, fn($a, $b) => strcmp(mb_strtolower($a['name'], 'UTF-8'), mb_strtolower($b['name'], 'UTF-8')));
+        // Sort by name according to the user's locale (e.g. "Ä" next to "A" in German), case-insensitive
+        $collator = new Collator(I18n::getLocale());
+        $collator->setStrength(Collator::SECONDARY);
+        usort($notificationPeriodContacts, fn($a, $b) => $collator->compare($a['name'], $b['name']));
 
 
         $this->set('host', $notificationPeriodHost);
+        // All used timeperiods incl. their exclude chain – the frontend resolves the excludes
+        $timeperiodIds = array_merge(
+            [$notificationPeriodHost['notificationPeriodId']],
+            array_column($notificationPeriodContacts, 'notificationPeriodId')
+        );
+        $timeperiods = $TimeperiodsTable->getTimeperiodsWithExcludesForNotificationOverview($timeperiodIds);
+
         $this->set('contacts', $notificationPeriodContacts);
-        $this->viewBuilder()->setOption('serialize', ['host', 'contacts']);
+        $this->set('timeperiods', $timeperiods);
+        $this->viewBuilder()->setOption('serialize', ['host', 'contacts', 'timeperiods']);
     }
 
     public function getGrafanaIframeUrlForDatepicker() {

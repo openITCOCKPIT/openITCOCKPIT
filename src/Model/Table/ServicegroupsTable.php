@@ -534,6 +534,8 @@ class ServicegroupsTable extends Table {
                         })
                         ->where([
                             'Services.disabled' => 0
+                        ])->groupBy([
+                            'Services.id'
                         ]);
                     return $q;
                 },

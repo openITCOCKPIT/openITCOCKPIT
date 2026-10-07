@@ -2837,7 +2837,7 @@ class ServicesController extends AppController {
                 ]
             ];
         }
-        // Sort by name according to the user's localekann ich die notify metohen, etwa  (e.g. "Ä" next to "A" in German), case-insensitive
+
         $collator = new Collator(I18n::getLocale());
         $collator->setStrength(Collator::SECONDARY);
         usort($notificationPeriodContacts, fn($a, $b) => $collator->compare($a['name'], $b['name']));

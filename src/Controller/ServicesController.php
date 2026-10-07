@@ -103,6 +103,7 @@ use itnovum\openITCOCKPIT\Core\Timeline\Groups;
 use itnovum\openITCOCKPIT\Core\Timeline\NotificationSerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\StatehistorySerializer;
 use itnovum\openITCOCKPIT\Core\Timeline\TimeRangeSerializer;
+use itnovum\openITCOCKPIT\Core\Timeperiods\NotificationPeriodResolver;
 use itnovum\openITCOCKPIT\Core\UserDefinedMacroReplacer;
 use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
@@ -2736,6 +2737,111 @@ class ServicesController extends AppController {
             'acknowledgements',
             'timeranges'
         ]);
+    }
+
+    /**
+     * @param int|null $id
+     * @throws MissingDbBackendException
+     */
+    public function notificationsOverview($id = null) {
+        $session = $this->request->getSession();
+        $session->close();
+
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var ServicesTable $ServicesTable */
+        $ServicesTable = TableRegistry::getTableLocator()->get('Services');
+
+        if (!$ServicesTable->existsById($id)) {
+            throw new NotFoundException(__('Service not found'));
+        }
+
+        $service = $ServicesTable->getServiceByIdForNotificationPeriods($id);
+
+        if (!$this->allowedByContainerId($service->getContainerIds(), false)) {
+            $this->render403();
+            return;
+        }
+
+        $servicetemplate = $service->get('servicetemplate');
+        $host = $service->get('host');
+        $hosttemplate = $host->get('hosttemplate');
+
+        $notificationsEnabled = (bool)($service->get('notifications_enabled') ?? $servicetemplate->get('notifications_enabled'));
+
+        $serviceTimeperiodId = $service->get('notify_period_id');
+        if (empty($serviceTimeperiodId)) {
+            $serviceTimeperiodId = $servicetemplate->get('notify_period_id');
+        }
+
+        /** @var TimeperiodsTable $TimeperiodsTable */
+        $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
+        $NotificationPeriodResolver = new NotificationPeriodResolver($TimeperiodsTable);
+
+        // Contacts and contact groups are inherited together. The first level that has contacts or
+        // contact groups wins: service → service template → host → host template (see ServiceMergerForView)
+        $contacts = [];
+        $contactgroups = [];
+        foreach ([$service, $servicetemplate, $host, $hosttemplate] as $level) {
+            $contacts = $level->get('contacts') ?? [];
+            $contactgroups = $level->get('contactgroups') ?? [];
+            if (!empty($contacts) || !empty($contactgroups)) {
+                break;
+            }
+        }
+
+        // Resolve contact groups into their contacts and remove duplicates by contact id
+        $resolvedContacts = [];
+        foreach ($contacts as $contact) {
+            $resolvedContacts[$contact->get('id')] = $contact;
+        }
+        foreach ($contactgroups as $contactgroup) {
+            foreach ($contactgroup->get('contacts') ?? [] as $contact) {
+                $resolvedContacts[$contact->get('id')] = $contact;
+            }
+        }
+
+        // Format as expected by the frontend (notification-period-overview.interfaces.ts)
+        $notificationPeriodService = [
+            'id'                   => $service->get('id'),
+            'name'                 => $service->get('name') ?? $servicetemplate->get('name'),
+            'hostname'             => $host->get('name'),
+            'notificationsEnabled' => $notificationsEnabled,
+            'notificationPeriod'   => $NotificationPeriodResolver->resolve($serviceTimeperiodId),
+            'options'              => [
+                'warning'  => (bool)($service->get('notify_on_warning') ?? $servicetemplate->get('notify_on_warning')),
+                'critical' => (bool)($service->get('notify_on_critical') ?? $servicetemplate->get('notify_on_critical')),
+                'unknown'  => (bool)($service->get('notify_on_unknown') ?? $servicetemplate->get('notify_on_unknown')),
+                'recovery' => (bool)($service->get('notify_on_recovery') ?? $servicetemplate->get('notify_on_recovery')),
+                'flapping' => (bool)($service->get('notify_on_flapping') ?? $servicetemplate->get('notify_on_flapping')),
+                'downtime' => (bool)($service->get('notify_on_downtime') ?? $servicetemplate->get('notify_on_downtime'))
+            ]
+        ];
+
+        $notificationPeriodContacts = [];
+        foreach ($resolvedContacts as $contact) {
+            $notificationPeriodContacts[] = [
+                'id'                   => $contact->get('id'),
+                'name'                 => $contact->get('name'),
+                'notificationsEnabled' => (bool)$contact->get('service_notifications_enabled'),
+                'notificationPeriod'   => $NotificationPeriodResolver->resolve($contact->get('service_timeperiod_id')),
+                'options'              => [
+                    'warning'  => (bool)$contact->get('notify_service_warning'),
+                    'critical' => (bool)$contact->get('notify_service_critical'),
+                    'unknown'  => (bool)$contact->get('notify_service_unknown'),
+                    'recovery' => (bool)$contact->get('notify_service_recovery'),
+                    'flapping' => (bool)$contact->get('notify_service_flapping'),
+                    'downtime' => (bool)$contact->get('notify_service_downtime')
+                ]
+            ];
+        }
+        usort($notificationPeriodContacts, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+
+        $this->set('service', $notificationPeriodService);
+        $this->set('contacts', $notificationPeriodContacts);
+        $this->viewBuilder()->setOption('serialize', ['service', 'contacts']);
     }
 
     /****************************

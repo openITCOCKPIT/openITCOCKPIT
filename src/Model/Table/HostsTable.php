@@ -4605,6 +4605,10 @@ class HostsTable extends Table {
         return $query;
     }
 
+    /**
+     * @param $id
+     * @return array|Host|null
+     */
     public function getHostByIdForNotificationPeriods($id) {
         $query = $this->find()
             ->select([

@@ -1754,7 +1754,7 @@ class ServicesController extends AppController {
         $sharedContainers = [];
         foreach ($hostEntity->getContainerIds() as $sharedContainerId) {
             if ($sharedContainerId != $hostEntity->get('container_id')) {
-                $sharedContainers[$container['id']] = $ContainersTable->getTreePathForBrowser($sharedContainerId, $this->MY_RIGHTS_LEVEL);
+                $sharedContainers[$sharedContainerId] = $ContainersTable->getTreePathForBrowser($sharedContainerId, $this->MY_RIGHTS_LEVEL);
             }
         }
 

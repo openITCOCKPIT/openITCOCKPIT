@@ -213,7 +213,7 @@ class AdministratorsController extends AppController {
 
         //Collect disk usage
         $Disks = new Disks();
-        $diskExcludeRegex = $systemsetting['SYSTEM_HEALTH']['SYSTEM_HEALTH.DISK.EXCLUDE_REGEX'];
+        $diskExcludeRegex = !empty($systemsetting['SYSTEM_HEALTH']['SYSTEM_HEALTH.DISK.EXCLUDE_REGEX']) ? $systemsetting['SYSTEM_HEALTH']['SYSTEM_HEALTH.DISK.EXCLUDE_REGEX'] : null;
 
         $diskUsage = $Disks->getDiskUsage(diskExcludeRegex: $diskExcludeRegex);
 

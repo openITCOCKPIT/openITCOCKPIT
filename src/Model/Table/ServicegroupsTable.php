@@ -585,6 +585,8 @@ class ServicegroupsTable extends Table {
                                     ->where([
                                         'Services.disabled' => 0,
                                         'Hosts.disabled'    => 0
+                                    ])->groupBy([
+                                        'Services.id'
                                     ]);
                                 $query
                                     ->leftJoinWith('Servicegroups')

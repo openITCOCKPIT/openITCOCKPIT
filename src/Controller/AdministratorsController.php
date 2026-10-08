@@ -213,9 +213,9 @@ class AdministratorsController extends AppController {
 
         //Collect disk usage
         $Disks = new Disks();
-        $regEx = $systemsetting['SYSTEM_HEALTH']['SYSTEM_HEALTH.DISK.EXCLUDE_REGEX'];
+        $diskExcludeRegex = $systemsetting['SYSTEM_HEALTH']['SYSTEM_HEALTH.DISK.EXCLUDE_REGEX'];
 
-        $diskUsage = $Disks->getDiskUsage(regEx: $regEx);
+        $diskUsage = $Disks->getDiskUsage(diskExcludeRegex: $diskExcludeRegex);
 
         //Collect gearman queue information
         $gearmanStatus = [];

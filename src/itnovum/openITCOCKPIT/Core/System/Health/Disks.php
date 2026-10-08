@@ -30,11 +30,19 @@ class Disks {
     /**
      * @param $warning
      * @param $critical
+     * @param $regEx
      * @return array
      */
-    public function getDiskUsage($warning = null, $critical = null) {
+    public function getDiskUsage($warning = null, $critical = null, $regEx = null) {
         exec('LANG=C df -h', $output, $returncode);
         $disks = [];
+        $regEx = is_string($regEx) ? trim($regEx) : '';
+        $excludePattern = null;
+
+        if (is_string($regEx) && trim($regEx) !== '' && $this->isValidRegularExpression($regEx)) {
+            $excludePattern = '`' . $regEx . '`';
+        }
+
         if ($returncode == 0) {
             $ignore = ['none', 'udev', 'Filesystem', 'tmpfs', 'overlay', 'shm'];
             foreach ($output as $line) {
@@ -44,6 +52,10 @@ class Disks {
                         continue;
                     }
                     if (substr($value[5], 0, 5) === '/snap') {
+                        continue;
+                    }
+                    if ($excludePattern !== null &&
+                        (preg_match($excludePattern, $value[0]) === 1 || preg_match($excludePattern, $value[5]) === 1)) {
                         continue;
                     }
 
@@ -73,6 +85,11 @@ class Disks {
             }
         }
         return $disks;
+    }
+
+    public function isValidRegularExpression($regEx)
+    {
+        return @preg_match('`' . $regEx . '`', '') !== false;
     }
 
 }

@@ -154,8 +154,8 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         $Disks = new Disks();
         $diskWarningInPercent = !empty($systemsetting['SYSTEM_HEALTH']['SYSTEM_HEALTH.DISK.WARNING_IN_PERCENT']) ? $systemsetting['SYSTEM_HEALTH']['SYSTEM_HEALTH.DISK.WARNING_IN_PERCENT'] : null;
         $diskCriticalInPercent = !empty($systemsetting['SYSTEM_HEALTH']['SYSTEM_HEALTH.DISK.CRITICAL_IN_PERCENT']) ? $systemsetting['SYSTEM_HEALTH']['SYSTEM_HEALTH.DISK.CRITICAL_IN_PERCENT'] : null;
-
-        $data['disk_usage'] = $Disks->getDiskUsage($diskWarningInPercent, $diskCriticalInPercent);
+        $regEx = !empty($systemsetting['SYSTEM_HEALTH']['SYSTEM_HEALTH.DISK.EXCLUDE_REGEX']) ? $systemsetting['SYSTEM_HEALTH']['SYSTEM_HEALTH.DISK.EXCLUDE_REGEX'] : null;
+        $data['disk_usage'] = $Disks->getDiskUsage($diskWarningInPercent, $diskCriticalInPercent, $regEx);
 
         /****** Memory ******/
         $MemoryUsage = new MemoryUsage();

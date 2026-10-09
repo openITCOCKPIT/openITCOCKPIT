@@ -320,23 +320,22 @@ class SystemHealthCommand extends Command implements CronjobInterface {
                 $cpu_cores = (int)$parsedHealth['cpu_cores'];
                 $cpu_load15 = (float)$parsedHealth['cpu_load15'];
 
-                if (($cpu_cores - 2) <= 0) {
-                    $cpu_cores_warning = 1;
-                } else {
-                    $cpu_cores_warning = $cpu_cores - 2;
-                }
+                /*
+                 * ITC-3886
+                 * The old "cores minus 2" rule was too aggressive on small systems and
+                 * scaled poorly on larger ones. Using proportional thresholds keeps the
+                 * warning/critical levels consistent across different host sizes.
+                 */
+                $cpu_cores_warning = max(1, $cpu_cores * 0.75); // 75% of core count
+                $cpu_cores_critical = max(1, $cpu_cores * 0.90); // 90% of core count
 
                 $parsedHealth['cpu_state'] = 'ok';
 
-                if ($cpu_load15 == 1 && $cpu_cores_warning == 1) {
+                if ($cpu_load15 >= $cpu_cores_warning) {
                     $parsedHealth['cpu_state'] = 'warning';
                 }
 
-                if ($cpu_load15 > $cpu_cores_warning) {
-                    $parsedHealth['cpu_state'] = 'warning';
-                }
-
-                if ($cpu_load15 > $cpu_cores) {
+                if ($cpu_load15 >= $cpu_cores_critical) {
                     $parsedHealth['cpu_state'] = 'critical';
                 }
 

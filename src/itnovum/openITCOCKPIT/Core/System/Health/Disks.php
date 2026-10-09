@@ -30,11 +30,15 @@ class Disks {
     /**
      * @param $warning
      * @param $critical
+     * @param string|null $diskExcludeRegex
      * @return array
      */
-    public function getDiskUsage($warning = null, $critical = null) {
+    public function getDiskUsage($warning = null, $critical = null, ?string $diskExcludeRegex = null) {
         exec('LANG=C df -h', $output, $returncode);
         $disks = [];
+
+        $diskExcludeRegex = $this->sanitizeRegex($diskExcludeRegex);
+
         if ($returncode == 0) {
             $ignore = ['none', 'udev', 'Filesystem', 'tmpfs', 'overlay', 'shm'];
             foreach ($output as $line) {
@@ -43,7 +47,10 @@ class Disks {
                     if ($value[5] === '/run' || strpos($value[5], 'snapshot')) {
                         continue;
                     }
-                    if (substr($value[5], 0, 5) === '/snap') {
+                    if (str_starts_with($value[5], '/snap')) {
+                        continue;
+                    }
+                    if ($diskExcludeRegex && (preg_match($diskExcludeRegex, $value[0]) === 1 || preg_match($diskExcludeRegex, $value[5]) === 1)) {
                         continue;
                     }
 
@@ -73,6 +80,22 @@ class Disks {
             }
         }
         return $disks;
+    }
+
+    /**
+     * @param string|null $diskExcludeRegex
+     * @return string|null
+     */
+    private function sanitizeRegex(?string $diskExcludeRegex): ?string {
+        if (!$diskExcludeRegex || trim($diskExcludeRegex) === '') {
+            return null;
+        }
+
+        $pattern = '`' . trim($diskExcludeRegex) . '`';
+        if (@preg_match($pattern, '') === false) {
+            return null;
+        }
+        return $pattern;
     }
 
 }

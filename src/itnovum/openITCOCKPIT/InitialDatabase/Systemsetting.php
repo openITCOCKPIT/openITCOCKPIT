@@ -918,6 +918,14 @@ class Systemsetting extends Importer {
                 'created'  => '2026-02-12 09:28:17',
                 'modified' => '2026-02-12 09:28:17'
             ],
+            (int)108  => [
+                'key'      => 'SYSTEM_HEALTH.DISK.EXCLUDE_REGEX',
+                'value'    => '',
+                'info'     => 'Regular expression to exclude specific disks or mount points from System Health checks (e.g. /var/lib/docker or /var/lib/docker|overlay).',
+                'section'  => 'SYSTEM_HEALTH',
+                'created'  => '2026-10-06 09:28:17',
+                'modified' => '2026-10-06 09:28:17'
+            ],
         ];
 
         return $data;

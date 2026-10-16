@@ -101,12 +101,25 @@ class AgentConfiguration {
             'systemdservices'                    => true, // Enable Systemd checks (Linux)
             'launchdservices'                    => true, // Enable launchd checks (macOS)
             'winservices'                        => true, // Enable Windows Services checks
+            'winscheduledtasks'                  => true, // Enable Windows Scheduled Tasks checks
             'wineventlog'                        => false, // Enable Windows Event Log checks (Disabled by default due to bluescreens see OA-40)
             'sensorstats'                        => true, //Enable monitoring of temperature and battery sensors
             'dockerstats'                        => false, // Enable docker checks
             'libvirt'                            => true, // Enable libvirt checks (requires libvirt build),
             'userstats'                          => true, // Enable logged in users check
             'ntp'                                => true, // Enable NTP check
+            'security'                           => true, // Enable monitoring of OS security features like Microsoft Defender, FileVault, SELinux
+            'zfs'                                => true, // ZFS Pool monitoring
+            'smart'                              => true, // SMART of disks and SSDS (requires smartmontools)
+            'proxmox'                            => true, // Monitor Proxmox VE VMs and Contianers
+            'ceph'                               => true, // Ceph Storage monitoring
+            'postfix'                            => true, // Postfix Mailq
+            'exim'                               => true, // Exim Mailq
+            'lvm'                                => true, // LVM thin pools
+            'mounts'                             => true, // Monitore for not mounted file systems
+            'networkports'                       => true, // Open Ports check
+            'ipmi'                               => false, // IPMI monitoring via /dev/ipmi0 on Linux or IPMI driver on Windows - no ipmitool required
+            'systemhealth'                       => true, // Linux system health (OOM kills, file descriptors)
         ],
         'int'    => [
             'bind_port'                         => 3333, // Bind port of the Agents web server
@@ -114,6 +127,9 @@ class AgentConfiguration {
             'push_timeout'                      => 10,   // HTTP Timeout in seconds the Agent uses to push check results to the server
             'packagemanager_check_interval'     => 60, // Update interval of Software Inventory in minutes
             'packagemanager_description_length' => 80, // Limit the length of package descriptions in the software inventory to prevent very long descriptions that can cause performance issues
+            'ipmi_interval'                     => 60, // Interval in seconds how often the Agent should execute IPMI checks
+            'ipmi_sel_window'                   => 86400, //SEL entries with warnings or errors are reported for this time in seconds (default 24 hours)
+            'wineventlog_max_records'           => 1000, // Maximum number of records to fetch from the Windows Event Log (default 1000, EvtApi only)
         ],
         'array'  => [
             'win_eventlog_types' => [  // Types that should be monitored in the Windows Event log

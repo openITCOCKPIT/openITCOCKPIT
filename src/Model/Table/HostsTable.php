@@ -4606,6 +4606,113 @@ class HostsTable extends Table {
     }
 
     /**
+     * @param $id
+     * @return array|Host|null
+     */
+    public function getHostByIdForNotificationPeriods($id) {
+        $query = $this->find()
+            ->select([
+                'Hosts.id',
+                'Hosts.name',
+                'Hosts.uuid',
+                'Hosts.container_id',
+                'Hosts.hosttemplate_id',
+                'Hosts.notify_period_id',
+                'Hosts.notifications_enabled',
+                'Hosts.notify_on_down',
+                'Hosts.notify_on_unreachable',
+                'Hosts.notify_on_recovery',
+                'Hosts.notify_on_flapping',
+                'Hosts.notify_on_downtime',
+            ])
+            ->where([
+                'Hosts.id' => $id
+            ])
+            ->contain([
+                'HostsToContainersSharing',
+                'Contacts'      => function (Query $query) {
+                    return $query->select([
+                        'Contacts.id',
+                        'Contacts.name',
+                        'Contacts.host_timeperiod_id',
+                        'Contacts.host_notifications_enabled',
+                        'Contacts.notify_host_recovery',
+                        'Contacts.notify_host_down',
+                        'Contacts.notify_host_unreachable',
+                        'Contacts.notify_host_flapping',
+                        'Contacts.notify_host_downtime'
+                    ]);
+                },
+                'Contactgroups' => function (Query $query) {
+                    return $query->contain([
+                        'Contacts' => function (Query $query) {
+                            return $query->select([
+                                'Contacts.id',
+                                'Contacts.name',
+                                'Contacts.host_timeperiod_id',
+                                'Contacts.host_notifications_enabled',
+                                'Contacts.notify_host_recovery',
+                                'Contacts.notify_host_down',
+                                'Contacts.notify_host_unreachable',
+                                'Contacts.notify_host_flapping',
+                                'Contacts.notify_host_downtime'
+                            ]);
+                        }
+                    ]);
+                },
+                'Hosttemplates' => function (Query $query) {
+                    $query->select([
+                        'Hosttemplates.id',
+                        'Hosttemplates.check_period_id',
+                        'Hosttemplates.notify_period_id',
+                        'Hosttemplates.notifications_enabled',
+                        'Hosttemplates.notify_on_down',
+                        'Hosttemplates.notify_on_unreachable',
+                        'Hosttemplates.notify_on_recovery',
+                        'Hosttemplates.notify_on_flapping',
+                        'Hosttemplates.notify_on_downtime'
+                    ])->contain([
+                        'Contacts'      => function (Query $query) {
+                            return $query->select([
+                                'Contacts.id',
+                                'Contacts.name',
+                                'Contacts.host_timeperiod_id',
+                                'Contacts.host_notifications_enabled',
+                                'Contacts.notify_host_recovery',
+                                'Contacts.notify_host_down',
+                                'Contacts.notify_host_unreachable',
+                                'Contacts.notify_host_flapping',
+                                'Contacts.notify_host_downtime'
+                            ]);
+                        },
+                        'Contactgroups' => function (Query $query) {
+                            return $query->contain([
+                                'Contacts' => function (Query $query) {
+                                    return $query->select([
+                                        'Contacts.id',
+                                        'Contacts.name',
+                                        'Contacts.host_timeperiod_id',
+                                        'Contacts.host_notifications_enabled',
+                                        'Contacts.notify_host_recovery',
+                                        'Contacts.notify_host_down',
+                                        'Contacts.notify_host_unreachable',
+                                        'Contacts.notify_host_flapping',
+                                        'Contacts.notify_host_downtime'
+                                    ]);
+                                }
+                            ]);
+                        }
+                    ]);
+                    return $query;
+                }
+            ])
+            ->first();
+
+        return $query;
+    }
+
+
+    /**
      * @param int $satelliteId
      * @return array
      */

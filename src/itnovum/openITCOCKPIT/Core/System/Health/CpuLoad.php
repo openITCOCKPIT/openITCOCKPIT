@@ -120,12 +120,21 @@ class CpuLoad {
         $load['cores'] = $this->getNumberOfCores();
         $load['state'] = 'ok';
 
+        /*
+         * ITC-3886
+         * The old "cores minus 2" rule was too aggressive on small systems and
+         * scaled poorly on larger ones. Using proportional thresholds keeps the
+         * warning/critical levels consistent across different host sizes.
+         */
+        $defaultWarning = max(1, $load['cores'] * 0.75);
+        $defaultCritical = max(1, $load['cores'] * 0.90);
+
         if (is_numeric($warning) && $warning > 0) {
             if ($load['load15'] > $warning) {
                 $load['state'] = 'warning';
             }
         } else {
-            if ($load['load15'] > $load['cores'] - 2 && $load['load15'] > 1) {
+            if ($load['load15'] >= $defaultWarning) {
                 $load['state'] = 'warning';
             }
         }
@@ -134,7 +143,7 @@ class CpuLoad {
                 $load['state'] = 'critical';
             }
         } else {
-            if ($load['load15'] >= $load['cores'] && $load['load15'] > 1) {
+            if ($load['load15'] >= $defaultCritical) {
                 $load['state'] = 'critical';
             }
         }

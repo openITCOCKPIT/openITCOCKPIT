@@ -341,16 +341,24 @@ class MapsTable extends Table {
             ->contain(['Containers'])
             ->join([
                 'table'      => 'mapitems',
-                'type'       => 'INNER',
+                'type'       => 'LEFT OUTER',
                 'alias'      => 'Mapitems',
                 'conditions' => 'Mapitems.object_id = Maps.id',
             ])
-            ->where([
-                'Maps.id'         => $realMapId,
-                'Mapitems.map_id' => $mapItemMapId,
+            ->join([
+                'table'      => 'maplines',
+                'type'       => 'LEFT OUTER',
+                'alias'      => 'Maplines',
+                'conditions' => 'Maplines.object_id = Maps.id',
+            ])
+            ->andWhere([
+                'Maps.id' => $realMapId,
+                'OR'      => [
+                    'Mapitems.map_id' => $mapItemMapId,
+                    'Maplines.map_id' => $mapItemMapId
+                ]
             ])
             ->enableHydration($enableHydration);
-
         $result = $query->first();
         if (empty($result)) {
             return [];
@@ -371,10 +379,6 @@ class MapsTable extends Table {
                 'type'       => 'INNER',
                 'alias'      => 'Mapsummaryitems',
                 'conditions' => 'Mapsummaryitems.object_id = Maps.id',
-            ])
-            ->where([
-                'Maps.id'                => $realMapId,
-                'Mapsummaryitems.map_id' => $mapItemMapId,
             ])
             ->enableHydration($enableHydration);
 
@@ -422,16 +426,27 @@ class MapsTable extends Table {
             ->contain(['Containers'])
             ->join([
                 'table'      => 'mapitems',
-                'type'       => 'INNER',
+                'type'       => 'LEFT OUTER',
                 'alias'      => 'Mapitems',
                 'conditions' => 'Mapitems.object_id = Maps.id',
             ])
+            ->join([
+                'table'      => 'maplines',
+                'type'       => 'LEFT OUTER',
+                'alias'      => 'Maplines',
+                'conditions' => 'Maplines.object_id = Maps.id',
+            ])
             ->select([
                 'Mapitems.object_id',
-                'Mapitems.map_id'
+                'Mapitems.map_id',
+                'Maplines.object_id',
+                'Maplines.map_id',
             ])
-            ->where([
-                'Mapitems.object_id' => $object_id,
+            ->andWhere([
+                'OR' => [
+                    'Mapitems.object_id' => $object_id,
+                    'Maplines.object_id' => $object_id
+                ]
             ])->enableAutoFields(true);
 
         $result = $query->first();

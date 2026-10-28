@@ -1180,7 +1180,11 @@ class MapeditorsController extends AppController {
                     $mapId = $map['Mapsummaryitems']['map_id'];
                 } else {
                     $map = $MapsTable->getMapitemForMapsummary($objectId);
-                    $mapId = $map['Mapitems']['map_id'];
+                    if (!empty($map['Mapitems']['map_id'])) {
+                        $mapId = $map['Mapitems']['map_id'];
+                    } else if (!empty($map['Maplines']['map_id'])) {
+                        $mapId = $map['Maplines']['map_id'];
+                    }
                 }
                 if (!empty($map)) {
                     if ($this->hasRootPrivileges === false) {

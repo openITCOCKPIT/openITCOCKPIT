@@ -1892,10 +1892,6 @@ class ServicetemplatesTable extends Table {
      */
     public function getServicetemplateByUuidForImportDiff($uuid) {
         $query = $this->find()
-            ->select([
-                'Servicetemplates.id',
-                'name' => 'Servicetemplates.template_name'
-            ])
             ->contain([
                 'CheckPeriod'                               => function (Query $query) {
                     return $query->select([
@@ -1961,6 +1957,7 @@ class ServicetemplatesTable extends Table {
                 }
             ])
             ->where(['Servicetemplates.uuid' => $uuid])
+            ->disableResultsCasting()
             ->disableHydration()
             ->firstOrFail();
 

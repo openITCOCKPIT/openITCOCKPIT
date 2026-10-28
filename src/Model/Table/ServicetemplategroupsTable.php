@@ -906,7 +906,8 @@ class ServicetemplategroupsTable extends Table {
                     $q->select([
                         'Servicetemplates.id',
                         'Servicetemplates.uuid',
-                        'Servicetemplates.template_name'
+                        'Servicetemplates.template_name',
+                        'Servicetemplates.name'
                     ]);
                     return $q;
                 }
@@ -1026,8 +1027,9 @@ class ServicetemplategroupsTable extends Table {
                 'Containers',
                 'Servicetemplates' => function (Query $query) {
                     return $query->select([
-                        'name' => 'Servicetemplates.name',
-                        'uuid' => 'Servicetemplates.uuid'
+                        'template_name' => 'Servicetemplates.template_name',
+                        'name'          => 'Servicetemplates.name',
+                        'uuid'          => 'Servicetemplates.uuid'
                     ]);
                 }
             ])

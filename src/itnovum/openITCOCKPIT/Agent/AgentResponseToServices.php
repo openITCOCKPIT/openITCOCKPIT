@@ -460,6 +460,10 @@ class AgentResponseToServices {
                     $services = array_merge($services, $this->getServiceStructsForIpmi());
                     break;
 
+                case 'gpus':
+                    $services = array_merge($services, $this->getServiceStructsForGpus());
+                    break;
+
                 case 'packagemanager':
                     if (!empty($this->agentResponse['packagemanager']['Enabled'])) {
                         $packagemanager = $this->getServiceStructByName('packagemanager', 'System Updates');
@@ -1538,6 +1542,49 @@ class AgentResponseToServices {
                 $process !== '' ? sprintf('Port tcp/%s (%s)', $port, $process) : sprintf('Port tcp/%s', $port),
                 $args
             );
+        }
+        return $services;
+    }
+
+    /**
+     * GPUs: health of all GPUs and one service per GPU. The GPUs are identified by the PCI bus id (or the UUID), the
+     * index changes if another GPU is missing.
+     *
+     * @return array
+     */
+    private function getServiceStructsForGpus() {
+        $services = [];
+        $gpus = $this->agentResponse['gpus'];
+        if (!is_array($gpus) || isset($gpus['error']) || empty($gpus['gpus']) || !is_array($gpus['gpus'])) {
+            return $services;
+        }
+
+        $health = $this->getServiceStructByName('gpus.health', 'GPU health');
+        if ($health) {
+            // Expected number of GPUs: the GPUs which are found now, so a GPU which disappears later is reported
+            $health['servicecommandargumentvalues'][0]['value'] = (string)count($gpus['gpus']);
+            $services['gpus_health'] = $health;
+        }
+
+        $values = [];
+        foreach ($gpus['gpus'] as $gpu) {
+            // The PCI bus id identifies the GPU, the UUID is used if the PCI bus id is unknown
+            $id = '';
+            if (!empty($gpu['pci_bus_id'])) {
+                $id = $gpu['pci_bus_id'];
+            } else if (!empty($gpu['uuid'])) {
+                $id = $gpu['uuid'];
+            }
+
+            if ($id === '') {
+                // The GPU can not be identified
+                continue;
+            }
+            $values[$id] = trim(sprintf('%s %s', $id, $gpu['name'] ?? ''));
+        }
+        $usageServices = $this->getServiceStructsForValues('gpus.usage', 0, $values, 'GPU %s');
+        if ($usageServices) {
+            $services['gpus_usage'] = $usageServices;
         }
         return $services;
     }

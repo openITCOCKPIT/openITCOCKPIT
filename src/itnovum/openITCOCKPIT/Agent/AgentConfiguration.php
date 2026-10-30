@@ -119,6 +119,7 @@ class AgentConfiguration {
             'mounts'                             => true, // Monitore for not mounted file systems
             'networkports'                       => true, // Open Ports check
             'ipmi'                               => false, // IPMI monitoring via /dev/ipmi0 on Linux or IPMI driver on Windows - no ipmitool required
+            'gpus'                               => true, // GPU monitoring: NVIDIA (nvidia-smi), AMD and Intel (Linux), all GPUs on Windows
             'systemhealth'                       => true, // Linux system health (OOM kills, file descriptors)
         ],
         'int'    => [

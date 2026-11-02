@@ -27,7 +27,7 @@ namespace itnovum\openITCOCKPIT\Core;
 
 
 use Cake\Error\Debugger;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 
 class FileDebugger {
 
@@ -95,7 +95,7 @@ class FileDebugger {
         fclose(fopen($filename, 'w+'));
     }
 
-    public static function query(Query $query, $die = false, $filename = '/tmp/debug.log') {
+    public static function query(SelectQuery $query, $die = false, $filename = '/tmp/debug.log') {
 
         $sql = (string)$query;
 
@@ -112,7 +112,7 @@ class FileDebugger {
         }
     }
 
-    public static function dieQuery(Query $query) {
+    public static function dieQuery(SelectQuery $query) {
         $sql = (string)$query;
 
         $result = \SqlFormatter::format($sql, true);

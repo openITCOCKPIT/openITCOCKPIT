@@ -171,14 +171,13 @@ class AcknowledgementHostsTable extends Table implements AcknowledgementHostsTab
             $uuids = [$uuids];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'hostname IN ' => $uuids
             ])
             ->orderBy([
                 'entry_time' => 'DESC',
             ])
-            ->disableHydration()
             ->all();
 
         $acks = $query->toArray();

@@ -30,7 +30,7 @@ use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\Changelog;
 use App\Model\Entity\Contact;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -350,11 +350,11 @@ class ContactsTable extends Table {
      * @return array
      */
     public function getContactsIndex(ContactsFilter $ContactsFilter, $PaginateOMat = null, $MY_RIGHTS = []) {
-        $query = $this->find('all');
+        $query = $this->unhydratedFind('all');
         $query->contain(['Containers']);
         $query->where($ContactsFilter->indexFilter());
 
-        $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
+        $query->innerJoinWith('Containers', function (SelectQuery $q) use ($MY_RIGHTS) {
             if (!empty($MY_RIGHTS)) {
                 return $q->where(['Containers.id IN' => $MY_RIGHTS]);
             }
@@ -362,8 +362,6 @@ class ContactsTable extends Table {
         });
 
         $query->distinct('Contacts.id');
-
-        $query->disableHydration();
         $query->orderBy($ContactsFilter->getOrderForPaginator('Contacts.name', 'asc'));
 
 
@@ -391,24 +389,23 @@ class ContactsTable extends Table {
     public function getContactsForTelegram($MY_RIGHTS = []) {
         $commandsTable = TableRegistry::getTableLocator()->get('Commands');
         $hostCommandIds = Hash::extract(
-            $commandsTable->find()->select(['Commands.id'])->where(['Commands.name' => 'host-notify-by-telegram'])->disableHydration()->toArray(),
+            $commandsTable->unhydratedFind()->select(['Commands.id'])->where(['Commands.name' => 'host-notify-by-telegram'])->toArray(),
             '{n}.id'
         );
         $serviceCommandIds = Hash::extract(
-            $commandsTable->find()->select(['Commands.id'])->where(['Commands.name' => 'service-notify-by-telegram'])->disableHydration()->toArray(),
+            $commandsTable->unhydratedFind()->select(['Commands.id'])->where(['Commands.name' => 'service-notify-by-telegram'])->toArray(),
             '{n}.id'
         );
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Contacts.id',
                 'Contacts.name',
                 'Contacts.uuid'
-            ])
-            ->disableHydration();
+            ]);
 
         if (!empty($MY_RIGHTS)) {
-            $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
+            $query->innerJoinWith('Containers', function (SelectQuery $q) use ($MY_RIGHTS) {
                 return $q->where(['Containers.id IN' => $MY_RIGHTS]);
             });
         }
@@ -448,12 +445,11 @@ class ContactsTable extends Table {
      * @return array
      */
     public function getContactById($id, $contain = ['Containers']) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Contacts.id' => $id
             ])
             ->contain($contain)
-            ->disableHydration()
             ->first();
 
         return $this->formatFirstResultAsCake2($query, true);
@@ -465,7 +461,7 @@ class ContactsTable extends Table {
      * @return array
      */
     public function getContactsForCopy($ids = [], array $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Contacts.id',
                 'Contacts.name',
@@ -478,7 +474,7 @@ class ContactsTable extends Table {
             ->orderBy(['Contacts.id' => 'asc']);
 
         if (!empty($MY_RIGHTS)) {
-            $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
+            $query->innerJoinWith('Containers', function (SelectQuery $q) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     return $q->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
@@ -488,7 +484,6 @@ class ContactsTable extends Table {
 
         $query
             ->distinct('Contacts.id')
-            ->disableHydration()
             ->all();
 
         return $this->formatResultAsCake2($query->toArray(), false);
@@ -522,7 +517,7 @@ class ContactsTable extends Table {
      * @return array
      */
     private function getContactForEditByWhere(array $where): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where($where)
             ->contain([
                 'Containers',
@@ -530,7 +525,6 @@ class ContactsTable extends Table {
                 'ServiceCommands',
                 'Customvariables'
             ])
-            ->disableHydration()
             ->firstOrFail();
 
 
@@ -554,13 +548,12 @@ class ContactsTable extends Table {
      * @return array
      */
     public function getContactsForCrateDBSync() {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Contacts.id',
                 'Contacts.name',
                 'Contacts.uuid'
             ])
-            ->disableHydration()
             ->all();
 
         return $this->formatResultAsCake2($query->toArray(), false);
@@ -569,7 +562,7 @@ class ContactsTable extends Table {
 
     /**
      * @param null $uuid
-     * @return array|\Cake\ORM\Query
+     * @return array|SelectQuery
      */
     public function getContactsForExport($uuid = null) {
         $query = $this->find()
@@ -599,12 +592,11 @@ class ContactsTable extends Table {
      * @return array
      */
     public function getContactByName($name, $contain = ['Containers']) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Contacts.name' => $name
             ])
             ->contain($contain)
-            ->disableHydration()
             ->first();
 
         return $this->formatFirstResultAsCake2($query, true);
@@ -660,14 +652,13 @@ class ContactsTable extends Table {
             return [];
         }
 
-        $query = $this->find('all');
+        $query = $this->unhydratedFind('all');
         $query->contain(['Containers']);
-        $query->innerJoinWith('Containers', function (Query $q) use ($containerIds) {
+        $query->innerJoinWith('Containers', function (SelectQuery $q) use ($containerIds) {
             return $q->where(['Containers.id IN' => $containerIds]);
         });
 
         $query->distinct('Contacts.id');
-        $query->disableHydration();
 
         if ($type === 'all') {
             return $this->formatResultAsCake2($query->toArray());
@@ -685,12 +676,11 @@ class ContactsTable extends Table {
             $ids = [$ids];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Contacts.id',
                 'Contacts.name'
-            ])
-            ->disableHydration();
+            ]);
         if (!empty($ids)) {
             $query->where([
                 'Contacts.id IN' => $ids
@@ -705,7 +695,7 @@ class ContactsTable extends Table {
      * @return bool
      */
     public function hasUserAPushContact($userId) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select(['Contacts.id'])
             ->where([
                 [
@@ -718,7 +708,6 @@ class ContactsTable extends Table {
                     ]
                 ]
             ])
-            ->disableHydration()
             ->first();
 
 
@@ -726,7 +715,7 @@ class ContactsTable extends Table {
     }
 
     public function getAllInfoContacts() {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Contacts.id',
                 'Contacts.name',
@@ -735,7 +724,6 @@ class ContactsTable extends Table {
             ->where([
                 'Contacts.name' => 'info'
             ])
-            ->disableHydration()
             ->all();
 
         if ($query === null) {
@@ -847,12 +835,12 @@ class ContactsTable extends Table {
         }
         $containerIds = array_unique(array_merge($containerIds, $tenantContainerIds));
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Contacts.id'
             ])
             ->contain([
-                'Containers' => function (Query $q) {
+                'Containers' => function (SelectQuery $q) {
                     return $q->disableAutoFields()
                         ->select([
                             'Containers.id'
@@ -862,7 +850,6 @@ class ContactsTable extends Table {
             ->where([
                 'Contacts.id IN ' => $contactIds
             ])
-            ->disableHydration()
             ->all();
 
         if ($query === null) {
@@ -892,7 +879,7 @@ class ContactsTable extends Table {
         /** @var ContactsToServicecommandsTable $ContactsToServicecommandsTable */
         $ContactsToServicecommandsTable = TableRegistry::getTableLocator()->get('ContactsToServicecommands');
 
-        $query = $ContactsToHostcommandsTable->find()
+        $query = $ContactsToHostcommandsTable->unhydratedFind()
             ->select([
                 'contact_id'
             ])
@@ -902,7 +889,6 @@ class ContactsTable extends Table {
             ->groupBy([
                 'contact_id'
             ])
-            ->disableHydration()
             ->all();
 
         $result = $query->toArray();
@@ -912,7 +898,7 @@ class ContactsTable extends Table {
 
         $contactIds = Hash::extract($result, '{n}.contact_id');
 
-        $query = $ContactsToServicecommandsTable->find()
+        $query = $ContactsToServicecommandsTable->unhydratedFind()
             ->select([
                 'contact_id'
             ])
@@ -922,7 +908,6 @@ class ContactsTable extends Table {
             ->groupBy([
                 'contact_id'
             ])
-            ->disableHydration()
             ->all();
 
         $result = $query->toArray();
@@ -941,7 +926,7 @@ class ContactsTable extends Table {
             'Containers'
         ]);
 
-        $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
+        $query->innerJoinWith('Containers', function (SelectQuery $q) use ($MY_RIGHTS) {
             if (!empty($MY_RIGHTS)) {
                 return $q->where(['Containers.id IN' => $MY_RIGHTS]);
             }
@@ -987,7 +972,7 @@ class ContactsTable extends Table {
             'Containers'
         ]);
 
-        $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
+        $query->innerJoinWith('Containers', function (SelectQuery $q) use ($MY_RIGHTS) {
             if (!empty($MY_RIGHTS)) {
                 return $q->where(['Containers.id IN' => $MY_RIGHTS]);
             }
@@ -1013,12 +998,12 @@ class ContactsTable extends Table {
      * @return array
      */
     public function getContactsByContainerIdExact($containerId, $type = 'all', $index = 'id', $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Contacts.id',
                 'Contacts.name'
             ])
-            ->innerJoinWith('Containers', function (Query $q) use ($containerId, $MY_RIGHTS) {
+            ->innerJoinWith('Containers', function (SelectQuery $q) use ($containerId, $MY_RIGHTS) {
                 $q->disableAutoFields()
                     ->select([
                         'Containers.id'
@@ -1032,8 +1017,7 @@ class ContactsTable extends Table {
                     ]);
                 }
                 return $q;
-            })
-            ->disableHydration();
+            });
 
         $result = $query->toArray();
 
@@ -1070,7 +1054,7 @@ class ContactsTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Containers.parent_id'
             ])
@@ -1092,7 +1076,6 @@ class ContactsTable extends Table {
             ])
             ->distinct()
             ->disableAutoFields()
-            ->disableHydration()
             ->toArray();
         return Hash::extract($query, '{n}.Containers.parent_id');
     }
@@ -1112,7 +1095,7 @@ class ContactsTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hosttemplates.container_id'
             ])
@@ -1130,7 +1113,6 @@ class ContactsTable extends Table {
             ])
             ->distinct()
             ->disableAutoFields()
-            ->disableHydration()
             ->toArray();
         return Hash::extract($query, '{n}.Hosttemplates.container_id');
     }
@@ -1151,7 +1133,7 @@ class ContactsTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Servicetemplates.container_id'
             ])
@@ -1169,7 +1151,6 @@ class ContactsTable extends Table {
             ])
             ->distinct()
             ->disableAutoFields()
-            ->disableHydration()
             ->toArray();
         return Hash::extract($query, '{n}.Servicetemplates.container_id');
     }
@@ -1189,7 +1170,7 @@ class ContactsTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hosts.container_id'
             ])
@@ -1207,7 +1188,6 @@ class ContactsTable extends Table {
             ])
             ->distinct()
             ->disableAutoFields()
-            ->disableHydration()
             ->toArray();
         return Hash::extract($query, '{n}.Hosts.container_id');
     }
@@ -1227,7 +1207,7 @@ class ContactsTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hostescalations.container_id'
             ])
@@ -1245,7 +1225,6 @@ class ContactsTable extends Table {
             ])
             ->distinct()
             ->disableAutoFields()
-            ->disableHydration()
             ->toArray();
         return Hash::extract($query, '{n}.Hostescalations.container_id');
     }
@@ -1265,7 +1244,7 @@ class ContactsTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Serviceescalations.container_id'
             ])
@@ -1283,7 +1262,6 @@ class ContactsTable extends Table {
             ])
             ->distinct()
             ->disableAutoFields()
-            ->disableHydration()
             ->toArray();
         return Hash::extract($query, '{n}.Serviceescalations.container_id');
     }
@@ -1326,7 +1304,7 @@ class ContactsTable extends Table {
         $query = $this->find()
             ->innerJoinWith('Containers')
             ->contain([
-                'Containers' => function (Query $query) use ($containerId) {
+                'Containers' => function (SelectQuery $query) use ($containerId) {
                     return $query->select([
                         'Containers.id',
                     ])->whereNotInList('Containers.id', [$containerId]);
@@ -1353,30 +1331,30 @@ class ContactsTable extends Table {
         if (!is_array($ids)) {
             $ids = [$ids];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
-                'HostCommands'       => function (Query $q) {
+                'HostCommands'       => function (SelectQuery $q) {
                     return $q->select([
                         'HostCommands.id',
                         'HostCommands.uuid',
                         'HostCommands.name'
                     ]);
                 },
-                'ServiceCommands'    => function (Query $q) {
+                'ServiceCommands'    => function (SelectQuery $q) {
                     return $q->select([
                         'ServiceCommands.id',
                         'ServiceCommands.uuid',
                         'ServiceCommands.name'
                     ]);
                 },
-                'HostTimeperiods'    => function (Query $q) {
+                'HostTimeperiods'    => function (SelectQuery $q) {
                     return $q->select([
                         'HostTimeperiods.id',
                         'HostTimeperiods.uuid',
                         'HostTimeperiods.name'
                     ]);
                 },
-                'ServiceTimeperiods' => function (Query $q) {
+                'ServiceTimeperiods' => function (SelectQuery $q) {
                     return $q->select([
                         'ServiceTimeperiods.id',
                         'ServiceTimeperiods.uuid',
@@ -1385,13 +1363,12 @@ class ContactsTable extends Table {
                 },
                 'Customvariables'
             ])
-            ->innerJoinWith('Containers', function (Query $q) {
+            ->innerJoinWith('Containers', function (SelectQuery $q) {
                 return $q->where(['Containers.id IN' => ROOT_CONTAINER]);
             })->where([
                 'Contacts.id IN' => $ids
             ])
-            ->groupBy(['Contacts.id'])
-            ->disableHydration();
+            ->groupBy(['Contacts.id']);
         return $this->emptyArrayIfNull($query->toArray());
     }
 
@@ -1485,7 +1462,7 @@ class ContactsTable extends Table {
      * @return array
      */
     public function getContactByUuidForImportDiff($uuid) {
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->select([
                 'Contacts.id',
                 'Contacts.name',
@@ -1497,13 +1474,13 @@ class ContactsTable extends Table {
                 'ServiceTimeperiods.uuid'
             ])
             ->contain([
-                'HostCommands'    => function (Query $query) {
+                'HostCommands'    => function (SelectQuery $query) {
                     return $query->select([
                         'name' => 'HostCommands.name',
                         'uuid' => 'HostCommands.uuid'
                     ]);
                 },
-                'ServiceCommands' => function (Query $query) {
+                'ServiceCommands' => function (SelectQuery $query) {
                     return $query->select([
                         'name' => 'ServiceCommands.name',
                         'uuid' => 'ServiceCommands.uuid'
@@ -1511,7 +1488,7 @@ class ContactsTable extends Table {
                 },
                 'HostTimeperiods',
                 'ServiceTimeperiods',
-                'Customvariables' => function (Query $query) {
+                'Customvariables' => function (SelectQuery $query) {
                     return $query->select([
                         'Customvariables.id',
                         'Customvariables.objecttype_id',
@@ -1523,7 +1500,6 @@ class ContactsTable extends Table {
                 }
             ])
             ->where(['Contacts.uuid' => $uuid])
-            ->disableHydration()
             ->firstOrFail();
 
         $contact = $this->emptyArrayIfNull($query);

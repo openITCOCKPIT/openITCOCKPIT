@@ -30,6 +30,7 @@ namespace App\Model\Table;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
@@ -118,7 +119,7 @@ class OrganizationalChartsTable extends Table {
      */
     public function getOrganizationalChartsIndex(GenericFilter $GenericFilter, PaginateOMat $PaginateOMat, array $MY_RIGHTS) {
 
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->select([
                 'OrganizationalCharts.id',
                 'OrganizationalCharts.name',
@@ -127,7 +128,7 @@ class OrganizationalChartsTable extends Table {
                 'OrganizationalCharts.modified',
             ])
             ->contain([
-                'OrganizationalChartNodes' => function (Query $q) {
+                'OrganizationalChartNodes' => function (SelectQuery $q) {
                     return $q->contain(['Containers'])
                         ->orderBy([
                             'Containers.name' => 'asc'
@@ -136,7 +137,7 @@ class OrganizationalChartsTable extends Table {
             ]);
         if (!empty($MY_RIGHTS)) {
             $query->select([
-                'permission_status' => $query->newExpr(
+                'permission_status' => $query->expr(
                     'IF(
                         COUNT(`OrganizationalChartNodes`.`id`) > 0,
                         IF(
@@ -166,12 +167,9 @@ class OrganizationalChartsTable extends Table {
                 'permission_status' => 'permitted'
             ])->groupBy(['OrganizationalCharts.id']);
         }
-
-        $query->disableHydration();
         if (!empty($GenericFilter->genericFilters())) {
             $query->where($GenericFilter->genericFilters());
         }
-        $query->disableHydration();
         $query->orderBy($GenericFilter->getOrderForPaginator('OrganizationalCharts.name', 'asc'));
 
         if ($PaginateOMat === null) {
@@ -202,7 +200,7 @@ class OrganizationalChartsTable extends Table {
      * @return array
      */
     public function getOrganizationalChartsByContainerId(int $containerId, array $MY_RIGHTS = [], string $type = 'all'): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->innerJoinWith('OrganizationalChartNodes');
         /* if needed for details
         ->innerJoinWith('OrganizationalChartNodes', function (Query $q) use ($MY_RIGHTS) {
@@ -214,7 +212,7 @@ class OrganizationalChartsTable extends Table {
         */
         if (!empty($MY_RIGHTS)) {
             //$query->where(['OrganizationalChartNodes.container_id IN' => $MY_RIGHTS]);
-            $query->where($query->newExpr(
+            $query->where($query->expr(
                 'EXISTS (
                     SELECT ocs.organizational_chart_id
                     FROM `organizational_chart_nodes` ocs
@@ -225,8 +223,7 @@ class OrganizationalChartsTable extends Table {
         }
 
         $query->where(['OrganizationalChartNodes.container_id' => $containerId])
-            ->groupBy(['OrganizationalCharts.id'])
-            ->disableHydration();
+            ->groupBy(['OrganizationalCharts.id']);
 
         if ($type === 'list') {
             $return = [];
@@ -246,10 +243,10 @@ class OrganizationalChartsTable extends Table {
      * @return array
      */
     public function getOrganizationalChartById(int $organizationalChartId, array $MY_RIGHTS = []): array {
-        $query = $this->find()
-            ->leftJoinWith('OrganizationalChartNodes', function (Query $q) use ($MY_RIGHTS) {
+        $query = $this->unhydratedFind()
+            ->leftJoinWith('OrganizationalChartNodes', function (SelectQuery $q) use ($MY_RIGHTS) {
                 return $q->contain([
-                    'Containers' => function (Query $q) use ($MY_RIGHTS) {
+                    'Containers' => function (SelectQuery $q) use ($MY_RIGHTS) {
                         return $q->select([
                             'Containers.id',
                             'Containers.name',
@@ -258,7 +255,7 @@ class OrganizationalChartsTable extends Table {
                             'Containers.name' => 'asc'
                         ]);
                     },
-                    'Users'      => function (Query $q) {
+                    'Users'      => function (SelectQuery $q) {
                         return $q->select([
                             'Users.id',
                             'Users.lastname',
@@ -275,7 +272,7 @@ class OrganizationalChartsTable extends Table {
             ]);
         if (!empty($MY_RIGHTS)) {
             //$query->where(['OrganizationalChartNodes.container_id IN' => $MY_RIGHTS]);
-            $query->where($query->newExpr(
+            $query->where($query->expr(
                 'EXISTS (
                     SELECT ocs.organizational_chart_id
                     FROM `organizational_chart_nodes` ocs
@@ -286,8 +283,7 @@ class OrganizationalChartsTable extends Table {
         }
 
         $query->where(['OrganizationalCharts.id' => $organizationalChartId])
-            ->groupBy(['OrganizationalCharts.id'])
-            ->disableHydration();
+            ->groupBy(['OrganizationalCharts.id']);
 
         return $query->firstOrFail();
     }
@@ -327,7 +323,7 @@ class OrganizationalChartsTable extends Table {
                 $GenericFilter->genericFilters()
             );
         if (!empty($MY_RIGHTS)) {
-            $query->where($query->newExpr(
+            $query->where($query->expr(
                 'EXISTS (
                     SELECT ocs.organizational_chart_id
                     FROM `organizational_chart_nodes` ocs
@@ -343,7 +339,7 @@ class OrganizationalChartsTable extends Table {
                 'OrganizationalCharts.id NOT IN' => $selected
             ]);
             if (!empty($MY_RIGHTS)) {
-                $query->where($query->newExpr(
+                $query->where($query->expr(
                     'EXISTS (
                     SELECT ocs.organizational_chart_id
                     FROM `organizational_chart_nodes` ocs

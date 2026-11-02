@@ -43,7 +43,7 @@ use App\Model\Table\HostsTable;
 use App\Model\Table\TimeperiodsTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
@@ -165,19 +165,19 @@ class HostescalationsController extends AppController {
         }
 
         $hostescalation = $HostescalationsTable->get($id, contain: [
-            'Hosts'         => function (Query $q) {
+            'Hosts'         => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id', 'name']);
             },
-            'Hostgroups'    => function (Query $q) {
+            'Hostgroups'    => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id']);
             },
-            'Contacts'      => function (Query $q) {
+            'Contacts'      => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id']);
             },
-            'Contactgroups' => function (Query $q) {
+            'Contactgroups' => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id']);
             },

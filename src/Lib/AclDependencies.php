@@ -775,8 +775,7 @@ class AclDependencies {
      * @return array
      */
     public function getDependentAcos(AcosTable $AcosTable, array $selectedAcos): array {
-        $threadedAcos = $AcosTable->find('threaded')
-            ->disableHydration()
+        $threadedAcos = $AcosTable->unhydratedFind('threaded')
             ->all();
 
         $acos = [];

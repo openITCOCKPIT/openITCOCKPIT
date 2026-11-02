@@ -3570,6 +3570,196 @@ class ServicesTable extends Table {
     }
 
     /**
+     * @param $id
+     * @return array|Service|null
+     */
+    public function getServiceByIdForNotificationPeriods($id) {
+        // Service notification fields of the contacts
+        $contacts = function (Query $query) {
+            return $query->select([
+                'Contacts.id',
+                'Contacts.name',
+                'Contacts.service_timeperiod_id',
+                'Contacts.service_notifications_enabled',
+                'Contacts.notify_service_recovery',
+                'Contacts.notify_service_warning',
+                'Contacts.notify_service_unknown',
+                'Contacts.notify_service_critical',
+                'Contacts.notify_service_flapping',
+                'Contacts.notify_service_downtime'
+            ]);
+        };
+        $contactgroups = function (Query $query) use ($contacts) {
+            return $query->contain([
+                'Contacts' => $contacts
+            ]);
+        };
+
+        $query = $this->find()
+            ->select([
+                'Services.id',
+                'Services.name',
+                'Services.uuid',
+                'Services.host_id',
+                'Services.servicetemplate_id',
+                'Services.notify_period_id',
+                'Services.notifications_enabled',
+                'Services.notify_on_warning',
+                'Services.notify_on_critical',
+                'Services.notify_on_unknown',
+                'Services.notify_on_recovery',
+                'Services.notify_on_flapping',
+                'Services.notify_on_downtime',
+            ])
+            ->where([
+                'Services.id' => $id
+            ])
+            ->contain([
+                'Contacts'         => $contacts,
+                'Contactgroups'    => $contactgroups,
+                'Servicetemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Servicetemplates.id',
+                            'Servicetemplates.name',
+                            'Servicetemplates.notify_period_id',
+                            'Servicetemplates.notifications_enabled',
+                            'Servicetemplates.notify_on_warning',
+                            'Servicetemplates.notify_on_critical',
+                            'Servicetemplates.notify_on_unknown',
+                            'Servicetemplates.notify_on_recovery',
+                            'Servicetemplates.notify_on_flapping',
+                            'Servicetemplates.notify_on_downtime'
+                        ])
+                        ->contain([
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups
+                        ]);
+                },
+                // Host is required for the container permissions (Service::getContainerIds())
+                // and as fallback for contacts and contact groups
+                'Hosts'            => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Hosts.id',
+                            'Hosts.name',
+                            'Hosts.uuid',
+                            'Hosts.container_id',
+                            'Hosts.hosttemplate_id'
+                        ])
+                        ->contain([
+                            'HostsToContainersSharing',
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups,
+                            'Hosttemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                                return $query
+                                    ->select([
+                                        'Hosttemplates.id'
+                                    ])
+                                    ->contain([
+                                        'Contacts'      => $contacts,
+                                        'Contactgroups' => $contactgroups
+                                    ]);
+                            }
+                        ]);
+                }
+            ])
+            ->first();
+
+        return $query;
+    }
+
+    /**
+     * Returns the service with its contacts and contact groups (incl. the ones of the service template,
+     * host and host template) and the containers they belong to. Used to check if the notifications overview is allowed.
+     *
+     * @param int $id
+     * @return \App\Model\Entity\Service|null
+     */
+    public function getServiceContactsAndContactgroupsWithContainersById($id) {
+        $contacts = function (Query $query) {
+            return $query
+                ->select([
+                    'Contacts.id'
+                ])
+                ->contain([
+                    'Containers' => function (Query $query) {
+                        return $query->select([
+                            'Containers.id'
+                        ]);
+                    }
+                ]);
+        };
+
+        $contactgroups = function (Query $query) use ($contacts) {
+            return $query
+                ->select([
+                    'Contactgroups.id',
+                    'Contactgroups.container_id'
+                ])
+                ->contain([
+                    'Containers' => function (Query $query) {
+                        return $query->select([
+                            'Containers.id',
+                            'Containers.parent_id'
+                        ]);
+                    },
+                    'Contacts'   => $contacts
+                ]);
+        };
+
+        return $this->find()
+            ->select([
+                'Services.id',
+                'Services.host_id',
+                'Services.servicetemplate_id'
+            ])
+            ->where([
+                'Services.id' => $id
+            ])
+            ->contain([
+                'Contacts'         => $contacts,
+                'Contactgroups'    => $contactgroups,
+                'Servicetemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Servicetemplates.id'
+                        ])
+                        ->contain([
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups
+                        ]);
+                },
+                // Host is required for the container permissions (Service::getContainerIds())
+                // and as fallback for contacts and contact groups
+                'Hosts'            => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Hosts.id',
+                            'Hosts.container_id',
+                            'Hosts.hosttemplate_id'
+                        ])
+                        ->contain([
+                            'HostsToContainersSharing',
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups,
+                            'Hosttemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                                return $query
+                                    ->select([
+                                        'Hosttemplates.id'
+                                    ])
+                                    ->contain([
+                                        'Contacts'      => $contacts,
+                                        'Contactgroups' => $contactgroups
+                                    ]);
+                            }
+                        ]);
+                }
+            ])
+            ->first();
+    }
+
+    /**
      * @param ServiceConditions $ServiceConditions
      * @param null|PaginateOMat $PaginateOMat
      * @param string $type (all or count, list is NOT supported!)

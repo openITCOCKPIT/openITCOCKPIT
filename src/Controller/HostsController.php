@@ -67,8 +67,10 @@ use Cake\Core\Plugin;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\I18n\I18n;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
+use Collator;
 use DistributeModule\Model\Table\SatellitesTable;
 use EventcorrelationModule\Model\Table\EventcorrelationsTable;
 use ImportModule\Model\Table\ImportedHostsTable;
@@ -3248,6 +3250,180 @@ class HostsController extends AppController {
             'acknowledgements',
             'timeranges'
         ]);
+    }
+
+    /**
+     * @param int|null $id
+     * @throws MissingDbBackendException
+     */
+    public function notificationsOverview($id = null) {
+        $session = $this->request->getSession();
+        $session->close();
+
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var HostsTable $HostsTable */
+        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+
+        if (!$HostsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid host'));
+        }
+
+        $host = $HostsTable->getHostByIdForNotificationPeriods($id);
+
+        if (!$this->allowedByContainerId($host->getContainerIds(), false)) {
+            $this->render403();
+            return;
+        }
+        $hosttemplate = $host->get('hosttemplate');
+        $notificationsEnabled = (bool)($host->get('notifications_enabled') ?? $hosttemplate->get('notifications_enabled'));
+
+        $hostTimeperiodId = $host->get('notify_period_id');
+        if (empty($hostTimeperiodId)) {
+            $hostTimeperiodId = $hosttemplate->get('notify_period_id');
+        }
+
+        /** @var TimeperiodsTable $TimeperiodsTable */
+        $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
+
+        // Contacts and contact groups are inherited together from the host template (see HostMergerForView)
+        $contacts = $host->get('contacts') ?? [];
+        $contactgroups = $host->get('contactgroups') ?? [];
+        if (empty($contacts) && empty($contactgroups)) {
+            $contacts = $hosttemplate->get('contacts') ?? [];
+            $contactgroups = $hosttemplate->get('contactgroups') ?? [];
+        }
+
+        // Resolve contact groups into their contacts and remove duplicates by contact id
+        $resolvedContacts = [];
+        foreach ($contacts as $contact) {
+            $resolvedContacts[$contact->get('id')] = $contact;
+        }
+        foreach ($contactgroups as $contactgroup) {
+            foreach ($contactgroup->get('contacts') ?? [] as $contact) {
+                $resolvedContacts[$contact->get('id')] = $contact;
+            }
+        }
+
+        // Format as expected by the frontend (notification-period-overview.interfaces.ts)
+        $notificationPeriodHost = [
+            'id'                   => $host->get('id'),
+            'name'                 => $host->get('name'),
+            'notificationsEnabled' => $notificationsEnabled,
+            'notificationPeriodId' => (int)$hostTimeperiodId,
+            'options'              => [
+                'down'        => (bool)($host->get('notify_on_down') ?? $hosttemplate->get('notify_on_down')),
+                'unreachable' => (bool)($host->get('notify_on_unreachable') ?? $hosttemplate->get('notify_on_unreachable')),
+                'recovery'    => (bool)($host->get('notify_on_recovery') ?? $hosttemplate->get('notify_on_recovery')),
+                'flapping'    => (bool)($host->get('notify_on_flapping') ?? $hosttemplate->get('notify_on_flapping')),
+                'downtime'    => (bool)($host->get('notify_on_downtime') ?? $hosttemplate->get('notify_on_downtime'))
+            ]
+        ];
+
+        $notificationPeriodContacts = [];
+        foreach ($resolvedContacts as $contact) {
+            $notificationPeriodContacts[] = [
+                'id'                   => $contact->get('id'),
+                'name'                 => $contact->get('name'),
+                'notificationsEnabled' => (bool)$contact->get('host_notifications_enabled'),
+                'notificationPeriodId' => (int)$contact->get('host_timeperiod_id'),
+                'options'              => [
+                    'down'        => (bool)$contact->get('notify_host_down'),
+                    'unreachable' => (bool)$contact->get('notify_host_unreachable'),
+                    'recovery'    => (bool)$contact->get('notify_host_recovery'),
+                    'flapping'    => (bool)$contact->get('notify_host_flapping'),
+                    'downtime'    => (bool)$contact->get('notify_host_downtime')
+                ]
+            ];
+        }
+        // Sort by name according to the user's locale (e.g. "Ä" next to "A" in German), case-insensitive
+        $collator = new Collator(I18n::getLocale());
+        $collator->setStrength(Collator::SECONDARY);
+        usort($notificationPeriodContacts, fn($a, $b) => $collator->compare($a['name'], $b['name']));
+
+
+        $this->set('host', $notificationPeriodHost);
+        // All used timeperiods incl. their exclude chain – the frontend resolves the excludes
+        $timeperiodIds = array_merge(
+            [$notificationPeriodHost['notificationPeriodId']],
+            array_column($notificationPeriodContacts, 'notificationPeriodId')
+        );
+        $timeperiods = $TimeperiodsTable->getTimeperiodsWithExcludesForNotificationOverview($timeperiodIds);
+
+        $this->set('contacts', $notificationPeriodContacts);
+        $this->set('timeperiods', $timeperiods);
+        $this->viewBuilder()->setOption('serialize', ['host', 'contacts', 'timeperiods']);
+    }
+
+    /**
+     * The notifications overview is only allowed if the user has rights to the containers of all
+     * contact groups and to at least one container of every contact (incl. the contacts of the contact groups) of the host.
+     *
+     * @param int|null $id
+     */
+    public function notificationsOverviewAllowed($id = null) {
+        $session = $this->request->getSession();
+        $session->close();
+
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var HostsTable $HostsTable */
+        $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
+
+        if (!$HostsTable->existsById($id)) {
+            throw new NotFoundException(__('Invalid host'));
+        }
+
+        $host = $HostsTable->getHostContactsAndContactgroupsWithContainersById($id);
+
+        if (!$this->allowedByContainerId($host->getContainerIds(), false)) {
+            $this->render403();
+            return;
+        }
+
+        $notificationsOverviewAllowed = true;
+        if ($this->hasRootPrivileges === false) {
+            $contacts = $host->get('contacts') ?? [];
+            $contactgroups = $host->get('contactgroups') ?? [];
+            if (empty($contacts) && empty($contactgroups)) {
+                $hosttemplate = $host->get('hosttemplate');
+                $contacts = $hosttemplate->get('contacts') ?? [];
+                $contactgroups = $hosttemplate->get('contactgroups') ?? [];
+            }
+
+            $contactgroupContainerIds = [];
+            foreach ($contactgroups as $contactgroup) {
+                // The container_id of a contact group points to its own container (CT_CONTACTGROUP),
+                // the parent_id is the container the contact group belongs to
+                $contactgroupContainerIds[] = (int)$contactgroup->get('container')->get('parent_id');
+                foreach ($contactgroup->get('contacts') ?? [] as $contact) {
+                    $contacts[] = $contact;
+                }
+            }
+
+            if (!empty(array_diff(array_unique($contactgroupContainerIds), $this->MY_RIGHTS))) {
+                $notificationsOverviewAllowed = false;
+            }
+
+            foreach ($contacts as $contact) {
+                $contactContainerIds = [];
+                foreach ($contact->get('containers') ?? [] as $container) {
+                    $contactContainerIds[] = (int)$container->get('id');
+                }
+                // Same as the contacts index: a contact is visible if at least one of its containers is in MY_RIGHTS
+                if (empty(array_intersect($contactContainerIds, $this->MY_RIGHTS))) {
+                    $notificationsOverviewAllowed = false;
+                    break;
+                }
+            }
+        }
+
+        $this->set('notifications_overview_allowed', $notificationsOverviewAllowed);
+        $this->viewBuilder()->setOption('serialize', ['notifications_overview_allowed']);
     }
 
     public function getGrafanaIframeUrlForDatepicker() {

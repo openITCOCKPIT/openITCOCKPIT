@@ -22,7 +22,6 @@
 //     under the terms of the openITCOCKPIT Enterprise Edition license agreement.
 //     License agreement and license key will be shipped with the order
 //     confirmation.
-//
 
 namespace App\Model\Table;
 
@@ -303,7 +302,7 @@ class TimeperiodsTable extends Table {
                         'ExcludedTimePeriod.id',
                         'ExcludedTimePeriod.uuid'
                     ])->disableAutoFields()
-                        ->disableHydration();
+                        ->enableHydration(false);
                 }
             ])
             ->where([
@@ -325,7 +324,7 @@ class TimeperiodsTable extends Table {
         $idsToLoad = array_values(array_unique(array_filter(array_map('intval', $ids))));
 
         while (!empty($idsToLoad)) {
-            $rows = $this->find()
+            $rows = $this->unhydratedFind()
                 ->select([
                     'Timeperiods.id',
                     'Timeperiods.name',
@@ -344,7 +343,6 @@ class TimeperiodsTable extends Table {
                 ->where([
                     'Timeperiods.id IN' => $idsToLoad
                 ])
-                ->disableHydration()
                 ->all();
 
             $excludeIds = [];

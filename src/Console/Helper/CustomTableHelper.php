@@ -13,7 +13,7 @@
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
 
-namespace App\Command\Helper;
+namespace App\Console\Helper;
 
 use Cake\Console\Helper\TableHelper;
 use UnexpectedValueException;

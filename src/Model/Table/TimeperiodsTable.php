@@ -331,7 +331,7 @@ class TimeperiodsTable extends Table {
                     'Timeperiods.exclude_timeperiod_id'
                 ])
                 ->contain([
-                    'TimeperiodTimeranges' => function (Query $query) {
+                    'TimeperiodTimeranges' => function (SelectQuery $query) {
                         return $query->select([
                             'TimeperiodTimeranges.timeperiod_id',
                             'TimeperiodTimeranges.day',

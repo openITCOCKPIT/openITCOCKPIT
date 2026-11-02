@@ -4589,7 +4589,7 @@ class HostsTable extends Table {
             ])
             ->contain([
                 'HostsToContainersSharing',
-                'Contacts'      => function (Query $query) {
+                'Contacts'      => function (SelectQuery $query) {
                     return $query->select([
                         'Contacts.id',
                         'Contacts.name',
@@ -4602,9 +4602,9 @@ class HostsTable extends Table {
                         'Contacts.notify_host_downtime'
                     ]);
                 },
-                'Contactgroups' => function (Query $query) {
+                'Contactgroups' => function (SelectQuery $query) {
                     return $query->contain([
-                        'Contacts' => function (Query $query) {
+                        'Contacts' => function (SelectQuery $query) {
                             return $query->select([
                                 'Contacts.id',
                                 'Contacts.name',
@@ -4619,7 +4619,7 @@ class HostsTable extends Table {
                         }
                     ]);
                 },
-                'Hosttemplates' => function (Query $query) {
+                'Hosttemplates' => function (SelectQuery $query) {
                     $query->select([
                         'Hosttemplates.id',
                         'Hosttemplates.check_period_id',
@@ -4631,7 +4631,7 @@ class HostsTable extends Table {
                         'Hosttemplates.notify_on_flapping',
                         'Hosttemplates.notify_on_downtime'
                     ])->contain([
-                        'Contacts'      => function (Query $query) {
+                        'Contacts'      => function (SelectQuery $query) {
                             return $query->select([
                                 'Contacts.id',
                                 'Contacts.name',
@@ -4644,9 +4644,9 @@ class HostsTable extends Table {
                                 'Contacts.notify_host_downtime'
                             ]);
                         },
-                        'Contactgroups' => function (Query $query) {
+                        'Contactgroups' => function (SelectQuery $query) {
                             return $query->contain([
-                                'Contacts' => function (Query $query) {
+                                'Contacts' => function (SelectQuery $query) {
                                     return $query->select([
                                         'Contacts.id',
                                         'Contacts.name',
@@ -4678,13 +4678,13 @@ class HostsTable extends Table {
      * @return \App\Model\Entity\Host|null
      */
     public function getHostContactsAndContactgroupsWithContainersById($id) {
-        $contactsContain = function (Query $query) {
+        $contactsContain = function (SelectQuery $query) {
             return $query
                 ->select([
                     'Contacts.id'
                 ])
                 ->contain([
-                    'Containers' => function (Query $query) {
+                    'Containers' => function (SelectQuery $query) {
                         return $query->select([
                             'Containers.id'
                         ]);
@@ -4692,14 +4692,14 @@ class HostsTable extends Table {
                 ]);
         };
 
-        $contactgroupsContain = function (Query $query) use ($contactsContain) {
+        $contactgroupsContain = function (SelectQuery $query) use ($contactsContain) {
             return $query
                 ->select([
                     'Contactgroups.id',
                     'Contactgroups.container_id'
                 ])
                 ->contain([
-                    'Containers' => function (Query $query) {
+                    'Containers' => function (SelectQuery $query) {
                         return $query->select([
                             'Containers.id',
                             'Containers.parent_id'
@@ -4722,7 +4722,7 @@ class HostsTable extends Table {
                 'HostsToContainersSharing',
                 'Contacts'      => $contactsContain,
                 'Contactgroups' => $contactgroupsContain,
-                'Hosttemplates' => function (Query $query) use ($contactsContain, $contactgroupsContain) {
+                'Hosttemplates' => function (SelectQuery $query) use ($contactsContain, $contactgroupsContain) {
                     return $query
                         ->select([
                             'Hosttemplates.id'

@@ -39,6 +39,7 @@ use Cake\Http\Exception\NotFoundException;
 use Cake\Log\Log;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\System\Gearman;
+use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Resolver\NameToUuidResolver;
 
 class CmdController extends AppController {
@@ -227,28 +228,37 @@ class CmdController extends AppController {
             throw new BadRequestException();
         }
         $externalNaemonCommands = new ExternalCommands();
+        $authUser = new User($this->getUser());
+
         foreach ($data as $value) {
+            $event = null;
             switch ($value['command']) {
                 case 'rescheduleHost':
                     $result = $externalNaemonCommands->rescheduleHost(['uuid' => $value['hostUuid'], 'type' => $value['type'], 'satellite_id' => $value['satelliteId']]);
                     break;
                 case 'rescheduleService':
                     $result = $externalNaemonCommands->rescheduleService(['hostUuid' => $value['hostUuid'], 'serviceUuid' => $value['serviceUuid'], 'satellite_id' => $value['satelliteId']]);
+                    //$actionType = 'check_rescheduled';
+
                     break;
                 case 'submitHostDowntime':
                     $result = $externalNaemonCommands->setHostDowntime(['hostUuid' => $value['hostUuid'], 'start' => $value['start'], 'end' => $value['end'], 'comment' => $value['comment'], 'author' => $value['author'], 'downtimetype' => $value['downtimetype']]);
+                    $event = ['type' => 'downtime_created', 'model' => 'Host'];
                     break;
                 case 'submitServiceDowntime':
                     $result = $externalNaemonCommands->setServiceDowntime(['hostUuid' => $value['hostUuid'], 'serviceUuid' => $value['serviceUuid'], 'start' => $value['start'], 'end' => $value['end'], 'comment' => $value['comment'], 'author' => $value['author']]);
+                    //$actionType = 'downtime';
                     break;
                 case 'submitHoststateAck':
                     $result = $externalNaemonCommands->setHostAck(['hostUuid' => $value['hostUuid'], 'comment' => $value['comment'], 'author' => $value['author'], 'sticky' => $value['sticky'], 'type' => $value['hostAckType'], 'notify' => $value['notify']]);
                     break;
                 case 'submitServicestateAck':
                     $result = $externalNaemonCommands->setServiceAck(['hostUuid' => $value['hostUuid'], 'serviceUuid' => $value['serviceUuid'], 'comment' => $value['comment'], 'author' => $value['author'], 'sticky' => $value['sticky'], 'notify' => $value['notify']]);
+                    //$actionType = 'acknowledgement';
                     break;
                 case 'commitPassiveServiceResult':
                     $result = $externalNaemonCommands->passiveTransferServiceCheckresult(['hostUuid' => $value['hostUuid'], 'serviceUuid' => $value['serviceUuid'], 'comment' => $value['plugin_output'], 'state' => $value['status_code'], 'forceHardstate' => $value['forceHardstate'], 'repetitions' => $value['maxCheckAttempts']]);
+                    //$actionType = 'check_result';
                     break;
                 case 'commitPassiveResult':
                     $result = $externalNaemonCommands->passiveTransferHostCheckresult(['uuid' => $value['hostUuid'], 'comment' => $value['plugin_output'], 'state' => $value['status_code'], 'forceHardstate' => $value['forceHardstate'], 'repetitions' => $value['maxCheckAttempts']]);
@@ -261,15 +271,21 @@ class CmdController extends AppController {
                     break;
                 case 'enableOrDisableHostFlapdetection':
                     $result = $externalNaemonCommands->enableOrDisableHostFlapdetection(['uuid' => $value['hostUuid'], 'condition' => $value['condition']]);
+
+
+                    //$actionType = 'flapdetection';
                     break;
                 case 'enableOrDisableServiceFlapdetection':
                     $result = $externalNaemonCommands->enableOrDisableServiceFlapdetection(['hostUuid' => $value['hostUuid'], 'serviceUuid' => $value['serviceUuid'], 'condition' => $value['condition']]);
+                    //$actionType = 'flapdetection';
                     break;
                 case 'submitEnableHostNotifications':
                     $result = $externalNaemonCommands->enableHostNotifications(['uuid' => $value['hostUuid'], 'type' => $value['type']]);
+                    $event = ['type' => 'notification_enabled', 'model' => 'Host'];
                     break;
                 case 'submitDisableHostNotifications':
                     $result = $externalNaemonCommands->disableHostNotifications(['uuid' => $value['hostUuid'], 'type' => $value['type']]);
+                    $event = ['type' => 'notification_disabled', 'model' => 'Host'];
                     break;
                 case 'submitDisableServiceNotifications':
                     $result = $externalNaemonCommands->disableServiceNotifications(['hostUuid' => $value['hostUuid'], 'serviceUuid' => $value['serviceUuid']]);
@@ -283,6 +299,15 @@ class CmdController extends AppController {
             }
             if (!$result) {
                 throw new BadRequestException('Could not send command');
+            }
+
+            if (!empty($event)) {
+                $externalNaemonCommands->logEvent($event + [
+                    'uuid' => $value['hostUuid'],
+                    'serviceUuid' => $value['serviceUuid'] ?? null,
+                    'userId' => $authUser->getId(),
+                    'user_name' => $authUser->getFullName()
+                ]);
             }
         }
         $this->set('message', __('Commands added successfully to queue'));

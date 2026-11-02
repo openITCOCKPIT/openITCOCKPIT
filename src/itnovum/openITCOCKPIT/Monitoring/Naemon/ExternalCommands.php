@@ -26,7 +26,10 @@
 namespace App\itnovum\openITCOCKPIT\Monitoring\Naemon;
 
 
+use App\Model\Entity\Changelog;
 use App\Model\Entity\Service;
+use App\Model\Table\ChangelogsTable;
+use App\Model\Table\EventlogsTable;
 use App\Model\Table\HostgroupsTable;
 use App\Model\Table\HostsTable;
 use App\Model\Table\ServicesTable;
@@ -36,6 +39,7 @@ use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
+use itnovum\openITCOCKPIT\Cache\ObjectsCache;
 use itnovum\openITCOCKPIT\Core\DbBackend;
 use itnovum\openITCOCKPIT\Core\ServicestatusFields;
 use itnovum\openITCOCKPIT\Core\Views\Downtime;
@@ -1530,6 +1534,69 @@ class ExternalCommands {
             // Command is for the master system
             $GearmanClient->doBackground('statusngin_cmd', json_encode($payload));
         }
+    }
+
+    public function logEvent(array $logData = []) : bool
+    {
+        if ( !isset($logData['uuid']) || empty($logData['type'])) {
+            return false;
+        }
+        /** @var HostsTable $HostsTable */
+        $host = $this->getHostWithSharing($logData['uuid']);
+        if ($host === null) {
+            return false;
+        }
+
+        $name = $host['name'];
+        $objectId = $host['id'];
+
+
+
+        /** @var EventlogsTable $EventlogsTable */
+        $EventlogsTable = TableRegistry::getTableLocator()->get('Eventlogs');
+
+        return $EventlogsTable->saveNewEntity(
+            $logData['type'],
+            $logData['model'],
+            $objectId,
+            $logData['userId'],
+            $name,
+            $this->createDataJsonForRow($logData),
+            $this->extractContainerIds($host)
+        );
+    }
+
+
+    private function getHostWithSharing(string $uuid): ?array {
+        $host = TableRegistry::getTableLocator()->get('Hosts')->find()
+            ->select(['Hosts.id', 'Hosts.name', 'Hosts.container_id'])
+            ->where(['Hosts.uuid' => $uuid])
+            ->contain(['HostsToContainersSharing'])
+            ->disableHydration()
+            ->first();
+        return $host ?: null;
+    }
+
+
+
+    private function extractContainerIds(array $host): array {
+        $ids = array_merge(
+            [(int)$host['container_id']],
+            array_map('intval', Hash::extract($host, 'hosts_to_containers_sharing.{n}.id'))
+        );
+        return array_values(array_unique($ids));
+    }
+
+    private function createDataJsonForRow( array $logData): string
+    {
+        $systemKeys = ['type', 'model', 'uuid',  'userId'];
+        $eventlogData = [];
+        foreach ($logData as $key => $value) {
+            if (!in_array($key, $systemKeys)) {
+                $eventlogData[$key] = $value;
+            }
+        }
+        return json_encode($eventlogData);
     }
 
 }

@@ -70,6 +70,7 @@ class EventlogsController extends AppController {
             $changeTimestamp = $event['created']->getTimestamp();
             $all_events[$index]['time'] = $UserTime->format($changeTimestamp);
             $all_events[$index]['recordExists'] = $EventlogsTable->recordExists($event['model'], $event['object_id']);
+            $all_events[$index]['actorExists'] = ($event['actor'] === 'System') || $EventlogsTable->recordExists('User', $event['user_id']);
             $dataJson = json_decode($all_events[$index]['data'], true);
             if (json_last_error() === JSON_ERROR_NONE) {
                 $all_events[$index]['data'] = $dataJson;
@@ -218,13 +219,48 @@ class EventlogsController extends AppController {
     private function getTypeTranslations() {
         return [
             'login'                => __('User Login'),
-            'user_delete'          => __('User Delete'),
-            'user_password_change' => __('User Password Change'),
+            'user_delete'          => __('User Deleted'),
+            'user_password_change' => __('User Password Changed'),
+            'notification_enabled' => __('Notification Enabled'),
+            'notification_disabled' => __('Notification Disabled'),
+            'flapdetection_enabled' => __('Flap Detection Enabled'),
+            'flapdetection_disabled' => __('Flap Detection Disabled'),
+            'custom_notification_sent' => __('Custom Notification Sent'),
+            'passive_transfer_check_result' => __('Passive Check Result Received'),
+            'acknowledgement_created' => __('Acknowledgement Created'),
+            'acknowledgement_deleted' => __('Acknowledgement Deleted'),
+            'check_rescheduled' => __('Check Rescheduled'),
+            'downtime_created' => __('Downtime Scheduled'),
+            'downtime_deleted' => __('Downtime Deleted')
+        ];
+    }
+
+    private function getTypeTranslationsNew() {
+        return [
+            'login' => ['title' => __('User Login'), 'description' => __('logged in to the system')],
+            'user_delete' => ['title' => __('User Deleted'), 'description' => __('delete user account')],
+            'user_password_change' => ['title' => __('User Password Changed'), 'description' => __('change user password')],
+            'notification_enabled' => ['title' => __('Notification Enabled'), 'description' => __('enable notifications')],
+            'notification_disabled' => ['title' => __('Notification Disabled'), 'description' => __('disable notifications')],
+            'flapdetection_enabled' => ['title' => __('Flap Detection Enabled'), 'description' => __('enable Flap detection')],
+            'flapdetection_disabled' => ['title' => __('Flap Detection Disabled'), 'description' => __('disable Flap detection')],
+            'custom_notification_sent' => ['title' => __('Custom Notification Sent'), 'description' => __('sent custom Notification ')],
+            'passive_transfer_check_result' => ['title' => __('Passive Check Result Received'), 'description' => __('passive Check Result Received')],
+            'acknowledgement_created' => ['title' => __('Acknowledgement Created'), 'description' => __('create Acknowledgement')],
+            'acknowledgement_deleted' => ['title' => __('Acknowledgement Deleted'), 'description' => __('delete Acknowledgement')],
+            'check_rescheduled' => ['title' => __('Check Rescheduled'), 'description' => __('run Rescheduled check')],
+            'downtime_created' => ['title' => __('Downtime Scheduled'), 'description' => __('scheduled Downtime')],
+            'downtime_deleted' => ['title' => __('Downtime Deleted'), 'description' => __('canceled Downtime')],
         ];
     }
 
     private function getTypeIconClasses() {
         return [
+            'default' => [
+                'icon'      => ['fas', 'question'],
+                'iconPdf'   => 'fa fa-question',
+                'className' => 'text-secondary'
+            ],
             'login'                => [
                 'icon'      => ['fas', 'door-open'],
                 'iconPdf'   => 'fa fa-door-open',
@@ -240,6 +276,61 @@ class EventlogsController extends AppController {
                 'iconPdf'   => 'fa fa-key',
                 'className' => 'text-primary'
             ],
+            'notification_enabled' => [
+                'icon'      => ['fas', 'envelope'],
+                'iconPdf'   => 'fa fa-envelope',
+                'className' => 'text-success'
+            ],
+            'notification_disabled' => [
+                'icon'      => ['fas', 'envelope'],
+                'iconPdf'   => 'fa fa-envelope',
+                'className' => 'text-danger'
+            ],
+            'flapdetection_enabled' => [
+                'icon'      => ['fas', 'circle-half-stroke'],
+                'iconPdf'   => 'fa fa-circle-half-stroke',
+                'className' => 'text-primary'
+            ],
+            'flapdetection_disabled' => [
+                'icon'      => ['fas', 'circle-half-stroke'],
+                'iconPdf'   => 'fa fa-circle-half-stroke',
+                'className' => 'text-danger'
+            ],
+            'custom_notification_sent' => [
+                'icon'      => ['fas', 'paper-plane'],
+                'iconPdf'   => 'fa fa-paper-plane',
+                'className' => 'text-info'
+            ],
+            'passive_transfer_check_result' => [
+                'icon'      => ['fas', 'download'],
+                'iconPdf'   => 'fa fa-download',
+                'className' => 'text-secondary'
+            ],
+            'acknowledgement_created' => [
+                'icon'      => ['fas', 'user'],
+                'iconPdf'   => 'fa fa-user',
+                'className' => 'text-secondary'
+            ],
+            'acknowledgement_deleted' => [
+                'icon'      => ['fas', 'trash'],
+                'iconPdf'   => 'fa fa-trash',
+                'className' => 'text-danger'
+            ],
+            'check_rescheduled' => [
+                'icon'      => ['fas', 'refresh'],
+                'iconPdf'   => 'fa fa-refresh',
+                'className' => 'text-secondary'
+            ],
+            'downtime_created' => [
+                'icon'      => ['fas', 'power-off'],
+                'iconPdf'   => 'fa fa-power-off',
+                'className' => 'text-success'
+            ],
+            'downtime_deleted' => [
+                'icon'      => ['fas', 'power-off'],
+                'iconPdf'   => 'fa fa-power-off',
+                'className' => 'text-danger'
+            ]
         ];
 
     }

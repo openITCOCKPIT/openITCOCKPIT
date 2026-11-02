@@ -175,9 +175,9 @@ class UsersController extends AppController {
                     $containerRoleContainerIds = $UsersTable->getContainerIdsOfUserContainerRoles(['User' => $userFromDb]);
                     $containerIds = array_merge($containerIds, $containerRoleContainerIds);
 
-                    $loginData = $EventlogsTable->createDataJsonForUser($userFromDb->get('email'));
+                    $loginData = $EventlogsTable->createDataJsonForUser('System');
                     $fullName = $userFromDb->get('firstname') . ' ' . $userFromDb->get('lastname');
-                    $EventlogsTable->saveNewEntity('login', 'User', $userFromDb->id, $fullName, $loginData, $containerIds);
+                    $EventlogsTable->saveNewEntity('login', 'User', $userFromDb->id,$userFromDb->id, $fullName, $loginData, $containerIds);
                 }
                 $Session->write('oauth_login_successful', 'Login via Single sign-on successful');
                 $this->redirect('/a/users/login', 302);
@@ -237,9 +237,9 @@ class UsersController extends AppController {
                     $containerRoleContainerIds = $UsersTable->getContainerIdsOfUserContainerRoles(['User' => $userFromDb]);
                     $containerIds = array_merge($containerIds, $containerRoleContainerIds);
 
-                    $loginData = $EventlogsTable->createDataJsonForUser($userFromDb->get('email'));
+                    $loginData = $EventlogsTable->createDataJsonForUser('System');
                     $fullName = $userFromDb->get('firstname') . ' ' . $userFromDb->get('lastname');
-                    $EventlogsTable->saveNewEntity('login', 'User', $userFromDb->id, $fullName, $loginData, $containerIds);
+                    $EventlogsTable->saveNewEntity('login', 'User', $userFromDb->id, $userFromDb->id, $fullName, $loginData, $containerIds);
                 }
                 $this->viewBuilder()->setOption('serialize', ['success']);
                 return;
@@ -648,9 +648,10 @@ class UsersController extends AppController {
                 $containerRoleContainerIds = $UsersTable->getContainerIdsOfUserContainerRoles($data);
                 $containerIds = array_merge($containerIds, $containerRoleContainerIds);
 
-                $eventlogData = $EventlogsTable->createDataJsonForUser($user->get('email'));
+                $authUser = new \itnovum\openITCOCKPIT\Core\ValueObjects\User($this->getUser());
+                $eventlogData = $EventlogsTable->createDataJsonForUser($authUser->getFullName());
                 $fullName = $user->get('firstname') . ' ' . $user->get('lastname');
-                $EventlogsTable->saveNewEntity('user_password_change', 'User', $user->id, $fullName, $eventlogData, $containerIds);
+                $EventlogsTable->saveNewEntity('user_password_change', 'User', $user->id, $authUser->getId() ,  $fullName, $eventlogData, $containerIds);
             }
 
             Cache::clear('permissions');
@@ -705,9 +706,12 @@ class UsersController extends AppController {
             $containerRoleContainerIds = $UsersTable->getContainerIdsOfUserContainerRoles(['User' => $userForLog]);
             $containerIds = array_merge($containerIds, $containerRoleContainerIds);
 
-            $eventlogData = $EventlogsTable->createDataJsonForUser($userForLog['email']);
             $fullName = $userForLog['firstname'] . ' ' . $userForLog['lastname'];
-            $EventlogsTable->saveNewEntity('user_delete', 'User', $userForLog['id'], $fullName, $eventlogData, $containerIds);
+
+            $authUser = new \itnovum\openITCOCKPIT\Core\ValueObjects\User($this->getUser());
+            $eventlogData = $EventlogsTable->createDataJsonForUser($authUser->getFullName());
+
+            $EventlogsTable->saveNewEntity('user_delete', 'User', $userForLog['id'], $authUser->getId(), $fullName, $eventlogData, $containerIds);
 
             /** @var  ChangelogsTable $ChangelogsTable */
             $ChangelogsTable = TableRegistry::getTableLocator()->get('Changelogs');
@@ -932,9 +936,9 @@ class UsersController extends AppController {
         $containerRoleContainerIds = $UsersTable->getContainerIdsOfUserContainerRoles($userForLog);
         $containerIds = array_merge($containerIds, $containerRoleContainerIds);
 
-        $eventlogData = $EventlogsTable->createDataJsonForUser($user->get('email'));
         $fullName = $user->get('firstname') . ' ' . $user->get('lastname');
-        $EventlogsTable->saveNewEntity('user_password_change', 'User', $user->id, $fullName, $eventlogData, $containerIds);
+        $eventlogData = $EventlogsTable->createDataJsonForUser($fullName);
+        $EventlogsTable->saveNewEntity('user_password_change', 'User', $user->id, $user->id , $fullName, $eventlogData, $containerIds);
 
         $Mailer->deliver();
         $this->set('message', __('Password reset successfully. The new password was send to {0}', $user->email));

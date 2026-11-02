@@ -152,15 +152,15 @@ class ProfileController extends AppController {
     }
 
     public function changePassword() {
-        $User = new User($this->getUser());
+        $authUser = new User($this->getUser());
 
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
         $Hasher = $UsersTable->getDefaultPasswordHasher();
 
-        $user = $UsersTable->get($User->getId());
+        $user = $UsersTable->get($authUser->getId());
         $userForLog = [
-            'User' => $UsersTable->getUserById($User->getId())
+            'User' => $UsersTable->getUserById($authUser->getId())
         ];
 
         $data = $this->request->getData('Password');
@@ -186,7 +186,7 @@ class ProfileController extends AppController {
             $user,
             $data,
             $userForLog,
-            $User->getId(),
+            $authUser->getId(),
             true
         );
         if ($user->hasErrors()) {
@@ -204,12 +204,12 @@ class ProfileController extends AppController {
         $containerRoleContainerIds = $UsersTable->getContainerIdsOfUserContainerRoles($userForLog);
         $containerIds = array_merge($containerIds, $containerRoleContainerIds);
 
-        $eventlogData = $EventlogsTable->createDataJsonForUser($user->get('email'));
+        $eventlogData = $EventlogsTable->createDataJsonForUser($authUser->getFullName());
         $fullName = $user->get('firstname') . ' ' . $user->get('lastname');
-        $EventlogsTable->saveNewEntity('user_password_change', 'User', $user->id, $fullName, $eventlogData, $containerIds);
+        $EventlogsTable->saveNewEntity('user_password_change', 'User', $user->id, $authUser->getId(), $fullName, $eventlogData, $containerIds);
 
         $session = $this->request->getSession();
-        $session->write('Auth', $UsersTable->get($User->getId()));
+        $session->write('Auth', $UsersTable->get($authUser->getId()));
 
         $this->set('message', __('Password changed successfully.'));
         $this->viewBuilder()->setOption('serialize', ['message']);

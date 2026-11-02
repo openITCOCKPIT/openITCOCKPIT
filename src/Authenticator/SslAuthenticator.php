@@ -76,9 +76,9 @@ class SslAuthenticator extends AbstractAuthenticator {
                 $containerRoleContainerIds = $UsersTable->getContainerIdsOfUserContainerRoles(['User' => $userFromDb]);
                 $containerIds = array_merge($containerIds, $containerRoleContainerIds);
 
-                $loginData = $EventlogsTable->createDataJsonForUser($userFromDb->get('email'));
+                $loginData = $EventlogsTable->createDataJsonForUser("System");
                 $fullName = $userFromDb->get('firstname') . ' ' . $userFromDb->get('lastname');
-                $EventlogsTable->saveNewEntity('login', 'User', $userFromDb->id, $fullName, $loginData, $containerIds);
+                $EventlogsTable->saveNewEntity('login', 'User', $userFromDb->id, $userFromDb->id, $fullName, $loginData, $containerIds);
             }
 
         }

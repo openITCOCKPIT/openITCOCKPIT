@@ -81,8 +81,18 @@ class EventlogsTable extends Table {
             'joinTable' => 'eventlogs_to_containers'
         ]);
 
+        $this->belongsTo('EventUsers', [
+            'className' => 'Users',
+            'foreignKey' => 'user_id',
+        ]);
+
         $this->belongsTo('Users', [
-            'foreignKey' => 'object_id'
+            'foreignKey' => 'object_id',
+            'conditions' => ['Eventlogs.model' => 'User'],
+        ]);
+
+        $this->belongsTo('Hosts', [
+            'foreignKey' => 'object_id',
         ]);
 
     }
@@ -110,6 +120,10 @@ class EventlogsTable extends Table {
             ->integer('object_id')
             ->requirePresence('object_id', 'create')
             ->notEmptyString('object_id');
+
+        $validator
+            ->integer('user_id')
+            ->allowEmptyString('user_id', null, true);
 
         $validator
             ->scalar('name')
@@ -142,15 +156,32 @@ class EventlogsTable extends Table {
         $query = $this->find();
 
         $query = $query->select([
-            'id',
-            'model',
-            'type',
-            'object_id',
-            'name'       => $query->newExpr('IF(Users.email IS NULL, Eventlogs.name, CONCAT(Users.firstname, " ", Users.lastname))'),
-            'user_email' => $query->newExpr('IF(Users.email IS NOT NULL, Users.email, NULL)'),
+            'Eventlogs.id',
+            'Eventlogs.model',
+            'Eventlogs.type',
+            'Eventlogs.object_id',
+            'Eventlogs.user_id',
+
+            'name' => $query->newExpr('CASE
+                WHEN Eventlogs.model = "User" AND Users.email IS NOT NULL THEN CONCAT(Users.firstname, " ", Users.lastname)
+                WHEN Eventlogs.model = "Host" AND Hosts.name IS NOT NULL THEN Hosts.name
+
+                ELSE Eventlogs.name
+            END'),
+            'actor' => $query->newExpr('COALESCE(
+                CONCAT(ActorUsers.firstname, " ", ActorUsers.lastname),
+                JSON_UNQUOTE(JSON_EXTRACT(Eventlogs.data, "$.user_name")),
+                "System"
+            )'),
             'data',
             'created'
-        ])->contain(['Containers', 'Users']);
+        ])->contain(['Containers', 'Users', 'Hosts' ]);
+
+        $query->leftJoin(
+            ['ActorUsers' => 'users'],
+            'ActorUsers.id = Eventlogs.user_id'
+        );
+
 
         if (!empty($logTypes)) {
             $query->where(['Eventlogs.type IN' => $logTypes]);
@@ -232,25 +263,27 @@ class EventlogsTable extends Table {
      * @param string $type
      * @param string $model
      * @param int $objectId
+     * @param int $userId
      * @param string $name
      * @param string $data
      * @param array $container_ids
      * @param bool $dataIsJSon
      * @return bool
      */
-    public function saveNewEntity($type, $model, $objectId, $name, $data, $container_ids) {
+    public function saveNewEntity($type, $model, $objectId, $userId, $name, $data, $container_ids) {
 
         if (!is_array($container_ids)) {
             $container_ids = [$container_ids];
         }
 
-        if (!empty($type) && !empty($model) && !empty($objectId) && !empty($name) && !empty($data) && !empty($container_ids)) {
+        if (!empty($type) && !empty($model) && !empty($objectId) && !empty($userId) && !empty($name) && !empty($data) && !empty($container_ids)) {
 
             $eventlog = $this->newEmptyEntity();
             $eventlog = $this->patchEntity($eventlog, [
                 'type'       => $type,
                 'model'      => $model,
                 'object_id'  => $objectId,
+                'user_id'    => $userId,
                 'name'       => $name,
                 'containers' => [
                     '_ids' => $container_ids
@@ -286,9 +319,9 @@ class EventlogsTable extends Table {
      * @param string $email
      * @return string
      */
-    public function createDataJsonForUser(string $email): string {
+    public function createDataJsonForUser(string $name): string {
         $data = [
-            'user_email' => $email
+            'user_name' => $name
         ];
         return json_encode($data);
     }

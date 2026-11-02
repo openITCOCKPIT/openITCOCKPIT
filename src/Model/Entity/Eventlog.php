@@ -36,6 +36,7 @@ use Cake\ORM\Entity;
  * @property string $type
  * @property string $model
  * @property int $object_id
+ * @property int|null $user_id
  * @property string $data
  * @property \Cake\I18n\DateTime $created
  *
@@ -55,6 +56,7 @@ class Eventlog extends Entity {
         'type'       => true,
         'model'      => true,
         'object_id'  => true,
+        'user_id'    => true,
         'name'       => true,
         'data'       => true,
         'created'    => true,

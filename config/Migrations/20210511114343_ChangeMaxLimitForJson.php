@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
 
 class ChangeMaxLimitForJson extends \Migrations\BaseMigration {
     /**
@@ -21,7 +20,7 @@ class ChangeMaxLimitForJson extends \Migrations\BaseMigration {
         $this->table('widgets')
             ->changeColumn('json_data', 'text', [
                 'default' => null,
-                'limit'   => \Phinx\Db\Adapter\MysqlAdapter::TEXT_REGULAR,
+                'limit'   => \Migrations\Db\Adapter\MysqlAdapter::TEXT_REGULAR,
                 'null'    => true,
             ])
             ->save();

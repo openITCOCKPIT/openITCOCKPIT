@@ -34,6 +34,7 @@ namespace App\Model\Table;
 use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\Database\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -151,7 +152,7 @@ class UsercontainerrolesTable extends Table {
         if (!is_array($MY_RIGHTS)) {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         if (!empty($GenericFilter->genericFilters())) {
             $query->where($GenericFilter->genericFilters());
         }
@@ -174,15 +175,14 @@ class UsercontainerrolesTable extends Table {
             ->orderBy([
                 'Usercontainerroles.name' => 'asc',
                 'Usercontainerroles.id'   => 'asc'
-            ])
-            ->disableHydration();
+            ]);
 
         $result = [];
         foreach ($query->toArray() as $record) {
             $result[$record['id']] = $record['name'];
         }
         if (!empty($selected)) {
-            $query = $this->find()
+            $query = $this->unhydratedFind()
                 ->select([
                     'Usercontainerroles.id',
                     'Usercontainerroles.name'
@@ -205,7 +205,7 @@ class UsercontainerrolesTable extends Table {
                 ->orderBy([
                     'Usercontainerroles.name' => 'asc',
                     'Usercontainerroles.id'   => 'asc'
-                ])->disableHydration();
+                ]);
 
             foreach ($query->toArray() as $record) {
                 $result[$record['id']] = $record['name'];
@@ -225,7 +225,7 @@ class UsercontainerrolesTable extends Table {
             return [];
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
 
         if (!empty($GenericFilter->genericFilters())) {
             $query->where($GenericFilter->genericFilters());
@@ -256,8 +256,7 @@ class UsercontainerrolesTable extends Table {
             ->orderBy([
                 'Usercontainerroles.name' => 'asc',
                 'Usercontainerroles.id'   => 'asc'
-            ])
-            ->disableHydration();
+            ]);
 
         $result = [];
         foreach ($query->toArray() as $record) {
@@ -280,8 +279,7 @@ class UsercontainerrolesTable extends Table {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
 
-        $query = $this->find()
-            ->disableHydration()
+        $query = $this->unhydratedFind()
             ->contain([
                 'Containers',
                 'Users' => function (Query $q) {
@@ -340,7 +338,7 @@ class UsercontainerrolesTable extends Table {
      * @return array
      */
     public function getUserContainerRoleForEdit($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Usercontainerroles.id' => $id
             ])
@@ -352,7 +350,6 @@ class UsercontainerrolesTable extends Table {
                     ]
                 ]
             ])
-            ->disableHydration()
             ->first();
 
 
@@ -382,12 +379,11 @@ class UsercontainerrolesTable extends Table {
      * @return array
      */
     public function getContainerPermissionsByUserContainerRoleIds($ids = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain('Containers')
             ->where([
                 'Usercontainerroles.id IN' => $ids
             ])
-            ->disableHydration()
             ->all();
 
         /** @var ContainersTable $ContainersTable */
@@ -415,7 +411,7 @@ class UsercontainerrolesTable extends Table {
         if (!is_array($memberOfGroups)) {
             $memberOfGroups = [$memberOfGroups];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
                 'Containers'
             ])
@@ -423,7 +419,6 @@ class UsercontainerrolesTable extends Table {
             ->where([
                 'Ldapgroups.dn IN' => $memberOfGroups
             ])
-            ->disableHydration()
             ->all();
 
         /** @var ContainersTable $ContainersTable */
@@ -446,7 +441,7 @@ class UsercontainerrolesTable extends Table {
      * @return array
      */
     public function getUsercontainerrolesForCopy($ids = [], array $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where(['Usercontainerroles.id IN' => $ids])
             ->contain([
                 'Containers',
@@ -464,7 +459,7 @@ class UsercontainerrolesTable extends Table {
             'Usercontainerroles.id'
         ]);
 
-        $query->disableHydration()
+        $query
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());
@@ -476,7 +471,7 @@ class UsercontainerrolesTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface
      */
     public function getSourceUserContainerRoleForCopy($id, array $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Usercontainerroles.id' => $id
             ])
@@ -488,7 +483,6 @@ class UsercontainerrolesTable extends Table {
                     ]
                 ]
             ])
-            ->disableHydration()
             ->first();
 
 
@@ -521,7 +515,7 @@ class UsercontainerrolesTable extends Table {
         $query = $this->find()
             ->innerJoinWith('Containers')
             ->contain([
-                'Containers' => function (\Cake\ORM\Query $query) use ($containerId) {
+                'Containers' => function (SelectQuery $query) use ($containerId) {
                     return $query->select([
                         'Containers.id',
                     ])->whereNotInList('Containers.id', [$containerId]);
@@ -552,12 +546,12 @@ class UsercontainerrolesTable extends Table {
      * @return array
      */
     public function getContainerRoleByContainerIdExact(int $containerId, $type = 'all', $index = 'id', $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Usercontainerroles.id',
                 'Usercontainerroles.name'
             ])
-            ->innerJoinWith('Containers', function (\Cake\ORM\Query $q) use ($containerId, $MY_RIGHTS) {
+            ->innerJoinWith('Containers', function (SelectQuery $q) use ($containerId, $MY_RIGHTS) {
                 $q->disableAutoFields()
                     ->select([
                         'Containers.id'
@@ -571,8 +565,7 @@ class UsercontainerrolesTable extends Table {
                     ]);
                 }
                 return $q;
-            })
-            ->disableHydration();
+            });
         $result = $query->toArray();
 
         if (empty($result)) {
@@ -596,11 +589,10 @@ class UsercontainerrolesTable extends Table {
      * @return array
      */
     public function getUserContainerRoleById($id) {
-        return $this->find()
+        return $this->unhydratedFind()
             ->where([
                 'Usercontainerroles.id' => $id
             ])
-            ->disableHydration()
             ->first();
     }
 
@@ -618,7 +610,7 @@ class UsercontainerrolesTable extends Table {
             })->select([
             'Usercontainerroles.id'
         ])->contain([
-            'Containers' => function (\Cake\ORM\Query $q) {
+            'Containers' => function (SelectQuery $q) {
                 return $q->select([
                     'Containers.id'
                 ])->disableAutoFields();
@@ -637,7 +629,7 @@ class UsercontainerrolesTable extends Table {
             $MY_WRITABLE_CONTAINERS = [$MY_WRITABLE_CONTAINERS];
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
 
         $query->select([
             'Usercontainerroles.id',
@@ -657,8 +649,7 @@ class UsercontainerrolesTable extends Table {
             ->orderBy([
                 'Usercontainerroles.name' => 'asc',
                 'Usercontainerroles.id'   => 'asc'
-            ])
-            ->disableHydration();
+            ]);
 
         $result = $query->toArray();
         if (empty($result)) {

@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
 
 /**
  * Class UpdateAgentshostscache
@@ -16,7 +15,7 @@ class UpdateAgentshostscache extends \Migrations\BaseMigration {
 
     public function up(): void {
         $this->table('agenthostscache')
-            ->changeColumn('checkdata', 'text', ['limit' => \Phinx\Db\Adapter\MysqlAdapter::TEXT_MEDIUM])
+            ->changeColumn('checkdata', 'text', ['limit' => \Migrations\Db\Adapter\MysqlAdapter::TEXT_MEDIUM])
             ->update();
         $this->table('agentconfigs')
             ->addColumn('push_noticed', 'boolean', [
@@ -29,7 +28,7 @@ class UpdateAgentshostscache extends \Migrations\BaseMigration {
 
     public function down(): void {
         $this->table('agenthostscache')
-            ->changeColumn('checkdata', 'text', ['limit' => \Phinx\Db\Adapter\MysqlAdapter::TEXT_REGULAR])
+            ->changeColumn('checkdata', 'text', ['limit' => \Migrations\Db\Adapter\MysqlAdapter::TEXT_REGULAR])
             ->update();
         $this->table('agentconfigs')
             ->removeColumn('push_noticed')

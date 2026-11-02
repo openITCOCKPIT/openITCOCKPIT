@@ -214,7 +214,6 @@ class BarChart {
 
         $image = $BarChart->getImage();
         imagepng($image, $filepath . DS . $filename, 0);
-        imagedestroy($image);
 
         return $filename;
     }

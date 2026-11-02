@@ -26,7 +26,7 @@
 namespace App\Lib\Traits;
 
 
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use itnovum\openITCOCKPIT\Database\Cake4Paginator;
 use itnovum\openITCOCKPIT\Database\ScrollIndex;
 
@@ -49,12 +49,12 @@ trait PaginationAndScrollIndexTrait {
     }
 
     /**
-     * @param Query $query
+     * @param SelectQuery $query
      * @param Cake4Paginator $Cake4Paginator
      * @param bool $contain
      * @return array
      */
-    public function paginate(Query $query, Cake4Paginator $Cake4Paginator, $contain = true) {
+    public function paginate(SelectQuery $query, Cake4Paginator $Cake4Paginator, $contain = true) {
         $Cake4Paginator->setCountResult($query->count());
 
         $query->offset($Cake4Paginator->getOffset());
@@ -66,11 +66,11 @@ trait PaginationAndScrollIndexTrait {
     }
 
     /**
-     * @param Query $query
+     * @param SelectQuery $query
      * @param Cake4Paginator $Cake4Paginator
      * @return array
      */
-    public function paginateCake4(Query $query, Cake4Paginator $Cake4Paginator) {
+    public function paginateCake4(SelectQuery $query, Cake4Paginator $Cake4Paginator) {
         $Cake4Paginator->setCountResult($query->count());
 
         $query->offset($Cake4Paginator->getOffset());
@@ -82,12 +82,12 @@ trait PaginationAndScrollIndexTrait {
     }
 
     /**
-     * @param Query $query
+     * @param SelectQuery $query
      * @param ScrollIndex $ScrollIndex
      * @param bool $contain
      * @return array
      */
-    public function scroll(Query $query, ScrollIndex $ScrollIndex, $contain = true) {
+    public function scroll(SelectQuery $query, ScrollIndex $ScrollIndex, $contain = true) {
         $query->offset($ScrollIndex->getOffset());
         $query->limit($ScrollIndex->getLimit());
         $result = $this->formatResultAsCake2($query->toArray(), $contain);
@@ -97,11 +97,11 @@ trait PaginationAndScrollIndexTrait {
     }
 
     /**
-     * @param Query $query
+     * @param SelectQuery $query
      * @param ScrollIndex $ScrollIndex
      * @return array
      */
-    public function scrollCake4(Query $query, ScrollIndex $ScrollIndex) {
+    public function scrollCake4(SelectQuery $query, ScrollIndex $ScrollIndex) {
         $query->offset($ScrollIndex->getOffset());
         $query->limit($ScrollIndex->getLimit());
 

@@ -117,11 +117,11 @@ class CronjobsTable extends Table {
      * @return array
      */
     public function getCronjobs() {
-        $query = $this->find()->contain([
+        $query = $this->unhydratedFind()->contain([
             'Cronschedules'
         ]);
         if (!is_null($query)) {
-            return $this->formatResultAsCake2($query->disableHydration()->toArray());
+            return $this->formatResultAsCake2($query->toArray());
         }
         return [];
     }
@@ -144,13 +144,12 @@ class CronjobsTable extends Table {
      * @return array
      */
     public function getEnabledCronjobs($priority = Cronjob::PRIORITY_LOW) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'enabled'  => 1,
                 'priority' => $priority
             ])
-            ->contain('Cronschedules')
-            ->disableHydration();
+            ->contain('Cronschedules');
 
         return $this->formatResultAsCake2($query->toArray());
     }

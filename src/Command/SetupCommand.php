@@ -56,11 +56,6 @@ use Symfony\Component\Yaml\Yaml;
 class SetupCommand extends Command {
 
     /**
-     * @var ConsoleIo
-     */
-    private $io;
-
-    /**
      * @var string
      */
     private $defaultsFile = '/opt/openitc/ansible/ansible_settings.yml';

@@ -31,6 +31,7 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Log\Log;
 use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
@@ -119,11 +120,10 @@ class MacosUpdatesTable extends Table {
     }
 
     public function getUpdateById($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'MacosUpdates.id' => $id
             ])
-            ->disableHydration()
             ->firstOrFail();
 
         return $query;
@@ -159,7 +159,7 @@ class MacosUpdatesTable extends Table {
      * @param null|int $offset
      */
     public function getMacosUpdatesWithLimit(?int $limit = null, ?int $offset = null): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'MacosUpdates.id',
                 'MacosUpdates.name',
@@ -171,8 +171,6 @@ class MacosUpdatesTable extends Table {
         if ($offset !== null) {
             $query->offset($offset);
         }
-
-        $query->disableHydration();
 
         $query->all();
         return $query->toArray();
@@ -319,14 +317,14 @@ class MacosUpdatesTable extends Table {
             'hostsWithSecurityUpdates' => [],
         ];
 
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->select([
                 'MacosUpdates.id',
                 'MacosUpdates.name',
                 'MacosUpdates.description',
                 'MacosUpdates.version'
             ])->contain([
-                'MacosUpdatesHosts' => function (Query $q) use ($MY_RIGHTS) {
+                'MacosUpdatesHosts' => function (SelectQuery $q) use ($MY_RIGHTS) {
                     $query = $q->select([
                         'macos_update_id',
                         'host_id'
@@ -350,8 +348,7 @@ class MacosUpdatesTable extends Table {
                 }
             ]);
 
-        $query->disableAutoFields()
-            ->disableHydration();
+        $query->disableAutoFields();
         $result = $query->toArray();
         if (empty($result)) {
             return $all_macos_updates;
@@ -386,7 +383,7 @@ class MacosUpdatesTable extends Table {
 
         $subQueryForSecurityUpdates = $MacosUpdatesHostsTable->find();
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'MacosUpdates.id',
                 'MacosUpdates.name',
@@ -397,7 +394,7 @@ class MacosUpdatesTable extends Table {
                 'available_updates' => $subQueryForUpdates,
             ])
             ->contain([
-                'MacosUpdatesHosts' => function (Query $query) use ($MY_RIGHTS) {
+                'MacosUpdatesHosts' => function (SelectQuery $query) use ($MY_RIGHTS) {
                     $query->select([
                         'MacosUpdatesHosts.host_id',
                         'MacosUpdatesHosts.macos_update_id'
@@ -441,8 +438,6 @@ class MacosUpdatesTable extends Table {
                 ['MacosUpdates.id' => 'asc']
             )
         );
-
-        $query->disableHydration();
 
         if ($PaginateOMat === null) {
             //Just execute query

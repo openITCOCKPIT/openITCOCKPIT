@@ -21,7 +21,7 @@ use Cake\Validation\Validator;
  * @method \TelegramModule\Model\Entity\TelegramSetting saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \TelegramModule\Model\Entity\TelegramSetting patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \TelegramModule\Model\Entity\TelegramSetting[] patchEntities($entities, array $data, array $options = [])
- * @method \TelegramModule\Model\Entity\TelegramSetting findOrCreate($search, callable $callback = null, $options = [])
+ * @method \TelegramModule\Model\Entity\TelegramSetting findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */

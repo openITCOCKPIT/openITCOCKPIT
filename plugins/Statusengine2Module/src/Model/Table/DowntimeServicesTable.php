@@ -147,7 +147,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
 
             'HostsToContainers.container_id',
 
-            'servicename' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+            'servicename' => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
         ])
             ->innerJoin(
                 ['Objects' => 'nagios_objects'],
@@ -237,7 +237,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
      * @return array
      */
     public function getServiceDowntimesByHostAndDowntime($hostId, Downtime $Downtime) {
-        $records = $this->find()
+        $records = $this->unhydratedFind()
             ->select([
                 'DowntimeServices.internal_downtime_id'
             ])
@@ -255,7 +255,6 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
                 'DowntimeServices.scheduled_start_time' => date('Y-m-d H:i:s', $Downtime->getScheduledStartTime()),
                 'DowntimeServices.scheduled_end_time'   => date('Y-m-d H:i:s', $Downtime->getScheduledEndTime())
             ])
-            ->disableHydration()
             ->all();
 
         $result = $records->toArray();
@@ -299,7 +298,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
 
             'HostsToContainers.container_id',
 
-            'servicename' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+            'servicename' => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
         ])
             ->innerJoin(
                 ['Objects' => 'nagios_objects'],
@@ -439,7 +438,7 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
      * @return array
      */
     public function getHostAndServiceUuidWithDowntimeByInternalDowntimeId($internalDowntimeId) {
-        $result = $this->find()
+        $result = $this->unhydratedFind()
             ->select([
                 'DowntimeServices.author_name',
                 'DowntimeServices.comment_data',
@@ -462,7 +461,6 @@ class DowntimeServicesTable extends Table implements DowntimehistoryServicesTabl
             ->where([
                 'DowntimeServices.internal_downtime_id' => $internalDowntimeId
             ])
-            ->disableHydration()
             ->first();
 
         if ($result === null) {

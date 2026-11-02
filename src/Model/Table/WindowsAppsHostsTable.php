@@ -28,7 +28,7 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -133,13 +133,13 @@ class WindowsAppsHostsTable extends Table {
      * @return array
      */
     public function getHostsWithApp(int $appId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->innerJoin(
                 ['Hosts' => 'hosts'],
                 ['Hosts.id = WindowsAppsHosts.host_id']
             )
             ->contain([
-                'Hosts' => function (Query $query) {
+                'Hosts' => function (SelectQuery $query) {
                     return $query->select([
                         'Hosts.id',
                         'Hosts.name',
@@ -173,8 +173,6 @@ class WindowsAppsHostsTable extends Table {
             )
             ->groupBy(['Hosts.id']);
 
-        $query->disableHydration();
-
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $query->toArray();
@@ -206,13 +204,13 @@ class WindowsAppsHostsTable extends Table {
      * @return array
      */
     public function getWindowsAppsByHost(int $hostId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->innerJoin(
                 ['Hosts' => 'hosts'],
                 ['Hosts.id = WindowsAppsHosts.host_id']
             )
             ->contain([
-                'Hosts' => function (Query $query) {
+                'Hosts' => function (SelectQuery $query) {
                     return $query->select([
                         'Hosts.id',
                         'Hosts.name',
@@ -244,8 +242,6 @@ class WindowsAppsHostsTable extends Table {
         $query->orderBy(
             $GenericFilter->getOrderForPaginator('WindowsApps.name', 'asc')
         );
-
-        $query->disableHydration();
 
         if ($PaginateOMat === null) {
             //Just execute query

@@ -154,7 +154,7 @@ class CommandsTable extends Table {
      * @return array
      */
     public function getCommandsIndex(CommandsFilter $CommandsFilter, $PaginateOMat = null) {
-        $query = $this->find('all')->disableHydration();
+        $query = $this->unhydratedFind('all');
         $query->where($CommandsFilter->indexFilter());
         $query->orderBy($CommandsFilter->getOrderForPaginator('Commands.name', 'asc'));
 
@@ -201,10 +201,9 @@ class CommandsTable extends Table {
             $ids = [$ids];
         }
 
-        $command = $this->find()
+        $command = $this->unhydratedFind()
             ->contain('Commandarguments')
             ->where(['Commands.id IN' => $ids])
-            ->disableHydration()
             ->all();
         return $this->formatResultAsCake2($command->toArray());
     }
@@ -254,7 +253,7 @@ class CommandsTable extends Table {
      * @return array
      */
     public function getCommandsForCopy($ids = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Commands.id',
                 'Commands.name',
@@ -263,7 +262,6 @@ class CommandsTable extends Table {
             ])
             ->where(['Commands.id IN' => $ids])
             ->orderBy(['Commands.id' => 'asc'])
-            ->disableHydration()
             ->all();
 
         return $this->formatResultAsCake2($query->toArray(), false);
@@ -274,7 +272,7 @@ class CommandsTable extends Table {
      * @return array
      */
     public function getCommandsByTypeId($typeId) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Commands.id',
                 'Commands.name',
@@ -284,7 +282,6 @@ class CommandsTable extends Table {
                 'Commands.description'
             ])
             ->where(['Commands.command_type' => $typeId])
-            ->disableHydration()
             ->all();
 
         return $this->formatResultAsCake2($query->toArray(), false);
@@ -331,9 +328,8 @@ class CommandsTable extends Table {
      * @return array
      */
     public function getCommandByUuid($uuid, $contain = false, $formatResultAsCake2 = true) {
-        $command = $this->find('all')
-            ->where(['Commands.uuid' => $uuid])
-            ->disableHydration();
+        $command = $this->unhydratedFind('all')
+            ->where(['Commands.uuid' => $uuid]);
 
         if ($contain) {
             $command->contain('Commandarguments');
@@ -353,9 +349,8 @@ class CommandsTable extends Table {
      * @return array
      */
     public function getCommandByName($name, $contain = false, $formatResultAsCake2 = true) {
-        $command = $this->find('all')
-            ->where(['Commands.name' => $name])
-            ->disableHydration();
+        $command = $this->unhydratedFind('all')
+            ->where(['Commands.name' => $name]);
 
         if ($contain) {
             $command->contain('Commandarguments');
@@ -373,8 +368,7 @@ class CommandsTable extends Table {
      * @return array
      */
     public function getAllCommands($contain = false) {
-        $command = $this->find('all')
-            ->disableHydration()
+        $command = $this->unhydratedFind('all')
             ->all();
 
         if ($contain) {
@@ -385,10 +379,9 @@ class CommandsTable extends Table {
     }
 
     public function getAllCommandsAsList() {
-        $result = $this->find('list',
+        $result = $this->unhydratedFind('list',
             keyField: 'id',
             valueField: 'name')
-            ->disableHydration()
             ->orderBy(['Commands.name' => 'asc'])
             ->all();
 
@@ -400,10 +393,9 @@ class CommandsTable extends Table {
      * @return array
      */
     public function getAllCommandsUuidsAsList() {
-        $query = $this->find('list',
+        $query = $this->unhydratedFind('list',
             keyField: 'id',
-            valueField: 'uuid')
-            ->disableHydration();
+            valueField: 'uuid');
         return $query->toArray();
     }
 
@@ -547,14 +539,13 @@ class CommandsTable extends Table {
         if (!is_array($ids)) {
             $ids = [$ids];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
                 'Commandarguments'
             ])
             ->where([
                 'Commands.id IN' => $ids
-            ])
-            ->disableHydration();
+            ]);
 
         return $this->emptyArrayIfNull($query->toArray());
     }
@@ -648,10 +639,9 @@ class CommandsTable extends Table {
      * @return array
      */
     public function getCommandByUuidForImportDiff($uuid) {
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->contain('Commandarguments')
             ->where(['Commands.uuid' => $uuid])
-            ->disableHydration()
             ->firstOrFail();
 
         return $this->emptyArrayIfNull($query);

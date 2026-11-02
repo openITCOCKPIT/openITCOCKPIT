@@ -64,6 +64,58 @@ trait DatabasePartitionsTrait {
     }
 
     /**
+     * Returns existing partitions relevant for state_time > $timestamp.
+     *
+     * Requires RANGE partitioning by (state_time DIV 86400).
+     *
+     * @param Table $Table
+     * @param int $timestamp Unix timestamp in seconds
+     * @return array
+     */
+    public function getPartitionsForUnixTimestamp(Table $Table, int $timestamp): array {
+        $Connection = $Table->getConnection();
+
+        $query = $Connection->execute(
+            "
+            SELECT PARTITION_NAME AS partition_name
+            FROM information_schema.PARTITIONS
+            WHERE TABLE_SCHEMA = :databaseName
+              AND TABLE_NAME = :tableName
+              AND PARTITION_NAME IS NOT NULL
+              AND (
+                  PARTITION_DESCRIPTION = 'MAXVALUE'
+                  OR CAST(PARTITION_DESCRIPTION AS UNSIGNED) > :startDay
+              )
+            ORDER BY PARTITION_ORDINAL_POSITION
+        ",
+            [
+                'databaseName' => $Connection->config()['database'],
+                'tableName'    => $Table->getTable(),
+                'startDay'     => intdiv($timestamp, 86400),
+            ],
+            [
+                'databaseName' => 'string',
+                'tableName'    => 'string',
+                'startDay'     => 'integer',
+            ]
+        );
+
+        $result = $query->fetchAll('assoc');
+
+        //MySQL 5.x
+        $partitions = Hash::extract($result, '{n}.partition_name');
+
+        //MySQL 8.x
+        if (isset($result['0']['PARTITION_NAME'])) {
+            //MySQL 8.x
+            $partitions = Hash::extract($result, '{n}.PARTITION_NAME');
+        }
+
+        // Remove all empty values (MySQL 5.7 and MariaDB ) tend to return a null record
+        return array_values(array_filter($partitions));
+    }
+
+    /**
      * This method creates the first Partition into a Table which has no partitions yet.
      * It is a more dynamic (or elegant) alternative to hardcoded table definitions like here:
      * https://github.com/openITCOCKPIT/openITCOCKPIT/blob/cdc26c67341b10389390ba4ae254e619877a980e/partitions_statusengine3.sql#L75-L77

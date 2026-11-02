@@ -34,6 +34,7 @@ declare(strict_types=1);
 namespace Statusengine3Module\Model\Table;
 
 use App\Lib\Interfaces\StatehistoryHostTableInterface;
+use App\Lib\Traits\DatabasePartitionsTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -68,6 +69,7 @@ class StatehistoryHostsTable extends Table implements StatehistoryHostTableInter
     /*****************************************************/
 
     use PaginationAndScrollIndexTrait;
+    use DatabasePartitionsTrait;
 
     /**
      * Initialize method
@@ -229,6 +231,19 @@ class StatehistoryHostsTable extends Table implements StatehistoryHostTableInter
         if (empty($StatehistoryHostConditions->getHostUuids())) {
             return [];
         }
+
+        $partitions = $this->getPartitionsForUnixTimestamp($this, $StatehistoryHostConditions->getFrom());
+
+        $query = $this->find();
+        if (!empty($partitions)) {
+            $partitionSql = '`' . implode('`, `', $partitions) . '`';
+            $query->from([
+                'StatehistoryServices' =>
+                    '`statusengine_service_statehistory` PARTITION (' . $partitionSql . ')',
+            ], true);
+        }
+
+
         $query = $this->find()
             ->select([
                 'StatehistoryHosts.hostname',

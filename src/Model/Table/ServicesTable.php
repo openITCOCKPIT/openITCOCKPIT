@@ -3539,6 +3539,196 @@ class ServicesTable extends Table {
     }
 
     /**
+     * @param $id
+     * @return array|Service|null
+     */
+    public function getServiceByIdForNotificationPeriods($id) {
+        // Service notification fields of the contacts
+        $contacts = function (Query $query) {
+            return $query->select([
+                'Contacts.id',
+                'Contacts.name',
+                'Contacts.service_timeperiod_id',
+                'Contacts.service_notifications_enabled',
+                'Contacts.notify_service_recovery',
+                'Contacts.notify_service_warning',
+                'Contacts.notify_service_unknown',
+                'Contacts.notify_service_critical',
+                'Contacts.notify_service_flapping',
+                'Contacts.notify_service_downtime'
+            ]);
+        };
+        $contactgroups = function (Query $query) use ($contacts) {
+            return $query->contain([
+                'Contacts' => $contacts
+            ]);
+        };
+
+        $query = $this->find()
+            ->select([
+                'Services.id',
+                'Services.name',
+                'Services.uuid',
+                'Services.host_id',
+                'Services.servicetemplate_id',
+                'Services.notify_period_id',
+                'Services.notifications_enabled',
+                'Services.notify_on_warning',
+                'Services.notify_on_critical',
+                'Services.notify_on_unknown',
+                'Services.notify_on_recovery',
+                'Services.notify_on_flapping',
+                'Services.notify_on_downtime',
+            ])
+            ->where([
+                'Services.id' => $id
+            ])
+            ->contain([
+                'Contacts'         => $contacts,
+                'Contactgroups'    => $contactgroups,
+                'Servicetemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Servicetemplates.id',
+                            'Servicetemplates.name',
+                            'Servicetemplates.notify_period_id',
+                            'Servicetemplates.notifications_enabled',
+                            'Servicetemplates.notify_on_warning',
+                            'Servicetemplates.notify_on_critical',
+                            'Servicetemplates.notify_on_unknown',
+                            'Servicetemplates.notify_on_recovery',
+                            'Servicetemplates.notify_on_flapping',
+                            'Servicetemplates.notify_on_downtime'
+                        ])
+                        ->contain([
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups
+                        ]);
+                },
+                // Host is required for the container permissions (Service::getContainerIds())
+                // and as fallback for contacts and contact groups
+                'Hosts'            => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Hosts.id',
+                            'Hosts.name',
+                            'Hosts.uuid',
+                            'Hosts.container_id',
+                            'Hosts.hosttemplate_id'
+                        ])
+                        ->contain([
+                            'HostsToContainersSharing',
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups,
+                            'Hosttemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                                return $query
+                                    ->select([
+                                        'Hosttemplates.id'
+                                    ])
+                                    ->contain([
+                                        'Contacts'      => $contacts,
+                                        'Contactgroups' => $contactgroups
+                                    ]);
+                            }
+                        ]);
+                }
+            ])
+            ->first();
+
+        return $query;
+    }
+
+    /**
+     * Returns the service with its contacts and contact groups (incl. the ones of the service template,
+     * host and host template) and the containers they belong to. Used to check if the notifications overview is allowed.
+     *
+     * @param int $id
+     * @return \App\Model\Entity\Service|null
+     */
+    public function getServiceContactsAndContactgroupsWithContainersById($id) {
+        $contacts = function (Query $query) {
+            return $query
+                ->select([
+                    'Contacts.id'
+                ])
+                ->contain([
+                    'Containers' => function (Query $query) {
+                        return $query->select([
+                            'Containers.id'
+                        ]);
+                    }
+                ]);
+        };
+
+        $contactgroups = function (Query $query) use ($contacts) {
+            return $query
+                ->select([
+                    'Contactgroups.id',
+                    'Contactgroups.container_id'
+                ])
+                ->contain([
+                    'Containers' => function (Query $query) {
+                        return $query->select([
+                            'Containers.id',
+                            'Containers.parent_id'
+                        ]);
+                    },
+                    'Contacts'   => $contacts
+                ]);
+        };
+
+        return $this->find()
+            ->select([
+                'Services.id',
+                'Services.host_id',
+                'Services.servicetemplate_id'
+            ])
+            ->where([
+                'Services.id' => $id
+            ])
+            ->contain([
+                'Contacts'         => $contacts,
+                'Contactgroups'    => $contactgroups,
+                'Servicetemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Servicetemplates.id'
+                        ])
+                        ->contain([
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups
+                        ]);
+                },
+                // Host is required for the container permissions (Service::getContainerIds())
+                // and as fallback for contacts and contact groups
+                'Hosts'            => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Hosts.id',
+                            'Hosts.container_id',
+                            'Hosts.hosttemplate_id'
+                        ])
+                        ->contain([
+                            'HostsToContainersSharing',
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups,
+                            'Hosttemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                                return $query
+                                    ->select([
+                                        'Hosttemplates.id'
+                                    ])
+                                    ->contain([
+                                        'Contacts'      => $contacts,
+                                        'Contactgroups' => $contactgroups
+                                    ]);
+                            }
+                        ]);
+                }
+            ])
+            ->first();
+    }
+
+    /**
      * @param ServiceConditions $ServiceConditions
      * @param null|PaginateOMat $PaginateOMat
      * @param string $type (all or count, list is NOT supported!)
@@ -4420,6 +4610,7 @@ class ServicesTable extends Table {
 
         }
 
+
         if (!empty($conditions['Host']['name'])) {
             if (isset($conditions['Host']['name_regex']) && $conditions['Host']['name_regex'] === true || $conditions['Host']['name_regex'] === 'true') {
                 if ($this->isValidRegularExpression($conditions['Host']['name'])) {
@@ -4501,12 +4692,42 @@ class ServicesTable extends Table {
 
         $query->andWhere($where);
         $query->groupBy('Services.id');
-        $result = $query->all();
-        if (!$result === null) {
-            return [];
+
+
+        // Use plain SQL as the CakePHP ORM result set is too slow (cakephp will add 4 to 6 seconds to the query execution time on large result sets)
+        $statement = $query->execute();
+        $rows = $statement->fetchAll('assoc');
+
+        $result = [];
+        foreach ($rows as $row) {
+            // Rebuild the same result as CakePHP would do when hydration is disabled
+            // Not an optimal solution but faster than using the CakePHP ORM result set
+            $result[] = [
+                'id'              => (int)$row['Services__id'],
+                'uuid'            => $row['Services__uuid'],
+                'servicename'     => $row['servicename'],
+                'servicepriority' => (int)$row['servicepriority'],
+                'tags'            => $row['tags'],
+                'Hosts'           => [
+                    'id'   => (int)$row['Hosts__id'],
+                    'name' => $row['Hosts__name'],
+                ],
+                'Servicestatus'   => [
+                    'current_state'                 => (int)$row['Servicestatus__current_state'],
+                    'scheduled_downtime_depth'      => (int)$row['Servicestatus__scheduled_downtime_depth'],
+                    'active_checks_enabled'         => (int)$row['Servicestatus__active_checks_enabled'],
+                    'problem_has_been_acknowledged' => (int)$row['Servicestatus__problem_has_been_acknowledged'],
+                    'last_hard_state_change'        => (int)$row['Servicestatus__last_hard_state_change'],
+                    'last_state_change'             => (int)$row['Servicestatus__last_state_change'],
+                    'status_update_time'            => (int)$row['Servicestatus__status_update_time'],
+                    'last_time_ok'                  => (int)$row['Servicestatus__last_time_ok'],
+                    'last_time_critical'            => (int)$row['Servicestatus__last_time_critical'],
+                    'last_time_unknown'             => (int)$row['Servicestatus__last_time_unknown'],
+                ]
+            ];
         }
 
-        return $result->toArray();
+        return $result;
     }
 
 
@@ -6700,17 +6921,25 @@ class ServicesTable extends Table {
         }
 
         $serviceStateSummary['buckets'] = $this->groupServicestatusByStateAndTimeBuckets($servicestatus, 'c');
+        $keywordPattern = empty($serviceConditions['keywords'])
+            ? null
+            : sprintf('`%s`', $serviceConditions['keywords']);
+
         foreach ($servicestatus as $service) {
             //Check for random exit codes like 255...
             if ($service['Servicestatus']['current_state'] > 3) {
                 $service['Servicestatus']['current_state'] = 3;
             }
-            $service['Servicestatus'] = new Servicestatus($service['Servicestatus']);
+            $status = new Servicestatus($service['Servicestatus']);
+            $currentState = $status->currentState();
+            $isAcknowledged = $status->isAcknowledged();
+            $isInDowntime = $status->isInDowntime();
+            $isPassive = !$status->isActiveChecksEnabled();
             $tags = Hash::filter(explode(',', $service['tags']));
 
             if (!empty($tags)) {
                 foreach ($tags as $tag) {
-                    if (!empty($serviceConditions['keywords']) && !preg_match(sprintf('`%s`', $serviceConditions['keywords']), $tag)) {
+                    if ($keywordPattern !== null && !preg_match($keywordPattern, $tag)) {
                         continue;
                     }
                     if (!isset($serviceStateSummary['tagsOverview'][$tag])) {
@@ -6779,89 +7008,91 @@ class ServicesTable extends Table {
                             'cumulative_state' => -1, // not monitored
                         ];
                     }
-                    $serviceStateSummary['tagsOverview'][$tag]['state'][$service['Servicestatus']->currentState()]++;
-                    $serviceStateSummary['tagsOverview'][$tag]['state']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+                    $serviceStateSummary['tagsOverview'][$tag]['state'][$currentState]++;
+                    $serviceStateSummary['tagsOverview'][$tag]['state']['serviceIds'][$currentState][] = $service['id'];
 
-                    if ($service['Servicestatus']->currentState() > 0) {
-                        if ($service['Servicestatus']->isAcknowledged()) {
-                            $serviceStateSummary['tagsOverview'][$tag]['acknowledged'][$service['Servicestatus']->currentState()]++;
-                            $serviceStateSummary['tagsOverview'][$tag]['acknowledged']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
-                        } else if (!$service['Servicestatus']->isInDowntime()) {
-                            $serviceStateSummary['tagsOverview'][$tag]['not_handled'][$service['Servicestatus']->currentState()]++;
-                            $serviceStateSummary['tagsOverview'][$tag]['not_handled']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+                    if ($currentState > 0) {
+                        if ($isAcknowledged) {
+                            $serviceStateSummary['tagsOverview'][$tag]['acknowledged'][$currentState]++;
+                            $serviceStateSummary['tagsOverview'][$tag]['acknowledged']['serviceIds'][$currentState][] = $service['id'];
+                        } else if (!$isInDowntime) {
+                            $serviceStateSummary['tagsOverview'][$tag]['not_handled'][$currentState]++;
+                            $serviceStateSummary['tagsOverview'][$tag]['not_handled']['serviceIds'][$currentState][] = $service['id'];
                             $serviceStateSummary['tagsOverview'][$tag]['not_handled']['totalServiceIds'][] = $service['id'];
                         }
                     }
 
-                    if ($service['Servicestatus']->isInDowntime()) {
-                        $serviceStateSummary['tagsOverview'][$tag]['in_downtime'][$service['Servicestatus']->currentState()]++;
-                        $serviceStateSummary['tagsOverview'][$tag]['in_downtime']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+                    if ($isInDowntime) {
+                        $serviceStateSummary['tagsOverview'][$tag]['in_downtime'][$currentState]++;
+                        $serviceStateSummary['tagsOverview'][$tag]['in_downtime']['serviceIds'][$currentState][] = $service['id'];
                     }
-                    if (!$service['Servicestatus']->isActiveChecksEnabled()) {
-                        $serviceStateSummary['tagsOverview'][$tag]['passive'][$service['Servicestatus']->currentState()]++;
-                        $serviceStateSummary['tagsOverview'][$tag]['passive']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+                    if ($isPassive) {
+                        $serviceStateSummary['tagsOverview'][$tag]['passive'][$currentState]++;
+                        $serviceStateSummary['tagsOverview'][$tag]['passive']['serviceIds'][$currentState][] = $service['id'];
                     }
-                    if ($serviceStateSummary['tagsOverview'][$tag]['cumulative_state'] < $service['Servicestatus']->currentState()) {
-                        $serviceStateSummary['tagsOverview'][$tag]['cumulative_state'] = $service['Servicestatus']->currentState();
+                    if ($serviceStateSummary['tagsOverview'][$tag]['cumulative_state'] < $currentState) {
+                        $serviceStateSummary['tagsOverview'][$tag]['cumulative_state'] = $currentState;
                     }
                     $serviceStateSummary['tagsOverview'][$tag]['total']++;
                     $serviceStateSummary['tagsOverview'][$tag]['serviceIds'][] = $service['id'];
                 }
             }
 
-            if ($service['Servicestatus']->currentState() === 0) {
-                if ($service['Servicestatus']->getLastStateChange() <= $timestampFrom
-                    && $service['Servicestatus']->getLastTimeCritical() <= $timestampFrom) {
+            if ($currentState === 0) {
+                $lastStateChange = $status->getLastStateChange();
+                if ($lastStateChange <= $timestampFrom
+                    && $status->getLastTimeCritical() <= $timestampFrom) {
                     $serviceStateSummary['lastTimeAlwaysOk']['count']++;
                     $serviceStateSummary['lastTimeAlwaysOk']['ids'][] = $service['id'];
                 }
 
                 if (isset($service['statehistory'][0])) {
                     if ($service['statehistory'][0]['state'] > 0 &&
-                        date('d.m.Y H:i:s', $service['statehistory'][0]['state_time']) < $service['Servicestatus']->getLastStateChange()) {
+                        date('d.m.Y H:i:s', $service['statehistory'][0]['state_time']) < $lastStateChange) {
                         $serviceStateSummary['recovered']['count']++;
                         $serviceStateSummary['recovered']['ids'][] = $service['id'];
                     }
                 }
-            } else if ($service['Servicestatus']->currentState() === 2) {
-                if ($service['Servicestatus']->getLastStateChange() <= $timestampFrom
-                    && $service['Servicestatus']->getLastTimeOk() <= $timestampFrom) {
+            } else if ($currentState === 2) {
+                $lastStateChange = $status->getLastStateChange();
+                if ($lastStateChange <= $timestampFrom
+                    && $status->getLastTimeOk() <= $timestampFrom) {
                     $serviceStateSummary['lastTimeAlwaysCritical']['count']++;
                     $serviceStateSummary['lastTimeAlwaysCritical']['ids'][] = $service['id'];
                 }
                 if (isset($service['statehistory'][0])) {
                     if ($service['statehistory'][0]['state'] === 0 &&
-                        date('d.m.Y H:i:s', $service['statehistory'][0]['state_time']) < $service['Servicestatus']->getLastStateChange()) {
+                        date('d.m.Y H:i:s', $service['statehistory'][0]['state_time']) < $lastStateChange) {
                         $serviceStateSummary['failed']['count']++;
                         $serviceStateSummary['failed']['ids'][] = $service['id'];
                     }
                 }
             }
 
-            $serviceStateSummary['state'][$service['Servicestatus']->currentState()]++;
-            $serviceStateSummary['state']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
-            if ($service['Servicestatus']->currentState() > 0) {
-                if ($service['Servicestatus']->isAcknowledged()) {
-                    $serviceStateSummary['acknowledged'][$service['Servicestatus']->currentState()]++;
-                    $serviceStateSummary['acknowledged']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
-                } else if (!$service['Servicestatus']->isInDowntime()) {
-                    $serviceStateSummary['not_handled'][$service['Servicestatus']->currentState()]++;
-                    $serviceStateSummary['not_handled']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+            $serviceStateSummary['state'][$currentState]++;
+            $serviceStateSummary['state']['serviceIds'][$currentState][] = $service['id'];
+            if ($currentState > 0) {
+                if ($isAcknowledged) {
+                    $serviceStateSummary['acknowledged'][$currentState]++;
+                    $serviceStateSummary['acknowledged']['serviceIds'][$currentState][] = $service['id'];
+                } else if (!$isInDowntime) {
+                    $serviceStateSummary['not_handled'][$currentState]++;
+                    $serviceStateSummary['not_handled']['serviceIds'][$currentState][] = $service['id'];
                     $serviceStateSummary['not_handled']['totalServiceIds'][] = $service['id'];
                 }
             }
 
-            if ($service['Servicestatus']->isInDowntime()) {
-                $serviceStateSummary['in_downtime'][$service['Servicestatus']->currentState()]++;
-                $serviceStateSummary['in_downtime']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+            if ($isInDowntime) {
+                $serviceStateSummary['in_downtime'][$currentState]++;
+                $serviceStateSummary['in_downtime']['serviceIds'][$currentState][] = $service['id'];
             }
-            if (!$service['Servicestatus']->isActiveChecksEnabled()) {
-                $serviceStateSummary['passive'][$service['Servicestatus']->currentState()]++;
-                $serviceStateSummary['passive']['serviceIds'][$service['Servicestatus']->currentState()][] = $service['id'];
+            if ($isPassive) {
+                $serviceStateSummary['passive'][$currentState]++;
+                $serviceStateSummary['passive']['serviceIds'][$currentState][] = $service['id'];
             }
 
-            if ($serviceStateSummary['cumulative_state'] < $service['Servicestatus']->currentState()) {
-                $serviceStateSummary['cumulative_state'] = $service['Servicestatus']->currentState();
+            if ($serviceStateSummary['cumulative_state'] < $currentState) {
+                $serviceStateSummary['cumulative_state'] = $currentState;
             }
             $serviceStateSummary['total']++;
             $serviceStateSummary['totalServiceIds'][] = $service['id'];
@@ -6872,6 +7103,7 @@ class ServicesTable extends Table {
 
     /**
      * Will group the servicestatus into hour and 10 minute buckets for each state for the last 24 hours.
+     * Counts history entries and includes details from the first 11 entries per bucket, keyed by service ID.
      *
      * @param array $servicestatusList
      * @param string $dateFormat The date format to use for the time buckets. Default is 'U' (Unix timestamp).
@@ -6896,8 +7128,12 @@ class ServicesTable extends Table {
             3 => [],
         ];
 
-        foreach ($servicestatusList as $key => $servicestatus) {
-            $servicestatus['Servicestatus'] = new Servicestatus($servicestatus['Servicestatus']);
+        $hourKeys = [];
+        $minuteSlots = [];
+        $maxDetailEntries = 11;
+
+        foreach ($servicestatusList as $servicestatus) {
+            $statusDetails = null;
             foreach ($servicestatus['statehistory'] as $stateHistory) {
                 $state = $stateHistory['state'];
 
@@ -6907,14 +7143,45 @@ class ServicesTable extends Table {
                 }
                 // Get full hour timestamp for the given timestamp
                 $hourStartTs = (int)(floor($timestamp / 3600) * 3600);
-                $hourKey = date($dateFormat, $hourStartTs);
+                // ??= operator is the short syntax for: (since php 7.4)
+                //if (!isset($hourKeys[$hourStartTs])) {
+                //    $hourKeys[$hourStartTs] = date($dateFormat, $hourStartTs);
+                //}
+                // $hourKey = $hourKeys[$hourStartTs];
+                $hourKey = $hourKeys[$hourStartTs] ??= date($dateFormat, $hourStartTs);
 
                 // 10 minutes slot (bucket) in the hour: 00,10,20,30,40,50
-                $minute = (int)date('i', $timestamp);
-                $tenMin = (int)(floor($minute / 10) * 10);
-                //$tenMinKey = str_pad((string)$tenMin, 2, '0', STR_PAD_LEFT);
+                $minuteStartTs = (int)(floor($timestamp / 60) * 60);
+                $tenMin = $minuteSlots[$minuteStartTs] ??= (int)(floor((int)date('i', $timestamp) / 10) * 10);
 
-                $result[$state][$hourKey][$tenMin][] = $servicestatus;
+                if (!isset($result[$state][$hourKey][$tenMin])) {
+                    $result[$state][$hourKey][$tenMin] = [
+                        'count'         => 0,
+                        'statusDetails' => []
+                    ];
+                }
+
+                $bucket = &$result[$state][$hourKey][$tenMin];
+                $bucket['count']++;
+                if ($bucket['count'] <= $maxDetailEntries) {
+                    if ($statusDetails === null) {
+                        $currentState = isset($servicestatus['Servicestatus']['current_state'])
+                            ? (int)$servicestatus['Servicestatus']['current_state']
+                            : null;
+                        $statusDetails = [
+                            'id'              => $servicestatus['id'],
+                            'serviceUuid'     => $servicestatus['uuid'],
+                            'name'            => sprintf('%s/%s',
+                                $servicestatus['Hosts']['name'],
+                                $servicestatus['servicename']
+                            ),
+                            'servicepriority' => $servicestatus['servicepriority'],
+                            'current_state'   => $currentState > 3 ? 3 : $currentState,
+                        ];
+                    }
+                    $bucket['statusDetails'][$servicestatus['id']] = $statusDetails;
+                }
+                unset($bucket);
             }
         }
         $reformatedData =
@@ -6927,40 +7194,18 @@ class ServicesTable extends Table {
                 'max'      => null
             ];
 
-        $result = Hash::remove($result, '{n}.{s}.{n}.{n}.statehistory');
-
         foreach ($result as $state => $servicestatusDetails) {
             $reformatedData[$stateLabels[$state]] = [];
             foreach ($servicestatusDetails as $date => $serviceStatusByMinutes) {
-                foreach ($serviceStatusByMinutes as $minute => $serviceStatusArray) {
-                    $sizeofHostStatusArray = sizeof($serviceStatusArray);
-                    $statusDetails = [];
-
-                    $maxDetails = 10; // for limit check
-                    foreach ($serviceStatusArray as $key => $serviceStatusDetails) {
-                        if ($key > $maxDetails) {
-                            break;
-                        }
-                        $statusDetails[$serviceStatusDetails['id']] = [
-                            'id'              => $serviceStatusDetails['id'],
-                            'serviceUuid'     => $serviceStatusDetails['uuid'],
-                            'name'            => sprintf('%s/%s',
-                                $serviceStatusDetails['Hosts']['name'],
-                                $serviceStatusDetails['servicename']
-                            ),
-                            'servicepriority' => $serviceStatusDetails['servicepriority'],
-                            'current_state'   => $serviceStatusDetails['Servicestatus']->currentState(),
-                        ];
-                    }
-                    $statusDetails = array_values($statusDetails);
+                foreach ($serviceStatusByMinutes as $minute => $bucket) {
                     if (is_null($reformatedData['max']) || $minute > $reformatedData['max']) {
                         $reformatedData['max'] = $minute;
                     }
                     $reformatedData[$stateLabels[$state]][] = [
                         $date,
                         $minute,
-                        $sizeofHostStatusArray,
-                        'statusDetails' => $statusDetails
+                        $bucket['count'],
+                        'statusDetails' => array_values($bucket['statusDetails'])
                     ];
                 }
             }

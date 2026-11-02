@@ -4565,6 +4565,179 @@ class HostsTable extends Table {
     }
 
     /**
+     * @param $id
+     * @return array|Host|null
+     */
+    public function getHostByIdForNotificationPeriods($id) {
+        $query = $this->find()
+            ->select([
+                'Hosts.id',
+                'Hosts.name',
+                'Hosts.uuid',
+                'Hosts.container_id',
+                'Hosts.hosttemplate_id',
+                'Hosts.notify_period_id',
+                'Hosts.notifications_enabled',
+                'Hosts.notify_on_down',
+                'Hosts.notify_on_unreachable',
+                'Hosts.notify_on_recovery',
+                'Hosts.notify_on_flapping',
+                'Hosts.notify_on_downtime',
+            ])
+            ->where([
+                'Hosts.id' => $id
+            ])
+            ->contain([
+                'HostsToContainersSharing',
+                'Contacts'      => function (Query $query) {
+                    return $query->select([
+                        'Contacts.id',
+                        'Contacts.name',
+                        'Contacts.host_timeperiod_id',
+                        'Contacts.host_notifications_enabled',
+                        'Contacts.notify_host_recovery',
+                        'Contacts.notify_host_down',
+                        'Contacts.notify_host_unreachable',
+                        'Contacts.notify_host_flapping',
+                        'Contacts.notify_host_downtime'
+                    ]);
+                },
+                'Contactgroups' => function (Query $query) {
+                    return $query->contain([
+                        'Contacts' => function (Query $query) {
+                            return $query->select([
+                                'Contacts.id',
+                                'Contacts.name',
+                                'Contacts.host_timeperiod_id',
+                                'Contacts.host_notifications_enabled',
+                                'Contacts.notify_host_recovery',
+                                'Contacts.notify_host_down',
+                                'Contacts.notify_host_unreachable',
+                                'Contacts.notify_host_flapping',
+                                'Contacts.notify_host_downtime'
+                            ]);
+                        }
+                    ]);
+                },
+                'Hosttemplates' => function (Query $query) {
+                    $query->select([
+                        'Hosttemplates.id',
+                        'Hosttemplates.check_period_id',
+                        'Hosttemplates.notify_period_id',
+                        'Hosttemplates.notifications_enabled',
+                        'Hosttemplates.notify_on_down',
+                        'Hosttemplates.notify_on_unreachable',
+                        'Hosttemplates.notify_on_recovery',
+                        'Hosttemplates.notify_on_flapping',
+                        'Hosttemplates.notify_on_downtime'
+                    ])->contain([
+                        'Contacts'      => function (Query $query) {
+                            return $query->select([
+                                'Contacts.id',
+                                'Contacts.name',
+                                'Contacts.host_timeperiod_id',
+                                'Contacts.host_notifications_enabled',
+                                'Contacts.notify_host_recovery',
+                                'Contacts.notify_host_down',
+                                'Contacts.notify_host_unreachable',
+                                'Contacts.notify_host_flapping',
+                                'Contacts.notify_host_downtime'
+                            ]);
+                        },
+                        'Contactgroups' => function (Query $query) {
+                            return $query->contain([
+                                'Contacts' => function (Query $query) {
+                                    return $query->select([
+                                        'Contacts.id',
+                                        'Contacts.name',
+                                        'Contacts.host_timeperiod_id',
+                                        'Contacts.host_notifications_enabled',
+                                        'Contacts.notify_host_recovery',
+                                        'Contacts.notify_host_down',
+                                        'Contacts.notify_host_unreachable',
+                                        'Contacts.notify_host_flapping',
+                                        'Contacts.notify_host_downtime'
+                                    ]);
+                                }
+                            ]);
+                        }
+                    ]);
+                    return $query;
+                }
+            ])
+            ->first();
+
+        return $query;
+    }
+
+    /**
+     * Returns the host with its contacts and contact groups (incl. the host template ones)
+     * and the containers they belong to. Used to check if the notifications overview is allowed.
+     *
+     * @param int $id
+     * @return \App\Model\Entity\Host|null
+     */
+    public function getHostContactsAndContactgroupsWithContainersById($id) {
+        $contactsContain = function (Query $query) {
+            return $query
+                ->select([
+                    'Contacts.id'
+                ])
+                ->contain([
+                    'Containers' => function (Query $query) {
+                        return $query->select([
+                            'Containers.id'
+                        ]);
+                    }
+                ]);
+        };
+
+        $contactgroupsContain = function (Query $query) use ($contactsContain) {
+            return $query
+                ->select([
+                    'Contactgroups.id',
+                    'Contactgroups.container_id'
+                ])
+                ->contain([
+                    'Containers' => function (Query $query) {
+                        return $query->select([
+                            'Containers.id',
+                            'Containers.parent_id'
+                        ]);
+                    },
+                    'Contacts'   => $contactsContain
+                ]);
+        };
+
+        return $this->find()
+            ->select([
+                'Hosts.id',
+                'Hosts.container_id',
+                'Hosts.hosttemplate_id'
+            ])
+            ->where([
+                'Hosts.id' => $id
+            ])
+            ->contain([
+                'HostsToContainersSharing',
+                'Contacts'      => $contactsContain,
+                'Contactgroups' => $contactgroupsContain,
+                'Hosttemplates' => function (Query $query) use ($contactsContain, $contactgroupsContain) {
+                    return $query
+                        ->select([
+                            'Hosttemplates.id'
+                        ])
+                        ->contain([
+                            'Contacts'      => $contactsContain,
+                            'Contactgroups' => $contactgroupsContain
+                        ]);
+                }
+            ])
+            ->first();
+    }
+
+
+    /**
      * @param int $satelliteId
      * @return array
      */
@@ -5397,7 +5570,8 @@ class HostsTable extends Table {
                 'Hosts.id',
                 'Hosts.uuid',
                 'Hosts.name',
-                'Hosts.priority',
+                'hostpriority' => $query->func()->coalesce(['Hosts.priority' => 'identifier', 'Hosttemplates.priority' => 'identifier']),
+                'tags'         => $query->func()->coalesce(['Hosts.tags' => 'identifier', 'Hosttemplates.tags' => 'identifier']),
                 'Hoststatus.current_state',
                 'Hoststatus.scheduled_downtime_depth',
                 'Hoststatus.active_checks_enabled',
@@ -5453,9 +5627,7 @@ class HostsTable extends Table {
             'Hosttemplates' => [
                 'fields' => [
                     'Hosttemplates.priority',
-                    'hostpriority' => $query->expr('IF(Hosts.priority IS NULL, Hosttemplates.priority, Hosts.priority)'),
-                    'tags'         => $query->expr('IF(Hosts.tags IS NULL, Hosttemplates.tags, Hosts.tags)')
-
+                    'Hosttemplates.tags'
                 ]
             ]
         ]);
@@ -5613,12 +5785,38 @@ class HostsTable extends Table {
 
         $query->andWhere($where);
         $query->groupBy('Hosts.id');
-        $result = $query->all();
-        if ($result === null) {
-            return [];
+
+
+        // Use plain SQL as the CakePHP ORM result set is too slow (cakephp will add 4 to 6 seconds to the query execution time on large result sets)
+        $statement = $query->execute();
+        $rows = $statement->fetchAll('assoc');
+
+        $result = [];
+        foreach ($rows as $row) {
+            // Rebuild the same result as CakePHP would do when hydration is disabled
+            // Not an optimal solution but faster than using the CakePHP ORM result set
+            $result[] = [
+                'id'           => (int)$row['Hosts__id'],
+                'uuid'         => $row['Hosts__uuid'],
+                'name'         => $row['Hosts__name'],
+                'hostpriority' => (int)$row['hostpriority'],
+                'tags'         => $row['tags'],
+                'Hoststatus'   => [
+                    'current_state'                 => (int)$row['Hoststatus__current_state'],
+                    'scheduled_downtime_depth'      => (int)$row['Hoststatus__scheduled_downtime_depth'],
+                    'active_checks_enabled'         => (int)$row['Hoststatus__active_checks_enabled'],
+                    'problem_has_been_acknowledged' => (int)$row['Hoststatus__problem_has_been_acknowledged'],
+                    'last_hard_state_change'        => (int)$row['Hoststatus__last_hard_state_change'],
+                    'last_state_change'             => (int)$row['Hoststatus__last_state_change'],
+                    'status_update_time'            => (int)$row['Hoststatus__status_update_time'],
+                    'last_time_up'                  => (int)$row['Hoststatus__last_time_up'],
+                    'last_time_down'                => (int)$row['Hoststatus__last_time_down'],
+                    'last_time_unreachable'         => (int)$row['Hoststatus__last_time_unreachable'],
+                ]
+            ];
         }
 
-        return $result->toArray();
+        return $result;
     }
 
     /**
@@ -6216,17 +6414,23 @@ class HostsTable extends Table {
             return $hostStateSummary;
         }
         $hostStateSummary['buckets'] = $this->groupHoststatusByStateAndTimeBuckets($hoststatus, 'c');
+        $keywordPattern = empty($hostConditions['keywords'])
+            ? null
+            : sprintf('`%s`', $hostConditions['keywords']);
         foreach ($hoststatus as $host) {
             //Check for random exit codes like 255...
             if ($host['Hoststatus']['current_state'] > 2) {
                 $host['Hoststatus']['current_state'] = 2;
             }
-            $host['Hoststatus'] = new Hoststatus($host['Hoststatus']);
-
-            $tags = Hash::filter(explode(',', $host['tags']));
+            $status = new Hoststatus($host['Hoststatus']);
+            $currentState = $status->currentState();
+            $isAcknowledged = $status->isAcknowledged();
+            $isInDowntime = $status->isInDowntime();
+            $isPassive = !$status->isActiveChecksEnabled();
+            $tags = Hash::filter(explode(',', $host['tags']));;
             if (!empty($tags)) {
                 foreach ($tags as $tag) {
-                    if (!empty($hostConditions['keywords']) && !preg_match(sprintf('`%s`', $hostConditions['keywords']), $tag)) {
+                    if ($keywordPattern !== null && !preg_match($keywordPattern, $tag)) {
                         continue;
                     }
                     if (!isset($hostStateSummary['tagsOverview'][$tag])) {
@@ -6285,89 +6489,91 @@ class HostsTable extends Table {
                             'cumulative_state' => -1, // not monitored
                         ];
                     }
-                    $hostStateSummary['tagsOverview'][$tag]['state'][$host['Hoststatus']->currentState()]++;
-                    $hostStateSummary['tagsOverview'][$tag]['state']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
+                    $hostStateSummary['tagsOverview'][$tag]['state'][$currentState]++;
+                    $hostStateSummary['tagsOverview'][$tag]['state']['hostIds'][$currentState][] = $host['id'];
 
-                    if ($host['Hoststatus']->currentState() > 0) {
-                        if ($host['Hoststatus']->isAcknowledged()) {
-                            $hostStateSummary['tagsOverview'][$tag]['acknowledged'][$host['Hoststatus']->currentState()]++;
-                            $hostStateSummary['tagsOverview'][$tag]['acknowledged']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
-                        } else if (!$host['Hoststatus']->isInDowntime()) {
-                            $hostStateSummary['tagsOverview'][$tag]['not_handled'][$host['Hoststatus']->currentState()]++;
-                            $hostStateSummary['tagsOverview'][$tag]['not_handled']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
+                    if ($currentState > 0) {
+                        if ($isAcknowledged) {
+                            $hostStateSummary['tagsOverview'][$tag]['acknowledged'][$currentState]++;
+                            $hostStateSummary['tagsOverview'][$tag]['acknowledged']['hostIds'][$currentState][] = $host['id'];
+                        } else if (!$isInDowntime) {
+                            $hostStateSummary['tagsOverview'][$tag]['not_handled'][$currentState]++;
+                            $hostStateSummary['tagsOverview'][$tag]['not_handled']['hostIds'][$currentState][] = $host['id'];
                             $hostStateSummary['tagsOverview'][$tag]['not_handled']['totalHostIds'][] = $host['id'];
                         }
                     }
 
-                    if ($host['Hoststatus']->isInDowntime()) {
-                        $hostStateSummary['tagsOverview'][$tag]['in_downtime'][$host['Hoststatus']->currentState()]++;
-                        $hostStateSummary['tagsOverview'][$tag]['in_downtime']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
+                    if ($isInDowntime) {
+                        $hostStateSummary['tagsOverview'][$tag]['in_downtime'][$currentState]++;
+                        $hostStateSummary['tagsOverview'][$tag]['in_downtime']['hostIds'][$currentState][] = $host['id'];
                     }
-                    if (!$host['Hoststatus']->isActiveChecksEnabled()) {
-                        $hostStateSummary['tagsOverview'][$tag]['passive'][$host['Hoststatus']->currentState()]++;
-                        $hostStateSummary['tagsOverview'][$tag]['passive']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
+                    if ($isPassive) {
+                        $hostStateSummary['tagsOverview'][$tag]['passive'][$currentState]++;
+                        $hostStateSummary['tagsOverview'][$tag]['passive']['hostIds'][$currentState][] = $host['id'];
                     }
-                    if ($hostStateSummary['tagsOverview'][$tag]['cumulative_state'] < $host['Hoststatus']->currentState()) {
-                        $hostStateSummary['tagsOverview'][$tag]['cumulative_state'] = $host['Hoststatus']->currentState();
+                    if ($hostStateSummary['tagsOverview'][$tag]['cumulative_state'] < $currentState) {
+                        $hostStateSummary['tagsOverview'][$tag]['cumulative_state'] = $currentState;
                     }
                     $hostStateSummary['tagsOverview'][$tag]['total']++;
                     $hostStateSummary['tagsOverview'][$tag]['hostIds'][] = $host['id'];
                 }
             }
 
-            if ($host['Hoststatus']->currentState() === 0) {
-                if ($host['Hoststatus']->getLastStateChange() <= $timestampFrom
-                    && $host['Hoststatus']->getLastTimeDown() <= $timestampFrom) {
+            if ($currentState === 0) {
+                $lastStateChange = $status->getLastStateChange();
+                if ($lastStateChange <= $timestampFrom
+                    && $status->getLastTimeDown() <= $timestampFrom) {
                     $hostStateSummary['lastTimeAlwaysUp']['count']++;
                     $hostStateSummary['lastTimeAlwaysUp']['ids'][] = $host['id'];
                 }
 
                 if (isset($host['statehistory'][0])) {
                     if ($host['statehistory'][0]['state'] > 0 &&
-                        date('d.m.Y H:i:s', $host['statehistory'][0]['state_time']) < $host['Hoststatus']->getLastStateChange()) {
+                        date('d.m.Y H:i:s', $host['statehistory'][0]['state_time']) < $lastStateChange) {
                         $hostStateSummary['recovered']['count']++;
                         $hostStateSummary['recovered']['ids'][] = $host['id'];
                     }
                 }
-            } else if ($host['Hoststatus']->currentState() === 1) {
-                if ($host['Hoststatus']->getLastStateChange() <= $timestampFrom
-                    && $host['Hoststatus']->getLastTimeUp() <= $timestampFrom) {
+            } else if ($currentState === 1) {
+                $lastStateChange = $status->getLastStateChange();
+                if ($lastStateChange <= $timestampFrom
+                    && $status->getLastTimeUp() <= $timestampFrom) {
                     $hostStateSummary['lastTimeAlwaysDown']['count']++;
                     $hostStateSummary['lastTimeAlwaysDown']['ids'][] = $host['id'];
                 }
                 if (isset($host['statehistory'][0])) {
                     if ($host['statehistory'][0]['state'] === 0 &&
-                        date('d.m.Y H:i:s', $host['statehistory'][0]['state_time']) < $host['Hoststatus']->getLastStateChange()) {
+                        date('d.m.Y H:i:s', $host['statehistory'][0]['state_time']) < $lastStateChange) {
                         $hostStateSummary['failed']['count']++;
                         $hostStateSummary['failed']['ids'][] = $host['id'];
                     }
                 }
             }
 
-            $hostStateSummary['state'][$host['Hoststatus']->currentState()]++;
-            $hostStateSummary['state']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
-            if ($host['Hoststatus']->currentState() > 0) {
-                if ($host['Hoststatus']->isAcknowledged()) {
-                    $hostStateSummary['acknowledged'][$host['Hoststatus']->currentState()]++;
-                    $hostStateSummary['acknowledged']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
-                } else if (!$host['Hoststatus']->isInDowntime()) {
-                    $hostStateSummary['not_handled'][$host['Hoststatus']->currentState()]++;
-                    $hostStateSummary['not_handled']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
+            $hostStateSummary['state'][$currentState]++;
+            $hostStateSummary['state']['hostIds'][$currentState][] = $host['id'];
+            if ($currentState > 0) {
+                if ($isAcknowledged) {
+                    $hostStateSummary['acknowledged'][$currentState]++;
+                    $hostStateSummary['acknowledged']['hostIds'][$currentState][] = $host['id'];
+                } else if (!$isInDowntime) {
+                    $hostStateSummary['not_handled'][$currentState]++;
+                    $hostStateSummary['not_handled']['hostIds'][$currentState][] = $host['id'];
                     $hostStateSummary['not_handled']['totalHostIds'][] = $host['id'];
                 }
             }
 
-            if ($host['Hoststatus']->isInDowntime()) {
-                $hostStateSummary['in_downtime'][$host['Hoststatus']->currentState()]++;
-                $hostStateSummary['in_downtime']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
+            if ($isInDowntime) {
+                $hostStateSummary['in_downtime'][$currentState]++;
+                $hostStateSummary['in_downtime']['hostIds'][$currentState][] = $host['id'];
             }
-            if (!$host['Hoststatus']->isActiveChecksEnabled()) {
-                $hostStateSummary['passive'][$host['Hoststatus']->currentState()]++;
-                $hostStateSummary['passive']['hostIds'][$host['Hoststatus']->currentState()][] = $host['id'];
+            if ($isPassive) {
+                $hostStateSummary['passive'][$currentState]++;
+                $hostStateSummary['passive']['hostIds'][$currentState][] = $host['id'];
             }
 
-            if ($hostStateSummary['cumulative_state'] < $host['Hoststatus']->currentState()) {
-                $hostStateSummary['cumulative_state'] = $host['Hoststatus']->currentState();
+            if ($hostStateSummary['cumulative_state'] < $currentState) {
+                $hostStateSummary['cumulative_state'] = $currentState;
             }
             $hostStateSummary['total']++;
             $hostStateSummary['totalHostIds'][] = $host['id'];
@@ -6400,8 +6606,11 @@ class HostsTable extends Table {
             2 => [],
         ];
 
-        foreach ($hoststatusList as $key => $hoststatus) {
-            $hoststatus['Hoststatus'] = new Hoststatus($hoststatus['Hoststatus']);
+        $hourKeys = [];
+        $minuteSlots = [];
+        $maxDetailEntries = 11;
+        foreach ($hoststatusList as $hoststatus) {
+            $statusDetails = null;
             foreach ($hoststatus['statehistory'] as $stateHistory) {
                 $state = $stateHistory['state'];
 
@@ -6411,14 +6620,42 @@ class HostsTable extends Table {
                 }
                 // Get full hour timestamp for the given timestamp
                 $hourStartTs = (int)(floor($timestamp / 3600) * 3600);
-                $hourKey = date($dateFormat, $hourStartTs);
+                // ??= operator is the short syntax for: (since php 7.4)
+                //if (!isset($hourKeys[$hourStartTs])) {
+                //    $hourKeys[$hourStartTs] = date($dateFormat, $hourStartTs);
+                //}
+                // $hourKey = $hourKeys[$hourStartTs];
+                $hourKey = $hourKeys[$hourStartTs] ??= date($dateFormat, $hourStartTs);
 
                 // 10 minutes slot (bucket) in the hour: 00,10,20,30,40,50
-                $minute = (int)date('i', $timestamp);
-                $tenMin = (int)(floor($minute / 10) * 10);
-                //$tenMinKey = str_pad((string)$tenMin, 2, '0', STR_PAD_LEFT);
+                $minuteStartTs = (int)(floor($timestamp / 60) * 60);
+                $tenMin = $minuteSlots[$minuteStartTs] ??= (int)(floor((int)date('i', $timestamp) / 10) * 10);
 
-                $result[$state][$hourKey][$tenMin][] = $hoststatus;
+                if (!isset($result[$state][$hourKey][$tenMin])) {
+                    $result[$state][$hourKey][$tenMin] = [
+                        'count'         => 0,
+                        'statusDetails' => []
+                    ];
+                }
+
+                $bucket = &$result[$state][$hourKey][$tenMin];
+                $bucket['count']++;
+                if ($bucket['count'] <= $maxDetailEntries) {
+                    if ($statusDetails === null) {
+                        $currentState = isset($hoststatus['Hoststatus']['current_state'])
+                            ? (int)$hoststatus['Hoststatus']['current_state']
+                            : null;
+                        $statusDetails = [
+                            'id'            => $hoststatus['id'],
+                            'hostUuid'      => $hoststatus['uuid'],
+                            'name'          => $hoststatus['name'],
+                            'hostpriority'  => $hoststatus['hostpriority'],
+                            'current_state' => $currentState > 2 ? 2 : $currentState,
+                        ];
+                    }
+                    $bucket['statusDetails'][$hoststatus['id']] = $statusDetails;
+                }
+                unset($bucket);
             }
         }
         $reformatedData =
@@ -6430,37 +6667,18 @@ class HostsTable extends Table {
                 'max'         => null
             ];
 
-        $result = Hash::remove($result, '{n}.{s}.{n}.{n}.statehistory');
-
         foreach ($result as $state => $hoststatusDetails) {
             $reformatedData[$stateLabels[$state]] = [];
-            foreach ($hoststatusDetails as $date => $hostStatusByMinutes) {
-                foreach ($hostStatusByMinutes as $minute => $hostStatusArray) {
-                    $sizeofHostStatusArray = sizeof($hostStatusArray);
-                    $statusDetails = [];
-
-                    $maxDetails = 10; // for limit check
-                    foreach ($hostStatusArray as $key => $hostStatusDetails) {
-                        if ($key > $maxDetails) {
-                            break;
-                        }
-                        $statusDetails[$hostStatusDetails['id']] = [
-                            'id'            => $hostStatusDetails['id'],
-                            'hostUuid'      => $hostStatusDetails['uuid'],
-                            'name'          => $hostStatusDetails['name'],
-                            'hostpriority'  => $hostStatusDetails['hostpriority'],
-                            'current_state' => $hostStatusDetails['Hoststatus']->currentState(),
-                        ];
-                    }
-                    $statusDetails = array_values($statusDetails);
+            foreach ($hoststatusDetails as $date => $hoststatusByMinutes) {
+                foreach ($hoststatusByMinutes as $minute => $bucket) {
                     if (is_null($reformatedData['max']) || $minute > $reformatedData['max']) {
                         $reformatedData['max'] = $minute;
                     }
                     $reformatedData[$stateLabels[$state]][] = [
                         $date,
                         $minute,
-                        $sizeofHostStatusArray,
-                        'statusDetails' => $statusDetails
+                        $bucket['count'],
+                        'statusDetails' => array_values($bucket['statusDetails'])
                     ];
                 }
             }

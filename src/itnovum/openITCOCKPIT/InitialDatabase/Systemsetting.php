@@ -801,7 +801,7 @@ class Systemsetting extends Importer {
             (int)93  => [
                 'key'      => 'SYSTEM_HEALTH.CPU.LOAD_WARNING',
                 'value'    => '',
-                'info'     => 'Warning threshold for the CPU load (openITCOCKPIT evaluates the value of load15). If empty, openITCOCKPIT will calculate the threshold values automatically based on the CPU core count of the system.',
+                'info'     => 'Warning threshold for the CPU load in percent, Defaults to 75',
                 'section'  => 'SYSTEM_HEALTH',
                 'created'  => '2023-03-16 13:45:00',
                 'modified' => '2023-03-16 13:45:00'
@@ -809,7 +809,7 @@ class Systemsetting extends Importer {
             (int)94  => [
                 'key'      => 'SYSTEM_HEALTH.CPU.LOAD_CRITICAL',
                 'value'    => '',
-                'info'     => 'Critical threshold for the CPU load (openITCOCKPIT evaluates the value of load15). If empty, openITCOCKPIT will calculate the threshold values automatically based on the CPU core count of the system.',
+                'info'     => 'Critical threshold for the CPU load in percent, Defaults to 90',
                 'section'  => 'SYSTEM_HEALTH',
                 'created'  => '2023-03-16 13:45:00',
                 'modified' => '2023-03-16 13:45:00'
@@ -926,6 +926,79 @@ class Systemsetting extends Importer {
                 'created'  => '2026-10-06 09:28:17',
                 'modified' => '2026-10-06 09:28:17'
             ],
+            (int)109  => [
+                'key'      => 'SYSTEM_HEALTH.SATELLITES_THRESHOLD_CPU_LOAD_WARNING_IN_PERCENT',
+                'value'    => '75',
+                'info'     => 'Warning threshold for the CPU load in percent for all Satellites system health monitoring, Defaults to 75',
+                'section'  => 'SYSTEM_HEALTH',
+                'created'  => '2026-10-12 11:00:00',
+                'modified' => '2026-10-12 11:00:00'
+            ],
+            (int)110  => [
+                'key'      => 'SYSTEM_HEALTH.SATELLITES_THRESHOLD_CPU_LOAD_CRITICAL_IN_PERCENT',
+                'value'    => '90',
+                'info'     => 'Critical threshold for the CPU load in percent for all Satellites system health monitoring, Defaults to 90',
+                'section'  => 'SYSTEM_HEALTH',
+                'created'  => '2026-10-12 11:00:00',
+                'modified' => '2026-10-12 11:00:00'
+            ],
+            (int)111  => [
+                'key'      => 'SYSTEM_HEALTH.SATELLITES_THRESHOLD_RAM_WARNING_IN_PERCENT',
+                'value'    => '75',
+                'info'     => 'Warning threshold for the Ram load in percent for all Satellites system health monitoring, Defaults to 75',
+                'section'  => 'SYSTEM_HEALTH',
+                'created'  => '2026-10-12 16:00:00',
+                'modified' => '2026-10-12 16:00:00'
+            ],
+            (int)112  => [
+                'key'      => 'SYSTEM_HEALTH.SATELLITES_THRESHOLD_RAM_CRITICAL_IN_PERCENT',
+                'value'    => '90',
+                'info'     => 'Critical threshold for the Ram load in percent for all Satellites system health monitoring, Defaults to 90',
+                'section'  => 'SYSTEM_HEALTH',
+                'created'  => '2026-10-12 16:00:00',
+                'modified' => '2026-10-12 16:00:00'
+            ],
+            (int)113  => [
+                'key'      => 'SYSTEM_HEALTH.SATELLITES_THRESHOLD_SWAP_WARNING_IN_PERCENT',
+                'value'    => '75',
+                'info'     => 'Warning threshold for the SWAP load in percent for all Satellites system health monitoring, Defaults to 75',
+                'section'  => 'SYSTEM_HEALTH',
+                'created'  => '2026-10-12 16:00:00',
+                'modified' => '2026-10-12 16:00:00'
+            ],
+            (int)114  => [
+                'key'      => 'SYSTEM_HEALTH.SATELLITES_THRESHOLD_SWAP_CRITICAL_IN_PERCENT',
+                'value'    => '90',
+                'info'     => 'Critical threshold for the SWAP load in percent for all Satellites system health monitoring, Defaults to 90',
+                'section'  => 'SYSTEM_HEALTH',
+                'created'  => '2026-10-12 16:00:00',
+                'modified' => '2026-10-12 16:00:00'
+            ],
+            (int)115  => [
+                'key'      => 'SYSTEM_HEALTH.SATELLITES_THRESHOLD_DISK_WARNING_IN_PERCENT',
+                'value'    => '75',
+                'info'     => 'Warning threshold for the DISK load in percent for all Satellites system health monitoring, Defaults to 75',
+                'section'  => 'SYSTEM_HEALTH',
+                'created'  => '2026-10-12 16:00:00',
+                'modified' => '2026-10-12 16:00:00'
+            ],
+            (int)116  => [
+                'key'      => 'SYSTEM_HEALTH.SATELLITES_THRESHOLD_DISK_CRITICAL_IN_PERCENT',
+                'value'    => '90',
+                'info'     => 'Critical threshold for the DISK load in percent for all Satellites system health monitoring, Defaults to 90',
+                'section'  => 'SYSTEM_HEALTH',
+                'created'  => '2026-10-12 16:00:00',
+                'modified' => '2026-10-12 16:00:00'
+            ],
+            (int)117  => [
+                'key'      => 'SYSTEM_HEALTH.SATELLITES_THRESHOLD_DISK_EXCLUDE_REGEX',
+                'value'    => '',
+                'info'     => 'Regular expression to exclude specific disks or mount points from System Health checks, ex. vad1|vad2',
+                'section'  => 'SYSTEM_HEALTH',
+                'created'  => '2026-10-06 09:28:17',
+                'modified' => '2026-10-06 09:28:17'
+            ],
+
         ];
 
         return $data;

@@ -26,8 +26,6 @@
 namespace itnovum\openITCOCKPIT\Core\Views;
 
 
-use Cake\I18n\DateTime;
-
 class Downtime {
 
     /**
@@ -58,12 +56,22 @@ class Downtime {
     /**
      * @var int|string
      */
+    private $actualStartTime;
+
+    /**
+     * @var int|string
+     */
     private $actualEndTime;
 
     /**
      * @var int
      */
     private $duration;
+
+    /**
+     * @var int|null
+     */
+    private $actualDuration;
 
     /**
      * @var bool
@@ -126,8 +134,16 @@ class Downtime {
             $this->actualEndTime = $downtime['actual_end_time'];
         }
 
+        if (isset($downtime['actual_start_time'])) {
+            $this->actualStartTime = (int)$downtime['actual_start_time'];
+        }
+
         if (isset($downtime['duration'])) {
             $this->duration = (int)$downtime['duration'];
+        }
+
+        if (isset($downtime['actual_duration'])) {
+            $this->actualDuration = (int)$downtime['actual_duration'];
         }
 
         if (isset($downtime['was_started'])) {
@@ -221,6 +237,13 @@ class Downtime {
     /**
      * @return int
      */
+    public function getActualStartTime() {
+        return $this->actualStartTime ?? 0;
+    }
+
+    /**
+     * @return int
+     */
     public function getActualEndTime() {
         if ($this->actualEndTime === null) {
             return 0;
@@ -241,6 +264,13 @@ class Downtime {
      */
     public function getDuration() {
         return $this->duration;
+    }
+
+    /**
+     * @return int
+     */
+    public function getActualDuration() {
+        return $this->actualDuration ?? 0;
     }
 
     /**
@@ -317,15 +347,28 @@ class Downtime {
         if ($this->UserTime !== null) {
             $arr['scheduledStartTime'] = $this->UserTime->format($this->getScheduledStartTime());
             $arr['scheduledEndTime'] = $this->UserTime->format($this->getScheduledEndTime());
-            $arr['actualEndTime'] = $this->UserTime->format($this->getActualEndTime());
+            $arr['actualStartTime'] = null;
+            if ($this->getActualStartTime()) {
+                $arr['actualStartTime'] = $this->UserTime->format($this->getActualStartTime());
+            }
+            $arr['actualEndTime'] = null;
+            if ($this->getActualEndTime()) {
+                $arr['actualEndTime'] = $this->UserTime->format($this->getActualEndTime());
+            }
             $arr['entryTime'] = $this->UserTime->format($this->getEntryTime());
             $arr['durationHuman'] = $this->UserTime->secondsInHumanShort($this->getDuration());
+            $arr['actualDurationHuman'] = null;
+            if ($this->getActualEndTime() && $this->getActualEndTime()) {
+                $arr['actualDurationHuman'] = $this->UserTime->secondsInHumanShort($this->getActualDuration());
+            }
         } else {
             $arr['scheduledStartTime'] = $this->getScheduledStartTime();
             $arr['scheduledEndTime'] = $this->getScheduledEndTime();
+            $arr['actualStartTime'] = $this->getActualStartTime();
             $arr['actualEndTime'] = $this->getActualEndTime();
             $arr['entryTime'] = $this->getEntryTime();
             $arr['durationHuman'] = $this->getDuration();
+            $arr['actualDurationHuman'] = $this->getActualDuration();
         }
         $arr['isCancellable'] = $this->isCancellable();
         $arr['isRunning'] = $this->isRunning();

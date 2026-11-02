@@ -321,7 +321,9 @@ class AclDependencies {
 
         $this
             ->dependency('Cronjobs', 'add', 'Cronjobs', 'getTasks')
-            ->dependency('Cronjobs', 'edit', 'Cronjobs', 'getTasks');
+            ->dependency('Cronjobs', 'add', 'Cronjobs', 'getPlugins')
+            ->dependency('Cronjobs', 'edit', 'Cronjobs', 'getTasks')
+            ->dependency('Cronjobs', 'edit', 'Cronjobs', 'getPlugins');
 
 
         $this

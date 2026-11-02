@@ -670,6 +670,18 @@ class Agent extends Importer {
                 'plugin_name'        => 'IpmiSel',
                 'servicetemplate_id' => '8e883faf-31e1-4e6a-9c86-65846ae4dca4'
             ],
+
+            // Agent 3.8: GPUs
+            [
+                'name'               => 'gpus.health',
+                'plugin_name'        => 'GpuHealth',
+                'servicetemplate_id' => '77b842b4-d2c7-4756-ab71-8b17f897fde4'
+            ],
+            [
+                'name'               => 'gpus.usage',
+                'plugin_name'        => 'GpuUsage',
+                'servicetemplate_id' => 'a1af2eba-bb3e-4bff-be6c-8e3b249402ea'
+            ],
         ];
         return $data;
     }
@@ -3162,6 +3174,94 @@ class Agent extends Importer {
                     ]
                 ]
             ],
+            [
+                'name'             => 'check_oitc_agent_gpu_health',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => '0f151328-bd7e-47ee-bd9b-27acd00fdcd9',
+                'description'      => "Checks the health of all GPUs of the system: NVIDIA (nvidia-smi), AMD and Intel (Linux) and all GPUs with a WDDM driver (Windows).\n" .
+                    "Critical: uncorrectable ECC errors since the driver was loaded, failed row remapping, unrepairable memory, required recovery action (GPU reset, reboot), NVSwitch fabric errors, nvidia-smi failed, fewer GPUs than on the PCI bus or than expected (GPU has fallen off the bus).\n" .
+                    "Warning: uncorrectable ECC errors in the past, pending row remapping, page retirement or memory repair (a GPU reset is required).\n" .
+                    "Xid errors of the NVIDIA driver of the last 24 hours (Linux, kernel log) are evaluated by the immediate action of the Xid catalog of NVIDIA (https://docs.nvidia.com/deploy/xid-errors/analyzing-xid-catalog.html): GPU reset or reboot = critical, restart of the application or ignore = OK, others = warning.\n" .
+                    "Expected number of GPUs: critical if fewer GPUs are found (0 = off). The agent wizard sets the number of GPUs which are found when the service is created.\n" .
+                    "State for throttling: state if the GPU slows down because of the hardware or the temperature (ok, warning, critical or unknown).\n" .
+                    "Critical Xid codes and ignored Xid codes: comma separated lists which override the Xid catalog, e.g. 13,31.\n" .
+                    "State for driver errors: state for errors of the GPU drivers of the last 24 hours: display driver timeouts (TDR) and errors in the Windows event log, GPU hangs and resets of the amdgpu driver in the Linux kernel log.",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'Expected number of GPUs'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'State for throttling'
+                    ],
+                    [
+                        'name'       => '$ARG3$',
+                        'human_name' => 'Critical Xid codes'
+                    ],
+                    [
+                        'name'       => '$ARG4$',
+                        'human_name' => 'Ignored Xid codes'
+                    ],
+                    [
+                        'name'       => '$ARG5$',
+                        'human_name' => 'State for driver errors'
+                    ]
+                ]
+            ],
+            [
+                'name'             => 'check_oitc_agent_gpu_usage',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => 'f9b9c97d-da60-47e8-b236-852edf7f7708',
+                'description'      => "Checks the utilization, memory, temperature, power and fan of a GPU and creates performance data.\n" .
+                    "GPU: PCI bus id (e.g. 0000:18:00.0), UUID or serial number, empty for all GPUs. The index of a GPU is no identifier, it changes if another GPU is missing. Critical if the GPU is not found.\n" .
+                    "Utilization and memory usage: thresholds in percent (optional). AI frameworks reserve most of the memory of a GPU, so there are no default thresholds.\n" .
+                    "Temperature headroom: degrees Celsius until the GPU slows down because of its temperature, an alert is raised below the value (default 10 and 5). Windows (generic GPUs) and integrated Intel GPUs report no headroom, use the temperature thresholds.\n" .
+                    "Temperature: thresholds in degrees Celsius (optional).\n" .
+                    "Thresholds use the range format of the monitoring plugins: https://www.monitoring-plugins.org/doc/guidelines.html#THRESHOLDFORMAT",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'GPU (PCI bus id, UUID or serial)'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'Utilization warning %'
+                    ],
+                    [
+                        'name'       => '$ARG3$',
+                        'human_name' => 'Utilization critical %'
+                    ],
+                    [
+                        'name'       => '$ARG4$',
+                        'human_name' => 'Memory usage warning %'
+                    ],
+                    [
+                        'name'       => '$ARG5$',
+                        'human_name' => 'Memory usage critical %'
+                    ],
+                    [
+                        'name'       => '$ARG6$',
+                        'human_name' => 'Temperature headroom warning °C'
+                    ],
+                    [
+                        'name'       => '$ARG7$',
+                        'human_name' => 'Temperature headroom critical °C'
+                    ],
+                    [
+                        'name'       => '$ARG8$',
+                        'human_name' => 'Temperature warning °C'
+                    ],
+                    [
+                        'name'       => '$ARG9$',
+                        'human_name' => 'Temperature critical °C'
+                    ]
+                ]
+            ],
         ];
         return $data;
     }
@@ -5588,6 +5688,10 @@ class Agent extends Importer {
             $this->getAgentServicetemplate('96d90f51-95ab-4ff7-82af-62681fdcdec8', 'OITC_AGENT_IPMI_HEALTH', 'IPMI health', '7b777447-441e-4889-a6b1-bc44840564bd', ['', 'warning']),
             $this->getAgentServicetemplate('2281db92-0525-4dd4-ac53-d04ed66d9278', 'OITC_AGENT_IPMI_SENSORS', 'IPMI sensors', '212418a9-a5ab-43af-8a99-1784541d8595', ['', '', '', '']),
             $this->getAgentServicetemplate('8e883faf-31e1-4e6a-9c86-65846ae4dca4', 'OITC_AGENT_IPMI_SEL', 'IPMI event log', 'c4f7b1bc-0a88-4491-99c7-917b150a402f', ['', 'warning', 'critical', '90']),
+
+            // Agent 3.8: GPUs
+            $this->getAgentServicetemplate('77b842b4-d2c7-4756-ab71-8b17f897fde4', 'OITC_AGENT_GPU_HEALTH', 'GPU health', '0f151328-bd7e-47ee-bd9b-27acd00fdcd9', ['0', 'warning', '', '', 'warning']),
+            $this->getAgentServicetemplate('a1af2eba-bb3e-4bff-be6c-8e3b249402ea', 'OITC_AGENT_GPU_USAGE', 'GPU usage', 'f9b9c97d-da60-47e8-b236-852edf7f7708', ['', '', '', '', '', '10', '5', '', '']),
         ];
         return $data;
     }

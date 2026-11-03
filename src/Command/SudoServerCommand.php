@@ -52,6 +52,7 @@ use React\Socket\SocketServer;
  * SudoServer command.
  * @deprecated The SudoServer is deprecated and was replaced by
  * https://github.com/openITCOCKPIT/openITCOCKPIT-websocket/
+ * With openITCOCKPIT 5.7.0 and ITC-3487 all WebSocket functionality got removed and is not handled by a seperate WebSocket server written in Go.
  */
 class SudoServerCommand extends Command {
 

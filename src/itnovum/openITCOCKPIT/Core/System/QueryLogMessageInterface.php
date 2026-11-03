@@ -33,6 +33,9 @@ use Ratchet\MessageComponentInterface;
 use SqlFormatter;
 use Symfony\Component\Process\Process;
 
+/**
+ * @deprecated With openITCOCKPIT 5.7.0 and ITC-3487 all WebSocket functionality got removed and is not handled by a seperate WebSocket server written in Go.
+ */
 class QueryLogMessageInterface implements MessageComponentInterface {
 
     /**

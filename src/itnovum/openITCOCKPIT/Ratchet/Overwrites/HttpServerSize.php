@@ -29,6 +29,9 @@ namespace itnovum\openITCOCKPIT\Ratchet\Overwrites;
 use Ratchet\Http\HttpServer;
 use Ratchet\Http\HttpServerInterface;
 
+/**
+ * @deprecated With openITCOCKPIT 5.7.0 and ITC-3487 all WebSocket functionality got removed and is not handled by a seperate WebSocket server written in Go.
+ */
 class HttpServerSize extends HttpServer {
 
     public function __construct(HttpServerInterface $component) {

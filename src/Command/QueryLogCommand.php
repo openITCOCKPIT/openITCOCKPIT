@@ -33,8 +33,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use Cake\Console\Arguments;
 use Cake\Command\Command;
+use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Datasource\ConnectionManager;
@@ -47,6 +47,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * Dump command.
+ * @deprecated With openITCOCKPIT 5.7.0 and ITC-3487 all WebSocket functionality got removed and is not handled by a seperate WebSocket server written in Go.
  */
 class QueryLogCommand extends Command {
 
@@ -259,7 +260,7 @@ class QueryLogCommand extends Command {
 
             $rows = explode('=', $query[5], 2);
             // Todo implement ,ulti-line record from logfile
-            if(!isset($rows[1])){
+            if (!isset($rows[1])) {
                 debug($line);
                 debug($query);
             }

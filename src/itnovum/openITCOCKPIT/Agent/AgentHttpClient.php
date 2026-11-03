@@ -34,6 +34,7 @@ use Cake\ORM\TableRegistry;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\TransferStats;
 
 class AgentHttpClient {
 
@@ -109,6 +110,16 @@ class AgentHttpClient {
 
             // Try to establish HTTPS connection
             $options = $this->getGuzzleOptions();
+
+            // Guzzle 8 removed RequestException::getHandlerContext().
+            // on_stats is called for every transfer (also on failure) before the exception gets thrown.
+            // With the cURL handler getHandlerErrorData() returns the cURL error number (0 = no error).
+            $curlErrno = 0;
+            $options['on_stats'] = function (TransferStats $stats) use (&$curlErrno): void {
+                $handlerErrorData = $stats->getHandlerErrorData();
+                $curlErrno = is_int($handlerErrorData) ? $handlerErrorData : 0;
+            };
+
             $client = new Client();
             $url = sprintf('%s/autotls', $this->baseUrl);
             try {
@@ -129,8 +140,7 @@ class AgentHttpClient {
             } catch (RequestException|GuzzleException $e) {
                 // HTTPS connection was not successfully
 
-                $context = $e->getHandlerContext();
-                if ($context['errno'] == 35) {
+                if ($curlErrno === CURLE_SSL_CONNECT_ERROR) {
                     // cURL error 35: error:1408F10B:SSL routines:ssl3_get_record:wrong version number (see https://curl.haxx.se/libcurl/c/libcurl-errors.html)
 
                     // Try HTTP (plaintext) connection to check if the certificate file got deleted on the agent

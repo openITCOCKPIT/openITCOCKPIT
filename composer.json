@@ -52,7 +52,7 @@
         "erusev/parsedown-extra": "^0.9.0",
         "freedsx/ldap": "^0.9",
         "friendsofcake/cakephp-csvview": "^5.0",
-        "guzzlehttp/guzzle": "^7.4",
+        "guzzlehttp/guzzle": "^8.0",
         "itnovum/acl": "dev-5.x-dev",
         "jbbcode/jbbcode": "^1.4",
         "jdorn/sql-formatter": "^1.2",

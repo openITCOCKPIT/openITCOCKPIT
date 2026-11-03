@@ -37,6 +37,7 @@ use Cake\Database\Expression\ComparisonExpression;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -499,7 +500,7 @@ class ServicesTable extends Table {
      * @return array
      */
     public function getHostPrimaryContainerIdsByServicetemplateId($servicetemplateId) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Services.id',
                 'Hosts.id',
@@ -511,7 +512,6 @@ class ServicesTable extends Table {
             ->where([
                 'Services.servicetemplate_id' => $servicetemplateId
             ])
-            ->disableHydration()
             ->all();
 
         $query = $query->toArray();
@@ -541,7 +541,7 @@ class ServicesTable extends Table {
             $where['Services.disabled'] = 0;
         }
 
-        $query = $this->find('all');
+        $query = $this->unhydratedFind('all');
         $query->select([
             'Services.id',
             'Services.name',
@@ -549,7 +549,7 @@ class ServicesTable extends Table {
             'Services.host_id'
         ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($MY_RIGHTS) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $MY_RIGHTS
@@ -558,7 +558,7 @@ class ServicesTable extends Table {
                 return $q;
             })
             ->contain([
-                'Servicetemplates' => function (Query $query) {
+                'Servicetemplates' => function (SelectQuery $query) {
                     $query->enableAutoFields(false)
                         ->select([
                             'Servicetemplates.id',
@@ -570,8 +570,7 @@ class ServicesTable extends Table {
             ->where($where)
             ->groupBy([
                 'Services.id'
-            ])
-            ->disableHydration();
+            ]);
 
         $result = $query->toArray();
         if (empty($result)) {
@@ -617,10 +616,10 @@ class ServicesTable extends Table {
             unset($where['servicename LIKE']);
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
 
         $select = [
-            'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
+            'servicename' => $query->expr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
             'Services.id',
             'Services.disabled',
             'Hosts.id',
@@ -629,7 +628,7 @@ class ServicesTable extends Table {
 
         if ($withCheckValues) {
             $select = [
-                'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
+                'servicename' => $query->expr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
                 'Services.id',
                 'Services.disabled',
                 'Hosts.id',
@@ -655,7 +654,7 @@ class ServicesTable extends Table {
 
         $query
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 return $q->where([
                     'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
                 ]);
@@ -672,7 +671,6 @@ class ServicesTable extends Table {
             'servicename' => 'asc'
         ])
             ->limit(ITN_AJAX_LIMIT)
-            ->disableHydration()
             ->all();
 
         $servicesWithLimit = [];
@@ -684,10 +682,10 @@ class ServicesTable extends Table {
         }
 
         if (!empty($selected)) {
-            $query = $this->find();
+            $query = $this->unhydratedFind();
             $query
                 ->innerJoinWith('Hosts')
-                ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+                ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                     return $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
                     ]);
@@ -700,7 +698,6 @@ class ServicesTable extends Table {
                 ->orderBy([
                     'servicename' => 'asc'
                 ])
-                ->disableHydration()
                 ->all();
             $results = $this->emptyArrayIfNull($query->toArray());
             foreach ($results as $result) {
@@ -758,7 +755,7 @@ class ServicesTable extends Table {
         }
 
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
 
         if (isset($where['servicename rlike'])) {
             $query->where(new ComparisonExpression(
@@ -773,7 +770,7 @@ class ServicesTable extends Table {
 
         $query
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 return $q->where([
                     'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
                 ]);
@@ -783,7 +780,7 @@ class ServicesTable extends Table {
                 'Services.id',
                 'Services.name',
                 'Services.disabled',
-                'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
+                'servicename' => $query->expr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
                 'Hosts.id',
                 'Hosts.name',
                 'Servicetemplates.name'
@@ -801,7 +798,6 @@ class ServicesTable extends Table {
         }
 
         $query
-            ->disableHydration()
             ->all();
 
         $servicesWithLimit = [];
@@ -811,10 +807,10 @@ class ServicesTable extends Table {
             $servicesWithLimit[$result['id']] = $result;
         }
         if (!empty($selected)) {
-            $query = $this->find();
+            $query = $this->unhydratedFind();
             $query
                 ->innerJoinWith('Hosts')
-                ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+                ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                     return $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
                     ]);
@@ -824,7 +820,7 @@ class ServicesTable extends Table {
                     'Services.id',
                     'Services.name',
                     'Services.disabled',
-                    'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
+                    'servicename' => $query->expr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
                     'Hosts.id',
                     'Hosts.name',
                     'Servicetemplates.name'
@@ -835,7 +831,6 @@ class ServicesTable extends Table {
                 ->orderBy([
                     'servicename' => 'asc'
                 ])
-                ->disableHydration()
                 ->all();
 
             $results = $this->emptyArrayIfNull($query->toArray());
@@ -1093,7 +1088,7 @@ class ServicesTable extends Table {
      * @return array
      */
     public function getServiceForEdit($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Services.id' => $id
             ])
@@ -1109,7 +1104,6 @@ class ServicesTable extends Table {
                     'Commandarguments'
                 ]
             ])
-            ->disableHydration()
             ->first();
 
         $service = $query;
@@ -1158,7 +1152,7 @@ class ServicesTable extends Table {
         $query = $this->find()
             ->contain([
                 'Servicecommandargumentvalues',
-                'Servicetemplates' => function (Query $query) use ($servicetemplateType) {
+                'Servicetemplates' => function (SelectQuery $query) use ($servicetemplateType) {
                     $query->contain([
                         //'CheckCommand',
                         'Agentchecks'
@@ -1222,13 +1216,13 @@ class ServicesTable extends Table {
                 'Services.uuid',
                 'Services.servicetemplate_id',
 
-                'servicename' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
             ])
             ->where([
                 'Services.id' => $id
             ])
             ->contain([
-                'Hosts'            => function (Query $query) {
+                'Hosts'            => function (SelectQuery $query) {
                     $query->select([
                         'Hosts.id',
                         'Hosts.uuid',
@@ -1241,7 +1235,7 @@ class ServicesTable extends Table {
                         ]);
                     return $query;
                 },
-                'Servicetemplates' => function (Query $query) {
+                'Servicetemplates' => function (SelectQuery $query) {
                     $query->select([
                         'Servicetemplates.id',
                         'Servicetemplates.name',
@@ -1268,7 +1262,7 @@ class ServicesTable extends Table {
                 'Services.id' => $id
             ])
             ->contain([
-                'Hosts' => function (Query $query) {
+                'Hosts' => function (SelectQuery $query) {
                     $query->select([
                         'Hosts.id',
                         'Hosts.uuid',
@@ -1295,7 +1289,7 @@ class ServicesTable extends Table {
                 'Services.uuid' => $uuid
             ])
             ->contain([
-                'Hosts' => function (Query $query) {
+                'Hosts' => function (SelectQuery $query) {
                     $query->select([
                         'Hosts.id',
                         'Hosts.uuid',
@@ -1325,7 +1319,7 @@ class ServicesTable extends Table {
                 'Services.id' => $id
             ])
             ->contain([
-                'Hosts'            => function (Query $query) {
+                'Hosts'            => function (SelectQuery $query) {
                     $query->select([
                         'Hosts.id',
                         'Hosts.uuid',
@@ -1339,7 +1333,7 @@ class ServicesTable extends Table {
                         ]);
                     return $query;
                 },
-                'Servicetemplates' => function (Query $query) {
+                'Servicetemplates' => function (SelectQuery $query) {
                     $query->select([
                         'Servicetemplates.id',
                         'Servicetemplates.uuid',
@@ -1372,15 +1366,15 @@ class ServicesTable extends Table {
                 //        return $q->enableAutoFields(false)->select(['id', 'uuid', 'check_interval', 'command_id']);
                 //    },
                 'Contactgroups'                     =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)->select(['id', 'uuid']);
                     },
                 'Contacts'                          =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)->select(['id', 'uuid']);
                     },
                 'Servicegroups'                     =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)->select(['id', 'uuid']);
                     },
                 'Customvariables',
@@ -1410,7 +1404,7 @@ class ServicesTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Services.id',
                 'Services.name',
@@ -1419,7 +1413,7 @@ class ServicesTable extends Table {
                 'Services.active_checks_enabled'
             ])
             ->contain([
-                'Servicetemplates' => function (Query $q) {
+                'Servicetemplates' => function (SelectQuery $q) {
                     return $q->disableAutoFields()
                         ->select([
                             'Servicetemplates.id',
@@ -1434,7 +1428,7 @@ class ServicesTable extends Table {
                             ]
                         ]);
                 },
-                'Hosts'            => function (Query $q) {
+                'Hosts'            => function (SelectQuery $q) {
                     return $q->disableAutoFields()
                         ->select([
                             'Hosts.id',
@@ -1459,7 +1453,6 @@ class ServicesTable extends Table {
         $query
             ->where($where)
             ->orderBy(['Services.id' => 'asc'])
-            ->disableHydration()
             ->all();
         $query = $query->toArray();
         if ($query === null) {
@@ -1697,13 +1690,12 @@ class ServicesTable extends Table {
     }
 
     public function getServiceUuidsOfHostByHostId($hostId) {
-        $query = $this->find('list',
+        $query = $this->unhydratedFind('list',
             keyField: 'id',
             valueField: 'uuid')
             ->where([
                 'Services.host_id' => $hostId
-            ])
-            ->disableHydration();
+            ]);
         return $query->toArray();
     }
 
@@ -1728,7 +1720,7 @@ class ServicesTable extends Table {
         if ($ServiceConditions->getHostId()) {
             $where['Services.host_id'] = $ServiceConditions->getHostId();
         }
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.id',
@@ -1736,7 +1728,7 @@ class ServicesTable extends Table {
                 'Services.name',
                 'Services.host_id',
                 'Services.disabled',
-                'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
 
                 'Servicetemplates.id',
                 'Servicetemplates.uuid',
@@ -1750,7 +1742,7 @@ class ServicesTable extends Table {
                 'Hosts.disabled',
             ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 if (!empty($ServiceConditions->getContainerIds())) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
@@ -1772,8 +1764,6 @@ class ServicesTable extends Table {
         if (!empty($where)) {
             $query->where($where);
         }
-
-        $query->disableHydration();
         $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
@@ -1823,7 +1813,7 @@ class ServicesTable extends Table {
             $where['Services.host_id'] = $ServiceConditions->getHostId();
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.id',
@@ -1832,7 +1822,7 @@ class ServicesTable extends Table {
                 'Services.host_id',
                 'Services.disabled',
                 'Services.active_checks_enabled',
-                'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
 
                 'Servicetemplates.id',
                 'Servicetemplates.uuid',
@@ -1849,7 +1839,7 @@ class ServicesTable extends Table {
                 'Hosts.disabled',
             ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 if (!empty($ServiceConditions->getContainerIds())) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
@@ -1867,8 +1857,6 @@ class ServicesTable extends Table {
         if (!empty($where)) {
             $query->where($where);
         }
-
-        $query->disableHydration();
         $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
@@ -1917,7 +1905,7 @@ class ServicesTable extends Table {
             $where['Services.host_id'] = $ServiceConditions->getHostId();
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.id',
@@ -1927,7 +1915,7 @@ class ServicesTable extends Table {
                 'Services.disabled',
                 'Services.active_checks_enabled',
                 'Services.service_type',
-                'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
 
                 'Servicetemplates.id',
                 'Servicetemplates.uuid',
@@ -1942,7 +1930,7 @@ class ServicesTable extends Table {
                 'Hosts.disabled',
             ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 if (!empty($ServiceConditions->getContainerIds())) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
@@ -1969,8 +1957,6 @@ class ServicesTable extends Table {
         if (!empty($where)) {
             $query->where($where);
         }
-
-        $query->disableHydration();
         $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
@@ -2029,7 +2015,7 @@ class ServicesTable extends Table {
             $where['Services.host_id'] = $ServiceConditions->getHostId();
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.id',
@@ -2042,9 +2028,9 @@ class ServicesTable extends Table {
                 'Services.tags',
                 'Services.priority',
                 'Services.service_type',
-                'servicename'        => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
-                'servicepriority'    => $query->newExpr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
-                'servicedescription' => $query->newExpr('IF(Services.description IS NULL, Servicetemplates.description, Services.description)'),
+                'servicename'        => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicepriority'    => $query->expr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
+                'servicedescription' => $query->expr('IF(Services.description IS NULL, Servicetemplates.description, Services.description)'),
 
                 'Servicetemplates.id',
                 'Servicetemplates.uuid',
@@ -2080,7 +2066,7 @@ class ServicesTable extends Table {
                 'Hosts.notes'
             ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 if (!empty($ServiceConditions->getContainerIds())) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
@@ -2157,9 +2143,6 @@ class ServicesTable extends Table {
         if (!empty($where)) {
             $query->andWhere($where);
         }
-
-
-        $query->disableHydration();
         $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
@@ -2216,7 +2199,7 @@ class ServicesTable extends Table {
         if ($ServiceConditions->getHostId()) {
             $where['Services.host_id'] = $ServiceConditions->getHostId();
         }
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.id',
@@ -2229,9 +2212,9 @@ class ServicesTable extends Table {
                 'Services.tags',
                 'Services.priority',
                 'Services.service_type',
-                'servicename'        => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
-                'servicepriority'    => $query->newExpr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
-                'servicedescription' => $query->newExpr('IF(Services.description IS NULL, Servicetemplates.description, Services.description)'),
+                'servicename'        => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicepriority'    => $query->expr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
+                'servicedescription' => $query->expr('IF(Services.description IS NULL, Servicetemplates.description, Services.description)'),
 
                 'Servicetemplates.id',
                 'Servicetemplates.uuid',
@@ -2271,7 +2254,7 @@ class ServicesTable extends Table {
             ->innerJoin(['Hosttemplates' => 'hosttemplates'], [
                 'Hosttemplates.id = Hosts.hosttemplate_id',
             ])
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 if (!empty($ServiceConditions->getContainerIds())) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
@@ -2375,11 +2358,11 @@ class ServicesTable extends Table {
 
         if (!empty($where['Hostgroups.id IN']) && is_array($where['Hostgroups.id IN'])) {
             $query->select([
-                'hostgroup_ids' => $query->newExpr(
+                'hostgroup_ids' => $query->expr(
                     'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
                     GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
                     GROUP_CONCAT(HostToHostgroups.hostgroup_id))'),
-                'hostCount'     => $query->newExpr(
+                'hostCount'     => $query->expr(
                     'SELECT COUNT(hostgroups.id)
                                 FROM hostgroups
                                 WHERE FIND_IN_SET (hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
@@ -2411,11 +2394,11 @@ class ServicesTable extends Table {
 
         if (!empty($where['Servicegroups.id IN']) && is_array($where['Servicegroups.id IN'])) {
             $query->select([
-                'servicegroup_ids' => $query->newExpr(
+                'servicegroup_ids' => $query->expr(
                     'IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
                     GROUP_CONCAT(ServicetemplatesToServicegroups.servicegroup_id),
                     GROUP_CONCAT(ServiceToServicegroups.servicegroup_id))'),
-                'serviceCount'     => $query->newExpr(
+                'serviceCount'     => $query->expr(
                     'SELECT COUNT(servicegroups.id)
                                 FROM servicegroups
                                 WHERE FIND_IN_SET (servicegroups.id,IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
@@ -2448,9 +2431,6 @@ class ServicesTable extends Table {
         if (!empty($where)) {
             $query->andWhere($where);
         }
-
-
-        $query->disableHydration();
         $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
@@ -2507,7 +2487,7 @@ class ServicesTable extends Table {
         if ($ServiceConditions->getHostId()) {
             $where['Services.host_id'] = $ServiceConditions->getHostId();
         }
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.id',
@@ -2520,9 +2500,9 @@ class ServicesTable extends Table {
                 'Services.tags',
                 'Services.priority',
                 'Services.service_type',
-                'servicename'        => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
-                'servicepriority'    => $query->newExpr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
-                'servicedescription' => $query->newExpr('IF(Services.description IS NULL, Servicetemplates.description, Services.description)'),
+                'servicename'        => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicepriority'    => $query->expr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
+                'servicedescription' => $query->expr('IF(Services.description IS NULL, Servicetemplates.description, Services.description)'),
 
                 'Servicetemplates.id',
                 'Servicetemplates.uuid',
@@ -2556,11 +2536,11 @@ class ServicesTable extends Table {
                 'Hosts.satellite_id',
                 'Hosts.notes',
 
-                'check_interval' => $query->newExpr('IF(Servicestatus.current_state > 0 AND Servicestatus.is_hardstate = 0,
+                'check_interval' => $query->expr('IF(Servicestatus.current_state > 0 AND Servicestatus.is_hardstate = 0,
             IF(Services.check_interval IS NULL, Servicetemplates.check_interval, Services.check_interval),
             IF(Services.retry_interval IS NULL, Servicetemplates.retry_interval, Services.retry_interval)
             )'),
-                'delayed'        => $query->newExpr(
+                'delayed'        => $query->expr(
                     'UNIX_TIMESTAMP() - (
     IF(Servicestatus.current_state > 0 AND Servicestatus.is_hardstate = 0,
      IF(Services.check_interval IS NULL, Servicetemplates.check_interval, Services.check_interval),
@@ -2574,7 +2554,7 @@ class ServicesTable extends Table {
             ->innerJoin(['Hosttemplates' => 'hosttemplates'], [
                 'Hosttemplates.id = Hosts.hosttemplate_id',
             ])
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 if (!empty($ServiceConditions->getContainerIds())) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
@@ -2678,11 +2658,11 @@ class ServicesTable extends Table {
 
         if (!empty($where['Hostgroups.id IN']) && is_array($where['Hostgroups.id IN'])) {
             $query->select([
-                'hostgroup_ids' => $query->newExpr(
+                'hostgroup_ids' => $query->expr(
                     'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
                     GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
                     GROUP_CONCAT(HostToHostgroups.hostgroup_id))'),
-                'hostCount'     => $query->newExpr(
+                'hostCount'     => $query->expr(
                     'SELECT COUNT(hostgroups.id)
                                 FROM hostgroups
                                 WHERE FIND_IN_SET (hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
@@ -2714,11 +2694,11 @@ class ServicesTable extends Table {
 
         if (!empty($where['Servicegroups.id IN']) && is_array($where['Servicegroups.id IN'])) {
             $query->select([
-                'servicegroup_ids' => $query->newExpr(
+                'servicegroup_ids' => $query->expr(
                     'IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
                     GROUP_CONCAT(ServicetemplatesToServicegroups.servicegroup_id),
                     GROUP_CONCAT(ServiceToServicegroups.servicegroup_id))'),
-                'serviceCount'     => $query->newExpr(
+                'serviceCount'     => $query->expr(
                     'SELECT COUNT(servicegroups.id)
                                 FROM servicegroups
                                 WHERE FIND_IN_SET (servicegroups.id,IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
@@ -2778,9 +2758,6 @@ class ServicesTable extends Table {
         if (!empty($where)) {
             $query->andWhere($where);
         }
-
-
-        $query->disableHydration();
         $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
@@ -2819,16 +2796,15 @@ class ServicesTable extends Table {
             $ids = [$ids];
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.id',
-                'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
                 'Hosts.name'
             ])
             ->innerJoinWith('Servicetemplates')
-            ->innerJoinWith('Hosts')
-            ->disableHydration();
+            ->innerJoinWith('Hosts');
         if (!empty($ids)) {
             $query->where([
                 'Services.id IN' => $ids
@@ -2929,10 +2905,10 @@ class ServicesTable extends Table {
             'Hosts.id',
             'Hosts.name',
             'Hosts.uuid',
-            'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+            'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
         ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($MY_RIGHTS) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $MY_RIGHTS
@@ -2970,7 +2946,7 @@ class ServicesTable extends Table {
         /** @var ContactsToServicesTable $ContactsToServicesTable */
         $ContactsToServicesTable = TableRegistry::getTableLocator()->get('ContactsToServices');
 
-        $query = $ContactsToServicesTable->find()
+        $query = $ContactsToServicesTable->unhydratedFind()
             ->select([
                 'service_id'
             ])
@@ -2980,7 +2956,6 @@ class ServicesTable extends Table {
             ->groupBy([
                 'service_id'
             ])
-            ->disableHydration()
             ->all();
 
         $result = $query->toArray();
@@ -3000,7 +2975,7 @@ class ServicesTable extends Table {
             'Services.name',
             'Services.host_id',
 
-            'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+            'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
 
             'Servicetemplates.id',
             'Servicetemplates.uuid',
@@ -3015,7 +2990,7 @@ class ServicesTable extends Table {
         ]);
         $query
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($MY_RIGHTS) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $MY_RIGHTS
@@ -3074,7 +3049,7 @@ class ServicesTable extends Table {
             $where['Services.host_id'] = $ServiceConditions->getHostId();
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.id',
@@ -3085,7 +3060,7 @@ class ServicesTable extends Table {
                 'Services.disabled',
                 'Services.active_checks_enabled',
                 'Services.service_type',
-                'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
 
                 'Servicetemplates.name',
                 'Servicetemplates.active_checks_enabled',
@@ -3116,7 +3091,7 @@ class ServicesTable extends Table {
                 'Hosts.disabled',
             ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 if (!empty($ServiceConditions->getContainerIds())) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
@@ -3185,8 +3160,6 @@ class ServicesTable extends Table {
         if (!empty($where)) {
             $query->andWhere($where);
         }
-
-        $query->disableHydration();
         $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
@@ -3247,7 +3220,7 @@ class ServicesTable extends Table {
             $where['Services.host_id'] = $ServiceConditions->getHostId();
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.id',
@@ -3258,7 +3231,7 @@ class ServicesTable extends Table {
                 'Services.disabled',
                 'Services.active_checks_enabled',
                 'Services.service_type',
-                'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
 
                 'Servicetemplates.name',
                 'Servicetemplates.active_checks_enabled',
@@ -3287,7 +3260,7 @@ class ServicesTable extends Table {
                 'Hosts.disabled',
             ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 if (!empty($ServiceConditions->getContainerIds())) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
@@ -3353,8 +3326,6 @@ class ServicesTable extends Table {
         if (!empty($where)) {
             $query->andWhere($where);
         }
-
-        $query->disableHydration();
         $query->groupBy(['Services.id']);
 
         if (!empty($having)) {
@@ -3385,7 +3356,7 @@ class ServicesTable extends Table {
         /** @var ServicetemplatesTable $ServicetemplatesTable */
         $ServicetemplatesTable = TableRegistry::getTableLocator()->get('Servicetemplates');
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Services.id',
                 'Services.name',
@@ -3416,7 +3387,6 @@ class ServicesTable extends Table {
                 'Services.host_id'      => $hostId,
                 'Services.service_type' => OITC_AGENT_SERVICE
             ])
-            ->disableHydration()
             ->all();
 
         $services = $this->emptyArrayIfNull($query->toArray());
@@ -3479,7 +3449,7 @@ class ServicesTable extends Table {
                 'Services.id' => $id,
             ])
             ->contain([
-                'Hosts' => function (Query $query) {
+                'Hosts' => function (SelectQuery $query) {
                     $query->disableAutoFields()
                         ->select([
                             'Hosts.id',
@@ -3498,7 +3468,7 @@ class ServicesTable extends Table {
      * @return array
      */
     public function getServiceForBrowser($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Services.id' => $id
             ])
@@ -3518,7 +3488,6 @@ class ServicesTable extends Table {
                     'Commandarguments'
                 ]
             ])
-            ->disableHydration()
             ->first();
 
         $service = $query;
@@ -3544,7 +3513,7 @@ class ServicesTable extends Table {
                 'Services.id' => $id
             ])
             ->contain([
-                'Hosts'            => function (Query $query) {
+                'Hosts'            => function (SelectQuery $query) {
                     $query->select([
                         'Hosts.id',
                         'Hosts.uuid',
@@ -3555,7 +3524,7 @@ class ServicesTable extends Table {
                         ]);
                     return $query;
                 },
-                'Servicetemplates' => function (Query $query) {
+                'Servicetemplates' => function (SelectQuery $query) {
                     $query->select([
                         'Servicetemplates.id',
                         'Servicetemplates.check_period_id',
@@ -3567,6 +3536,196 @@ class ServicesTable extends Table {
             ->first();
 
         return $query;
+    }
+
+    /**
+     * @param $id
+     * @return array|Service|null
+     */
+    public function getServiceByIdForNotificationPeriods($id) {
+        // Service notification fields of the contacts
+        $contacts = function (Query $query) {
+            return $query->select([
+                'Contacts.id',
+                'Contacts.name',
+                'Contacts.service_timeperiod_id',
+                'Contacts.service_notifications_enabled',
+                'Contacts.notify_service_recovery',
+                'Contacts.notify_service_warning',
+                'Contacts.notify_service_unknown',
+                'Contacts.notify_service_critical',
+                'Contacts.notify_service_flapping',
+                'Contacts.notify_service_downtime'
+            ]);
+        };
+        $contactgroups = function (Query $query) use ($contacts) {
+            return $query->contain([
+                'Contacts' => $contacts
+            ]);
+        };
+
+        $query = $this->find()
+            ->select([
+                'Services.id',
+                'Services.name',
+                'Services.uuid',
+                'Services.host_id',
+                'Services.servicetemplate_id',
+                'Services.notify_period_id',
+                'Services.notifications_enabled',
+                'Services.notify_on_warning',
+                'Services.notify_on_critical',
+                'Services.notify_on_unknown',
+                'Services.notify_on_recovery',
+                'Services.notify_on_flapping',
+                'Services.notify_on_downtime',
+            ])
+            ->where([
+                'Services.id' => $id
+            ])
+            ->contain([
+                'Contacts'         => $contacts,
+                'Contactgroups'    => $contactgroups,
+                'Servicetemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Servicetemplates.id',
+                            'Servicetemplates.name',
+                            'Servicetemplates.notify_period_id',
+                            'Servicetemplates.notifications_enabled',
+                            'Servicetemplates.notify_on_warning',
+                            'Servicetemplates.notify_on_critical',
+                            'Servicetemplates.notify_on_unknown',
+                            'Servicetemplates.notify_on_recovery',
+                            'Servicetemplates.notify_on_flapping',
+                            'Servicetemplates.notify_on_downtime'
+                        ])
+                        ->contain([
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups
+                        ]);
+                },
+                // Host is required for the container permissions (Service::getContainerIds())
+                // and as fallback for contacts and contact groups
+                'Hosts'            => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Hosts.id',
+                            'Hosts.name',
+                            'Hosts.uuid',
+                            'Hosts.container_id',
+                            'Hosts.hosttemplate_id'
+                        ])
+                        ->contain([
+                            'HostsToContainersSharing',
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups,
+                            'Hosttemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                                return $query
+                                    ->select([
+                                        'Hosttemplates.id'
+                                    ])
+                                    ->contain([
+                                        'Contacts'      => $contacts,
+                                        'Contactgroups' => $contactgroups
+                                    ]);
+                            }
+                        ]);
+                }
+            ])
+            ->first();
+
+        return $query;
+    }
+
+    /**
+     * Returns the service with its contacts and contact groups (incl. the ones of the service template,
+     * host and host template) and the containers they belong to. Used to check if the notifications overview is allowed.
+     *
+     * @param int $id
+     * @return \App\Model\Entity\Service|null
+     */
+    public function getServiceContactsAndContactgroupsWithContainersById($id) {
+        $contacts = function (Query $query) {
+            return $query
+                ->select([
+                    'Contacts.id'
+                ])
+                ->contain([
+                    'Containers' => function (Query $query) {
+                        return $query->select([
+                            'Containers.id'
+                        ]);
+                    }
+                ]);
+        };
+
+        $contactgroups = function (Query $query) use ($contacts) {
+            return $query
+                ->select([
+                    'Contactgroups.id',
+                    'Contactgroups.container_id'
+                ])
+                ->contain([
+                    'Containers' => function (Query $query) {
+                        return $query->select([
+                            'Containers.id',
+                            'Containers.parent_id'
+                        ]);
+                    },
+                    'Contacts'   => $contacts
+                ]);
+        };
+
+        return $this->find()
+            ->select([
+                'Services.id',
+                'Services.host_id',
+                'Services.servicetemplate_id'
+            ])
+            ->where([
+                'Services.id' => $id
+            ])
+            ->contain([
+                'Contacts'         => $contacts,
+                'Contactgroups'    => $contactgroups,
+                'Servicetemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Servicetemplates.id'
+                        ])
+                        ->contain([
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups
+                        ]);
+                },
+                // Host is required for the container permissions (Service::getContainerIds())
+                // and as fallback for contacts and contact groups
+                'Hosts'            => function (Query $query) use ($contacts, $contactgroups) {
+                    return $query
+                        ->select([
+                            'Hosts.id',
+                            'Hosts.container_id',
+                            'Hosts.hosttemplate_id'
+                        ])
+                        ->contain([
+                            'HostsToContainersSharing',
+                            'Contacts'      => $contacts,
+                            'Contactgroups' => $contactgroups,
+                            'Hosttemplates' => function (Query $query) use ($contacts, $contactgroups) {
+                                return $query
+                                    ->select([
+                                        'Hosttemplates.id'
+                                    ])
+                                    ->contain([
+                                        'Contacts'      => $contacts,
+                                        'Contactgroups' => $contactgroups
+                                    ]);
+                            }
+                        ]);
+                }
+            ])
+            ->first();
     }
 
     /**
@@ -3596,7 +3755,7 @@ class ServicesTable extends Table {
                 'Services.tags',
                 'Services.priority',
                 'Services.service_type',
-                'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
 
                 'Servicetemplates.id',
                 'Servicetemplates.uuid',
@@ -3628,7 +3787,7 @@ class ServicesTable extends Table {
                 'Hosts.disabled',
             ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 if (!empty($ServiceConditions->getContainerIds())) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
@@ -3724,7 +3883,7 @@ class ServicesTable extends Table {
                 'Services.disabled',
                 'Services.active_checks_enabled',
                 'Services.service_type',
-                'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
 
                 'Servicetemplates.id',
                 'Servicetemplates.uuid',
@@ -3754,7 +3913,7 @@ class ServicesTable extends Table {
                 'Hosts.disabled',
             ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 if (!empty($ServiceConditions->getContainerIds())) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
@@ -3825,10 +3984,10 @@ class ServicesTable extends Table {
      * @return int
      */
     public function getServicestatusCountBySelectedStatus($MY_RIGHTS, $conditions) {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
-                'count' => $query->newExpr('COUNT(DISTINCT Servicestatus.service_object_id)')
+                'count' => $query->expr('COUNT(DISTINCT Servicestatus.service_object_id)')
             ])
             ->where([
                 'Services.disabled'       => 0,
@@ -3850,15 +4009,14 @@ class ServicesTable extends Table {
             ])
             ->innerJoinWith('Servicetemplates')
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($MY_RIGHTS) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($MY_RIGHTS) {
                 return $q->where([
                     'HostsToContainersSharing.id IN ' => $MY_RIGHTS
                 ]);
             })
             ->groupBy([
                 'Servicestatus.current_state',
-            ])
-            ->disableHydration();
+            ]);
 
         $where = [];
         if (!empty($conditions['Host']['name'])) {
@@ -3866,7 +4024,7 @@ class ServicesTable extends Table {
         }
         if (!empty($conditions['Service']['name'])) {
             $query->andWhere(
-                $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name) LIKE :servicename')
+                $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name) LIKE :servicename')
             );
             $query->bind(':servicename', sprintf('%%%s%%', $conditions['Service']['name']));
         }
@@ -3906,10 +4064,10 @@ class ServicesTable extends Table {
      * @return int
      */
     public function getServicestatusCountBySelectedStatusStatusengine3($MY_RIGHTS, $conditions) {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
-                'count' => $query->newExpr('COUNT(DISTINCT Servicestatus.service_description)')
+                'count' => $query->expr('COUNT(DISTINCT Servicestatus.service_description)')
             ])
             ->where([
                 'Services.disabled' => 0
@@ -3925,7 +4083,7 @@ class ServicesTable extends Table {
             ->innerJoinWith('Servicetemplates')
             ->innerJoinWith('Hosts');
         if (!empty($MY_RIGHTS)) {
-            $query->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($MY_RIGHTS) {
+            $query->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($MY_RIGHTS) {
                 return $q->where([
                     'HostsToContainersSharing.id IN ' => $MY_RIGHTS
                 ]);
@@ -3933,8 +4091,7 @@ class ServicesTable extends Table {
         }
         $query->groupBy([
             'Servicestatus.current_state',
-        ])
-            ->disableHydration();
+        ]);
 
         $where = [];
         if (!empty($conditions['Host']['name'])) {
@@ -3942,7 +4099,7 @@ class ServicesTable extends Table {
         }
         if (!empty($conditions['Service']['name'])) {
             $query->andWhere(
-                $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name) LIKE :servicename')
+                $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name) LIKE :servicename')
             );
             $query->bind(':servicename', sprintf('%%%s%%', $conditions['Service']['name']));
         }
@@ -3982,11 +4139,11 @@ class ServicesTable extends Table {
      * @return int
      */
     public function getServiceIdsBySelectedStatusExtendedStatusengine3($MY_RIGHTS, $conditions) {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.id',
-                'servicepriority' => $query->newExpr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
+                'servicepriority' => $query->expr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
             ])
             ->innerJoinWith('Servicetemplates')
             ->innerJoin(
@@ -4051,11 +4208,11 @@ class ServicesTable extends Table {
         if (!empty($conditions['Servicegroup']['_ids'])) {
             $servicegroupIds = explode(',', $conditions['Servicegroup']['_ids']);
             $query->select([
-                'servicegroup_ids' => $query->newExpr(
+                'servicegroup_ids' => $query->expr(
                     'IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
                     GROUP_CONCAT(ServicetemplatesToServicegroups.servicegroup_id),
                     GROUP_CONCAT(ServiceToServicegroups.servicegroup_id))'),
-                'count'            => $query->newExpr(
+                'count'            => $query->expr(
                     'SELECT COUNT(servicegroups.id)
                                 FROM servicegroups
                                 WHERE FIND_IN_SET (servicegroups.id,IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
@@ -4182,8 +4339,7 @@ class ServicesTable extends Table {
         }
 
         $query->andWhere($where)
-            ->groupBy(['Services.id'])
-            ->disableHydration();
+            ->groupBy(['Services.id']);
         $result = $query->all();
 
         return $this->emptyArrayIfNull(Hash::extract($result->toArray(), '{n}.id'));
@@ -4196,7 +4352,7 @@ class ServicesTable extends Table {
      * @return array
      */
     public function getServicesWithExtendedStatusByConditionsStatusengine3($MY_RIGHTS, $conditions): array {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $where = [];
         $query
             ->select([
@@ -4303,8 +4459,8 @@ class ServicesTable extends Table {
             $path1->select([
                 'host_id'       => 'HostsToHostgroups.host_id',
                 // newExpr() forces CakePHP to treat the string as raw SQL without automatic backticks
-                'hostgroup_ids' => $path1->newExpr('GROUP_CONCAT(DISTINCT HostsToHostgroups.hostgroup_id)'),
-                'host_count'    => $path1->newExpr('COUNT(DISTINCT hg.id)')
+                'hostgroup_ids' => $path1->expr('GROUP_CONCAT(DISTINCT HostsToHostgroups.hostgroup_id)'),
+                'host_count'    => $path1->expr('COUNT(DISTINCT hg.id)')
             ])
                 ->join([
                     'table'      => 'hostgroups',
@@ -4320,8 +4476,8 @@ class ServicesTable extends Table {
             $path2->select([
                 'host_id'       => 'Hosts.id',
                 // Using newExpr() here as well to protect the aggregation expressions
-                'hostgroup_ids' => $path2->newExpr('GROUP_CONCAT(DISTINCT ht2hg.hostgroup_id)'),
-                'host_count'    => $path2->newExpr('COUNT(DISTINCT hg.id)')
+                'hostgroup_ids' => $path2->expr('GROUP_CONCAT(DISTINCT ht2hg.hostgroup_id)'),
+                'host_count'    => $path2->expr('COUNT(DISTINCT hg.id)')
             ])
                 ->join([
                     'table'      => 'hosttemplates_to_hostgroups',
@@ -4396,8 +4552,8 @@ class ServicesTable extends Table {
             $path1 = TableRegistry::getTableLocator()->get('ServicesToServicegroups')->find();
             $path1->select([
                 'service_id'       => 'ServicesToServicegroups.service_id',
-                'servicegroup_ids' => $path1->newExpr('GROUP_CONCAT(DISTINCT ServicesToServicegroups.servicegroup_id)'),
-                'service_count'    => $path1->newExpr('COUNT(DISTINCT sg.id)')
+                'servicegroup_ids' => $path1->expr('GROUP_CONCAT(DISTINCT ServicesToServicegroups.servicegroup_id)'),
+                'service_count'    => $path1->expr('COUNT(DISTINCT sg.id)')
             ])
                 ->join([
                     'table'      => 'servicegroups',
@@ -4412,8 +4568,8 @@ class ServicesTable extends Table {
             $path2 = $this->find();
             $path2->select([
                 'service_id'       => 'Services.id',
-                'servicegroup_ids' => $path2->newExpr('GROUP_CONCAT(DISTINCT st2sg.servicegroup_id)'),
-                'service_count'    => $path2->newExpr('COUNT(DISTINCT sg.id)')
+                'servicegroup_ids' => $path2->expr('GROUP_CONCAT(DISTINCT st2sg.servicegroup_id)'),
+                'service_count'    => $path2->expr('COUNT(DISTINCT sg.id)')
             ])
                 ->join([
                     'table'      => 'servicetemplates_to_servicegroups',
@@ -4639,13 +4795,13 @@ class ServicesTable extends Table {
         }
         $hostIds = array_unique($hostIds);
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Services.id'
             ])->where([
                 'Services.host_id IN'   => $hostIds,
                 'Services.service_type' => GENERIC_SERVICE
-            ])->disableHydration();
+            ]);
 
         $result = $query->toArray();
         if (empty($result)) {
@@ -4669,7 +4825,7 @@ class ServicesTable extends Table {
 
         $query = $this->find();
         $query->select([
-            'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)')
+            'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)')
         ])->where([
             'Services.host_id IN' => $hostIds
         ])->contain([
@@ -4786,7 +4942,7 @@ class ServicesTable extends Table {
             'Hosts.uuid',
             'Hosts.name',
             'HostsToContainers.container_id',
-            'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
+            'servicename' => $query->expr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
         ])->where([
             'Services.id IN'    => $ids,
             'Services.disabled' => 0
@@ -4824,14 +4980,14 @@ class ServicesTable extends Table {
         ]);
         $query->select([
             'Services.id',
-            'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+            'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
 
             'Hosts.name',
             'Hosts.id',
         ]);
         $query
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($MY_RIGHTS) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $MY_RIGHTS
@@ -4905,7 +5061,7 @@ class ServicesTable extends Table {
      * @return array
      */
     public function getServicesForCheckmk($host_id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Services.id',
                 'Services.name',
@@ -4913,7 +5069,7 @@ class ServicesTable extends Table {
                 'Services.active_checks_enabled'
             ])
             ->contain([
-                'Servicetemplates' => function (Query $q) {
+                'Servicetemplates' => function (SelectQuery $q) {
                     return $q->disableAutoFields()
                         ->select([
                             'Servicetemplates.id',
@@ -4936,7 +5092,6 @@ class ServicesTable extends Table {
                 'Services.service_type' => MK_SERVICE
             ])
             ->orderBy(['Services.id' => 'asc'])
-            ->disableHydration()
             ->all();
         if (empty($query) || $query === null) {
             return [];
@@ -4997,13 +5152,12 @@ class ServicesTable extends Table {
             return [];
         }
 
-        $query = $this->find('list',
+        $query = $this->unhydratedFind('list',
             keyField: 'id',
             valueField: 'uuid')
             ->where([
                 'Services.id IN' => $serviceIds
-            ])
-            ->disableHydration();
+            ]);
 
         return $query->toArray();
     }
@@ -5281,18 +5435,18 @@ class ServicesTable extends Table {
         if (!is_array($containerIds)) {
             $containerIds = [$containerIds];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Services.id',
                 'Servicegroups.id'
             ])
-            ->innerJoinWith('Servicegroups', function (Query $q) {
+            ->innerJoinWith('Servicegroups', function (SelectQuery $q) {
                 return $q->innerJoinWith('Containers');
             })
             ->where([
                 'Services.host_id'         => $hostId,
                 'Containers.parent_id IN ' => $containerIds
-            ])->disableHydration()
+            ])
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());
@@ -5310,19 +5464,18 @@ class ServicesTable extends Table {
         if (!is_array($removedContainerIds)) {
             $removedContainerIds = [$removedContainerIds];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Services.id',
                 'Servicegroups.id'
             ])
-            ->innerJoinWith('Servicegroups', function (Query $q) {
+            ->innerJoinWith('Servicegroups', function (SelectQuery $q) {
                 return $q->innerJoinWith('Containers');
             })
             ->where([
                 'Services.host_id'         => $hostId,
                 'Containers.parent_id IN ' => $removedContainerIds
             ])
-            ->disableHydration()
             ->all();
 
         $recordsToDelete = $this->emptyArrayIfNull($query->toArray());
@@ -5401,7 +5554,7 @@ class ServicesTable extends Table {
      * @return array
      */
     public function getAgentServicesByHostId($hostId) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
                 'Servicecommandargumentvalues',
                 'Servicetemplates' => [
@@ -5412,7 +5565,6 @@ class ServicesTable extends Table {
                 'Services.host_id'      => $hostId,
                 'Services.service_type' => OITC_AGENT_SERVICE
             ])
-            ->disableHydration()
             ->all();
 
 
@@ -5433,7 +5585,7 @@ class ServicesTable extends Table {
      * @param $commandId
      */
     public function updateServiceCommandIdIfServiceHasOwnCommandArguments($servicetemplateId, $commandId) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Services.id'
             ])
@@ -5446,7 +5598,6 @@ class ServicesTable extends Table {
                 'Services.command_id IS NULL',
                 'Services.servicetemplate_id' => $servicetemplateId
             ])
-            ->disableHydration()
             ->all();
 
         $query = $query->toArray();
@@ -5473,7 +5624,7 @@ class ServicesTable extends Table {
      * @param $commandId
      */
     public function updateServiceEventhandlerCommandIdIfServiceHasOwnEventhandlerCommandArguments($servicetemplateId, $eventhandlerCommandId) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Services.id'
             ])
@@ -5486,7 +5637,6 @@ class ServicesTable extends Table {
                 'Services.eventhandler_command_id IS NULL',
                 'Services.servicetemplate_id' => $servicetemplateId
             ])
-            ->disableHydration()
             ->all();
 
         $query = $query->toArray();
@@ -5526,18 +5676,17 @@ class ServicesTable extends Table {
             $where['Services.id NOT in'] = $excludedServiceIds;
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
-                'servicename' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
                 'Services.id',
             ])
             ->where(
                 $where
             )
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Servicetemplates')
-            ->disableHydration();
+            ->innerJoinWith('Servicetemplates');
 
         $result = [];
         foreach ($query->all() as $item) {
@@ -5702,11 +5851,11 @@ class ServicesTable extends Table {
      * @return array
      */
     public function getServicesWithStatusByConditions($MY_RIGHTS, $conditions) {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.uuid',
-                'servicepriority' => $query->newExpr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
+                'servicepriority' => $query->expr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
             ])
             ->where([
                 'Services.disabled' => 0
@@ -5734,7 +5883,7 @@ class ServicesTable extends Table {
                 'Hosts'
             ]);
         if (!empty($MY_RIGHTS)) {
-            $query->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($MY_RIGHTS) {
+            $query->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $MY_RIGHTS
@@ -5747,11 +5896,11 @@ class ServicesTable extends Table {
         if (!empty($conditions['Servicegroup']['_ids'])) {
             $servicegroupIds = explode(',', $conditions['Servicegroup']['_ids']);
             $query->select([
-                'servicegroup_ids' => $query->newExpr(
+                'servicegroup_ids' => $query->expr(
                     'IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
                     GROUP_CONCAT(ServicetemplatesToServicegroups.servicegroup_id),
                     GROUP_CONCAT(ServiceToServicegroups.servicegroup_id))'),
-                'count'            => $query->newExpr(
+                'count'            => $query->expr(
                     'SELECT COUNT(servicegroups.id)
                                 FROM servicegroups
                                 WHERE FIND_IN_SET (servicegroups.id,IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
@@ -5818,7 +5967,6 @@ class ServicesTable extends Table {
             );
         }
         $query->andWhere($where);
-        $query->disableHydration();
         $result = $query->all();
         if ($result === null) {
             return [];
@@ -5833,18 +5981,18 @@ class ServicesTable extends Table {
      * @return array
      */
     public function getServicesWithStatusByConditionsStatusengine3($MY_RIGHTS, $conditions) {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $where = [];
         $query
             ->select([
                 'Services.host_id',
                 'Services.id',
-                'servicename'     => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+                'servicename'     => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
                 'Servicestatus.current_state',
                 'Servicestatus.scheduled_downtime_depth',
                 'Servicestatus.active_checks_enabled',
                 'Servicestatus.problem_has_been_acknowledged',
-                'servicepriority' => $query->newExpr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
+                'servicepriority' => $query->expr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)'),
             ]);
         $query->where([
             'Services.disabled' => 0
@@ -5870,7 +6018,7 @@ class ServicesTable extends Table {
                 ]
             ]);
         if (!empty($MY_RIGHTS)) {
-            $query->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($MY_RIGHTS) {
+            $query->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $MY_RIGHTS
@@ -5898,7 +6046,7 @@ class ServicesTable extends Table {
                 $hostgroupIds = explode(',', $conditions['Hostgroup']['_ids']);
             }
             $whereForCount = [
-                $query->newExpr('FIND_IN_SET (Hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+                $query->expr('FIND_IN_SET (Hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
                                 GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
                                 GROUP_CONCAT(HostToHostgroups.hostgroup_id)))')
             ];
@@ -5928,7 +6076,7 @@ class ServicesTable extends Table {
 
             if (!empty($whereForCount)) {
                 $query->select([
-                    'hostgroup_ids' => $query->newExpr(
+                    'hostgroup_ids' => $query->expr(
                         'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
                     GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
                     GROUP_CONCAT(HostToHostgroups.hostgroup_id))'),
@@ -5968,7 +6116,7 @@ class ServicesTable extends Table {
                 $servicegroupIds = explode(',', $conditions['Servicegroup']['_ids']);
             }
             $whereForCount = [
-                $query->newExpr('FIND_IN_SET (Servicegroups.id,IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
+                $query->expr('FIND_IN_SET (Servicegroups.id,IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
                                 GROUP_CONCAT(ServicetemplatesToServicegroups.servicegroup_id),
                                 GROUP_CONCAT(ServiceToServicegroups.servicegroup_id)))')
             ];
@@ -5997,7 +6145,7 @@ class ServicesTable extends Table {
             }
             if (!empty($whereForCount)) {
                 $query->select([
-                    'servicegroup_ids' => $query->newExpr(
+                    'servicegroup_ids' => $query->expr(
                         'IF(GROUP_CONCAT(ServiceToServicegroups.servicegroup_id) IS NULL,
                     GROUP_CONCAT(ServicetemplatesToServicegroups.servicegroup_id),
                     GROUP_CONCAT(ServiceToServicegroups.servicegroup_id))'),
@@ -6109,8 +6257,6 @@ class ServicesTable extends Table {
 
         $query->andWhere($where);
         $query->groupBy('Services.id');
-
-        $query->disableHydration();
         $result = $query->all();
         if ($result === null) {
             return [];
@@ -6131,14 +6277,14 @@ class ServicesTable extends Table {
                 'Services.servicetemplate_id',
                 'Services.active_checks_enabled',
             ])
-            ->innerJoinWith('Hosts', function (Query $query) use ($hostUuid) {
+            ->innerJoinWith('Hosts', function (SelectQuery $query) use ($hostUuid) {
                 $query->where([
                     'Hosts.uuid' => $hostUuid
                 ]);
                 return $query;
             })
             ->contain([
-                'Servicetemplates' => function (Query $query) {
+                'Servicetemplates' => function (SelectQuery $query) {
                     $query->disableAutoFields()
                         ->select([
                             'Servicetemplates.id',
@@ -6168,7 +6314,7 @@ class ServicesTable extends Table {
                 'Services.uuid' => $serviceUuid
             ])
             ->contain([
-                'Servicetemplates' => function (Query $query) {
+                'Servicetemplates' => function (SelectQuery $query) {
                     $query->disableAutoFields()
                         ->select([
                             'Servicetemplates.id',
@@ -6249,16 +6395,16 @@ class ServicesTable extends Table {
 
         $where = Hash::merge($_where, $where);
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Services.' . $index,
             'Hosts.id',
             'Hosts.name',
             'Services.disabled',
-            'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))')
+            'servicename' => $query->expr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))')
         ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($containerIds) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($containerIds) {
                 if (!empty($MY_RIGHTS)) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $containerIds
@@ -6273,8 +6419,6 @@ class ServicesTable extends Table {
             ]);
 
         $query->where($where);
-
-        $query->disableHydration();
         $query->groupBy(['Services.id']);
         $query->orderBy([
             'servicename' => 'asc',
@@ -6332,16 +6476,16 @@ class ServicesTable extends Table {
             unset($where['servicename LIKE']);
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
-            ->innerJoinWith('Hosts', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts', function (SelectQuery $q) use ($ServiceConditions) {
                 return $q->where([
                     'Hosts.container_id IN ' => $ServiceConditions->getContainerIds()
                 ]);
             })
             ->innerJoinWith('Servicetemplates')
             ->select([
-                'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
+                'servicename' => $query->expr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
                 'Services.id',
                 'Services.disabled',
                 'Hosts.name'
@@ -6356,7 +6500,6 @@ class ServicesTable extends Table {
             'servicename' => 'asc'
         ])
             ->limit(ITN_AJAX_LIMIT)
-            ->disableHydration()
             ->all();
 
         $servicesWithLimit = [];
@@ -6368,16 +6511,16 @@ class ServicesTable extends Table {
         }
 
         if (!empty($selected)) {
-            $query = $this->find();
+            $query = $this->unhydratedFind();
             $query
-                ->innerJoinWith('Hosts', function (Query $q) use ($ServiceConditions) {
+                ->innerJoinWith('Hosts', function (SelectQuery $q) use ($ServiceConditions) {
                     return $q->where([
                         'Hosts.container_id IN ' => $ServiceConditions->getContainerIds()
                     ]);
                 })
                 ->innerJoinWith('Servicetemplates')
                 ->select([
-                    'servicename' => $query->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
+                    'servicename' => $query->expr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
                     'Services.id',
                     'Services.disabled',
                     'Hosts.name'
@@ -6388,7 +6531,6 @@ class ServicesTable extends Table {
                 ->orderBy([
                     'servicename' => 'asc'
                 ])
-                ->disableHydration()
                 ->all();
             $results = $this->emptyArrayIfNull($query->toArray());
             foreach ($results as $result) {
@@ -6412,12 +6554,12 @@ class ServicesTable extends Table {
      * @return array
      */
     public function getServicesForDesktopWithStatusByConditionsStatusengine3($MY_RIGHTS, $conditions) {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query
             ->select([
                 'Services.host_id',
                 'Services.id',
-                'servicename' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
                 'Servicestatus.current_state',
                 'Servicestatus.scheduled_downtime_depth',
                 'Servicestatus.active_checks_enabled',
@@ -6443,7 +6585,7 @@ class ServicesTable extends Table {
                 'Hosts'
             ]);
         if (!empty($MY_RIGHTS)) {
-            $query->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($MY_RIGHTS) {
+            $query->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $MY_RIGHTS
@@ -6529,8 +6671,6 @@ class ServicesTable extends Table {
         }
         $query->andWhere($where);
         $query->groupBy('Services.id');
-
-        $query->disableHydration();
         $result = $query->all();
         if ($result === null) {
             return [];
@@ -6557,13 +6697,13 @@ class ServicesTable extends Table {
         $query = $this->find();
         $query->select([
             'Services.id',
-            'servicename' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+            'servicename' => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
         ])
             ->contain('Servicetemplates')
             ->where([
                 'Services.host_id'  => $id,
                 'Services.disabled' => 0,
-                $query->newExpr('IF(Services.sla_relevant IS NULL, Servicetemplates.sla_relevant, Services.sla_relevant) = 1')
+                $query->expr('IF(Services.sla_relevant IS NULL, Servicetemplates.sla_relevant, Services.sla_relevant) = 1')
             ])
             ->orderBy([
                 'servicename',
@@ -6580,20 +6720,19 @@ class ServicesTable extends Table {
      */
     public function getActiveAndSlaRelavantServicesIdsByHostIdAsList($id) {
         //$list = $this->MODEL->find('list', ['keyField' => 'id', 'valueField' => ('user_type')])->toArray();
-        $query = $this->find('list',
+        $query = $this->unhydratedFind('list',
             keyField: 'id',
             valueField: 'id');
         $query->select([
             'Services.id',
-            'is_sla_relevant' => $query->newExpr('IF(Services.sla_relevant IS NULL, Servicetemplates.sla_relevant, Services.sla_relevant)')
+            'is_sla_relevant' => $query->expr('IF(Services.sla_relevant IS NULL, Servicetemplates.sla_relevant, Services.sla_relevant)')
         ])
             ->contain(['Servicetemplates'])
             ->where([
                 'Services.host_id'  => $id,
                 'Services.disabled' => 0,
-                $query->newExpr('IF(Services.sla_relevant IS NULL, Servicetemplates.sla_relevant, Services.sla_relevant) = 1')
+                $query->expr('IF(Services.sla_relevant IS NULL, Servicetemplates.sla_relevant, Services.sla_relevant) = 1')
             ])
-            ->disableHydration()
             ->all();
         return $this->emptyArrayIfNull($query->toArray());
     }
@@ -6614,16 +6753,16 @@ class ServicesTable extends Table {
             $where['Services.id IN'] = $serviceIds;
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Servicestatus.current_state',
-            'count' => $query->newExpr('COUNT(DISTINCT Servicestatus.service_description)'),
+            'count' => $query->expr('COUNT(DISTINCT Servicestatus.service_description)'),
         ])
             ->contain('Servicetemplates')
             ->innerJoin(['Hosts' => 'hosts'], [
                 'Hosts.id = Services.host_id',
             ])
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($ServiceConditions) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($ServiceConditions) {
                 if (!empty($ServiceConditions->getContainerIds())) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $ServiceConditions->getContainerIds()
@@ -6648,8 +6787,6 @@ class ServicesTable extends Table {
         if (!empty($where)) {
             $query->andWhere($where);
         }
-
-        $query->disableHydration();
         $query->groupBy(['Servicestatus.current_state']);
         return $this->emptyArrayIfNull($query->toArray());
     }
@@ -6664,7 +6801,7 @@ class ServicesTable extends Table {
         $query->select([
             'Services.id',
             'Services.uuid',
-            'name' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+            'name' => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
         ])
             ->innerJoinWith('Servicetemplates')
             ->where([

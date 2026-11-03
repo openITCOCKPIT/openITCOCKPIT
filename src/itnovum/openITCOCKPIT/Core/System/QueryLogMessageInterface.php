@@ -85,12 +85,12 @@ class QueryLogMessageInterface implements MessageComponentInterface {
     }
 
     public function onClose(ConnectionInterface $conn) {
-        $this->clients->detach($conn);
+        unset($this->clients[$conn]);
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {
         $conn->close();
-        $this->clients->detach($conn);
+        unset($this->clients[$conn]);
     }
 
     public function onMessage(ConnectionInterface $from, $msg) {

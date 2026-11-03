@@ -306,7 +306,7 @@ class MapgeneratorsTable extends Table {
 
         if (!empty($MY_RIGHTS)) {
             $query->select([
-                'permission_status' => $query->newExpr(
+                'permission_status' => $query->expr(
                     'IF(
                         COUNT(`Containers`.`id`) > 0,
                         IF(

@@ -27,7 +27,7 @@ namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Lib\Traits\PluginManagerTableTrait;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -175,9 +175,9 @@ class AgentchecksTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface|null
      */
     public function getAgentcheckByName($name) {
-        return $this->selectQuery()
+        return $this->unhydratedFind()
             ->contain([
-                'Servicetemplates' => function (Query $q) {
+                'Servicetemplates' => function (SelectQuery $q) {
                     $q->contain([
                         'Servicetemplatecommandargumentvalues' => [
                             'Commandarguments'
@@ -189,7 +189,6 @@ class AgentchecksTable extends Table {
             ->where([
                 'Agentchecks.name' => $name
             ])
-            ->disableHydration()
             ->first();
     }
 
@@ -264,13 +263,12 @@ class AgentchecksTable extends Table {
             $where['Servicetemplates.active_checks_enabled'] = (int)$activeChecksEnabled;
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain(['Servicetemplates'])
             ->where($where)
             ->orderBy([
                 'Agentchecks.name' => 'ASC'
             ])
-            ->disableHydration()
             ->all();
 
 

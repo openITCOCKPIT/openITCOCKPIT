@@ -1551,7 +1551,6 @@ class ExternalCommands {
         $objectId = $host['id'];
 
 
-
         /** @var EventlogsTable $EventlogsTable */
         $EventlogsTable = TableRegistry::getTableLocator()->get('Eventlogs');
 

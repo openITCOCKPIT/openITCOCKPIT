@@ -117,7 +117,7 @@ class MacrosTable extends Table {
      * @return array
      */
     public function getAllMacros() {
-        $query = $this->find('all')->disableHydration();
+        $query = $this->unhydratedFind('all');
         if (is_null($query)) {
             return [];
         }
@@ -128,9 +128,9 @@ class MacrosTable extends Table {
      * @return array
      */
     public function getAvailableMacroNames() {
-        $macros = $this->find('all', fields: [
+        $macros = $this->unhydratedFind('all', fields: [
             'Macros.name'
-        ])->disableHydration()->toArray();
+        ])->toArray();
 
         $usedMacoNames = Hash::extract($macros, '{n}.name');
         $usedMacoNames = array_combine($usedMacoNames, $usedMacoNames);

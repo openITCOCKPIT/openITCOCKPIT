@@ -28,7 +28,7 @@ namespace App\Model\Table;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\Agentconfig;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -208,7 +208,7 @@ class AgentconfigsTable extends Table {
     }
 
     public function getPullAgents(GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Agentconfigs.id',
                 'Agentconfigs.host_id',
@@ -221,7 +221,7 @@ class AgentconfigsTable extends Table {
                 'Agentconfigs.basic_auth'
             ])
             ->innerJoinWith('Hosts')
-            ->innerJoinWith('Hosts.HostsToContainersSharing', function (Query $q) use ($MY_RIGHTS) {
+            ->innerJoinWith('Hosts.HostsToContainersSharing', function (SelectQuery $q) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     $q->where([
                         'HostsToContainersSharing.id IN ' => $MY_RIGHTS
@@ -240,7 +240,6 @@ class AgentconfigsTable extends Table {
 
 
         $query->where($GenericFilter->genericFilters());
-        $query->disableHydration();
         $query->orderBy($GenericFilter->getOrderForPaginator('Hosts.name', 'asc'));
 
         if ($PaginateOMat === null) {

@@ -26,7 +26,7 @@
 namespace App\itnovum\openITCOCKPIT\Core;
 
 
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\UUID;
@@ -65,14 +65,13 @@ class UuidCache {
 
             switch ($TableName) {
                 case 'Services':
-                    $query = $Table->find();
+                    $query = $Table->unhydratedFind();
                     $result = $query->select([
                         'Services.id',
-                        'servicename' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+                        'servicename' => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
                         'Services.uuid'
                     ])->where()
                         ->innerJoinWith('Servicetemplates')
-                        ->disableHydration()
                         ->all();
 
                     foreach ($result->toArray() as $service) {
@@ -86,13 +85,13 @@ class UuidCache {
                 case 'Contactgroups':
                 case 'Hostgroups':
                 case 'Servicegroups':
-                    $query = $Table->find();
+                    $query = $Table->unhydratedFind();
                     $result = $query->select([
                         'id',
                         'uuid'
                     ])->where()
                         ->contain([
-                            'Containers' => function (Query $query) {
+                            'Containers' => function (SelectQuery $query) {
                                 return $query
                                     ->disableAutoFields()
                                     ->select([
@@ -100,7 +99,6 @@ class UuidCache {
                                     ]);
                             }
                         ])
-                        ->disableHydration()
                         ->all();
 
                     foreach ($result->toArray() as $containerObj) {
@@ -115,13 +113,12 @@ class UuidCache {
                     break;
 
                 default:
-                    $result = $Table->find()
+                    $result = $Table->unhydratedFind()
                         ->select([
                             'id',
                             'name',
                             'uuid'
                         ])
-                        ->disableHydration()
                         ->all();
 
                     foreach ($result->toArray() as $obj) {

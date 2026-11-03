@@ -41,7 +41,7 @@ use Cake\Datasource\EntityInterface;
 use Cake\ORM\Association\BelongsTo;
 use Cake\ORM\Association\BelongsToMany;
 use Cake\ORM\Behavior\TimestampBehavior;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Utility\Hash;
@@ -189,14 +189,14 @@ class MapUploadsTable extends Table {
         if (!is_array($MY_RIGHTS)) {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
-        return $this->find()
+        return $this->unhydratedFind()
             ->where([
                 'MapUploads.saved_name' => $filename,
             ])
             ->contain([
                 'Containers'
             ])
-            ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
+            ->innerJoinWith('Containers', function (SelectQuery $query) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
@@ -207,7 +207,7 @@ class MapUploadsTable extends Table {
             ])
             ->groupBy([
                 'MapUploads.id'
-            ])->disableHydration()
+            ])
             ->first();
     }
 
@@ -455,7 +455,6 @@ class MapUploadsTable extends Table {
                 throw new \Exception('Filetype not supported!');
                 break;
         }
-        imagedestroy($destImg);
     }
 
     /**
@@ -517,9 +516,8 @@ class MapUploadsTable extends Table {
      * @return array
      */
     public function getMapUploads() {
-        return $this->find('all')
+        return $this->unhydratedFind('all')
             ->disableAutoFields()
-            ->disableHydration()
             ->toArray();
     }
 
@@ -538,7 +536,7 @@ class MapUploadsTable extends Table {
             $types = [$types];
         }
 
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->select([
                 'MapUploads.id',
                 'MapUploads.upload_name',
@@ -546,7 +544,7 @@ class MapUploadsTable extends Table {
             ])
             ->where($GenericFilter->genericFilters())
             ->contain(['Containers'])
-            ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
+            ->innerJoinWith('Containers', function (SelectQuery $query) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
@@ -556,7 +554,6 @@ class MapUploadsTable extends Table {
             $query->whereInList('MapUploads.upload_type', $types);
         }
         $query->groupBy(['MapUploads.id'])
-            ->disableHydration()
             ->orderBy($GenericFilter->getOrderForPaginator('MapUploads.name', 'asc'));
 
         if ($PaginateOMat === null) {
@@ -586,21 +583,20 @@ class MapUploadsTable extends Table {
      * @return array
      */
     public function getMapUploadById(int|string $id): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
                 'Containers'
             ])
             ->where([
                 'MapUploads.id' => $id
             ])
-            ->disableHydration()
             ->first();
         return $this->emptyArrayIfNull($query);
     }
 
 
     public function getUsedMapIconsWithMapContainerIds(array $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'MapUploads.id',
                 'MapUploads.upload_name',
@@ -612,7 +608,7 @@ class MapUploadsTable extends Table {
             ->contain([
                 'Containers'
             ])
-            ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
+            ->innerJoinWith('Containers', function (SelectQuery $query) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
@@ -642,14 +638,13 @@ class MapUploadsTable extends Table {
                 ]
             );
         }
-        $query->groupBy(['Mapicons.id'])
-            ->disableHydration();
+        $query->groupBy(['Mapicons.id']);
 
         return $this->emptyArrayIfNull($query->toArray());
     }
 
     public function getUsedMapItemsWithMapContainerIds(array $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'MapUploads.id',
                 'MapUploads.upload_name',
@@ -661,7 +656,7 @@ class MapUploadsTable extends Table {
             ->contain([
                 'Containers'
             ])
-            ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
+            ->innerJoinWith('Containers', function (SelectQuery $query) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
@@ -691,8 +686,7 @@ class MapUploadsTable extends Table {
                 ]
             );
         }
-        $query->groupBy(['Mapitems.id'])
-            ->disableHydration();
+        $query->groupBy(['Mapitems.id']);
 
         return $this->emptyArrayIfNull($query->toArray());
     }
@@ -707,7 +701,7 @@ class MapUploadsTable extends Table {
         }
         $query = $this->find('list', valueField: 'saved_name')
             ->contain(['Containers'])
-            ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
+            ->innerJoinWith('Containers', function (SelectQuery $query) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
@@ -731,21 +725,20 @@ class MapUploadsTable extends Table {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
 
-        return $this->find('list', valueField: 'saved_name')
+        return $this->unhydratedFind('list', valueField: 'saved_name')
             ->select([
                 'MapUploads.id',
                 'MapUploads.upload_name',
                 'MapUploads.saved_name'
             ])
             ->contain(['Containers'])
-            ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
+            ->innerJoinWith('Containers', function (SelectQuery $query) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
                 return $query;
             })->where(['MapUploads.upload_type' => MapUpload::TYPE_ICON])
             ->groupBy(['MapUploads.id'])
-            ->disableHydration()
             ->toArray();
     }
 
@@ -758,21 +751,20 @@ class MapUploadsTable extends Table {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
 
-        return $this->find()
+        return $this->unhydratedFind()
             ->select([
                 'MapUploads.id',
                 'MapUploads.upload_name',
                 'MapUploads.saved_name'
             ])
             ->contain(['Containers'])
-            ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
+            ->innerJoinWith('Containers', function (SelectQuery $query) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
                 return $query;
             })->where(['MapUploads.upload_type' => MapUpload::TYPE_ICON_SET])
             ->groupBy(['MapUploads.id'])
-            ->disableHydration()
             ->toArray();
     }
 

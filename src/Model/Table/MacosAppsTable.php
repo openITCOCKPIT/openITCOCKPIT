@@ -32,6 +32,7 @@ use App\Model\Entity\MacosAppsHost;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Log\Log;
 use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
@@ -116,11 +117,10 @@ class MacosAppsTable extends Table {
 
 
     public function getAppById($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'MacosApps.id' => $id
             ])
-            ->disableHydration()
             ->firstOrFail();
 
         return $query;
@@ -141,7 +141,7 @@ class MacosAppsTable extends Table {
      * @param null|int $offset
      */
     public function getMacosAppsWithLimit(?int $limit = null, ?int $offset = null): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'MacosApps.id',
                 'MacosApps.name',
@@ -153,8 +153,6 @@ class MacosAppsTable extends Table {
         if ($offset !== null) {
             $query->offset($offset);
         }
-
-        $query->disableHydration();
 
         $query->all();
         return $query->toArray();
@@ -191,7 +189,7 @@ class MacosAppsTable extends Table {
                 'host_id' => $hostId,
             ])
             ->contain([
-                'MacosApps' => function (Query $query) {
+                'MacosApps' => function (SelectQuery $query) {
                     return $query->select([
                         'id',
                         'name',
@@ -365,10 +363,10 @@ class MacosAppsTable extends Table {
         ];
 
 
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->disableAutoFields()
             ->contain([
-                'MacosAppsHosts' => function (Query $query) {
+                'MacosAppsHosts' => function (SelectQuery $query) {
                     $query
                         ->innerJoin(
                             ['Hosts' => 'hosts'],
@@ -393,9 +391,6 @@ class MacosAppsTable extends Table {
                     return $query;
                 }
             ]);
-
-
-        $query->disableHydration();
         $result = $query->toArray();
         if (empty($result)) {
             return $all_macos_apps;
@@ -414,7 +409,7 @@ class MacosAppsTable extends Table {
     public function getMacosAppsIndex(GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
         /** @var MacosAppsHostsTable $MacosAppsHostsTable */
         $MacosAppsHostsTable = TableRegistry::getTableLocator()->get('MacosAppsHosts');
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'MacosApps.id',
                 'MacosApps.name',
@@ -423,7 +418,7 @@ class MacosAppsTable extends Table {
                 'MacosApps.modified',
             ])
             ->contain([
-                'MacosAppsHosts' => function (Query $query) use ($MY_RIGHTS) {
+                'MacosAppsHosts' => function (SelectQuery $query) use ($MY_RIGHTS) {
                     $query->select([
                         'MacosAppsHosts.macos_app_id',
                         'MacosAppsHosts.host_id'
@@ -462,8 +457,6 @@ class MacosAppsTable extends Table {
                 ['MacosApps.id' => 'asc']
             )
         );
-
-        $query->disableHydration();
 
         if ($PaginateOMat === null) {
             //Just execute query

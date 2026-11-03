@@ -30,7 +30,7 @@ namespace App\Model\Table;
 use App\itnovum\openITCOCKPIT\Filter\EventlogsFilter;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\Log\Log;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Inflector;
@@ -162,13 +162,13 @@ class EventlogsTable extends Table {
             'Eventlogs.object_id',
             'Eventlogs.user_id',
 
-            'name' => $query->newExpr('CASE
+            'name' => $query->expr('CASE
                 WHEN Eventlogs.model = "User" AND Users.email IS NOT NULL THEN CONCAT(Users.firstname, " ", Users.lastname)
                 WHEN Eventlogs.model = "Host" AND Hosts.name IS NOT NULL THEN Hosts.name
 
                 ELSE Eventlogs.name
             END'),
-            'actor' => $query->newExpr('COALESCE(
+            'actor' => $query->expr('COALESCE(
                 CONCAT(ActorUsers.firstname, " ", ActorUsers.lastname),
                 JSON_UNQUOTE(JSON_EXTRACT(Eventlogs.data, "$.user_name")),
                 "System"
@@ -187,7 +187,7 @@ class EventlogsTable extends Table {
             $query->where(['Eventlogs.type IN' => $logTypes]);
         }
 
-        $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
+        $query->innerJoinWith('Containers', function (SelectQuery $q) use ($MY_RIGHTS) {
             if (!empty($MY_RIGHTS)) {
                 return $q->where(['Containers.id IN' => $MY_RIGHTS]);
             }
@@ -263,27 +263,25 @@ class EventlogsTable extends Table {
      * @param string $type
      * @param string $model
      * @param int $objectId
-     * @param int $userId
      * @param string $name
      * @param string $data
      * @param array $container_ids
      * @param bool $dataIsJSon
      * @return bool
      */
-    public function saveNewEntity($type, $model, $objectId, $userId, $name, $data, $container_ids) {
+    public function saveNewEntity($type, $model, $objectId, $name, $data, $container_ids) {
 
         if (!is_array($container_ids)) {
             $container_ids = [$container_ids];
         }
 
-        if (!empty($type) && !empty($model) && !empty($objectId) && !empty($userId) && !empty($name) && !empty($data) && !empty($container_ids)) {
+        if (!empty($type) && !empty($model) && !empty($objectId) && !empty($name) && !empty($data) && !empty($container_ids)) {
 
             $eventlog = $this->newEmptyEntity();
             $eventlog = $this->patchEntity($eventlog, [
                 'type'       => $type,
                 'model'      => $model,
                 'object_id'  => $objectId,
-                'user_id'    => $userId,
                 'name'       => $name,
                 'containers' => [
                     '_ids' => $container_ids
@@ -319,9 +317,9 @@ class EventlogsTable extends Table {
      * @param string $email
      * @return string
      */
-    public function createDataJsonForUser(string $name): string {
+    public function createDataJsonForUser(string $email): string {
         $data = [
-            'user_name' => $name
+            'user_email' => $email
         ];
         return json_encode($data);
     }

@@ -40,7 +40,7 @@
         "ext-xmlrpc": "*",
         "ext-zip": "*",
         "azuyalabs/yasumi": "^2.12",
-        "cakephp/authentication": "^3.0",
+        "cakephp/authentication": "^4.0",
         "cakephp/authorization": "^3.0",
         "cakephp/cakephp": "~5.4.0",
         "cakephp/migrations": "^5.2",

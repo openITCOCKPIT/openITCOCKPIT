@@ -1567,11 +1567,11 @@ class ExternalCommands {
 
 
     private function getHostWithSharing(string $uuid): ?array {
-        $host = TableRegistry::getTableLocator()->get('Hosts')->find()
+        $host = TableRegistry::getTableLocator()->get('Hosts')
+            ->unhydratedFind()
             ->select(['Hosts.id', 'Hosts.name', 'Hosts.container_id'])
             ->where(['Hosts.uuid' => $uuid])
             ->contain(['HostsToContainersSharing'])
-            ->disableHydration()
             ->first();
         return $host ?: null;
     }
@@ -1588,13 +1588,8 @@ class ExternalCommands {
 
     private function createDataJsonForRow( array $logData): string
     {
-        $systemKeys = ['type', 'model', 'uuid',  'userId'];
-        $eventlogData = [];
-        foreach ($logData as $key => $value) {
-            if (!in_array($key, $systemKeys)) {
-                $eventlogData[$key] = $value;
-            }
-        }
+        $systemKeys = ['type', 'model', 'uuid', 'serviceUuid', 'userId'];
+        $eventlogData = array_diff_key($logData, array_flip($systemKeys));
         return json_encode($eventlogData);
     }
 

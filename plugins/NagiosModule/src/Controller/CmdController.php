@@ -271,9 +271,9 @@ class CmdController extends AppController {
                     break;
                 case 'enableOrDisableHostFlapdetection':
                     $result = $externalNaemonCommands->enableOrDisableHostFlapdetection(['uuid' => $value['hostUuid'], 'condition' => $value['condition']]);
+                    $event['type'] = $value['condition'] === 0 ? 'flapdetection_disabled' : 'flapdetection_enabled';
+                    $event['model'] = 'Host';
 
-
-                    //$actionType = 'flapdetection';
                     break;
                 case 'enableOrDisableServiceFlapdetection':
                     $result = $externalNaemonCommands->enableOrDisableServiceFlapdetection(['hostUuid' => $value['hostUuid'], 'serviceUuid' => $value['serviceUuid'], 'condition' => $value['condition']]);

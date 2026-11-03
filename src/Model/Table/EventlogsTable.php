@@ -263,25 +263,27 @@ class EventlogsTable extends Table {
      * @param string $type
      * @param string $model
      * @param int $objectId
+     * @param int $userId
      * @param string $name
      * @param string $data
      * @param array $container_ids
      * @param bool $dataIsJSon
      * @return bool
      */
-    public function saveNewEntity($type, $model, $objectId, $name, $data, $container_ids) {
+    public function saveNewEntity($type, $model, $objectId, $userId, $name, $data, $container_ids) {
 
         if (!is_array($container_ids)) {
             $container_ids = [$container_ids];
         }
 
-        if (!empty($type) && !empty($model) && !empty($objectId) && !empty($name) && !empty($data) && !empty($container_ids)) {
+        if (!empty($type) && !empty($model) && !empty($objectId) && !empty($userId) && !empty($name) && !empty($data) && !empty($container_ids)) {
 
             $eventlog = $this->newEmptyEntity();
             $eventlog = $this->patchEntity($eventlog, [
                 'type'       => $type,
                 'model'      => $model,
                 'object_id'  => $objectId,
+                'user_id'    => $userId,
                 'name'       => $name,
                 'containers' => [
                     '_ids' => $container_ids
@@ -314,12 +316,12 @@ class EventlogsTable extends Table {
      * cerates a json for the data column of the eventlogs table for the login type
      *  Returns a json
      *
-     * @param string $email
+     * @param string $name
      * @return string
      */
-    public function createDataJsonForUser(string $email): string {
+    public function createDataJsonForUser(string $name): string {
         $data = [
-            'user_email' => $email
+            'user_name' => $name
         ];
         return json_encode($data);
     }

@@ -68,7 +68,7 @@
         "symfony/filesystem": "^7.4",
         "symfony/finder": "^7.4",
         "symfony/yaml": "^7.4",
-        "tecnickcom/tcpdf": "^6.4",
+        "tecnickcom/tc-lib-pdf": "^8.83",
         "telegram-bot/api": "^2.5",
         "twig/twig": "^3.0"
     },
@@ -106,8 +106,15 @@
         ]
     },
     "scripts": {
-        "post-install-cmd": "App\\Console\\Installer::postInstall",
+        "post-install-cmd": [
+            "App\\Console\\Installer::postInstall",
+            "@tc-lib-pdf-fonts"
+        ],
+        "post-update-cmd": [
+            "@tc-lib-pdf-fonts"
+        ],
         "post-create-project-cmd": "App\\Console\\Installer::postInstall",
+        "tc-lib-pdf-fonts": "@php vendor/tecnickcom/tc-lib-pdf-font/util/build_fonts.php",
         "check": [
             "@test",
             "@cs-check"

@@ -28,13 +28,13 @@ namespace itnovum\openITCOCKPIT\oAuth;
 use App\Model\Table\SystemsettingsTable;
 use Cake\ORM\TableRegistry;
 use Cake\Routing\Router;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
-use Microsoft\Graph\Graph;
-use Microsoft\Graph\Model;
 
 class oAuthClient {
 
@@ -121,24 +121,24 @@ class oAuthClient {
 
     /**
      * @param AccessToken $accessToken
-     * @return mixed|string|null
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Microsoft\Graph\Exception\GraphException
+     * @return string
+     * @throws \Exception
      */
     public function getEmailAddressOfResourceOwner(AccessToken $accessToken) {
         switch ($this->config['FRONTEND.SSO.AUTH_PROVIDER']) {
             case 'AzureActiveDirectory':
+                $azureUser = $this->getMicrosoftGraphMe($accessToken);
 
-                $graph = new Graph();
-                $graph->setAccessToken($accessToken->getToken());
-
-                $azureUser = $graph->createRequest('GET', '/me?$select=displayName,mail,userPrincipalName')
-                    ->setReturnType(Model\User::class)
-                    ->execute();
-
-                /** @var \Microsoft\Graph\Model\User $azureUser */
                 // Returns "Max.Mustermann@it-novum.com"
-                return strtolower($azureUser->getMail());
+                if (!empty($azureUser['mail']) && is_string($azureUser['mail'])) {
+                    return strtolower($azureUser['mail']);
+                }
+
+                // The "mail" attribute is empty for users without an Exchange mailbox
+                throw new \Exception(sprintf(
+                    'oAuthClient::getEmailAddressOfResourceOwner() Microsoft Graph returned no "mail" attribute for user "%s"',
+                    $azureUser['userPrincipalName'] ?? ''
+                ));
 
             default:
                 $resourceOwner = $this->getResourceOwner($accessToken);
@@ -159,6 +159,44 @@ class oAuthClient {
         }
 
         throw new \Exception('oAuthClient::getEmailAddressOfResourceOwner() has not found a email address');
+    }
+
+    /**
+     * Queries the Microsoft Graph API for the signed-in user (GET /me).
+     * Replaces the former microsoft/microsoft-graph SDK, which was only used for this single request.
+     *
+     * @see https://learn.microsoft.com/en-us/graph/api/user-get
+     * @param AccessToken $accessToken
+     * @return array e.g. ['displayName' => 'Max Mustermann', 'mail' => 'Max.Mustermann@it-novum.com', 'userPrincipalName' => '...']
+     * @throws \Exception
+     */
+    private function getMicrosoftGraphMe(AccessToken $accessToken): array {
+        $client = new Client([
+            'base_uri'        => 'https://graph.microsoft.com/v1.0/',
+            'timeout'         => 30,
+            'connect_timeout' => 10,
+        ]);
+
+        try {
+            $response = $client->request('GET', 'me', [
+                'query'   => [
+                    '$select' => 'displayName,mail,userPrincipalName'
+                ],
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken->getToken(),
+                    'Accept'        => 'application/json',
+                ],
+            ]);
+        } catch (GuzzleException $e) {
+            throw new \Exception('oAuthClient: Microsoft Graph request GET /me failed: ' . $e->getMessage(), 0, $e);
+        }
+
+        $user = json_decode($response->getBody()->getContents(), true);
+        if (!is_array($user)) {
+            throw new \Exception('oAuthClient: Microsoft Graph returned an invalid JSON response for GET /me');
+        }
+
+        return $user;
     }
 
     /**

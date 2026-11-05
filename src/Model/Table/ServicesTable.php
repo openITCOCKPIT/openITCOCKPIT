@@ -4458,7 +4458,7 @@ class ServicesTable extends Table {
             $path1 = TableRegistry::getTableLocator()->get('HostsToHostgroups')->find();
             $path1->select([
                 'host_id'       => 'HostsToHostgroups.host_id',
-                // newExpr() forces CakePHP to treat the string as raw SQL without automatic backticks
+                // expr() forces CakePHP to treat the string as raw SQL without automatic backticks
                 'hostgroup_ids' => $path1->expr('GROUP_CONCAT(DISTINCT HostsToHostgroups.hostgroup_id)'),
                 'host_count'    => $path1->expr('COUNT(DISTINCT hg.id)')
             ])
@@ -4475,7 +4475,7 @@ class ServicesTable extends Table {
             $path2 = TableRegistry::getTableLocator()->get('Hosts')->find();
             $path2->select([
                 'host_id'       => 'Hosts.id',
-                // Using newExpr() here as well to protect the aggregation expressions
+                // Using expr() here as well to protect the aggregation expressions
                 'hostgroup_ids' => $path2->expr('GROUP_CONCAT(DISTINCT ht2hg.hostgroup_id)'),
                 'host_count'    => $path2->expr('COUNT(DISTINCT hg.id)')
             ])

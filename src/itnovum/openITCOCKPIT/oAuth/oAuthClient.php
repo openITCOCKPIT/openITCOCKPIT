@@ -122,7 +122,8 @@ class oAuthClient {
     /**
      * @param AccessToken $accessToken
      * @return string
-     * @throws \Exception
+     * @throws oAuthException
+     * @throws IdentityProviderException
      */
     public function getEmailAddressOfResourceOwner(AccessToken $accessToken) {
         switch ($this->config['FRONTEND.SSO.AUTH_PROVIDER']) {
@@ -135,7 +136,7 @@ class oAuthClient {
                 }
 
                 // The "mail" attribute is empty for users without an Exchange mailbox
-                throw new \Exception(sprintf(
+                throw new oAuthException(sprintf(
                     'oAuthClient::getEmailAddressOfResourceOwner() Microsoft Graph returned no "mail" attribute for user "%s"',
                     $azureUser['userPrincipalName'] ?? ''
                 ));
@@ -158,7 +159,7 @@ class oAuthClient {
                 }
         }
 
-        throw new \Exception('oAuthClient::getEmailAddressOfResourceOwner() has not found a email address');
+        throw new oAuthException('oAuthClient::getEmailAddressOfResourceOwner() has not found a email address');
     }
 
     /**
@@ -168,7 +169,7 @@ class oAuthClient {
      * @see https://learn.microsoft.com/en-us/graph/api/user-get
      * @param AccessToken $accessToken
      * @return array e.g. ['displayName' => 'Max Mustermann', 'mail' => 'Max.Mustermann@it-novum.com', 'userPrincipalName' => '...']
-     * @throws \Exception
+     * @throws oAuthException
      */
     private function getMicrosoftGraphMe(AccessToken $accessToken): array {
         $client = new Client([
@@ -188,12 +189,12 @@ class oAuthClient {
                 ],
             ]);
         } catch (GuzzleException $e) {
-            throw new \Exception('oAuthClient: Microsoft Graph request GET /me failed: ' . $e->getMessage(), 0, $e);
+            throw new oAuthException('oAuthClient: Microsoft Graph request GET /me failed: ' . $e->getMessage(), 0, $e);
         }
 
         $user = json_decode($response->getBody()->getContents(), true);
         if (!is_array($user)) {
-            throw new \Exception('oAuthClient: Microsoft Graph returned an invalid JSON response for GET /me');
+            throw new oAuthException('oAuthClient: Microsoft Graph returned an invalid JSON response for GET /me');
         }
 
         return $user;

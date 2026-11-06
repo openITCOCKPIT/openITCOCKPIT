@@ -42,7 +42,6 @@ use App\Policy\RequestPolicy;
 use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
-use Authentication\Identifier\AbstractIdentifier;
 use Authorization\AuthorizationService;
 use Authorization\AuthorizationServiceInterface;
 use Authorization\AuthorizationServiceProviderInterface;
@@ -126,8 +125,8 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             'identityClass'           => AppIdentity::class
         ]);
         $fields = [
-            AbstractIdentifier::CREDENTIAL_USERNAME => 'email',
-            AbstractIdentifier::CREDENTIAL_PASSWORD => 'password'
+            PasswordIdentifier::CREDENTIAL_USERNAME => 'email',
+            PasswordIdentifier::CREDENTIAL_PASSWORD => 'password'
         ];
 
 
@@ -138,13 +137,13 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         }
         $isLdapAuth = Cache::read('isLdapAuth', 'permissions');
 
+        // cakephp/authentication 4.x: Each authenticator has exactly ONE identifier.
+        // The identifier config is passed to IdentifierFactory::create() and must be
+        // a class name or an array with a "className" key (no alias => config map anymore).
+
         // Load Apikey identifier
         $service->loadAuthenticator('Authentication.Apikey', [
-            'identifier'   => [
-                'Authentication.Apikey' => [
-                    'className' => ApikeyIdentifier::class
-                ]
-            ],
+            'identifier'   => ApikeyIdentifier::class,
             'className'    => ApikeyAuthenticator::class,
             'queryParam'   => 'apikey',
             'header'       => 'Authorization',
@@ -154,11 +153,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         // Load SSL identifier
         if (isset($_SERVER['SSL_VERIFIED'])) {
             $service->loadAuthenticator('Authentication.Ssl', [
-                'identifier' => [
-                    'Authentication.Ssl' => [
-                        'className' => SslIdentifier::class
-                    ]
-                ],
+                'identifier' => SslIdentifier::class,
                 'className'  => SslAuthenticator::class
             ]);
         }
@@ -166,30 +161,19 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         // Load oAuth identifier
         if (isset($_GET['code'])) {
             $service->loadAuthenticator('Authentication.oAuth', [
-                'identifier' => [
-                    'Authentication.oAuth' => [
-                        'className' => oAuthIdentifier::class
-                    ]
-                ],
+                'identifier' => oAuthIdentifier::class,
                 'className'  => oAuthAuthenticator::class
             ]);
         }
 
         $passwordIdentifier = [
-            'Authentication.Password' => [
-                'className' => PasswordIdentifier::class,
-                'fields'    => $fields
-            ],
+            'className' => PasswordIdentifier::class,
+            'fields'    => $fields
         ];
 
-        if ($isLdapAuth) {
-            // Load LDAP identifier
-            $passwordIdentifier['Authentication.Ldap'] = [
-                'className' => LdapIdentifier::class,
-            ];
-        }
-
         // Load the authenticators, you want session first
+        // The remember me cookie stores the email address of the user, so only the PasswordIdentifier
+        // (lookup by email) is able to resolve it. The LdapIdentifier looks up users by samaccountname.
         $expireAt = new \DateTime();
         $expireAt->setTimestamp(time() + (3600 * 24 * 31)); // In one month
         $service->loadAuthenticator('Authentication.Cookie', [
@@ -203,9 +187,8 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
                 'samesite' => CookieInterface::SAMESITE_LAX
             ]
         ]);
-        $service->loadAuthenticator('Authentication.Session', [
-            'identifier' => $passwordIdentifier,
-        ]);
+        // The SessionAuthenticator does not use an identifier in cakephp/authentication 4.x
+        $service->loadAuthenticator('Authentication.Session');
 
         // Load identifiers (Username / Password)
         $service->loadAuthenticator('Authentication.Form', [
@@ -213,6 +196,18 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             'fields'     => $fields,
             'loginUrl'   => '/users/login',
         ]);
+
+        if ($isLdapAuth) {
+            // An authenticator can only have one identifier in cakephp/authentication 4.x.
+            // Load a second Form authenticator with the LDAP identifier. The AuthenticationService
+            // tries all authenticators in order, so LDAP is used if the password login fails.
+            $service->loadAuthenticator('FormLdap', [
+                'className'  => 'Authentication.Form',
+                'identifier' => LdapIdentifier::class,
+                'fields'     => $fields,
+                'loginUrl'   => '/users/login',
+            ]);
+        }
 
         return $service;
 

@@ -755,6 +755,23 @@ OUTPUT;
             'setext heading level one' => ["Heading\n=======", ['//h1' => ['Heading']]],
             'setext heading level two' => ["Heading\n-------", ['//h2' => ['Heading']]],
             'optional closing hashes' => ['### Heading ###', ['//h3' => ['Heading']]],
+            'consecutive heading levels' => [
+                "# test\n## test",
+                ['//body/h1' => ['test'], '//body/h2' => ['test']]
+            ],
+            'heading markers within a heading stay text' => [
+                '# test ## test',
+                ['//body/h1' => ['test ## test'], '//h2' => []]
+            ],
+            // Parsedown accepts headings without a space in its default non-strict mode.
+            'heading without whitespace follows Parsedown' => [
+                '#test',
+                ['//body/h1' => ['test']]
+            ],
+            'too many heading markers stay text' => [
+                '####### test',
+                ['//body' => ['####### test'], '//h6' => []]
+            ],
             'unordered plus list' => ["+ first\n+ second", ['//ul/li' => ['first', 'second']]],
             'unordered asterisk list' => ["* first\n* second", ['//ul/li' => ['first', 'second']]],
             'ordered start number' => ["3. third\n4. fourth", ['//ol/@start' => ['3'], '//ol/li' => ['third', 'fourth']]],
@@ -827,7 +844,27 @@ OUTPUT;
      */
     public static function mixedBlockCases(): array
     {
-        return [
+        $cases = [
+            'consecutive headings with different BBCode formatting' => [
+                "# [b]test[/b]\n## [color=red]test[/color]",
+                ['//body/h1/strong' => ['test'], '//body/h2/span[@style="color: red"]' => ['test'], '//h2/strong' => []]
+            ],
+            'BBCode spans consecutive heading levels' => [
+                "[b]\n# first\n## second\n[/b]\n\nOutside",
+                ['//body/h1/strong' => ['first'], '//body/h2/strong' => ['second'], '//body/text()[last()]' => ['Outside'], '//strong/h1 | //strong/h2' => []]
+            ],
+            'heading markers after an inline BBCode opening stay text' => [
+                '[b]# test[/b]',
+                ['//body/strong' => ['# test'], '//h1' => []]
+            ],
+            'escaped heading marker with BBCode formatting' => [
+                '\\# [b]test[/b]',
+                ['//body' => ['# test'], '//body/strong' => ['test'], '//h1' => []]
+            ],
+            'BBCode code keeps heading syntax literal' => [
+                "[code]# test\n## [b]test[/b][/code]",
+                ['//pre/code' => ["# test\n## [b]test[/b]"], '//h1 | //h2 | //strong' => []]
+            ],
             'color across quotation and list' => [
                 "[color=red]\n> **quote**\n>\n> - *item*\n[/color]",
                 ['//blockquote/span/strong' => ['quote'], '//blockquote/ul/li/span/em' => ['item']],
@@ -909,6 +946,31 @@ OUTPUT;
                 ['//span[@style="font-size: large;"]/strong' => ['big'], '//span/em' => ['italic']],
             ],
         ];
+        foreach (range(1, 6) as $level) {
+            $heading = str_repeat('#', $level);
+            $path = '//body/h' . $level;
+            $cases['BBCode inside heading level ' . $level] = [
+                $heading . ' [b]**test**[/b] [color=red]*color*[/color]',
+                [$path => ['test color'], $path . '/strong/strong' => ['test'], $path . '/span[@style="color: red"]/em' => ['color']]
+            ];
+            $cases['BBCode around heading level ' . $level] = [
+                "[color=red][b]\n" . $heading . " *test*\n[/b][/color]\n\nOutside",
+                [$path . '/span[@style="color: red"]/strong/em' => ['test'], '//body/text()[last()]' => ['Outside'], '//span/h' . $level . ' | //strong/h' . $level => []]
+            ];
+            $cases['BBCode alignment around heading level ' . $level] = [
+                "[center]\n" . $heading . " [i]test[/i]\n[/center]",
+                ['//body/div[@style="text-align: center"]/h' . $level . '/em' => ['test'], '//p' => []]
+            ];
+            $cases['BBCode link inside heading level ' . $level] = [
+                $heading . ' [url=https://example.test]**test**[/url]',
+                [$path . '/a[@href="https://example.test"]/strong' => ['test'], '//a/a' => []]
+            ];
+            $cases['inline code inside heading level ' . $level] = [
+                $heading . ' `[b]test[/b]`',
+                [$path . '/code' => ['[b]test[/b]'], '//strong' => []]
+            ];
+        }
+        return $cases;
     }
 
     /**

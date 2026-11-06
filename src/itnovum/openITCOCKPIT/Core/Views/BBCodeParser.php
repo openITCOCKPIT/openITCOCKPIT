@@ -28,47 +28,44 @@ namespace itnovum\openITCOCKPIT\Core\Views;
 
 use JBBCode;
 
-class BBCodeParser {
+class BBCodeParser extends JBBCode\Parser {
 
     /**
-     * @var JBBCode\Parser
+     * BBCodeParser constructor.
      */
-    private $bbparser;
-
     public function __construct() {
-        $bbparser = new JBBCode\Parser();
-        $bbparser->addCodeDefinitionSet(new JBBCode\DefaultCodeDefinitionSet());
+        parent::__construct();
+        $this->addCodeDefinitionSet(new JBBCode\DefaultCodeDefinitionSet());
         $builder = new JBBCode\CodeDefinitionBuilder('left', '<p align="left">{param}</p>');
-        $bbparser->addCodeDefinition($builder->build());
+        $this->addCodeDefinition($builder->build());
         $builder = new JBBCode\CodeDefinitionBuilder('right', '<p align="right">{param}</p>');
-        $bbparser->addCodeDefinition($builder->build());
+        $this->addCodeDefinition($builder->build());
         $builder = new JBBCode\CodeDefinitionBuilder('center', '<p align="center">{param}</p>');
-        $bbparser->addCodeDefinition($builder->build());
+        $this->addCodeDefinition($builder->build());
         $builder = new JBBCode\CodeDefinitionBuilder('justify', '<p align="justify">{param}</p>');
-        $bbparser->addCodeDefinition($builder->build());
+        $this->addCodeDefinition($builder->build());
         $builder = new JBBCode\CodeDefinitionBuilder('xx-small', '<span style="font-size: xx-small;">{param}</span>');
-        $bbparser->addCodeDefinition($builder->build());
+        $this->addCodeDefinition($builder->build());
         $builder = new JBBCode\CodeDefinitionBuilder('x-small', '<span style="font-size: x-small;">{param}</span>');
-        $bbparser->addCodeDefinition($builder->build());
+        $this->addCodeDefinition($builder->build());
         $builder = new JBBCode\CodeDefinitionBuilder('small', '<span style="font-size: small;">{param}</span>');
-        $bbparser->addCodeDefinition($builder->build());
+        $this->addCodeDefinition($builder->build());
         $builder = new JBBCode\CodeDefinitionBuilder('xx-large', '<span style="font-size: xx-large;">{param}</span>');
-        $bbparser->addCodeDefinition($builder->build());
+        $this->addCodeDefinition($builder->build());
         $builder = new JBBCode\CodeDefinitionBuilder('x-large', '<span style="font-size: x-large;">{param}</span>');
-        $bbparser->addCodeDefinition($builder->build());
+        $this->addCodeDefinition($builder->build());
         $builder = new JBBCode\CodeDefinitionBuilder('large', '<span style="font-size: large;">{param}</span>');
-        $bbparser->addCodeDefinition($builder->build());
+        $this->addCodeDefinition($builder->build());
 
         $builder = new JBBCode\CodeDefinitionBuilder('code', '<pre style="line-height: 12px;">{param}</pre>');
-        $bbparser->addCodeDefinition($builder->build());
-        $this->bbparser = $bbparser;
+        $this->addCodeDefinition($builder->build());
     }
 
     /**
      * @return JBBCode\Parser
      */
-    public function getParser(){
-        return $this->bbparser;
+    public function getParser() {
+        return $this;
     }
 
     /**
@@ -82,15 +79,15 @@ class BBCodeParser {
      * @since  3.0
      */
     public function asHtml($bbcode, $nl2br = true) {
-        if(is_null($bbcode)){
+        if (is_null($bbcode)) {
             $bbcode = '';
         }
-        $this->bbparser->parse(htmlentities($bbcode));
+        $this->parse(htmlentities($bbcode));
         if ($nl2br === true) {
-            return $this->nagiosNl2br(nl2br($this->bbparser->getAsHtml()));
+            return $this->nagiosNl2br(nl2br($this->getAsHtml()));
         }
 
-        return $this->bbparser->getAsHtml();
+        return $this->getAsHtml();
     }
 
     /**

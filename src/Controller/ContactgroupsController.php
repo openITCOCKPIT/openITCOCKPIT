@@ -493,7 +493,7 @@ class ContactgroupsController extends AppController {
             ]
         );
 
-        $contactgroupWithRelations = $ContactgroupsTable->find()
+        $contactgroupWithRelations = $ContactgroupsTable->unhydratedFind()
             ->where([
                 'Contactgroups.id' => $id
             ])
@@ -557,7 +557,6 @@ class ContactgroupsController extends AppController {
                     ]
                 ],
             ])
-            ->disableHydration()
             ->first();
 
         /* Format service name for api "hostname|Service oder Service template name" */

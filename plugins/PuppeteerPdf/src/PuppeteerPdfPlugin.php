@@ -33,7 +33,7 @@ use Cake\Http\ServerRequest;
 /**
  * Plugin for PuppeteerPdf
  */
-class Plugin extends BasePlugin {
+class PuppeteerPdfPlugin extends BasePlugin {
     /**
      * Load routes or not
      *

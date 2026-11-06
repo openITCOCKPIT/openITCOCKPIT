@@ -321,7 +321,9 @@ class AclDependencies {
 
         $this
             ->dependency('Cronjobs', 'add', 'Cronjobs', 'getTasks')
-            ->dependency('Cronjobs', 'edit', 'Cronjobs', 'getTasks');
+            ->dependency('Cronjobs', 'add', 'Cronjobs', 'getPlugins')
+            ->dependency('Cronjobs', 'edit', 'Cronjobs', 'getTasks')
+            ->dependency('Cronjobs', 'edit', 'Cronjobs', 'getPlugins');
 
 
         $this
@@ -775,8 +777,7 @@ class AclDependencies {
      * @return array
      */
     public function getDependentAcos(AcosTable $AcosTable, array $selectedAcos): array {
-        $threadedAcos = $AcosTable->find('threaded')
-            ->disableHydration()
+        $threadedAcos = $AcosTable->unhydratedFind('threaded')
             ->all();
 
         $acos = [];

@@ -104,11 +104,6 @@ class ServiceAccountCommand extends Command {
     private $grafanHostname = 'grafana.docker';
 
     /**
-     * @var ConsoleIo
-     */
-    private $io;
-
-    /**
      * Hook method for defining this command's option parser.
      *
      * @see https://book.cakephp.org/4/en/console-commands/commands.html#defining-arguments-and-options

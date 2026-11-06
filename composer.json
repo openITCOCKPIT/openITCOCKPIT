@@ -23,7 +23,7 @@
         }
     ],
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.3",
         "ext-calendar": "*",
         "ext-curl": "*",
         "ext-gd": "*",
@@ -42,8 +42,8 @@
         "azuyalabs/yasumi": "^2.2",
         "cakephp/authentication": "^3.0",
         "cakephp/authorization": "^3.0",
-        "cakephp/cakephp": "~5.2.0",
-        "cakephp/migrations": "@stable",
+        "cakephp/cakephp": "~5.4.0",
+        "cakephp/migrations": "^5.2",
         "cakephp/plugin-installer": "^2.0",
         "cboden/ratchet": "^0.4.1",
         "chillerlan/php-qrcode": "^3.4.1 || ^4.3.3",
@@ -78,7 +78,7 @@
         "cakephp/bake": "^3.0",
         "cakephp/cakephp-codesniffer": "^5.0",
         "cakephp/debug_kit": "^5.0",
-        "cakephp/migrations": "@stable",
+        "cakephp/migrations": "^5.2",
         "josegonzalez/dotenv": "3.*",
         "phpunit/phpunit": "^10.5.5 || ^11.1.3 || ^12.1",
         "psy/psysh": "@stable"

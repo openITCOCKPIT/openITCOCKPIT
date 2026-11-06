@@ -100,11 +100,10 @@ class ConfigurationQueueTable extends Table {
      * @return array|null
      */
     public function getConfigFilesToGenerate() {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'ConfigurationQueue.task' => 'ConfigGenerator'
             ])
-            ->disableHydration()
             ->all();
 
         return $query->toArray();

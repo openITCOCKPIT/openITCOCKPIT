@@ -60,7 +60,7 @@ class MacrosController extends AppController {
             return;
         }
 
-        $all_macros = $Macros->find('all')->disableHydration()->toArray();
+        $all_macros = $Macros->unhydratedFind('all')->toArray();
         $all_macros = Hash::sort($all_macros, '{n}.name', 'asc', 'natural');
         $this->set('all_macros', $all_macros);
         $this->viewBuilder()->setOption('serialize', ['all_macros']);

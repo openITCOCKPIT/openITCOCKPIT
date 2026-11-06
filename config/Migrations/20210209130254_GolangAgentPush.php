@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
 
 /**
  * Class GolangAgentPush
@@ -79,7 +78,7 @@ class GolangAgentPush extends \Migrations\BaseMigration {
                 ->addColumn('checkresults', 'text', [
                     'default' => null,
                     'null'    => true,
-                    'limit'   => \Phinx\Db\Adapter\MysqlAdapter::TEXT_MEDIUM
+                    'limit'   => \Migrations\Db\Adapter\MysqlAdapter::TEXT_MEDIUM
                 ])
                 ->addColumn('last_update', 'datetime', [
                     'default' => 'CURRENT_TIMESTAMP',

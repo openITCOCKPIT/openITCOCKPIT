@@ -31,7 +31,7 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Table\HostsTable;
 use Cake\Datasource\EntityInterface;
 use Cake\ORM\Association\BelongsTo;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -134,7 +134,7 @@ class GrafanaDashboardsTable extends Table {
      * @return array
      */
     public function getGrafanaDashboards(GenericFilter $GenericFilter, $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'id',
                 'host_id',
@@ -176,8 +176,6 @@ class GrafanaDashboardsTable extends Table {
         if (!empty($GenericFilter->genericFilters())) {
             $query->where($GenericFilter->genericFilters());
         }
-
-        $query->disableHydration();
         $result = $query->all();
         $result = $result->toArray();
 
@@ -188,16 +186,15 @@ class GrafanaDashboardsTable extends Table {
      * @return array
      */
     public function getAllDashboardsForDeleteCronjob(): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'id',
                 'host_uuid',
                 'grafana_uid'
-            ])->leftJoinWith('Hosts', function (Query $query) {
+            ])->leftJoinWith('Hosts', function (SelectQuery $query) {
                 return $query
                     ->select(['id']);
             })->whereNull(['Hosts.id'])
-            ->disableHydration()
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());
@@ -210,23 +207,23 @@ class GrafanaDashboardsTable extends Table {
         /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
-        $query = $HostsTable->find()
+        $query = $HostsTable->unhydratedFind()
             ->select([
                 'id',
                 'uuid'
             ])
             ->contain([
-                'Hostgroups'    => function (Query $query) {
+                'Hostgroups'    => function (SelectQuery $query) {
                     return $query
                         ->disableAutoFields()
                         ->select(['id']);
                 },
-                'Hosttemplates' => function (Query $query) {
+                'Hosttemplates' => function (SelectQuery $query) {
                     return $query
                         ->disableAutoFields()
                         ->select(['id'])
                         ->contain([
-                            'Hostgroups' => function (Query $query) {
+                            'Hostgroups' => function (SelectQuery $query) {
                                 return $query
                                     ->disableAutoFields()
                                     ->select(['id']);
@@ -234,7 +231,6 @@ class GrafanaDashboardsTable extends Table {
                         ]);
                 }
             ])
-            ->disableHydration()
             ->all();
 
         if ($query === null) {
@@ -349,11 +345,10 @@ class GrafanaDashboardsTable extends Table {
      * @return array
      */
     public function getDashboardUuids(): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'grafana_uid'
             ])
-            ->disableHydration()
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());

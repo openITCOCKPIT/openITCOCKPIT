@@ -28,7 +28,7 @@ namespace App\Model\Table;
 use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -138,9 +138,8 @@ class LocationsTable extends Table {
      * @return array
      */
     public function getLocationsIndex(LocationFilter $LocationFilter, $PaginateOMat = null, array $MY_RIGHTS = []) {
-        $query = $this->find('all')
-            ->contain(['Containers'])
-            ->disableHydration();
+        $query = $this->unhydratedFind('all')
+            ->contain(['Containers']);
         $query->where($LocationFilter->indexFilter());
 
         if (!empty($MY_RIGHTS)) {
@@ -188,7 +187,7 @@ class LocationsTable extends Table {
                 'Locations.id' => $id
             ])
             ->contain([
-                'Containers' => function (Query $q) {
+                'Containers' => function (SelectQuery $q) {
                     return $q->disableAutoFields()
                         ->select([
                             'Containers.id',
@@ -211,7 +210,7 @@ class LocationsTable extends Table {
                 'Locations.container_id' => $containerId
             ])
             ->contain([
-                'Containers' => function (Query $q) {
+                'Containers' => function (SelectQuery $q) {
                     return $q->disableAutoFields()
                         ->select([
                             'Containers.id',

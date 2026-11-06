@@ -104,7 +104,6 @@ class XMLRPCApi {
             throw new ApiException(curl_error($ch));
         }
 
-        curl_close($ch);
         return xmlrpc_decode($data);
     }
 

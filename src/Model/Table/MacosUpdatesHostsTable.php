@@ -29,7 +29,7 @@ namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\MacosUpdatesHost;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -128,7 +128,7 @@ class MacosUpdatesHostsTable extends Table {
                 'MacosUpdatesHosts.host_id' => $hostId
             ])
             ->contain([
-                'MacosUpdates' => function (Query $query) {
+                'MacosUpdates' => function (SelectQuery $query) {
                     return $query->select([
                         'id',
                         'name',
@@ -146,7 +146,7 @@ class MacosUpdatesHostsTable extends Table {
     }
 
     public function getUpdateWithHost(int $updateId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'MacosUpdatesHosts.id',
                 'MacosUpdatesHosts.macos_update_id',
@@ -173,7 +173,7 @@ class MacosUpdatesHostsTable extends Table {
         $query->where([
             'Hosts.disabled' => 0
         ])->contain([
-            'MacosUpdates' => function (Query $query) {
+            'MacosUpdates' => function (SelectQuery $query) {
                 $query->select([
                     'MacosUpdates.name',
                     'MacosUpdates.description',
@@ -203,8 +203,6 @@ class MacosUpdatesHostsTable extends Table {
         )
             ->groupBy(['Hosts.id']);
 
-        $query->disableHydration();
-
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $query->toArray();
@@ -228,7 +226,7 @@ class MacosUpdatesHostsTable extends Table {
      * @return array
      */
     public function getUpdatesOfHost(int $hostId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'MacosUpdatesHosts.id',
                 'MacosUpdatesHosts.macos_update_id',
@@ -255,7 +253,7 @@ class MacosUpdatesHostsTable extends Table {
         $query->where([
             'Hosts.disabled' => 0
         ])->contain([
-            'MacosUpdates' => function (Query $query) {
+            'MacosUpdates' => function (SelectQuery $query) {
                 $query->select([
                     'MacosUpdates.name',
                     'MacosUpdates.description',
@@ -284,8 +282,6 @@ class MacosUpdatesHostsTable extends Table {
             )
         );
 
-        $query->disableHydration();
-
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $query->toArray();
@@ -306,11 +302,10 @@ class MacosUpdatesHostsTable extends Table {
      * @return array
      */
     public function getUpdatesByHostId($hostId): array {
-        return $this->find()
+        return $this->unhydratedFind()
             ->where([
                 'host_id' => $hostId
             ])
-            ->disableHydration()
             ->toArray();
     }
 }

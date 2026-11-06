@@ -40,7 +40,7 @@ use Cake\Core\Plugin;
 use Cake\Datasource\EntityInterface;
 use Cake\ORM\Association\HasMany;
 use Cake\ORM\Behavior\TimestampBehavior;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\Utility\Hash;
 use Cake\Validation\Validator;
@@ -186,7 +186,7 @@ class RotationsTable extends Table {
                 'Maps',
                 'Containers'
             ])
-            ->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
+            ->innerJoinWith('Containers', function (SelectQuery $query) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     return $query->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
@@ -243,8 +243,8 @@ class RotationsTable extends Table {
                 'Rotations.name',
                 'Rotations.interval',
             ])
-            ->innerJoinWith('Maps', function (Query $q) use ($satelliteIds) {
-                $q->innerJoinWith('Satellites', function (Query $q) use ($satelliteIds) {
+            ->innerJoinWith('Maps', function (SelectQuery $q) use ($satelliteIds) {
+                $q->innerJoinWith('Satellites', function (SelectQuery $q) use ($satelliteIds) {
                     $q->where([
                         'Satellites.id IN' => $satelliteIds
                     ]);
@@ -276,8 +276,8 @@ class RotationsTable extends Table {
                 ->select([
                     'Maps.id'
                 ])
-                ->innerJoinWith('Maps', function (Query $q) use ($satelliteIds) {
-                    $q->innerJoinWith('Satellites', function (Query $q) use ($satelliteIds) {
+                ->innerJoinWith('Maps', function (SelectQuery $q) use ($satelliteIds) {
+                    $q->innerJoinWith('Satellites', function (SelectQuery $q) use ($satelliteIds) {
                         $q->where([
                             'Satellites.id IN' => $satelliteIds
                         ]);
@@ -343,7 +343,7 @@ class RotationsTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Containers.id'
             ])
@@ -369,7 +369,6 @@ class RotationsTable extends Table {
             ])
             ->distinct()
             ->disableAutoFields()
-            ->disableHydration()
             ->toArray();
         return Hash::extract($query, '{n}.Containers.id');
     }

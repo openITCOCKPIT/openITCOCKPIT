@@ -29,7 +29,7 @@ namespace App\Model\Table;
 
 use App\itnovum\openITCOCKPIT\Filter\UserDefaultTemplatesFilter;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Utility\Hash;
@@ -242,7 +242,7 @@ class UserDefaultTemplatesTable extends Table {
      * @param PaginateOMat|null $PaginateOMat
      * @return array
      */
-    public function getUserDefaultTemplatesIndex(UserDefaultTemplatesFilter $UserDefaultTemplatesFilter, PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
+    public function getUserDefaultTemplatesIndex(UserDefaultTemplatesFilter $UserDefaultTemplatesFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
 
         $where = $UserDefaultTemplatesFilter->indexFilter();
 
@@ -296,7 +296,7 @@ class UserDefaultTemplatesTable extends Table {
      */
     public function getUserDefaultTemplateForEdit($id) {
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'UserDefaultTemplates.id',
                 'UserDefaultTemplates.usergroup_id',
@@ -320,7 +320,6 @@ class UserDefaultTemplatesTable extends Table {
                 'Containers',
                 'Ldapgroups' => 'Usercontainerroles'
             ])
-            ->disableHydration()
             ->first();
 
         $userDefaultTemplate = $query;
@@ -370,8 +369,7 @@ class UserDefaultTemplatesTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface|null
      */
     public function getUserDefaultTemplateById($id) {
-        $query = $this->find('all')
-            ->disableHydration()
+        $query = $this->unhydratedFind('all')
             ->contain([
                 'UserContainers',
                 'Containers',
@@ -395,7 +393,7 @@ class UserDefaultTemplatesTable extends Table {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'UserDefaultTemplates.id',
                 'UserDefaultTemplates.usergroup_id',
@@ -420,17 +418,17 @@ class UserDefaultTemplatesTable extends Table {
             ]);
 
         if (!empty($MY_RIGHTS)) {
-            $query->innerJoinWith('Containers', function (Query $query) use ($MY_RIGHTS) {
+            $query->innerJoinWith('Containers', function (SelectQuery $query) use ($MY_RIGHTS) {
                 return $query->where(['Containers.id IN' => $MY_RIGHTS]);
             });
         }
         if (!empty($ldapgroupIds)) {
-            $query->innerJoinWith('Ldapgroups', function (Query $query) use ($ldapgroupIds) {
+            $query->innerJoinWith('Ldapgroups', function (SelectQuery $query) use ($ldapgroupIds) {
                 return $query->where(['Ldapgroups.id IN' => $ldapgroupIds]);
             });
         }
 
-        $query->disableHydration()
+        $query
             ->distinct(['UserDefaultTemplates.id'])
             ->all();
 
@@ -479,7 +477,7 @@ class UserDefaultTemplatesTable extends Table {
     }
 
     public function getUserDefaultTemplatesForLdapUserImport(): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'UserDefaultTemplates.id',
                 'UserDefaultTemplates.usergroup_id',
@@ -497,11 +495,10 @@ class UserDefaultTemplatesTable extends Table {
                 'Ldapgroups.cn',
                 'Ldapgroups.dn'
             ])
-            ->innerJoinWith('Ldapgroups', function (Query $query) {
+            ->innerJoinWith('Ldapgroups', function (SelectQuery $query) {
                 return $query->contain(['Usercontainerroles']);
             })
             ->contain(['UserContainers'])
-            ->disableHydration()
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());

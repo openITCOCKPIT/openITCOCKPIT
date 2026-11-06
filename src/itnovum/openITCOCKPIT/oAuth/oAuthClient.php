@@ -130,7 +130,7 @@ class oAuthClient {
             case 'AzureActiveDirectory':
                 $azureUser = $this->getMicrosoftGraphMe($accessToken);
 
-                // Returns "Max.Mustermann@it-novum.com"
+                // Returns "Max.Mustermann@avendis.com"
                 if (!empty($azureUser['mail']) && is_string($azureUser['mail'])) {
                     return strtolower($azureUser['mail']);
                 }
@@ -168,7 +168,7 @@ class oAuthClient {
      *
      * @see https://learn.microsoft.com/en-us/graph/api/user-get
      * @param AccessToken $accessToken
-     * @return array e.g. ['displayName' => 'Max Mustermann', 'mail' => 'Max.Mustermann@it-novum.com', 'userPrincipalName' => '...']
+     * @return array e.g. ['displayName' => 'Max Mustermann', 'mail' => 'Max.Mustermann@avendis.com', 'userPrincipalName' => '...']
      * @throws oAuthException
      */
     private function getMicrosoftGraphMe(AccessToken $accessToken): array {

@@ -109,6 +109,7 @@ use itnovum\openITCOCKPIT\Core\UserDefinedMacroReplacer;
 use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Core\Views\AcknowledgementHost;
+use itnovum\openITCOCKPIT\Core\Views\BBCMarkDownParser;
 use itnovum\openITCOCKPIT\Core\Views\BBCodeParser;
 use itnovum\openITCOCKPIT\Core\Views\Command;
 use itnovum\openITCOCKPIT\Core\Views\Contact;
@@ -2434,9 +2435,15 @@ class HostsController extends AppController {
         $Hoststatus = new Hoststatus($hoststatus['Hoststatus'], $UserTime);
         $hoststatus = $Hoststatus->toArrayForBrowser();
 
-        //Parse BBCode in long output
+        //Parse BBCode in acknowledgement comments
         $BBCodeParser = new BBCodeParser();
-        $hoststatus['longOutputHtml'] = $BBCodeParser->nagiosNl2br($BBCodeParser->asHtml($Hoststatus->getLongOutput(), true));
+
+        //Parse BBCode and Markdown in long output
+        $BBCMarkDownParser = new BBCMarkDownParser();
+        $hoststatus['longOutputHtml'] = $BBCMarkDownParser->render(
+            $Hoststatus->getLongOutput(),
+            BBCMarkDownParser::ESCAPED_LF
+        );
 
         $mergedHost['allowEdit'] = $allowEdit;
 

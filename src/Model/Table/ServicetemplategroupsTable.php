@@ -1003,7 +1003,7 @@ class ServicetemplategroupsTable extends Table {
      * @param $uuid
      * @return array
      */
-    public function getServicetemplategroupByUuidForImportDiff($uuid) {
+    public function getServicetemplategroupByUuidForImportDiff($uuid): array {
         $query = $this->unhydratedFind('all')
             ->select([
                 'Servicetemplategroups.id',
@@ -1029,5 +1029,4 @@ class ServicetemplategroupsTable extends Table {
 
         return $servicetemplategroup;
     }
-
 }

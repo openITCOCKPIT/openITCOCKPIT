@@ -1878,38 +1878,38 @@ class ServicetemplatesTable extends Table {
     public function getServicetemplateByUuidForImportDiff($uuid): array {
         $query = $this->find()
             ->contain([
-                'CheckPeriod'                               => function (Query $query) {
+                'CheckPeriod'                               => function (SelectQuery $query) {
                     return $query->select([
                         'CheckPeriod.name',
                         'CheckPeriod.uuid'
                     ]);
                 },
-                'NotifyPeriod'                              => function (Query $query) {
+                'NotifyPeriod'                              => function (SelectQuery $query) {
                     return $query->select([
                         'NotifyPeriod.name',
                         'NotifyPeriod.uuid'
                     ]);
                 },
-                'EventhandlerCommand'                       => function (Query $query) {
+                'EventhandlerCommand'                       => function (SelectQuery $query) {
                     return $query->select([
                         'EventhandlerCommand.name',
                         'EventhandlerCommand.uuid',
                     ]);
 
                 },
-                'Contacts'                                  => function (Query $query) {
+                'Contacts'                                  => function (SelectQuery $query) {
                     return $query->select([
                         'Contacts.name',
                         'Contacts.uuid'
                     ]);
                 },
-                'Contactgroups'                             => function (Query $query) {
+                'Contactgroups'                             => function (SelectQuery $query) {
                     return $query->select([
                         'name' => 'Containers.name',
                         'Contactgroups.uuid'
                     ])->contain(['Containers']);
                 },
-                'Servicetemplatecommandargumentvalues'      => function (Query $query) {
+                'Servicetemplatecommandargumentvalues'      => function (SelectQuery $query) {
                     return $query->select([
                         'Servicetemplatecommandargumentvalues.id',
                         'Servicetemplatecommandargumentvalues.servicetemplate_id',
@@ -1920,7 +1920,7 @@ class ServicetemplatesTable extends Table {
                         'Commandarguments'
                     ]);
                 },
-                'Servicetemplateeventcommandargumentvalues' => function (Query $query) {
+                'Servicetemplateeventcommandargumentvalues' => function (SelectQuery $query) {
                     return $query->select([
                         'Servicetemplateeventcommandargumentvalues.id',
                         'Servicetemplateeventcommandargumentvalues.servicetemplate_id',
@@ -1930,7 +1930,7 @@ class ServicetemplatesTable extends Table {
                         'Commandarguments'
                     ]);
                 },
-                'Customvariables'                           => function (Query $query) {
+                'Customvariables'                           => function (SelectQuery $query) {
                     return $query->select([
                         'Customvariables.id',
                         'Customvariables.objecttype_id',

@@ -102,7 +102,7 @@ class UsageFlagCommand extends Command {
         /** @var AutoreportsServicesMembershipsTable $AutoreportsServicesMembershipsTable */
         $AutoreportsServicesMembershipsTable = TableRegistry::getTableLocator()->get('AutoreportModule.AutoreportsServicesMemberships');
 
-        $hosts = $AutoreportsHostsMembershipsTable->find()
+        $hosts = $AutoreportsHostsMembershipsTable->unhydratedFind()
             ->select([
                 'id',
                 'host_id'
@@ -110,7 +110,6 @@ class UsageFlagCommand extends Command {
             ->groupBy([
                 'host_id'
             ])
-            ->disableHydration()
             ->all();
 
 
@@ -122,7 +121,7 @@ class UsageFlagCommand extends Command {
             }
         }
 
-        $services = $AutoreportsServicesMembershipsTable->find()
+        $services = $AutoreportsServicesMembershipsTable->unhydratedFind()
             ->select([
                 'id',
                 'service_id'
@@ -130,7 +129,6 @@ class UsageFlagCommand extends Command {
             ->groupBy([
                 'service_id'
             ])
-            ->disableHydration()
             ->all();
 
         foreach ($services as $service) {
@@ -155,7 +153,7 @@ class UsageFlagCommand extends Command {
         /** @var EventcorrelationsTable $EventcorrelationsTable */
         $EventcorrelationsTable = TableRegistry::getTableLocator()->get('EventcorrelationModule.Eventcorrelations');
 
-        $hosts = $EventcorrelationsTable->find()
+        $hosts = $EventcorrelationsTable->unhydratedFind()
             ->select([
                 'id',
                 'host_id'
@@ -163,7 +161,6 @@ class UsageFlagCommand extends Command {
             ->groupBy([
                 'host_id'
             ])
-            ->disableHydration()
             ->all();
 
 
@@ -175,7 +172,7 @@ class UsageFlagCommand extends Command {
             }
         }
 
-        $services = $EventcorrelationsTable->find()
+        $services = $EventcorrelationsTable->unhydratedFind()
             ->select([
                 'id',
                 'service_id'
@@ -183,7 +180,6 @@ class UsageFlagCommand extends Command {
             ->groupBy([
                 'service_id'
             ])
-            ->disableHydration()
             ->all();
 
 

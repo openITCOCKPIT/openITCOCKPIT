@@ -29,7 +29,7 @@ namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\WindowsUpdatesHost;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -140,7 +140,7 @@ class WindowsUpdatesHostsTable extends Table {
                 'WindowsUpdatesHosts.host_id' => $hostId
             ])
             ->contain([
-                'WindowsUpdates' => function (Query $query) {
+                'WindowsUpdates' => function (SelectQuery $query) {
                     return $query->select([
                         'id',
                         'update_id',
@@ -160,7 +160,7 @@ class WindowsUpdatesHostsTable extends Table {
 
 
     public function getUpdateWithHost(int $updateId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'WindowsUpdatesHosts.id',
                 'WindowsUpdatesHosts.windows_update_id',
@@ -189,7 +189,7 @@ class WindowsUpdatesHostsTable extends Table {
         $query->where([
             'Hosts.disabled' => 0
         ])->contain([
-            'WindowsUpdates' => function (Query $query) {
+            'WindowsUpdates' => function (SelectQuery $query) {
                 $query->select([
                     'WindowsUpdates.name',
                     'WindowsUpdates.description',
@@ -219,8 +219,6 @@ class WindowsUpdatesHostsTable extends Table {
         )
             ->groupBy(['Hosts.id']);
 
-        $query->disableHydration();
-
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $query->toArray();
@@ -242,11 +240,10 @@ class WindowsUpdatesHostsTable extends Table {
      * @return array
      */
     public function getUpdatesByHostId($hostId): array {
-        return $this->find()
+        return $this->unhydratedFind()
             ->where([
                 'host_id' => $hostId
             ])
-            ->disableHydration()
             ->toArray();
     }
 
@@ -258,7 +255,7 @@ class WindowsUpdatesHostsTable extends Table {
      * @return array
      */
     public function getUpdatesOfHost(int $hostId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'WindowsUpdatesHosts.id',
                 'WindowsUpdatesHosts.windows_update_id',
@@ -287,7 +284,7 @@ class WindowsUpdatesHostsTable extends Table {
         $query->where([
             'Hosts.disabled' => 0
         ])->contain([
-            'WindowsUpdates' => function (Query $query) {
+            'WindowsUpdates' => function (SelectQuery $query) {
                 $query->select([
                     'WindowsUpdates.name',
                     'WindowsUpdates.description',
@@ -316,8 +313,6 @@ class WindowsUpdatesHostsTable extends Table {
                 ['WindowsUpdatesHosts.id' => 'asc']
             )
         );
-
-        $query->disableHydration();
 
         if ($PaginateOMat === null) {
             //Just execute query

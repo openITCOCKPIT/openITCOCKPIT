@@ -24,7 +24,6 @@
 
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
 
 class CreateEventlogs extends \Migrations\BaseMigration {
 

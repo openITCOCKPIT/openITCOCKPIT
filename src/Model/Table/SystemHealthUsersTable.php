@@ -108,7 +108,7 @@ class SystemHealthUsersTable extends Table {
      */
     public function getUsersForNotifications($notify_on_warning, $notify_on_critical, $notify_on_recovery) {
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'full_name' => $query->func()->concat([
                 'Users.firstname' => 'literal',
@@ -137,7 +137,7 @@ class SystemHealthUsersTable extends Table {
             ]);
         }
 
-        $query->disableHydration()->all();
+        $query->all();
 
         if (empty($query)) {
             return [];
@@ -160,7 +160,7 @@ class SystemHealthUsersTable extends Table {
      */
     public function getUserForEdit($id): array {
 
-        $query = $this->find()->select([
+        $query = $this->unhydratedFind()->select([
             'SystemHealthUsers.user_id',
             'SystemHealthUsers.notify_on_warning',
             'SystemHealthUsers.notify_on_critical',
@@ -174,8 +174,7 @@ class SystemHealthUsersTable extends Table {
             ])
             ->where([
                 'SystemHealthUsers.id' => $id
-            ])
-            ->disableHydration();
+            ]);
 
         if (empty($query)) {
             return [];
@@ -185,7 +184,7 @@ class SystemHealthUsersTable extends Table {
 
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        $query = $UsersTable->find()
+        $query = $UsersTable->unhydratedFind()
             ->where([
                 'Users.id IS' => $user['user_id']
             ])
@@ -194,8 +193,7 @@ class SystemHealthUsersTable extends Table {
                 'Usercontainerroles' => [
                     'Containers'
                 ],
-            ])
-            ->disableHydration()->first();
+            ])->first();
 
         $user['containers'] = [
             '_ids' => Hash::extract($query, 'containers.{n}.id')
@@ -220,11 +218,10 @@ class SystemHealthUsersTable extends Table {
      */
     public function getSystemHealthUserByUserId($id): array {
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'SystemHealthUsers.user_id' => $id
-            ])
-            ->disableHydration();
+            ]);
 
         if (empty($query)) {
             return [];
@@ -259,15 +256,14 @@ class SystemHealthUsersTable extends Table {
         //Get all user ids where container assigned are made directly at the user
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        $query = $UsersTable->find()
+        $query = $UsersTable->unhydratedFind()
             ->select([
                 'Users.id'
             ])
             ->matching('Containers')
             ->groupBy([
                 'Users.id'
-            ])
-            ->disableHydration();
+            ]);
 
         if (!empty($MY_RIGHTS)) {
             $query->where([
@@ -277,15 +273,14 @@ class SystemHealthUsersTable extends Table {
         $userIds = Hash::extract($query->toArray(), '{n}.id');
 
         //Get all user ids where container assigned are made through an user container role
-        $query = $UsersTable->find()
+        $query = $UsersTable->unhydratedFind()
             ->select([
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
             ->groupBy([
                 'Users.id'
-            ])
-            ->disableHydration();
+            ]);
 
         if (!empty($MY_RIGHTS)) {
             $query->where([

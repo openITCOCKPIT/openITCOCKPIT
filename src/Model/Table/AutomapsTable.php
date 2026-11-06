@@ -316,7 +316,7 @@ class AutomapsTable extends Table {
      * @return array
      */
     public function getAutomapsForCopy($ids = [], array $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where(['Automaps.id IN' => $ids])
             ->orderBy(['Automaps.id' => 'asc']);
 
@@ -326,7 +326,7 @@ class AutomapsTable extends Table {
             ]);
         }
 
-        $query->disableHydration()
+        $query
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());

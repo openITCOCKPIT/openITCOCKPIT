@@ -27,7 +27,7 @@ namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\Log\Log;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -167,7 +167,7 @@ class ChangelogsTable extends Table {
 
         $query = $this->find()
             ->select($select)
-            ->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
+            ->innerJoinWith('Containers', function (SelectQuery $q) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     return $q->where(['Containers.id IN' => $MY_RIGHTS]);
                 }

@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
 
 /**
  * Class GolangAgent
@@ -37,7 +36,7 @@ class GolangAgent extends \Migrations\BaseMigration {
             ->addColumn('config', 'text', [
                 'default' => '',
                 'null'    => false,
-                'limit'   => \Phinx\Db\Adapter\MysqlAdapter::TEXT_REGULAR,
+                'limit'   => \Migrations\Db\Adapter\MysqlAdapter::TEXT_REGULAR,
                 'after'   => 'push_noticed'
             ])
             ->update();

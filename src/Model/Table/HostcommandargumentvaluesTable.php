@@ -112,13 +112,12 @@ class HostcommandargumentvaluesTable extends Table {
      * @return array
      */
     public function getByHostIdAndCommandId($hostId, $commandId) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain(['Commandarguments'])
             ->where([
                 'Hostcommandargumentvalues.host_id' => $hostId,
                 'Commandarguments.command_id'       => $commandId
             ])
-            ->disableHydration()
             ->all();
 
         $result = $query->toArray();

@@ -42,7 +42,7 @@ use App\Model\Table\ServicesTable;
 use App\Model\Table\TimeperiodsTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
@@ -160,19 +160,19 @@ class ServiceescalationsController extends AppController {
         }
 
         $serviceescalation = $ServiceescalationsTable->get($id, contain: [
-            'Services'      => function (Query $q) {
+            'Services'      => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id', 'name']);
             },
-            'Servicegroups' => function (Query $q) {
+            'Servicegroups' => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id']);
             },
-            'Contacts'      => function (Query $q) {
+            'Contacts'      => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id']);
             },
-            'Contactgroups' => function (Query $q) {
+            'Contactgroups' => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id']);
             },

@@ -115,9 +115,8 @@ class DeletedHostsTable extends Table {
      * @return array
      */
     public function getDeletedHostsIndex(HostFilter $HostFilter, $PaginateOMat = null) {
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->where($HostFilter->deletedFilter())
-            ->disableHydration()
             ->orderBy($HostFilter->getOrderForPaginator('DeletedHosts.created', 'desc'));
 
 

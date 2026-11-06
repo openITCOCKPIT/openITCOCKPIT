@@ -123,7 +123,7 @@ class ServicestatusTable extends Table implements ServicestatusTableInterface {
 
         $select = $ServicestatusFields->getFields();
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select($select)
             ->contain([
                 'Objects' => [
@@ -150,7 +150,6 @@ class ServicestatusTable extends Table implements ServicestatusTableInterface {
         }
 
         $query->where($where);
-        $query->disableHydration();
 
         if ($findType === 'all') {
             $result = $query->all();

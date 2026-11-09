@@ -1875,12 +1875,8 @@ class ServicetemplatesTable extends Table {
      * @param $uuid
      * @return array
      */
-    public function getServicetemplateByUuidForImportDiff($uuid) {
-        $query = $this->unhydratedFind()
-            ->select([
-                'Servicetemplates.id',
-                'name' => 'Servicetemplates.template_name'
-            ])
+    public function getServicetemplateByUuidForImportDiff($uuid): array {
+        $query = $this->find()
             ->contain([
                 'CheckPeriod'                               => function (SelectQuery $query) {
                     return $query->select([
@@ -1946,6 +1942,8 @@ class ServicetemplatesTable extends Table {
                 }
             ])
             ->where(['Servicetemplates.uuid' => $uuid])
+            ->disableResultsCasting()
+            ->enableHydration(false)
             ->firstOrFail();
 
         $servicetemplate = $this->emptyArrayIfNull($query);

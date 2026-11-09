@@ -107,6 +107,10 @@ class MacosAppsHostsTable extends Table {
             ->requirePresence('version', 'create')
             ->notEmptyString('version');
 
+        $validator
+            ->scalar('bundle_id')
+            ->maxLength('bundle_id', 255);
+
         return $validator;
     }
 

@@ -342,12 +342,18 @@ class PackagesLinuxTable extends Table {
                 // Package already exists for host - update it
                 // This stores new versions of already existing packages (after apt-get dist-upgrade for example)
                 $linuxPackageHost = $existingPackagesOfHost[$packageId];
-                if ($linuxPackageHost->current_version != $package['Version']) {
+                $hasSourceInformation = (!empty($linuxPackageHost->source_package) || !empty($linuxPackageHost->source_rpm));
+                if ($linuxPackageHost->current_version != $package['Version'] || !$hasSourceInformation) {
                     $linuxPackageHost->current_version = $package['Version'];
                     $linuxPackageHost->available_version = $package['Version'];
                     $linuxPackageHost->needs_update = false;
                     $linuxPackageHost->is_security_update = false;
                     $linuxPackageHost->is_patch = false;
+                    $linuxPackageHost->source_package = $package['SourcePackage'] ?? null;
+                    $linuxPackageHost->source_version = $package['SourceVersion'] ?? null;
+                    $linuxPackageHost->architecture = $package['Architecture'] ?? null;
+                    $linuxPackageHost->modularity_label = $package['ModularityLabel'] ?? null;
+                    $linuxPackageHost->source_rpm = $package['SourceRPM'] ?? null;
                     if ($PackagesLinuxHostsTable->save($linuxPackageHost)) {
                         $existingPackagesOfHost[$linuxPackageHost->package_linux_id] = $linuxPackageHost;
                     }
@@ -363,6 +369,11 @@ class PackagesLinuxTable extends Table {
                     'needs_update'       => false,
                     'is_security_update' => false,
                     'is_patch'           => false,
+                    'source_package'     => $package['SourcePackage'] ?? null,
+                    'source_version'     => $package['SourceVersion'] ?? null,
+                    'architecture'       => $package['Architecture'] ?? null,
+                    'modularity_label'   => $package['ModularityLabel'] ?? null,
+                    'source_rpm'         => $package['SourceRPM'] ?? null,
                 ]);
             }
         }

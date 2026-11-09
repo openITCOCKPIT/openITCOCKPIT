@@ -126,6 +126,32 @@ class PackagesLinuxHostsTable extends Table {
             ->boolean('is_patch')
             ->notEmptyString('is_patch');
 
+        $validator
+            ->scalar('source_package')
+            ->maxLength('source_package', 255)
+            ->allowEmptyString('source_package');
+
+        $validator
+            ->scalar('source_version')
+            ->maxLength('source_version', 255)
+            ->allowEmptyString('source_version');
+
+        $validator
+            ->scalar('architecture')
+            ->maxLength('architecture', 255)
+            ->allowEmptyString('architecture');
+
+        $validator
+            ->scalar('modularity_label')
+            ->maxLength('modularity_label', 255)
+            ->allowEmptyString('modularity_label');
+
+
+        $validator
+            ->scalar('source_rpm')
+            ->maxLength('source_rpm', 255)
+            ->allowEmptyString('source_rpm');
+
         return $validator;
     }
 

@@ -137,6 +137,16 @@ class PackagesHostDetailsTable extends Table {
             ->allowEmptyString('os_family');
 
         $validator
+            ->scalar('kernel_release')
+            ->maxLength('kernel_release', 255)
+            ->allowEmptyString('kernel_release');
+
+        $validator
+            ->scalar('packages_hash')
+            ->maxLength('packages_hash', 64)
+            ->requirePresence('packages_hash', 'create');
+
+        $validator
             ->scalar('agent_version')
             ->maxLength('agent_version', 15)
             ->requirePresence('agent_version', 'create')
@@ -189,21 +199,28 @@ class PackagesHostDetailsTable extends Table {
     /**
      * @param int $hostId
      * @param array $details
-     * @return \App\Model\Entity\PackagesHostDetail|\Cake\Datasource\EntityInterface|false
+     * @return string|null
      */
     public function updateHostDetails(int $hostId, array $details) {
         $entity = $this->find()
             ->where(['host_id' => $hostId])
             ->first();
 
-        if (!$entity) {
+        $oldPackagesHash = null;
+
+        if ($entity) {
+            // Entity found, get the current hash value before updating
+            $oldPackagesHash = $entity->packages_hash;
+        } else {
+            // No entity found, create a new one
             $entity = $this->newEmptyEntity();
             $entity->host_id = $hostId;
         }
 
         $entity->setAccess('host_id', false);
         $entity = $this->patchEntity($entity, $details);
-        return $this->save($entity);
+        $this->save($entity);
+        return $oldPackagesHash;
     }
 
     public function getSummary(GenericFilter $GenericFilter, array $MY_RIGHTS = []): array {

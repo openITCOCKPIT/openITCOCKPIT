@@ -38,6 +38,8 @@ use Cake\ORM\Entity;
  * @property string $os_name
  * @property string $os_version
  * @property string $os_family
+ * @property string $kernel_release
+ * @property string $packages_hash
  * @property string $agent_version
  * @property bool $reboot_required
  * @property int $system_uptime
@@ -66,6 +68,8 @@ class PackagesHostDetail extends Entity {
         'os_name'                    => true,
         'os_version'                 => true,
         'os_family'                  => true,
+        'kernel_release'             => true,
+        'packages_hash'              => true,
         'agent_version'              => true,
         'reboot_required'            => true,
         'system_uptime'              => true,

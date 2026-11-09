@@ -72,7 +72,10 @@ class AgentSoftwareInventory {
             throw new \Exception('Agent reports pending state, skipping package update');
         }
 
+        $requireUpdate = true;
         if (!empty($result['Stats']) && !empty($result['Stats']['OperatingSystem'])) {
+            $newPackagesHash = $this->getPackagesHash($result);
+
             $availableUpdatesCounts = $this->getUpdateCounts($result);
 
             $details = [
@@ -80,6 +83,8 @@ class AgentSoftwareInventory {
                 'os_name'                    => $result['Stats']['OsName'],            // "ubuntu", "opensuse-tumbleweed", "almalinux", "macos",  "Microsoft Windows 11 Enterprise"
                 'os_version'                 => $result['Stats']['OsVersion'] ?? '',   // "20.04",  "20260113",            "9.7",       "26.2",   "24H2 (10.0.26100.7462 Build 26100.7462)"
                 'os_family'                  => $result['Stats']['OsFamily'] ?? '',    // "debian", "suse",                "rhel",      "darwin", "windows"
+                'kernel_release'             => $result['Stats']['KernelRelease'] ?? '', // Currently running linux kernel release, e.g. "5.15.0-76-generic"
+                'packages_hash'              => $newPackagesHash,
                 'agent_version'              => $result['Stats']['AgentVersion'] ?? '',
                 'reboot_required'            => !empty($result['Stats']['RebootRequired']) ? 1 : 0,
                 'system_uptime'              => $result['Stats']['Uptime'] ?? 0,
@@ -88,7 +93,13 @@ class AgentSoftwareInventory {
                 'available_security_updates' => $availableUpdatesCounts['available_security_updates'],
                 'last_error'                 => !empty($result['Stats']['LastError']) ? $result['Stats']['LastError'] : null
             ];
-            $this->PackagesHostDetailsTable->updateHostDetails($hostId, $details);
+            $oldPackagesHash = $this->PackagesHostDetailsTable->updateHostDetails($hostId, $details);
+            $requireUpdate = $oldPackagesHash !== $newPackagesHash;
+
+            if (!$requireUpdate) {
+                // No changes in packages, skip further processing
+                return;
+            }
         }
 
         switch ($result['Stats']['OperatingSystem']) {
@@ -181,6 +192,38 @@ class AgentSoftwareInventory {
         }
 
         return $counts;
+    }
+
+    /**
+     * Creats a hash sum of the installed packages and available updates to detect changes in the package inventory.
+     *
+     * @param array $result
+     * @return string
+     * @throws \Exception
+     */
+    public function getPackagesHash(array $result): string {
+        switch ($result['Stats']['OperatingSystem']) {
+            case 'linux':
+                $installedPackages = $result['LinuxPackages'] ?? [];
+                $availableUpdates = $result['LinuxUpdates'] ?? [];
+                return hash('sha256', json_encode(['installed' => $installedPackages, 'updates' => $availableUpdates]));
+
+            case 'windows':
+                $apps = $result['WindowsApps'] ?? [];
+                $availableUpdates = $result['WindowsUpdates'] ?? [];
+                return hash('sha256', json_encode(['apps' => $apps, 'updates' => $availableUpdates]));
+                break;
+
+            case 'macos':
+                $apps = $result['MacosApps'] ?? [];
+                $availableUpdates = $result['MacosUpdates'] ?? [];
+                return hash('sha256', json_encode(['apps' => $apps, 'updates' => $availableUpdates]));
+                break;
+
+            default:
+                throw new \Exception('Package processing for OS ' . $result['Stats']['OperatingSystem'] . ' not implemented yet');
+                break;
+        }
     }
 
 }

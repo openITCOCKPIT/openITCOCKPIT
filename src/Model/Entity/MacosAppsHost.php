@@ -36,6 +36,7 @@ use Cake\ORM\Entity;
  * @property int $macos_app_id
  * @property int $host_id
  * @property string $version
+ * @property string|null $bundle_id
  * @property \Cake\I18n\DateTime $created
  * @property \Cake\I18n\DateTime $modified
  *
@@ -56,6 +57,7 @@ class MacosAppsHost extends Entity {
         'macos_app_id' => true,
         'host_id'      => true,
         'version'      => true,
+        'bundle_id'    => true,
         'created'      => true,
         'modified'     => true,
         'macos_app'    => true,

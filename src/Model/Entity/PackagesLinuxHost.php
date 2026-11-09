@@ -40,6 +40,11 @@ use Cake\ORM\Entity;
  * @property bool $needs_update
  * @property bool $is_security_update
  * @property bool $is_patch
+ * @property string $source_package
+ * @property string $source_version
+ * @property string $architecture
+ * @property string $modularity_label
+ * @property string $source_rpm
  * @property \Cake\I18n\DateTime $modified
  * @property \Cake\I18n\DateTime $created
  *
@@ -63,6 +68,11 @@ class PackagesLinuxHost extends Entity {
         'needs_update'       => true,
         'is_security_update' => true,
         'is_patch'           => true,
+        'source_package'     => true,
+        'source_version'     => true,
+        'architecture'       => true,
+        'modularity_label'   => true,
+        'source_rpm'         => true,
         'modified'           => true,
         'created'            => true,
         'host'               => true,

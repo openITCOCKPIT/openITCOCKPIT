@@ -294,8 +294,11 @@ class MacosAppsTable extends Table {
             if (isset($existingAppsOfHost[$appId])) {
                 // App already exists for host - update it
                 $macosAppHostEntity = $existingAppsOfHost[$appId];
-                if ($macosAppHostEntity->version != $app['Version']) {
+                $bundleId = $app['BundleID'] ?? null;
+                if ($macosAppHostEntity->version != $app['Version'] || $macosAppHostEntity->bundle_id !== $bundleId) {
+                    // ITC-3796 adds the bundleId so in case it is missing, has changed or the version has changed, we update the entry
                     $macosAppHostEntity->version = $app['Version'];
+                    $macosAppHostEntity->bundle_id = $bundleId;
                     if ($MacosAppsHostsTable->save($macosAppHostEntity)) {
                         $existingAppsOfHost[$macosAppHostEntity->macos_app_id] = $macosAppHostEntity;
                     }
@@ -306,6 +309,7 @@ class MacosAppsTable extends Table {
                     'host_id'      => $hostId,
                     'macos_app_id' => $appId,
                     'version'      => $app['Version'],
+                    'bundle_id'    => $app['BundleID'] ?? null
                 ]);
             }
         }

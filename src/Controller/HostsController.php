@@ -2438,12 +2438,9 @@ class HostsController extends AppController {
         //Parse BBCode in acknowledgement comments
         $BBCodeParser = new BBCodeParser();
 
-        //Parse BBCode and Markdown in long output
+        //Parse BBCode or Markdown in long output
         $BBCMarkDownParser = new BBCMarkDownParser();
-        $hoststatus['longOutputHtml'] = $BBCMarkDownParser->render(
-            $Hoststatus->getLongOutput(),
-            BBCMarkDownParser::ESCAPED_LF
-        );
+        $hoststatus['longOutputHtml'] = $BBCMarkDownParser->render($Hoststatus->getLongOutput(), true);
 
         $mergedHost['allowEdit'] = $allowEdit;
 

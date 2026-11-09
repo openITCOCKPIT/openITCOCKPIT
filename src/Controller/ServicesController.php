@@ -1804,12 +1804,9 @@ class ServicesController extends AppController {
         $BBCodeParser = new BBCodeParser();
         $servicestatus['outputHtml'] = $BBCodeParser->nagiosNl2br($BBCodeParser->asHtml($Servicestatus->getOutput(), true));
 
-        //Parse BBCode and Markdown in long output
+        //Parse BBCode or Markdown in long output
         $BBCMarkDownParser = new BBCMarkDownParser();
-        $servicestatus['longOutputHtml'] = $BBCMarkDownParser->render(
-            $Servicestatus->getLongOutput(),
-            BBCMarkDownParser::ESCAPED_LF
-        );
+        $servicestatus['longOutputHtml'] = $BBCMarkDownParser->render($Servicestatus->getLongOutput(), true);
 
         $mergedService['allowEdit'] = $allowEdit;
 

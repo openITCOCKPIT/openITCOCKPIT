@@ -27,7 +27,6 @@ namespace itnovum\openITCOCKPIT\Core\ValueObjects;
 
 use Authentication\IdentityInterface;
 use itnovum\openITCOCKPIT\Core\Views\UserTime;
-use LasseRafn\InitialAvatarGenerator\InitialAvatar;
 
 class User {
     /**
@@ -138,29 +137,6 @@ class User {
      */
     public function getUsergroupId(): int {
         return $this->usergroupId;
-    }
-
-    /**
-     * @return string|null
-     * @deprecated Moved into Angular Frontend
-     */
-    public function getUserAvatar() {
-
-        $diskPath = WWW_ROOT . 'img' . DS . 'userimages' . DS . 'initial_avatar_' . md5($this->fullName) . '.png';
-
-        $Avatar = new InitialAvatar();
-        $image = $Avatar->name($this->fullName)
-            ->background('#46c3db')
-            ->color('#c5e3f6')
-            ->size(200)->generate()
-            ->save($diskPath, 100, 'png');
-        $userImage = null;
-
-        if (file_exists($diskPath)) {
-            $userImage = '/img/userimages' . DS . 'initial_avatar_' . md5($this->fullName) . '.png';
-        }
-
-        return $userImage;
     }
 
 }

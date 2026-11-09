@@ -893,7 +893,8 @@ class ServicetemplategroupsTable extends Table {
                     $q->select([
                         'Servicetemplates.id',
                         'Servicetemplates.uuid',
-                        'Servicetemplates.template_name'
+                        'Servicetemplates.template_name',
+                        'Servicetemplates.name'
                     ]);
                     return $q;
                 }
@@ -1002,7 +1003,7 @@ class ServicetemplategroupsTable extends Table {
      * @param $uuid
      * @return array
      */
-    public function getServicetemplategroupByUuidForImportDiff($uuid) {
+    public function getServicetemplategroupByUuidForImportDiff($uuid): array {
         $query = $this->unhydratedFind('all')
             ->select([
                 'Servicetemplategroups.id',
@@ -1012,8 +1013,9 @@ class ServicetemplategroupsTable extends Table {
                 'Containers',
                 'Servicetemplates' => function (SelectQuery $query) {
                     return $query->select([
-                        'name' => 'Servicetemplates.name',
-                        'uuid' => 'Servicetemplates.uuid'
+                        'template_name' => 'Servicetemplates.template_name',
+                        'name'          => 'Servicetemplates.name',
+                        'uuid'          => 'Servicetemplates.uuid'
                     ]);
                 }
             ])
@@ -1027,5 +1029,4 @@ class ServicetemplategroupsTable extends Table {
 
         return $servicetemplategroup;
     }
-
 }

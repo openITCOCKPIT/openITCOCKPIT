@@ -406,7 +406,7 @@ class AgentHttpClient {
                 'http'  => '',
                 'https' => ''
             ],
-            'timeout' => 30
+            'timeout' => intval(env('OITC_HTTP_TIMEOUT', 30))
         ];
 
         // Add Proxy options

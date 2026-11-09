@@ -37,7 +37,7 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\Core\Plugin;
 use Cake\Datasource\EntityInterface;
 use Cake\ORM\Association\BelongsTo;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Utility\Hash;
@@ -165,7 +165,7 @@ class GrafanaUserdashboardsTable extends Table {
      * @return array
      */
     public function getGrafanaUserdashboardsIndex(GrafanaUserDashboardFilter $GrafanaUserDashboardFilter, $PaginateOMat = null, $MY_RIGHTS = [], $skipUnsyncDashboards = false) {
-        $query = $this->find('all');
+        $query = $this->unhydratedFind('all');
         $query->contain(['Containers']);
         $query->where($GrafanaUserDashboardFilter->indexFilter());#
         if (!empty($MY_RIGHTS)) {
@@ -183,7 +183,6 @@ class GrafanaUserdashboardsTable extends Table {
         }
 
         $query->orderBy($GrafanaUserDashboardFilter->getOrderForPaginator('GrafanaUserdashboards.name', 'asc'));
-        $query->disableHydration();
 
 
         if ($PaginateOMat === null) {
@@ -213,13 +212,13 @@ class GrafanaUserdashboardsTable extends Table {
      * @return array
      */
     public function getGrafanaUserDashboardEdit($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
-                'GrafanaUserdashboardPanels' => function (Query $query) {
+                'GrafanaUserdashboardPanels' => function (SelectQuery $query) {
                     $query->contain([
-                        'GrafanaUserdashboardMetrics' => function (Query $query) {
+                        'GrafanaUserdashboardMetrics' => function (SelectQuery $query) {
                             $query->contain([
-                                'Hosts'    => function (Query $query) {
+                                'Hosts'    => function (SelectQuery $query) {
                                     $query->disableAutoFields();
                                     $query->select([
                                         'id',
@@ -228,7 +227,7 @@ class GrafanaUserdashboardsTable extends Table {
                                     ]);
                                     return $query;
                                 },
-                                'Services' => function (Query $query) {
+                                'Services' => function (SelectQuery $query) {
                                     $query->disableAutoFields();
                                     $query->select([
                                         'id',
@@ -238,7 +237,7 @@ class GrafanaUserdashboardsTable extends Table {
                                     ]);
 
                                     if (Plugin::isLoaded('PrometheusModule')) {
-                                        $query->contain('PrometheusAlertRules', function (Query $query) {
+                                        $query->contain('PrometheusAlertRules', function (SelectQuery $query) {
                                             return $query
                                                 ->disableAutoFields()
                                                 ->select([
@@ -261,7 +260,7 @@ class GrafanaUserdashboardsTable extends Table {
                                     }
 
                                     $query->contain([
-                                        'Servicetemplates' => function (Query $query) {
+                                        'Servicetemplates' => function (SelectQuery $query) {
                                             $query->disableAutoFields();
                                             $query->select([
                                                 'id',
@@ -283,8 +282,7 @@ class GrafanaUserdashboardsTable extends Table {
                     return $query;
                 },
             ])
-            ->where(['GrafanaUserdashboards.id' => $id])
-            ->disableHydration();
+            ->where(['GrafanaUserdashboards.id' => $id]);
 
 
         $result = $query->first();
@@ -337,7 +335,7 @@ class GrafanaUserdashboardsTable extends Table {
 
         $where = Hash::merge($_where, $where);
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'GrafanaUserdashboards.' . $index,
             'GrafanaUserdashboards.name'
@@ -349,8 +347,6 @@ class GrafanaUserdashboardsTable extends Table {
                 'GrafanaUserdashboards.container_id IN' => $MY_RIGHTS
             ]);
         }
-
-        $query->disableHydration();
 
         $result = $query->toArray();
         if (empty($result)) {
@@ -395,7 +391,7 @@ class GrafanaUserdashboardsTable extends Table {
      * @return array
      */
     public function getGrafanaUserdashboardsForCopy($ids = [], array $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'GrafanaUserdashboards.id',
                 'GrafanaUserdashboards.name'
@@ -409,7 +405,7 @@ class GrafanaUserdashboardsTable extends Table {
             ]);
         }
 
-        $query->disableHydration()
+        $query
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());
@@ -460,11 +456,10 @@ class GrafanaUserdashboardsTable extends Table {
      * @return array
      */
     public function getDashboardUuids(): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'grafana_uid'
             ])
-            ->disableHydration()
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());

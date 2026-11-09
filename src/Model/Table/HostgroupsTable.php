@@ -32,7 +32,7 @@ use App\Model\Entity\Changelog;
 use App\Model\Entity\Hostgroup;
 use Cake\Database\Expression\ComparisonExpression;
 use Cake\Datasource\Exception\RecordNotFoundException;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -157,7 +157,7 @@ class HostgroupsTable extends Table {
      * @param array $containerIds
      * @param string $type
      * @param string $index
-     * @return array|\Cake\ORM\Query
+     * @return array|SelectQuery
      * @deprecated Use self::getHostgroupsByContainerId()
      */
     public function hostgroupsByContainerId($containerIds = [], $type = 'all', $index = 'container_id') {
@@ -197,7 +197,7 @@ class HostgroupsTable extends Table {
 
         switch ($type) {
             case 'all':
-                $query = $this->find()
+                $query = $this->unhydratedFind()
                     ->contain([
                         'Containers'
                     ])
@@ -208,14 +208,13 @@ class HostgroupsTable extends Table {
                     ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
-                    ->disableHydration()
                     ->all();
 
                 return $this->emptyArrayIfNull($query->toArray());
 
 
             default:
-                $query = $this->find()
+                $query = $this->unhydratedFind()
                     ->contain([
                         'Containers'
                     ])
@@ -226,7 +225,6 @@ class HostgroupsTable extends Table {
                     ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
-                    ->disableHydration()
                     ->all();
 
                 $query = $query->toArray();
@@ -256,13 +254,12 @@ class HostgroupsTable extends Table {
         if (!is_array($ids)) {
             $ids = [$ids];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hostgroups.id',
                 'Containers.name'
             ])
-            ->contain(['Containers'])
-            ->disableHydration();
+            ->contain(['Containers']);
 
         $where = [];
         if (!empty($ids)) {
@@ -418,7 +415,7 @@ class HostgroupsTable extends Table {
     }
 
     public function getHostgroupForEdit($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Hostgroups.id' => $id
             ])
@@ -427,7 +424,6 @@ class HostgroupsTable extends Table {
                 'Hosttemplates',
                 'Containers'
             ])
-            ->disableHydration()
             ->first();
 
         $hostgroup = $query;
@@ -461,13 +457,13 @@ class HostgroupsTable extends Table {
     public function getHostgroupByIdForMapeditor($id, $MY_RIGHTS = []) {
         $query = $this->find()
             ->contain([
-                'Containers'    => function (Query $q) {
+                'Containers'    => function (SelectQuery $q) {
                     return $q->select([
                         'Containers.id',
                         'Containers.name'
                     ]);
                 },
-                'Hosts'         => function (Query $q) use ($MY_RIGHTS) {
+                'Hosts'         => function (SelectQuery $q) use ($MY_RIGHTS) {
                     if (!empty($MY_RIGHTS)) {
                         $q->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
                             'HostsToContainersSharing.host_id = Hosts.id'
@@ -478,7 +474,7 @@ class HostgroupsTable extends Table {
                     }
                     $q->contain([
                         'HostsToContainersSharing',
-                        'Services' => function (Query $q) {
+                        'Services' => function (SelectQuery $q) {
                             return $q->where([
                                 'Services.disabled' => 0
                             ])
@@ -493,13 +489,13 @@ class HostgroupsTable extends Table {
                     ]);
                     return $q;
                 },
-                'Hosttemplates' => function (Query $q) use ($MY_RIGHTS) {
+                'Hosttemplates' => function (SelectQuery $q) use ($MY_RIGHTS) {
                     return $q->enableAutoFields(false)
                         ->select([
                             'id'
                         ])
                         ->contain([
-                            'Hosts' => function (Query $query) use ($MY_RIGHTS) {
+                            'Hosts' => function (SelectQuery $query) use ($MY_RIGHTS) {
                                 if (!empty($MY_RIGHTS)) {
                                     $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
                                         'HostsToContainersSharing.host_id = Hosts.id'
@@ -571,7 +567,7 @@ class HostgroupsTable extends Table {
             ];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
                 'Containers'
             ])
@@ -586,7 +582,6 @@ class HostgroupsTable extends Table {
                 'Containers.name' => 'asc'
             ])
             ->limit(ITN_AJAX_LIMIT)
-            ->disableHydration()
             ->all();
 
         $hostgroupsWithLimit = [];
@@ -597,7 +592,7 @@ class HostgroupsTable extends Table {
 
         $selectedHostgroups = [];
         if (!empty($selected)) {
-            $query = $this->find()
+            $query = $this->unhydratedFind()
                 ->contain([
                     'Containers'
                 ])
@@ -618,7 +613,6 @@ class HostgroupsTable extends Table {
                 'Containers.name' => 'asc'
             ])
                 ->limit(ITN_AJAX_LIMIT)
-                ->disableHydration()
                 ->all();
 
             $selectedHostgroups = [];
@@ -642,7 +636,7 @@ class HostgroupsTable extends Table {
     public function getHostgroupsByContainerIdNew(HostgroupConditions $HostgroupConditions) {
         $where = $HostgroupConditions->getConditionsForFind();
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
                 'Containers'
             ])
@@ -656,7 +650,6 @@ class HostgroupsTable extends Table {
             ->orderBy([
                 'Containers.name' => 'asc'
             ])
-            ->disableHydration()
             ->all();
 
         $hostgroups = [];
@@ -675,7 +668,7 @@ class HostgroupsTable extends Table {
      */
     public function getHostgroupsForPdf(HostgroupFilter $HostgroupFilter, $MY_RIGHTS = []) {
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
                 'Hosts',
                 'Containers'
@@ -688,7 +681,7 @@ class HostgroupsTable extends Table {
         $query->where($where)
             ->orderBy(
                 $HostgroupFilter->getOrderForPaginator('Containers.name', 'asc')
-            )->disableHydration();
+            );
 
         $data = $query->all();
         return $this->emptyArrayIfNull($data->toArray());
@@ -733,7 +726,7 @@ class HostgroupsTable extends Table {
      * @return array
      */
     public function getHostsByHostgroupUuidForExternalcommands($uuid) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hostgroups.id'
             ])
@@ -742,7 +735,7 @@ class HostgroupsTable extends Table {
             ])
             ->contain([
                 'Hosts' =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->select([
                                 'Hosts.id',
@@ -755,7 +748,7 @@ class HostgroupsTable extends Table {
                             ])
                             ->contain([
                                 'Hosttemplates' =>
-                                    function (Query $q) {
+                                    function (SelectQuery $q) {
                                         return $q->enableAutoFields(false)
                                             ->select([
                                                 'Hosttemplates.active_checks_enabled'
@@ -763,7 +756,7 @@ class HostgroupsTable extends Table {
                                     }
                             ]);
                     },
-            ])->disableHydration();
+            ]);
         try {
             $result = $query->firstOrFail();
             return $result;
@@ -777,7 +770,7 @@ class HostgroupsTable extends Table {
      * @return array
      */
     public function getHostsByHostgroupUuidForExternalcommandsIncludeingHosttemplateHosts($uuid) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hostgroups.id'
             ])
@@ -786,7 +779,7 @@ class HostgroupsTable extends Table {
             ])
             ->contain([
                 'Hosts'         =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->select([
                                 'Hosts.id',
@@ -799,7 +792,7 @@ class HostgroupsTable extends Table {
                             ])
                             ->contain([
                                 'Hosttemplates' =>
-                                    function (Query $q) {
+                                    function (SelectQuery $q) {
                                         return $q->enableAutoFields(false)
                                             ->select([
                                                 'Hosttemplates.id',
@@ -809,13 +802,13 @@ class HostgroupsTable extends Table {
                             ]);
                     },
                 'Hosttemplates' =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->select([
                                 'Hosttemplates.id',
                             ]);
                     },
-            ])->disableHydration();
+            ]);
         try {
             $tmpResult = $query->firstOrFail();
             /** @var HostsTable $HostsTable */
@@ -827,7 +820,7 @@ class HostgroupsTable extends Table {
             }
 
             foreach ($tmpResult['hosttemplates'] as $hosttemplate) {
-                $hostsFromHosttemplate = $HostsTable->find()
+                $hostsFromHosttemplate = $HostsTable->unhydratedFind()
                     ->select([
                         'Hosts.id',
                         'Hosts.uuid',
@@ -840,7 +833,7 @@ class HostgroupsTable extends Table {
                     ])
                     ->contain([
                         'Hosttemplates' =>
-                            function (Query $q) {
+                            function (SelectQuery $q) {
                                 return $q->enableAutoFields(false)
                                     ->select([
                                         'Hosttemplates.id',
@@ -848,7 +841,6 @@ class HostgroupsTable extends Table {
                                     ]);
                             }
                     ])
-                    ->disableHydration()
                     ->all();
 
                 //Merge Hosts from host templates
@@ -879,7 +871,7 @@ class HostgroupsTable extends Table {
             $where['Containers.parent_id IN'] = $MY_RIGHTS;
         }
 
-        $hostgroup = $this->find()
+        $hostgroup = $this->unhydratedFind()
             ->select([
                 'Hostgroups.id',
                 'Hostgroups.description',
@@ -888,7 +880,7 @@ class HostgroupsTable extends Table {
             ])
             ->contain([
                 'Containers',
-                'Hosts'         => function (Query $q) use ($MY_RIGHTS) {
+                'Hosts'         => function (SelectQuery $q) use ($MY_RIGHTS) {
                     $q->enableAutoFields(false)
                         ->select([
                             'Hosts.id',
@@ -908,13 +900,13 @@ class HostgroupsTable extends Table {
                     }
                     return $q;
                 },
-                'Hosttemplates' => function (Query $q) use ($MY_RIGHTS) {
+                'Hosttemplates' => function (SelectQuery $q) use ($MY_RIGHTS) {
                     return $q->enableAutoFields(false)
                         ->select([
                             'id'
                         ])
                         ->contain([
-                            'Hosts' => function (Query $query) use ($MY_RIGHTS) {
+                            'Hosts' => function (SelectQuery $query) use ($MY_RIGHTS) {
                                 $query
                                     ->disableAutoFields()
                                     ->select([
@@ -943,7 +935,6 @@ class HostgroupsTable extends Table {
                 }
             ])
             ->where($where)
-            ->disableHydration()
             ->firstOrFail();
 
         return $hostgroup;
@@ -962,13 +953,13 @@ class HostgroupsTable extends Table {
             $where['Containers.parent_id IN'] = $MY_RIGHTS;
         }
 
-        $hostgroup = $this->find()
+        $hostgroup = $this->unhydratedFind()
             ->select([
                 'Hostgroups.id'
             ])
             ->contain([
                 'Containers',
-                'Hosts'         => function (Query $q) {
+                'Hosts'         => function (SelectQuery $q) {
                     return $q->enableAutoFields(false)
                         ->select([
                             'Hosts.id'
@@ -976,13 +967,13 @@ class HostgroupsTable extends Table {
                         ])
                         ->contain(['HostsToContainersSharing']);
                 },
-                'Hosttemplates' => function (Query $q) {
+                'Hosttemplates' => function (SelectQuery $q) {
                     return $q->enableAutoFields(false)
                         ->select([
                             'id'
                         ])
                         ->contain([
-                            'Hosts' => function (Query $query) {
+                            'Hosts' => function (SelectQuery $query) {
                                 $query
                                     ->disableAutoFields()
                                     ->select([
@@ -999,7 +990,6 @@ class HostgroupsTable extends Table {
                 }
             ])
             ->where($where)
-            ->disableHydration()
             ->first();
 
         if ($hostgroup === null) {
@@ -1018,17 +1008,17 @@ class HostgroupsTable extends Table {
      * @return array
      */
     public function getHostIdsByHostgroupId($id): array {
-        $hostgroup = $this->find()
+        $hostgroup = $this->unhydratedFind()
             ->contain([
                 // Get all hosts that are in this host group through the host template AND
                 // which does NOT have any own host groups
-                'Hosttemplates' => function (Query $query) {
+                'Hosttemplates' => function (SelectQuery $query) {
                     $query->disableAutoFields()
                         ->select([
                             'id',
                         ])
                         ->contain([
-                            'Hosts' => function (Query $query) {
+                            'Hosts' => function (SelectQuery $query) {
                                 $query->disableAutoFields()
                                     ->select([
                                         'Hosts.id',
@@ -1045,7 +1035,7 @@ class HostgroupsTable extends Table {
                 },
 
                 // Get all hosts from this host group
-                'Hosts'         => function (Query $query) {
+                'Hosts'         => function (SelectQuery $query) {
                     $query->disableAutoFields()
                         ->select([
                             'Hosts.id',
@@ -1057,7 +1047,6 @@ class HostgroupsTable extends Table {
             ->where([
                 'Hostgroups.id' => $id
             ])
-            ->disableHydration()
             ->first();
 
 
@@ -1078,17 +1067,17 @@ class HostgroupsTable extends Table {
         if (empty($ids)) {
             return [];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
                 // Get all hosts that are in this host group through the host template AND
                 // which does NOT have any own host groups
-                'Hosttemplates' => function (Query $query) use ($MY_RIGHTS) {
+                'Hosttemplates' => function (SelectQuery $query) use ($MY_RIGHTS) {
                     $query->disableAutoFields()
                         ->select([
                             'id',
                         ])
                         ->contain([
-                            'Hosts' => function (Query $query) use ($MY_RIGHTS) {
+                            'Hosts' => function (SelectQuery $query) use ($MY_RIGHTS) {
                                 $query->disableAutoFields()
                                     ->select([
                                         'Hosts.id',
@@ -1117,7 +1106,7 @@ class HostgroupsTable extends Table {
                 },
 
                 // Get all hosts from this host group
-                'Hosts'         => function (Query $query) use ($MY_RIGHTS) {
+                'Hosts'         => function (SelectQuery $query) use ($MY_RIGHTS) {
                     $query->disableAutoFields()
                         ->select([
                             'Hosts.id',
@@ -1142,7 +1131,6 @@ class HostgroupsTable extends Table {
             ->where([
                 'Hostgroups.id IN' => $ids
             ])
-            ->disableHydration()
             ->all();
 
         $query = $query->toArray();
@@ -1211,13 +1199,12 @@ class HostgroupsTable extends Table {
         if (!is_array($containerIds)) {
             $containerIds = [$containerIds];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hostgroups.id',
             ])
             ->contain(['Containers'])
-            ->where(['Containers.parent_id IN' => $containerIds])
-            ->disableHydration();
+            ->where(['Containers.parent_id IN' => $containerIds]);
         $where = [];
 
         if ($this->isValidRegularExpression($hostgroupRegex)) {
@@ -1246,17 +1233,17 @@ class HostgroupsTable extends Table {
      * @return array
      */
     public function getHostsByHostgroupIdAndSatelliteId($id, $satelliteId) {
-        $hostgroup = $this->find()
+        $hostgroup = $this->unhydratedFind()
             ->contain([
                 // Get all hosts that are in this host group through the host template AND
                 // which does NOT have any own host groups
-                'Hosttemplates' => function (Query $query) use ($satelliteId) {
+                'Hosttemplates' => function (SelectQuery $query) use ($satelliteId) {
                     $query->disableAutoFields()
                         ->select([
                             'id',
                         ])
                         ->contain([
-                            'Hosts' => function (Query $query) use ($satelliteId) {
+                            'Hosts' => function (SelectQuery $query) use ($satelliteId) {
                                 $query->disableAutoFields()
                                     ->select([
                                         'Hosts.id',
@@ -1275,7 +1262,7 @@ class HostgroupsTable extends Table {
                 },
 
                 // Get all hosts from this host group
-                'Hosts'         => function (Query $query) use ($satelliteId) {
+                'Hosts'         => function (SelectQuery $query) use ($satelliteId) {
                     $query->disableAutoFields()
                         ->select([
                             'Hosts.id',
@@ -1289,7 +1276,6 @@ class HostgroupsTable extends Table {
             ->where([
                 'Hostgroups.id' => $id
             ])
-            ->disableHydration()
             ->first();
 
         $hosts = [];
@@ -1408,12 +1394,12 @@ class HostgroupsTable extends Table {
                 'Hostgroups.id'
             ])
             ->contain([
-                'Hosts'         => function (Query $query) {
+                'Hosts'         => function (SelectQuery $query) {
                     return $query
                         ->disableAutoFields()
                         ->select(['id']);
                 },
-                'Hosttemplates' => function (Query $query) {
+                'Hosttemplates' => function (SelectQuery $query) {
                     return $query
                         ->disableAutoFields()
                         ->select(['id']);
@@ -1423,7 +1409,7 @@ class HostgroupsTable extends Table {
                 'Hostgroups.container_id' => $containerId
             ]);
         if (!empty($MY_RIGHTS)) {
-            $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
+            $query->innerJoinWith('Containers', function (SelectQuery $q) use ($MY_RIGHTS) {
                 if (!empty($MY_RIGHTS)) {
                     return $q->where(['Containers.id IN' => $MY_RIGHTS]);
                 }
@@ -1445,7 +1431,7 @@ class HostgroupsTable extends Table {
      * @return array
      */
     public function getHostgroupsByContainerIdExact($containerId, $type = 'all', $index = 'container_id', $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hostgroups.id',
                 'Containers.id',
@@ -1464,8 +1450,6 @@ class HostgroupsTable extends Table {
                 'Containers.id IN' => $MY_RIGHTS
             ]);
         }
-
-        $query->disableHydration();
         $query->orderBy([
             'Containers.name' => 'asc'
         ]);
@@ -1500,7 +1484,7 @@ class HostgroupsTable extends Table {
             $ids = [$ids];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Containers.name'
             ])
@@ -1508,8 +1492,7 @@ class HostgroupsTable extends Table {
             ->where([
                 'Hostgroups.id IN'            => $ids,
                 'Containers.containertype_id' => CT_HOSTGROUP
-            ])
-            ->disableHydration();
+            ]);
 
         $results = $query->toArray() ?? [];
         return Hash::extract($results, '{n}.container.name');
@@ -1551,7 +1534,7 @@ class HostgroupsTable extends Table {
 
         switch ($type) {
             case 'all':
-                $query = $this->find()
+                $query = $this->unhydratedFind()
                     ->contain([
                         'Containers'
                     ])
@@ -1564,11 +1547,10 @@ class HostgroupsTable extends Table {
                     ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
-                    ->disableHydration()
                     ->all();
                 return $this->emptyArrayIfNull($query->toArray());
             default:
-                $query = $this->find()
+                $query = $this->unhydratedFind()
                     ->contain([
                         'Containers'
                     ])
@@ -1581,7 +1563,6 @@ class HostgroupsTable extends Table {
                     ->orderBy([
                         'Containers.name' => 'ASC'
                     ])
-                    ->disableHydration()
                     ->all();
                 $query = $query->toArray();
                 if (empty($query)) {
@@ -1606,7 +1587,7 @@ class HostgroupsTable extends Table {
      * @return array
      */
     public function getHostgroupsForCopy($ids = [], array $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where(['Hostgroups.id IN' => $ids])
             ->contain([
                 'Containers'
@@ -1619,14 +1600,14 @@ class HostgroupsTable extends Table {
             ]);
         }
 
-        $query->disableHydration()
+        $query
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());
     }
 
     public function getSourceHostgroupForCopy($id, array $MY_RIGHTS) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where(['Hostgroups.id' => $id])
             ->contain([
                 'Hosts',
@@ -1638,8 +1619,6 @@ class HostgroupsTable extends Table {
                 'Containers.parent_id IN' => $MY_RIGHTS
             ]);
         }
-
-        $query->disableHydration();
         $result = $query->firstOrFail();
         $hostgroup = $result;
         $hostgroup['hosts'] = [
@@ -1669,7 +1648,7 @@ class HostgroupsTable extends Table {
      * @return array
      */
     public function getHostGroupsByHostId(int $hostId, array $MY_RIGHTS): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Containers.name',
                 'Hostgroups.id'
@@ -1689,8 +1668,7 @@ class HostgroupsTable extends Table {
             )
             ->where([
                 'host_id' => $hostId
-            ])
-            ->disableHydration();
+            ]);
         if (!empty($MY_RIGHTS)) {
             $query->andWhere([
                 'Containers.id IN' => $MY_RIGHTS
@@ -1806,17 +1784,17 @@ class HostgroupsTable extends Table {
      */
     public function getHostUudsAndServiceUuidsByHostgroupId($id) {
         $hostAndServiceUuids = [];
-        $hostgroup = $this->find()
+        $hostgroup = $this->unhydratedFind()
             ->contain([
                 // Get all hosts that are in this host group through the host template AND
                 // which does NOT have any own host groups
-                'Hosttemplates' => function (Query $query) {
+                'Hosttemplates' => function (SelectQuery $query) {
                     $query->disableAutoFields()
                         ->select([
                             'id',
                         ])
                         ->contain([
-                            'Hosts' => function (Query $query) {
+                            'Hosts' => function (SelectQuery $query) {
                                 $query->disableAutoFields()
                                     ->select([
                                         'Hosts.id',
@@ -1825,7 +1803,7 @@ class HostgroupsTable extends Table {
                                         'Hostgroups.id'
                                     ])
                                     ->contain([
-                                        'Services' => function (Query $query) {
+                                        'Services' => function (SelectQuery $query) {
                                             return $query->select([
                                                 'Services.id',
                                                 'Services.host_id',
@@ -1845,13 +1823,13 @@ class HostgroupsTable extends Table {
                 },
 
                 // Get all hosts from this host group
-                'Hosts'         => function (Query $query) {
+                'Hosts'         => function (SelectQuery $query) {
                     $query->disableAutoFields()
                         ->select([
                             'Hosts.id',
                             'Hosts.uuid',
                         ])->contain([
-                            'Services' => function (Query $query) {
+                            'Services' => function (SelectQuery $query) {
                                 return $query->select([
                                     'Services.id',
                                     'Services.host_id',
@@ -1867,7 +1845,6 @@ class HostgroupsTable extends Table {
             ->where([
                 'Hostgroups.id' => $id
             ])
-            ->disableHydration()
             ->first();
         foreach ($hostgroup['hosts'] as $host) {
             $hostAndServiceUuids['host_uuids'][$host['uuid']] = $host['id'];

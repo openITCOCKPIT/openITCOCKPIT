@@ -213,7 +213,21 @@ oitc migrations migrate
 
 echo "---------------------------------------------------------------"
 echo "Load default database"
-oitc migrations seed
+# update cakephp 5.4
+# --quiet has an important side effect.
+# Without --quiet, the command shows the seed list and asks Do you want to continue? [y/n], with a default of n.
+# The script would then hang or abort during the upgrade.
+# With --quiet, this prompt is skipped (// Skip confirmation in quiet mode, line 196). So --quiet is the flag that makes the script non-interactive.
+
+#--force means “Force re-running seeds that have already been executed”.
+# Otherwise, Cake keeps track of which seeds have already run and skips them.
+# With --force, all seeds run again on every upgrade. This is intentional, because openITCOCKPIT has to add new default data with every update, such as commands, contacts or configuration entries.
+# For this to work, the seeds must be idempotent.
+# The warning in the Cake code says exactly that: “potentially creating duplicate data. Ensure your seeds are idempotent.”
+
+# The old migrations seed call had no prompt and always executed the seeds. So the two flags preserve the previous behavior.
+
+oitc seeds run --force --quiet
 
 echo "Running openITCOCKPIT Module database migration/s"
 for PLUGIN in $(ls -1 "${APPDIR}/plugins"); do
@@ -227,7 +241,7 @@ for PLUGIN in $(ls -1 "${APPDIR}/plugins"); do
             num_files=$(find "${APPDIR}/plugins/${PLUGIN}/config/Seeds" -mindepth 1 -iname "*.php" -type f | wc -l)
             if [[ "$num_files" -gt 0 ]]; then
                 echo "Importing default records for ${PLUGIN} into database"
-                oitc migrations seed -p "${PLUGIN}"
+                oitc seeds run --force --quiet -p "${PLUGIN}"
             fi
         fi
 

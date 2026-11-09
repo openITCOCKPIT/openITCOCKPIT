@@ -30,7 +30,7 @@ namespace App\Model\Table;
 use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\Datasource\Exception\RecordNotFoundException;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -277,14 +277,13 @@ class DashboardTabsTable extends Table {
             ];
         }
 
-        $result = $this->find()
+        $result = $this->unhydratedFind()
             ->where($where)
             ->orderBy([
                 'DashboardTabs.position' => 'ASC',
             ]);
 
         $result
-            ->disableHydration()
             ->all();
 
 
@@ -344,7 +343,7 @@ class DashboardTabsTable extends Table {
      * @return array|null
      */
     public function getSharedTabs() {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'DashboardTabs.id',
                 'DashboardTabs.position',
@@ -370,7 +369,6 @@ class DashboardTabsTable extends Table {
             ->where([
                 'DashboardTabs.shared' => 1
             ])
-            ->disableHydration()
             ->all();
 
         if ($query->isEmpty()) {
@@ -405,8 +403,8 @@ class DashboardTabsTable extends Table {
      * @return array|null
      */
     public function getWidgetsForTabByUserIdAndTabId($userId, $tabId, int $loggedInUserId) {
-        $query = $this->find()
-            ->contain('Widgets', function (Query $query) {
+        $query = $this->unhydratedFind()
+            ->contain('Widgets', function (SelectQuery $query) {
                 $query->orderBy([
                     'Widgets.col' => 'ASC'
                 ]);
@@ -416,7 +414,6 @@ class DashboardTabsTable extends Table {
                 'DashboardTabs.id'      => $tabId,
                 'DashboardTabs.user_id' => $userId
             ])
-            ->disableHydration()
             ->first();
 
         if ($query === null) {
@@ -434,11 +431,10 @@ class DashboardTabsTable extends Table {
      * @return array
      */
     public function getTabByIdAsCake2($id) {
-        $result = $this->find()
+        $result = $this->unhydratedFind()
             ->where([
                 'DashboardTabs.id' => $id
             ])
-            ->disableHydration()
             ->first();
         return $this->formatFirstResultAsCake2($result);
     }

@@ -113,7 +113,7 @@ class HoststatusTable extends Table implements HoststatusTableInterface {
             $select[] = 'Hoststatus.hostname';
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select($select)
             ->innerJoin(
                 ['Hosts' => 'hosts'],
@@ -136,7 +136,6 @@ class HoststatusTable extends Table implements HoststatusTableInterface {
         }
 
         $query->where($where);
-        $query->disableHydration();
 
         if ($findType === 'all') {
             $result = $query->all();

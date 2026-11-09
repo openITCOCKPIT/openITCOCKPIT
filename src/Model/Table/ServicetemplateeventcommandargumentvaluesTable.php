@@ -112,13 +112,12 @@ class ServicetemplateeventcommandargumentvaluesTable extends Table {
      * @return array
      */
     public function getByServicetemplateIdAndCommandId($servicetemplateId, $commandId) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain(['Commandarguments'])
             ->where([
                 'Servicetemplateeventcommandargumentvalues.servicetemplate_id' => $servicetemplateId,
                 'Commandarguments.command_id'                                  => $commandId
             ])
-            ->disableHydration()
             ->all();
 
         $result = $query->toArray();

@@ -51,11 +51,6 @@ use Symfony\Component\Process\Process;
 class QueryLogCommand extends Command {
 
     /**
-     * @var ConsoleIo
-     */
-    public $io;
-
-    /**
      * @var string
      */
     private $logfile;

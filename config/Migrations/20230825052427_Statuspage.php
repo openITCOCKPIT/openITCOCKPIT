@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
 
 class Statuspage extends \Migrations\BaseMigration {
     public bool $autoId = false;

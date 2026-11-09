@@ -1,18 +1,41 @@
 <?php
+// Copyright (C) <2015>  <it-novum GmbH>
+//
+// This file is dual licensed
+//
+// 1.
+//	This program is free software: you can redistribute it and/or modify
+//	it under the terms of the GNU General Public License as published by
+//	the Free Software Foundation, version 3 of the License.
+//
+//	This program is distributed in the hope that it will be useful,
+//	but WITHOUT ANY WARRANTY; without even the implied warranty of
+//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//	GNU General Public License for more details.
+//
+//	You should have received a copy of the GNU General Public License
+//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+// 2.
+//	If you purchased an openITCOCKPIT Enterprise Edition you can use this file
+//	under the terms of the openITCOCKPIT Enterprise Edition license agreement.
+//	License agreement and license key will be shipped with the order
+//	confirmation.
+
 declare(strict_types=1);
 
-namespace Dbml;
+namespace MattermostModule;
 
-use Cake\Console\CommandCollection;
 use Cake\Core\BasePlugin;
 use Cake\Core\PluginApplicationInterface;
 use Cake\Http\MiddlewareQueue;
 use Cake\Routing\RouteBuilder;
 
 /**
- * Plugin for Dbml
+ * Plugin for MattermostModule
  */
-class Plugin extends BasePlugin {
+class MattermostModulePlugin extends BasePlugin {
     /**
      * Load all the plugin configuration and bootstrap logic.
      *
@@ -36,8 +59,8 @@ class Plugin extends BasePlugin {
      */
     public function routes(RouteBuilder $routes): void {
         $routes->plugin(
-            'Dbml',
-            ['path' => '/dbml'],
+            'MattermostModule',
+            ['path' => '/mattermost_module'],
             function (RouteBuilder $builder) {
                 // Add custom routes here
 
@@ -57,19 +80,5 @@ class Plugin extends BasePlugin {
         // Add your middlewares here
 
         return $middlewareQueue;
-    }
-
-    /**
-     * Add commands for the plugin.
-     *
-     * @param \Cake\Console\CommandCollection $commands The command collection to update.
-     * @return \Cake\Console\CommandCollection
-     */
-    public function console(CommandCollection $commands): CommandCollection {
-        // Add your commands here
-
-        $commands = parent::console($commands);
-
-        return $commands;
     }
 }

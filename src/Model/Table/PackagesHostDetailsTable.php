@@ -28,7 +28,7 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -298,13 +298,13 @@ class PackagesHostDetailsTable extends Table {
      * @return array
      */
     public function getPatchstatusIndex(GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->innerJoin(
                 ['Hosts' => 'hosts'],
                 ['Hosts.id = PackagesHostDetails.host_id']
             )
             ->contain([
-                'Hosts'               => function (Query $query) {
+                'Hosts'               => function (SelectQuery $query) {
                     return $query->select([
                         'Hosts.id',
                         'Hosts.name',
@@ -312,21 +312,21 @@ class PackagesHostDetailsTable extends Table {
                         'Hosts.container_id',
                     ]);
                 },
-                'PackagesLinuxHosts'  => function (Query $query) {
+                'PackagesLinuxHosts'  => function (SelectQuery $query) {
                     return $query->select([
                         'PackagesLinuxHosts.package_linux_id',
                         'PackagesLinuxHosts.host_id',
                         'PackagesLinuxHosts.is_security_update'
                     ]);
                 },
-                'WindowsUpdatesHosts' => function (Query $query) {
+                'WindowsUpdatesHosts' => function (SelectQuery $query) {
                     return $query->select([
                         'WindowsUpdatesHosts.windows_update_id',
                         'WindowsUpdatesHosts.host_id',
                         'WindowsUpdatesHosts.is_security_update'
                     ]);
                 },
-                'MacosUpdatesHosts'   => function (Query $query) {
+                'MacosUpdatesHosts'   => function (SelectQuery $query) {
                     return $query->select([
                         'MacosUpdatesHosts.macos_update_id',
                         'MacosUpdatesHosts.host_id',
@@ -354,8 +354,6 @@ class PackagesHostDetailsTable extends Table {
         $query->orderBy(
             $GenericFilter->getOrderForPaginator('Hosts.name', 'asc')
         )->groupBy(['Hosts.id']);
-
-        $query->disableHydration();
 
         if ($PaginateOMat === null) {
             //Just execute query

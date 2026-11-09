@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
 
 class MessageOfTheDay extends \Migrations\BaseMigration {
     /**
@@ -44,7 +43,7 @@ class MessageOfTheDay extends \Migrations\BaseMigration {
                 ])
                 ->addColumn('content', 'text', [
                     'default' => null,
-                    'limit'   => \Phinx\Db\Adapter\MysqlAdapter::TEXT_REGULAR,
+                    'limit'   => \Migrations\Db\Adapter\MysqlAdapter::TEXT_REGULAR,
                     'null'    => true,
                 ])
                 ->addColumn('style', 'string', [

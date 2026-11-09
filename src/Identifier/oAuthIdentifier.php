@@ -38,6 +38,7 @@ use Authentication\Identifier\IdentifierInterface;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\oAuth\oAuthClient;
+use itnovum\openITCOCKPIT\oAuth\oAuthException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 
 class oAuthIdentifier extends AbstractIdentifier implements IdentifierInterface {
@@ -76,6 +77,9 @@ class oAuthIdentifier extends AbstractIdentifier implements IdentifierInterface 
 
         } catch (IdentityProviderException $e) {
             Log::error('Could net request oAuth access token.');
+            Log::error($e->getMessage());
+        } catch (oAuthException $e) {
+            Log::error('Could not determine email address of oAuth user.');
             Log::error($e->getMessage());
         }
 

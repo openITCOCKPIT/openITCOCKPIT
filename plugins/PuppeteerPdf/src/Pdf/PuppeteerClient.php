@@ -1,15 +1,16 @@
 <?php
 // Copyright (C) <2012>  <it-novum GmbH>
+// Copyright (C) <2015>  <AVENDIS GmbH>
 //
 // Licensed under The MIT License
 //
-
 
 namespace PuppeteerPdf\Pdf;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\NetworkTimeoutException;
 use GuzzleHttp\RequestOptions;
 use itnovum\openITCOCKPIT\Core\NodeJS\ErrorPdf;
 
@@ -78,6 +79,13 @@ class PuppeteerClient {
             $ErrorPdf = new ErrorPdf();
             $ErrorPdf->setHeadline(sprintf(
                 'Error: Could not connect'
+            ));
+            $ErrorPdf->setErrorText($e->getMessage());
+            return $ErrorPdf->getPdfAsStream();
+        } catch (NetworkTimeoutException $e) {
+            $ErrorPdf = new ErrorPdf();
+            $ErrorPdf->setHeadline(sprintf(
+                'Error: Network timeout'
             ));
             $ErrorPdf->setErrorText($e->getMessage());
             return $ErrorPdf->getPdfAsStream();

@@ -31,6 +31,7 @@ use App\itnovum\openITCOCKPIT\Core\Utils\Text;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\NetworkTimeoutException;
 use GuzzleHttp\RequestOptions;
 
 class ChartRenderClient {
@@ -259,6 +260,13 @@ class ChartRenderClient {
             $ErrorImage = new ErrorImage($this->width, $this->height);
             $ErrorImage->setHeadline(sprintf(
                 'Error: Could not connect'
+            ));
+            $ErrorImage->setErrorText($e->getMessage());
+            return $ErrorImage->getImageAsPngStream();
+        } catch (NetworkTimeoutException $e) {
+            $ErrorImage = new ErrorImage($this->width, $this->height);
+            $ErrorImage->setHeadline(sprintf(
+                'Error: Network timeout'
             ));
             $ErrorImage->setErrorText($e->getMessage());
             return $ErrorImage->getImageAsPngStream();

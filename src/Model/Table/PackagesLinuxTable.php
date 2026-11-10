@@ -35,7 +35,6 @@ use Cake\ORM\Query;
 use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
-use Cake\Utility\Hash;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
 
@@ -175,33 +174,22 @@ class PackagesLinuxTable extends Table {
     }
 
     /**
-     * Get all linux packages of a specific host
+     * Returns all installations of a host, including SUSE patches. One package can be installed several times,
+     * e.g. three kernel versions or glibc for i686 and x86_64, so the result is a list and not indexed by package.
      *
      * @param int $hostId
      * @return PackagesLinuxHost[]
      */
-    public function getAllPackagesLinuxOfHost(int $hostId): array {
+    public function getInstallationsOfHost(int $hostId): array {
         /** @var PackagesLinuxHostsTable $PackagesLinuxHostsTable */
         $PackagesLinuxHostsTable = TableRegistry::getTableLocator()->get('PackagesLinuxHosts');
-        $query = $PackagesLinuxHostsTable->find()
+
+        return $PackagesLinuxHostsTable->find()
             ->where([
                 'host_id' => $hostId,
             ])
-            ->contain([
-                'PackagesLinux' => function (SelectQuery $query) {
-                    return $query->select([
-                        'id',
-                        'name',
-                    ]);
-                }
-            ]);
-
-        $result = [];
-        foreach ($query->toArray() as $packageLinuxHost) {
-            $result[$packageLinuxHost->package_linux_id] = $packageLinuxHost;
-        }
-
-        return $result;
+            ->orderBy(['id' => 'asc'])
+            ->toArray();
     }
 
     public function deleteUnusedPackages() {
@@ -228,6 +216,29 @@ class PackagesLinuxTable extends Table {
      * @return bool
      * @throws \Exception
      */
+    /**
+     * Stores the installed packages and the available updates a Linux agent reports.
+     *
+     * An installation is one package in one architecture and one version. The same package can be installed
+     * several times, e.g. three versions of "kernel" on RHEL or "glibc" for i686 and x86_64, each of them is its
+     * own row in packages_linux_hosts. SUSE patches are rows of their own with current_version "0".
+     *
+     * The installed version always comes from the list of installed packages, never from an update.
+     * An update only sets available_version, needs_update and is_security_update, see getUpdateTargets().
+     *
+     * The stored rows are compared with the reported ones:
+     * - reported but not stored: insert
+     * - stored but not reported anymore: delete (uninstalled, updated to another version, patch installed)
+     * - stored more than once: keep one row and delete the rest
+     * - stored with other details (update, source package): update the row
+     *
+     * @param int $hostId
+     * @param array $installedPackages Packages of the agent: Name, Version, Description, Architecture,
+     *                                 SourcePackage, SourceVersion, ModularityLabel, SourceRPM
+     * @param array $availableUpdates Updates of the agent: Name, CurrentVersion, AvailableVersion,
+     *                                IsSecurityUpdate, IsPatch
+     * @return bool
+     */
     public function savePackagesForHost(int $hostId, array $installedPackages, array $availableUpdates): bool {
         if (empty($installedPackages)) {
             return true;
@@ -236,270 +247,265 @@ class PackagesLinuxTable extends Table {
         /** @var PackagesLinuxHostsTable $PackagesLinuxHostsTable */
         $PackagesLinuxHostsTable = TableRegistry::getTableLocator()->get('PackagesLinuxHosts');
 
-        // key = package name, value = package id
-        $existingPackages = $this->getAllPackagesLinuxAsMap();
-        // key = package id, value = PackagesLinuxHost entity
-        $existingPackagesOfHost = $this->getAllPackagesLinuxOfHost($hostId);
+        $packageIds = $this->addMissingPackagesToCatalog($installedPackages, $availableUpdates);
 
-        $newPackages = [];
-        $newLinuxPackagesHosts = [];
-
-
-        // Fake package for testing
-        /*
-        $installedPackages[] = [
-            'Name'        => 'delete-test',
-            'Version'     => '1.0.0',
-            'Description' => 'This is a test package to be deleted',
-        ];*/
-        foreach ($installedPackages as $package) {
-            //[
-            //    'Name'        => 'adduser',
-            //    'Version'     => '3.137ubuntu1',
-            //    'Description' => 'add and remove users and groups\n This package includes the 'adduser' and 'deluse'
-            //]
-            if (empty($package['Name']) || empty($package['Version'])) {
-                continue;
-            }
-
-            if (!isset($existingPackages[$package['Name']])) {
-                // New package - add to packages_linux
-                $desc = null;
-                if (isset($package['Description'])) {
-                    $desc = substr($package['Description'], 0, 1000);
-                }
-
-                $newPackages[] = $this->newEntity([
-                    'name'        => $package['Name'],
-                    'description' => $desc,
-                    'is_patch'    => false,
-                ]);
-            }
-        }
-
-        // SUSE distributions report security updates as patches.
-        // So we handle patches as packages so we can group them together later.
-        /*$availableUpdates[] = [
-            'Name'             => 'delete-test',
-            'CurrentVersion'   => '1.0.0',
-            'AvailableVersion' => '2.0.0',
-            'IsSecurityUpdate' => false,
-            'IsPatch'          => false,
-        ];*/
-        foreach ($availableUpdates as $update) {
-            //[
-            //    'Name'             => 'kernel-default',
-            //    'CurrentVersion'   => '6.12.0-160000.7.1',
-            //    'AvailableVersion' => '6.12.0-160000.8.1',
-            //    'IsSecurityUpdate' => false,
-            //    'IsPatch'          => false
-            //];
-
-            // A variable is considered empty if it does not exist or if its value equals false.
-            // https://www.php.net/manual/en/function.empty.php
-            if (empty($update['Name']) || empty($update['IsPatch'])) {
-                continue;
-            }
-
-            if (!isset($existingPackages[$update['Name']]) && $update['IsPatch'] === true) {
-                // Save patch as new package - add to packages_linux
-                $patch = $this->newEntity([
-                    'name'        => $update['Name'],
-                    'description' => null, // Patches do not have descriptions
-                    'is_patch'    => $update['IsPatch'],
-                ]);
-                if ($this->save($patch)) {
-                    $existingPackages[$patch->name] = $patch->id;
-
-                }
-            }
-        }
-
-
-        if (!empty($newPackages)) {
-            $this->saveMany($newPackages);
-
-            // Add new packages to existingPackages map
-            foreach ($newPackages as $newPackage) {
-                $existingPackages[$newPackage->name] = $newPackage->id;
-            }
-        }
-
-
-        // Save new installed packages for host
+        // 1. Installations the agent reports, one per package, architecture and version
+        $reportedRows = [];
+        // key = package name, value = keys of $reportedRows, used to assign updates
+        $installationsByName = [];
         foreach ($installedPackages as $package) {
             if (empty($package['Name']) || empty($package['Version'])) {
                 continue;
             }
 
-            if (!isset($existingPackages[$package['Name']])) {
+            if (!isset($packageIds[$package['Name']])) {
                 Log::error(sprintf('Package %s not found in existing packages after insertion.', $package['Name']));
                 continue;
             }
 
-            $packageId = $existingPackages[$package['Name']];
-            if (isset($existingPackagesOfHost[$packageId])) {
-                // Package already exists for host - update it
-                // This stores new versions of already existing packages (after apt-get dist-upgrade for example)
-                $linuxPackageHost = $existingPackagesOfHost[$packageId];
-                $hasSourceInformation = (!empty($linuxPackageHost->source_package) || !empty($linuxPackageHost->source_rpm));
-                if ($linuxPackageHost->current_version != $package['Version'] || !$hasSourceInformation) {
-                    $linuxPackageHost->current_version = $package['Version'];
-                    $linuxPackageHost->available_version = $package['Version'];
-                    $linuxPackageHost->needs_update = false;
-                    $linuxPackageHost->is_security_update = false;
-                    $linuxPackageHost->is_patch = false;
-                    $linuxPackageHost->source_package = $package['SourcePackage'] ?? null;
-                    $linuxPackageHost->source_version = $package['SourceVersion'] ?? null;
-                    $linuxPackageHost->architecture = $package['Architecture'] ?? null;
-                    $linuxPackageHost->modularity_label = $package['ModularityLabel'] ?? null;
-                    $linuxPackageHost->source_rpm = $package['SourceRPM'] ?? null;
-                    if ($PackagesLinuxHostsTable->save($linuxPackageHost)) {
-                        $existingPackagesOfHost[$linuxPackageHost->package_linux_id] = $linuxPackageHost;
-                    }
-                }
+            $packageId = (int)$packageIds[$package['Name']];
+            // Same length as the columns, so the comparison with stored rows works
+            $version = $this->limitLength($package['Version'], 64);
+            $architecture = $this->limitLength($package['Architecture'] ?? null, 255);
 
-            } else {
-                // Create new entry in packages_linux_hosts
-                $newLinuxPackagesHosts[] = $PackagesLinuxHostsTable->newEntity([
-                    'package_linux_id'   => $packageId,
-                    'host_id'            => $hostId,
-                    'current_version'    => $package['Version'],
-                    'available_version'  => $package['Version'],
-                    'needs_update'       => false,
-                    'is_security_update' => false,
-                    'is_patch'           => false,
-                    'source_package'     => $package['SourcePackage'] ?? null,
-                    'source_version'     => $package['SourceVersion'] ?? null,
-                    'architecture'       => $package['Architecture'] ?? null,
-                    'modularity_label'   => $package['ModularityLabel'] ?? null,
-                    'source_rpm'         => $package['SourceRPM'] ?? null,
-                ]);
-            }
+            $key = $this->getInstallationKey($packageId, $architecture, $version);
+            $reportedRows[$key] = [
+                'package_linux_id'   => $packageId,
+                'host_id'            => $hostId,
+                'current_version'    => $version,
+                'available_version'  => $version,
+                'needs_update'       => false,
+                'is_security_update' => false,
+                'is_patch'           => false,
+                'source_package'     => $this->limitLength($package['SourcePackage'] ?? null, 255),
+                'source_version'     => $this->limitLength($package['SourceVersion'] ?? null, 255),
+                'architecture'       => $architecture,
+                'modularity_label'   => $this->limitLength($package['ModularityLabel'] ?? null, 255),
+                'source_rpm'         => $this->limitLength($package['SourceRPM'] ?? null, 255),
+            ];
+            $installationsByName[$package['Name']][$key] = $version;
         }
 
-        if (!empty($newLinuxPackagesHosts)) {
-            $PackagesLinuxHostsTable->saveMany($newLinuxPackagesHosts);
-
-            // Add new packages to existingPackages map
-            foreach ($newLinuxPackagesHosts as $newLinuxPackagesHost) {
-                $existingPackagesOfHost[$newLinuxPackagesHost->package_linux_id] = $newLinuxPackagesHost;
-            }
-        }
-
-        // Update installed packages if new versions is available (but not installed yet)
-        // This store only available_version (before the apt-get dist-upgrade got executed)
-        $currentlyInstalledPackagesNameAndId = [];
+        // 2. Assign the updates to the installations and add SUSE patches
         foreach ($availableUpdates as $update) {
             if (empty($update['Name']) || empty($update['AvailableVersion'])) {
                 continue;
             }
 
+            $availableVersion = $this->limitLength($update['AvailableVersion'], 64);
+            $isSecurityUpdate = !empty($update['IsSecurityUpdate']);
 
-            if (!isset($existingPackages[$update['Name']])) {
-                Log::error(sprintf('Package %s not found in existing packages during update processing.', $update['Name']));
+            if (!empty($update['IsPatch'])) {
+                // A patch is never reported as installed package, so it is a row of its own
+                if (!isset($packageIds[$update['Name']])) {
+                    continue;
+                }
+                $packageId = (int)$packageIds[$update['Name']];
+                $reportedRows[$this->getPatchKey($packageId)] = [
+                    'package_linux_id'   => $packageId,
+                    'host_id'            => $hostId,
+                    'current_version'    => '0',
+                    'available_version'  => $availableVersion,
+                    'needs_update'       => true,
+                    'is_security_update' => $isSecurityUpdate,
+                    'is_patch'           => true,
+                    'source_package'     => null,
+                    'source_version'     => null,
+                    'architecture'       => null,
+                    'modularity_label'   => null,
+                    'source_rpm'         => null,
+                ];
                 continue;
             }
 
-            $packageId = $existingPackages[$update['Name']];
-            if (isset($existingPackagesOfHost[$packageId])) {
+            if (empty($installationsByName[$update['Name']])) {
+                Log::error(sprintf('Update for package %s of host ID %d, but the package is not installed.', $update['Name'], $hostId));
+                continue;
+            }
 
+            foreach ($this->getUpdateTargets($installationsByName[$update['Name']]) as $key) {
+                $reportedRows[$key]['available_version'] = $availableVersion;
+                $reportedRows[$key]['needs_update'] = true;
+                $reportedRows[$key]['is_security_update'] = $isSecurityUpdate;
+            }
+        }
 
-                // Package already exists for host - update it
-                $linuxPackageHost = $existingPackagesOfHost[$packageId];
-                if (
-                    $linuxPackageHost->current_version != $update['CurrentVersion'] ||
-                    $linuxPackageHost->available_version != $update['AvailableVersion'] ||
-                    $linuxPackageHost->is_security_update != $update['IsSecurityUpdate']
-                ) {
-                    $linuxPackageHost->current_version = $update['CurrentVersion'];
-                    $linuxPackageHost->available_version = $update['AvailableVersion'];
-                    $linuxPackageHost->is_security_update = $update['IsSecurityUpdate'];
-                    $linuxPackageHost->is_patch = $update['IsPatch'];
-                    $linuxPackageHost->needs_update = true;
-                    if ($PackagesLinuxHostsTable->save($linuxPackageHost)) {
-                        $existingPackagesOfHost[$linuxPackageHost->package_linux_id] = $linuxPackageHost;
-                    }
-                }
-
+        // 3. Compare with the stored rows
+        $storedKeys = [];
+        $idsToDelete = [];
+        $changedRows = [];
+        foreach ($this->getInstallationsOfHost($hostId) as $row) {
+            if ($row->is_patch) {
+                $key = $this->getPatchKey($row->package_linux_id);
             } else {
-                // Create new patches - as a patch will never be reported as installed package
-                if (!empty($update['IsPatch'])) {
-                    // Create new patch entry in packages_linux_hosts
-                    $entity = $PackagesLinuxHostsTable->newEntity([
-                        'package_linux_id'   => $packageId,
-                        'host_id'            => $hostId,
-                        'current_version'    => "0",
-                        'available_version'  => $update['AvailableVersion'],
-                        'needs_update'       => true,
-                        'is_security_update' => $update['IsSecurityUpdate'],
-                        'is_patch'           => $update['IsPatch'],
-                    ]);
-                    if ($PackagesLinuxHostsTable->save($entity)) {
-                        $existingPackagesOfHost[$entity->package_linux_id] = $entity;
-                    }
-                } else {
-                    // This should not happen - log error
-                    Log::error(sprintf('PackageLinuxHost entry for package %s and host ID %d not found during update processing.', $update['Name'], $hostId));
-                }
+                $key = $this->getInstallationKey($row->package_linux_id, $row->architecture, (string)$row->current_version);
             }
-        }
 
-        // Remove uninstalled packages
-        $existingPackagesOfHostNameAndId = [];
-        foreach ($existingPackagesOfHost as $packageLinuxHost) {
-            // New installed packages may have no JOIN data (package name)
-            // but this is not needed as we want to remote uninstalled packages from the packages_linux_hosts table
-            if (!empty($packageLinuxHost->packages_linux->name)) {
-                $existingPackagesOfHostNameAndId[$packageLinuxHost->packages_linux->name] = $packageLinuxHost->package_linux_id;
-            }
-        }
-
-        foreach ($installedPackages as $package) {
-            if (!isset($existingPackages[$package['Name']])) {
+            $isStillReported = isset($reportedRows[$key]);
+            $isDuplicate = isset($storedKeys[$key]);
+            if (!$isStillReported || $isDuplicate) {
+                $idsToDelete[] = $row->id;
                 continue;
             }
-            $packageId = $existingPackages[$package['Name']];
-            $currentlyInstalledPackagesNameAndId[$package['Name']] = $packageId;
+
+            $storedKeys[$key] = true;
+
+            // Update, security flag or source information changed
+            $row = $PackagesLinuxHostsTable->patchEntity($row, $reportedRows[$key]);
+            if ($row->isDirty()) {
+                $changedRows[] = $row;
+            }
         }
 
-        $packagesThatGotRemovedFromSystem = (array_diff_key($existingPackagesOfHostNameAndId, $currentlyInstalledPackagesNameAndId));
-        // Remove these packages from packages_linux_hosts
-        if (!empty($packagesThatGotRemovedFromSystem)) {
-            $PackagesLinuxHostsTable->deleteAll(conditions: [
-                'package_linux_id IN' => array_values($packagesThatGotRemovedFromSystem),
-                'host_id'             => $hostId,
-                'is_patch'            => false,
-            ]);
+        $newRows = [];
+        foreach ($reportedRows as $key => $data) {
+            if (!isset($storedKeys[$key])) {
+                $newRows[] = $PackagesLinuxHostsTable->newEntity($data);
+            }
         }
 
-        if (!empty(Hash::extract($existingPackagesOfHost, '{n}[is_patch=1]'))) {
-            $availableUpdatesNames = Hash::combine($availableUpdates, '{n}.Name', '{n}.Name');
-            $existingPackagesOfHostNames = [];
-            foreach ($existingPackagesOfHost as $packageEnity) {
-                if ($packageEnity->is_patch) {
-                    if (!empty($packageEnity->packages_linux->name)) {
-                        // New created patches do not have JOIN data (package name)
-                        // Due to we have inserted the patch a few lines above, we do not have to check if it needs to be removed from this host
-                        // The name is only relevant for the next execution to identify patches that need to be removed from the database
-                        $existingPackagesOfHostNames[$packageEnity->packages_linux->name] = $packageEnity->id;
-                    }
-                }
+        // 4. Write all changes at once, so the list of the host is never half updated
+        $PackagesLinuxHostsTable->getConnection()->transactional(function () use ($PackagesLinuxHostsTable, $hostId, $idsToDelete, $changedRows, $newRows) {
+            if (!empty($idsToDelete)) {
+                $PackagesLinuxHostsTable->deleteAll([
+                    'id IN'   => $idsToDelete,
+                    'host_id' => $hostId,
+                ]);
             }
 
-            $patchesToDelete = array_diff_key($existingPackagesOfHostNames, $availableUpdatesNames);
+            if (!empty($changedRows)) {
+                $PackagesLinuxHostsTable->saveManyOrFail($changedRows);
+            }
 
-            if (!empty($patchesToDelete)) {
-                $PackagesLinuxHostsTable->deleteAll(conditions: [
-                    'id IN'    => array_values($patchesToDelete),
-                    'host_id'  => $hostId,
-                    'is_patch' => true,
+            if (!empty($newRows)) {
+                $PackagesLinuxHostsTable->saveManyOrFail($newRows);
+            }
+        });
+
+        return true;
+    }
+
+    /**
+     * Adds packages and SUSE patches that are new for the whole system to the catalog (packages_linux).
+     *
+     * @param array $installedPackages
+     * @param array $availableUpdates
+     * @return array<string, int> Id of every package, indexed by name
+     */
+    private function addMissingPackagesToCatalog(array $installedPackages, array $availableUpdates): array {
+        // key = package name, value = package id
+        $packageIds = $this->getAllPackagesLinuxAsMap();
+
+        $newPackages = [];
+        foreach ($installedPackages as $package) {
+            if (empty($package['Name']) || empty($package['Version'])) {
+                continue;
+            }
+
+            if (!isset($packageIds[$package['Name']]) && !isset($newPackages[$package['Name']])) {
+                $description = null;
+                if (isset($package['Description'])) {
+                    $description = substr($package['Description'], 0, 1000);
+                }
+
+                $newPackages[$package['Name']] = $this->newEntity([
+                    'name'        => $package['Name'],
+                    'description' => $description,
+                    'is_patch'    => false,
                 ]);
             }
         }
 
+        // SUSE distributions report security updates as patches. A patch gets stored like a package,
+        // so it can be grouped with the same patch of other hosts.
+        foreach ($availableUpdates as $update) {
+            if (empty($update['Name']) || empty($update['IsPatch'])) {
+                continue;
+            }
 
-        return true;
+            if (!isset($packageIds[$update['Name']]) && !isset($newPackages[$update['Name']])) {
+                $newPackages[$update['Name']] = $this->newEntity([
+                    'name'        => $update['Name'],
+                    'description' => null, // Patches do not have descriptions
+                    'is_patch'    => true,
+                ]);
+            }
+        }
+
+        if (!empty($newPackages)) {
+            $this->saveMany($newPackages);
+            foreach ($newPackages as $newPackage) {
+                $packageIds[$newPackage->name] = $newPackage->id;
+            }
+        }
+
+        return $packageIds;
+    }
+
+    /**
+     * Returns the installations an update belongs to: those with the newest installed version of the package.
+     *
+     * - One installation: the update belongs to it
+     * - Several architectures in the same version (e.g. glibc for i686 and x86_64): to all of them
+     * - Several versions (e.g. three kernels): to the newest. A kernel update installs a new kernel next to the
+     *   old ones, the old ones stay as they are
+     *
+     * CurrentVersion of the update is not used on purpose: dnf takes it from the list of installed packages by
+     * name, so with three kernels it is one of them by chance.
+     *
+     * @param array<string, string> $installations Version of each installation, indexed by installation key
+     * @return string[] Installation keys
+     */
+    private function getUpdateTargets(array $installations): array {
+        $newestVersion = null;
+        foreach ($installations as $version) {
+            if ($newestVersion === null || version_compare($version, $newestVersion, '>')) {
+                $newestVersion = $version;
+            }
+        }
+
+        $targets = [];
+        foreach ($installations as $key => $version) {
+            if ($version === $newestVersion) {
+                $targets[] = $key;
+            }
+        }
+
+        return $targets;
+    }
+
+    /**
+     * One package in one architecture and one version
+     *
+     * @param int $packageId
+     * @param string|null $architecture null for agents that do not report it
+     * @param string $version
+     * @return string
+     */
+    private function getInstallationKey(int $packageId, ?string $architecture, string $version): string {
+        return $packageId . '|' . ($architecture ?? '') . '|' . $version;
+    }
+
+    /**
+     * A SUSE patch exists at most once per host
+     *
+     * @param int $packageId
+     * @return string
+     */
+    private function getPatchKey(int $packageId): string {
+        return 'patch|' . $packageId;
+    }
+
+    /**
+     * @param mixed $value
+     * @param int $length Length of the column
+     * @return string|null null for empty values
+     */
+    private function limitLength(mixed $value, int $length): ?string {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        return substr((string)$value, 0, $length);
     }
 
     /**

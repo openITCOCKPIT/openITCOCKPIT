@@ -484,6 +484,31 @@ class CvePackageStatesTable extends Table {
     }
 
     /**
+     * Returns the package states of an operating system with the given names, kernel packages excluded.
+     * Used to find the release package of SUSE, which every request for Vuls needs.
+     *
+     * @param string $osName
+     * @param string $osVersion
+     * @param string[] $names
+     * @return \App\Model\Entity\CvePackageState[]
+     */
+    public function getStatesByNames(string $osName, string $osVersion, array $names): array {
+        if (empty($names)) {
+            return [];
+        }
+
+        return $this->find()
+            ->where([
+                'os_name'    => $osName,
+                'os_version' => $osVersion,
+                'is_kernel'  => false,
+                'name IN'    => $names,
+            ])
+            ->orderBy(['id' => 'asc'])
+            ->toArray();
+    }
+
+    /**
      * Returns the package states for the given hashes, indexed by state_hash.
      *
      * @param string[] $stateHashes

@@ -34,6 +34,7 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
+use itnovum\openITCOCKPIT\Vuln\Policy\Rule;
 
 /**
  * CveHostFindings Model
@@ -94,6 +95,8 @@ class CveHostFindingsTable extends Table {
         'severity',
         'severity_source',
         'view_name',
+        'rule',
+        'reasons',
         'color',
         'rule_rank',
         'review_required',
@@ -216,6 +219,15 @@ class CveHostFindingsTable extends Table {
             ->inList('view_name', [self::VIEW_ACTION, self::VIEW_UNFIXED, self::VIEW_ACCEPTED, self::VIEW_NOT_AFFECTED])
             ->requirePresence('view_name', 'create')
             ->notEmptyString('view_name');
+
+        $validator
+            ->inList('rule', array_column(Rule::cases(), 'value'))
+            ->requirePresence('rule', 'create')
+            ->notEmptyString('rule');
+
+        $validator
+            ->nonNegativeInteger('reasons')
+            ->notEmptyString('reasons');
 
         $validator
             ->inList('color', ['red', 'yellow', 'gray'])
@@ -395,7 +407,7 @@ class CveHostFindingsTable extends Table {
     /**
      * Stores a new classification of findings, e.g. because a decision expired. Unchanged findings are skipped.
      *
-     * @param array<int, array{view_name: string, color: string, rule_rank: int, review_required: bool, policy_version: string}> $classifications
+     * @param array<int, array{view_name: string, rule: string, reasons: int, color: string, rule_rank: int, review_required: bool, policy_version: string}> $classifications
      *        Indexed by the id of the finding
      * @return int Number of changed findings
      */
@@ -406,7 +418,7 @@ class CveHostFindingsTable extends Table {
             $entities = [];
             foreach ($this->find()->where(['CveHostFindings.id IN' => array_keys($chunk)])->all() as $entity) {
                 $entity = $this->patchEntity($entity, $chunk[$entity->id], [
-                    'fields' => ['view_name', 'color', 'rule_rank', 'review_required', 'policy_version']
+                    'fields' => ['view_name', 'rule', 'reasons', 'color', 'rule_rank', 'review_required', 'policy_version']
                 ]);
                 if ($entity->isDirty()) {
                     $entities[] = $entity;

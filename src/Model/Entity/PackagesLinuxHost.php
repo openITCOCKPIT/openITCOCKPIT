@@ -45,6 +45,7 @@ use Cake\ORM\Entity;
  * @property string $architecture
  * @property string $modularity_label
  * @property string $source_rpm
+ * @property int|null $cve_package_state_id
  * @property \Cake\I18n\DateTime $modified
  * @property \Cake\I18n\DateTime $created
  *
@@ -61,20 +62,21 @@ class PackagesLinuxHost extends Entity {
      * @var array<string, bool>
      */
     protected array $_accessible = [
-        'package_linux_id'   => true,
-        'host_id'            => true,
-        'current_version'    => true,
-        'available_version'  => true,
-        'needs_update'       => true,
-        'is_security_update' => true,
-        'is_patch'           => true,
-        'source_package'     => true,
-        'source_version'     => true,
-        'architecture'       => true,
-        'modularity_label'   => true,
-        'source_rpm'         => true,
-        'modified'           => true,
-        'created'            => true,
-        'host'               => true,
+        'package_linux_id'     => true,
+        'host_id'              => true,
+        'current_version'      => true,
+        'available_version'    => true,
+        'needs_update'         => true,
+        'is_security_update'   => true,
+        'is_patch'             => true,
+        'source_package'       => true,
+        'source_version'       => true,
+        'architecture'         => true,
+        'modularity_label'     => true,
+        'source_rpm'           => true,
+        'cve_package_state_id' => true,
+        'modified'             => true,
+        'created'              => true,
+        'host'                 => true,
     ];
 }

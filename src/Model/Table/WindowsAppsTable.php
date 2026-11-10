@@ -175,57 +175,37 @@ class WindowsAppsTable extends Table {
     }
 
     /**
-     * Get all Windows apps of a specific host
+     * Returns all installations of a host. One app can be installed several times in different versions,
+     * so the result is a list and not indexed by app.
      *
      * @param int $hostId
      * @return WindowsAppsHost[]
      */
-    public function getAllWindowsAppsOfHost(int $hostId): array {
+    public function getInstallationsOfHost(int $hostId): array {
         /** @var WindowsAppsHostsTable $WindowsAppsHostsTable */
         $WindowsAppsHostsTable = TableRegistry::getTableLocator()->get('WindowsAppsHosts');
-        $query = $WindowsAppsHostsTable->find()
+
+        return $WindowsAppsHostsTable->find()
             ->where([
                 'host_id' => $hostId,
             ])
-            ->contain([
-                'WindowsApps' => function (SelectQuery $query) {
-                    return $query->select([
-                        'id',
-                        'name',
-                    ]);
-                }
-            ]);
-
-        $result = [];
-        foreach ($query->toArray() as $windowsAppHost) {
-            $result[$windowsAppHost->windows_app_id] = $windowsAppHost;
-        }
-
-        return $result;
-    }
-
-    public function deleteUnusedApps() {
-        $query = $this->deleteQuery();
-        $query->delete('windows_apps')
-            ->where(function (QueryExpression $exp, Query\DeleteQuery $query) {
-                return $exp->notExists(
-                    $this->find()
-                        ->select(1)
-                        ->from(['windows_apps_hosts'])
-                        ->where(['windows_apps_hosts.windows_app_id = windows_apps.id'])
-                );
-            });
-
-        return $query->execute();
+            ->orderBy(['id' => 'asc'])
+            ->toArray();
     }
 
     /**
-     * Save installed apps for a specific host
+     * Stores the installed apps a Windows agent reports.
+     *
+     * An installation is one app (by name) in one version. The same app can be installed several times,
+     * e.g. per user and per machine in different versions, each of them is its own row in windows_apps_hosts.
+     * The stored installations are compared with the reported ones:
+     * - reported but not stored: insert
+     * - stored but not reported anymore: delete (uninstalled or updated to another version)
+     * - stored more than once: keep one row and delete the rest
      *
      * @param int $hostId
-     * @param array $installedApps
+     * @param array $installedApps Apps of the agent with the keys Name, Version and Publisher
      * @return bool
-     * @throws \Exception
      */
     public function saveAppsForHost(int $hostId, array $installedApps): bool {
         if (empty($installedApps)) {
@@ -235,29 +215,18 @@ class WindowsAppsTable extends Table {
         /** @var WindowsAppsHostsTable $WindowsAppsHostsTable */
         $WindowsAppsHostsTable = TableRegistry::getTableLocator()->get('WindowsAppsHosts');
 
+        // 1. Add apps that are new for the whole system to the catalog (windows_apps)
         // key = app name, value = app id
         $existingApps = $this->getAllWindowsAppsAsMap();
-        // key = app id, value = WindowsAppsHost entity
-        $existingAppsOfHost = $this->getAllWindowsAppsOfHost($hostId);
 
         $newApps = [];
-        $newAppsHosts = [];
-
-        // Fake app for testing
-        /*
-        $installedApps[] = [
-            'Name'      => 'delete-test',
-            'Version'   => '2.0.0',
-            'Publisher' => 'openITCOCKPIT Development Team',
-        ];*/
         foreach ($installedApps as $app) {
             if (empty($app['Name']) || empty($app['Version'])) {
                 continue;
             }
 
-            if (!isset($existingApps[$app['Name']])) {
-                // New App - add to windows_apps
-                $newApps[] = $this->newEntity([
+            if (!isset($existingApps[$app['Name']]) && !isset($newApps[$app['Name']])) {
+                $newApps[$app['Name']] = $this->newEntity([
                     'name'      => $app['Name'],
                     'publisher' => $app['Publisher'] ?? null,
                 ]);
@@ -266,14 +235,13 @@ class WindowsAppsTable extends Table {
 
         if (!empty($newApps)) {
             $this->saveMany($newApps);
-
-            // Add new app to existingApps map
             foreach ($newApps as $newApp) {
                 $existingApps[$newApp->name] = $newApp->id;
             }
         }
 
-        // Save / update new installed apps for host
+        // 2. Installations the agent reports, one per app and version
+        $reportedInstallations = [];
         foreach ($installedApps as $app) {
             if (empty($app['Name']) || empty($app['Version'])) {
                 continue;
@@ -284,65 +252,65 @@ class WindowsAppsTable extends Table {
                 continue;
             }
 
-            $appId = $existingApps[$app['Name']];
-            if (isset($existingAppsOfHost[$appId])) {
-                // App already exists for host - update it
-                $windowsAppHostEntity = $existingAppsOfHost[$appId];
-                if ($windowsAppHostEntity->version != $app['Version']) {
-                    $windowsAppHostEntity->version = $app['Version'];
-                    if ($WindowsAppsHostsTable->save($windowsAppHostEntity)) {
-                        $existingAppsOfHost[$windowsAppHostEntity->windows_app_id] = $windowsAppHostEntity;
-                    }
-                }
-            } else {
-                // Create a new entry
-                $newAppsHosts[] = $WindowsAppsHostsTable->newEntity([
-                    'host_id'        => $hostId,
-                    'windows_app_id' => $appId,
-                    'version'        => $app['Version'],
-                ]);
-            }
+            $appId = (int)$existingApps[$app['Name']];
+            // Same length as the column, so the comparison with stored versions works
+            $version = substr((string)$app['Version'], 0, 64);
+            $reportedInstallations[$this->getInstallationKey($appId, $version)] = [
+                'host_id'        => $hostId,
+                'windows_app_id' => $appId,
+                'version'        => $version,
+            ];
         }
 
-        if (!empty($newAppsHosts)) {
-            $WindowsAppsHostsTable->saveMany($newAppsHosts);
+        // 3. Compare with the stored installations
+        $storedKeys = [];
+        $idsToDelete = [];
+        foreach ($this->getInstallationsOfHost($hostId) as $installation) {
+            $key = $this->getInstallationKey($installation->windows_app_id, (string)$installation->version);
 
-            // Add new apps to existingApps map
-            foreach ($newAppsHosts as $newAppHost) {
-                $existingAppsOfHost[$newAppHost->windows_app_id] = $newAppHost;
-            }
-        }
-
-        // Remove uninstalled apps
-        $existingAppsOfHostNameAndId = [];
-        foreach ($existingAppsOfHost as $appWindowsHost) {
-            // New installed apps may have no JOIN data (app name)
-            // but this is not needed as we want to remote uninstalled apps from the windows_apps_hosts table
-            if (!empty($appWindowsHost->windows_app->name)) {
-                $existingAppsOfHostNameAndId[$appWindowsHost->windows_app->name] = $appWindowsHost->windows_app_id;
-            }
-        }
-
-
-        $currentlyInstalledAppsNameAndId = [];
-        foreach ($installedApps as $app) {
-            if (!isset($existingApps[$app['Name']])) {
+            $isStillInstalled = isset($reportedInstallations[$key]);
+            $isDuplicate = isset($storedKeys[$key]);
+            if (!$isStillInstalled || $isDuplicate) {
+                $idsToDelete[] = $installation->id;
                 continue;
             }
-            $appId = $existingApps[$app['Name']];
-            $currentlyInstalledAppsNameAndId[$app['Name']] = $appId;
+
+            $storedKeys[$key] = true;
         }
 
-        $appsThatGotRemovedFromSystem = (array_diff_key($existingAppsOfHostNameAndId, $currentlyInstalledAppsNameAndId));
-        // Remove these apps from windows_apps_hosts
-        if (!empty($appsThatGotRemovedFromSystem)) {
-            $WindowsAppsHostsTable->deleteAll(conditions: [
-                'windows_app_id IN' => array_values($appsThatGotRemovedFromSystem),
-                'host_id'           => $hostId,
-            ]);
+        $newInstallations = [];
+        foreach ($reportedInstallations as $key => $installation) {
+            if (!isset($storedKeys[$key])) {
+                $newInstallations[] = $WindowsAppsHostsTable->newEntity($installation);
+            }
         }
+
+        // 4. Write all changes at once, so the list of the host is never half updated
+        $WindowsAppsHostsTable->getConnection()->transactional(function () use ($WindowsAppsHostsTable, $hostId, $idsToDelete, $newInstallations) {
+            if (!empty($idsToDelete)) {
+                $WindowsAppsHostsTable->deleteAll([
+                    'id IN'   => $idsToDelete,
+                    'host_id' => $hostId,
+                ]);
+            }
+
+            if (!empty($newInstallations)) {
+                $WindowsAppsHostsTable->saveManyOrFail($newInstallations);
+            }
+        });
 
         return true;
+    }
+
+    /**
+     * One app in one version
+     *
+     * @param int $appId
+     * @param string $version
+     * @return string
+     */
+    private function getInstallationKey(int $appId, string $version): string {
+        return $appId . '|' . $version;
     }
 
     /**

@@ -54,6 +54,7 @@ class CpeMatcher {
         $products = [];
 
         foreach ($this->rules as $rule) {
+            /** @var CpeRule $rule */
             if ($rule->matches($app) && !isset($products[$rule->cpeKey()])) {
                 $products[$rule->cpeKey()] = $rule;
             }

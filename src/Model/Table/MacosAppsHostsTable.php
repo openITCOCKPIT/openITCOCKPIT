@@ -107,9 +107,11 @@ class MacosAppsHostsTable extends Table {
             ->requirePresence('version', 'create')
             ->notEmptyString('version');
 
+        // Agents before 3.8.0 and apps without Info.plist report no bundle identifier
         $validator
             ->scalar('bundle_id')
-            ->maxLength('bundle_id', 255);
+            ->maxLength('bundle_id', 255)
+            ->allowEmptyString('bundle_id');
 
         return $validator;
     }

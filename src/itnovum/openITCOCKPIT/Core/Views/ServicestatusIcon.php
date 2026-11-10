@@ -276,4 +276,3 @@ class ServicestatusIcon {
         return new self($stateId);
     }
 }
-}

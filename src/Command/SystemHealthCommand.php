@@ -247,6 +247,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
         return $data;
     }
+
     public function getSatellitesStatusWithHealth(array $systemHealthSettings): array {
 
         $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
@@ -350,7 +351,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
     }
 
-    public function sendHealthNotification($data, $sendingMail) {
+    public function sendHealthNotification(array $data, bool $sendingMail) {
 
         if ($sendingMail) {
 

@@ -37,7 +37,7 @@ use PHPUnit\Framework\TestCase;
 class PlatformFilterTest extends TestCase {
 
     /**
-     * The products the migration CvePlatformProducts creates
+     * All names the seed creates (InitialDatabase\CveCpeProduct), also of different products
      */
     private const DEFAULT_PRODUCTS = [
         'Google Chrome',

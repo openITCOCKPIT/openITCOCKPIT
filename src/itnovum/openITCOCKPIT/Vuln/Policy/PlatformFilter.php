@@ -35,8 +35,8 @@ namespace itnovum\openITCOCKPIT\Vuln\Policy;
  * In case of doubt the finding stays: a false alarm costs time, a swallowed finding leaves a hole open.
  * Findings of the operating system and Linux packages are never filtered.
  *
- * The products come from the table cve_platform_products, so customers can add their own software.
- * Only listed products get filtered.
+ * The names come from the table cve_cpe_product_names: the names of the CPE product whose CVEs get filtered,
+ * e.g. "Google Chrome" for google:chrome. Customers can add their own software. Without names nothing gets filtered.
  *
  * How a description is read, for every product the same way:
  * 1. Find "<product> <platforms>", e.g. "Firefox for Android", "Google Chrome on Mac, iOS",

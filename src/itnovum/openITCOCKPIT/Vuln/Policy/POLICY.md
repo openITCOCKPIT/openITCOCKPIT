@@ -118,10 +118,12 @@ Product matches know no operating system: "Chrome on Android" also matches the C
 on Windows. `PlatformFilter` therefore reads the description of the CVE, for Windows and macOS,
 in both directions.
 
-Only products of the table `cve_platform_products` are read. The migration creates Google Chrome,
-Firefox, Firefox Focus, Microsoft Edge, Microsoft Edge (Chromium-based), Docker Desktop and 7-Zip.
-Customers can add their own software. The name has to be entered as written in CVE descriptions,
-upper and lower case do not matter. Every product is read the same way:
+The filter reads the description with the names of the CPE product the finding belongs to, from the
+table `cve_cpe_product_names`. A Chrome CVE is read with "Google Chrome", an Edge CVE with "Microsoft Edge"
+and "Microsoft Edge (Chromium-based)". The seed creates names for Google Chrome, Firefox (with
+"Firefox Focus"), Microsoft Edge, Docker Desktop and 7-Zip. Customers can add their own software.
+The name has to be entered as written in CVE descriptions, upper and lower case do not matter.
+Products without names are never filtered. Every product is read the same way:
 
 1. Find "<product> for|on <platforms>", lists with comma or "and" included
 2. Keep the finding if the product is also named without platform. Versions like
@@ -225,7 +227,7 @@ rule changes the classification of findings, not for changes that only add infor
 ## Known limits
 
 - **Operating system of applications:** the filter only reads the description and only for
-  products of `cve_platform_products`. Unclear descriptions stay findings, texts like
+  products with names in `cve_cpe_product_names`. Unclear descriptions stay findings, texts like
   "python on Windows" are not read.
 - **Old CVEs without version:** some old CVEs match every version, e.g. `CVE-1999-0590` for
   macOS. Firefox has 19 of them.
@@ -233,5 +235,6 @@ rule changes the classification of findings, not for changes that only add infor
 - **Windows:** only the operating system, evaluated by its build without KB lists. .NET is not
   evaluated, Office only through the list of applications.
 - **macOS:** Apple apps only with agents that report bundle identifiers.
-- **Applications:** only maintained CPE rules. 0 findings is no proof.
+- **Applications:** only applications with a CPE rule (`cve_cpe_mappings`) are checked. All others
+  are listed as unmapped in the coverage of the host. 0 findings is no proof.
 - **Not checked:** runtime, configuration, drivers or reachability.

@@ -41,9 +41,10 @@ use itnovum\openITCOCKPIT\Vuln\Cpe\CpeRule;
  *
  * Rules that map installed applications to a CPE product. A rule has one condition and an optional second one,
  * both have to match. A condition compares one field of the application:
- * - name:      Name as shown by the operating system, Windows and macOS
- * - publisher: Windows only, macOS reports no publisher
- * - bundle_id: macOS only, e.g. com.google.Chrome. Does not depend on the language, so it is the best choice
+ * - Windows: name as shown by the operating system and publisher
+ * - macOS:   bundle identifier only, e.g. com.google.Chrome. Names of macOS apps are translated and often too
+ *            general ("Python", "Docker"), the bundle identifier is unique. It requires agent 3.8.0 or later,
+ *            the CVE check needs this version anyway (source packages of Linux, running kernel)
  *
  * @property \App\Model\Table\CveCpeProductsTable&\Cake\ORM\Association\BelongsTo $CveCpeProducts
  *
@@ -62,10 +63,10 @@ class CveCpeMappingsTable extends Table {
 
     private const MATCHES = [CpeCondition::MATCH_EQUALS, CpeCondition::MATCH_STARTS_WITH, CpeCondition::MATCH_CONTAINS, CpeCondition::MATCH_ENDS_WITH];
 
-    /** Fields the agent reports per platform */
+    /** Fields a rule can check per platform */
     private const FIELDS_OF_PLATFORM = [
         'windows' => [CpeCondition::FIELD_NAME, CpeCondition::FIELD_PUBLISHER],
-        'macos'   => [CpeCondition::FIELD_NAME, CpeCondition::FIELD_BUNDLE_ID],
+        'macos'   => [CpeCondition::FIELD_BUNDLE_ID],
     ];
 
     /**
@@ -178,7 +179,7 @@ class CveCpeMappingsTable extends Table {
             'message'    => __('The second condition needs a field, a comparison and a value.'),
         ]);
 
-        // A condition on a field the agent does not report for this platform would never match
+        // Windows rules check name and publisher, macOS rules only the bundle identifier
         $rules->add(function (CveCpeMapping $mapping) {
             $fields = self::FIELDS_OF_PLATFORM[$mapping->platform] ?? [];
             if (!in_array($mapping->first_field, $fields, true)) {
@@ -187,7 +188,7 @@ class CveCpeMappingsTable extends Table {
             return $mapping->second_field === null || in_array($mapping->second_field, $fields, true);
         }, 'fieldOfPlatform', [
             'errorField' => 'first_field',
-            'message'    => __('Publisher is only available on Windows, bundle identifier only on macOS.'),
+            'message'    => __('Windows rules can check name and publisher, macOS rules only the bundle identifier.'),
         ]);
 
         return $rules;

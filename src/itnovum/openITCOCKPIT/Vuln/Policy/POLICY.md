@@ -120,8 +120,8 @@ in both directions.
 
 The filter reads the description with the names of the CPE product the finding belongs to, from the
 table `cve_cpe_product_names`. A Chrome CVE is read with "Google Chrome", an Edge CVE with "Microsoft Edge"
-and "Microsoft Edge (Chromium-based)". The seed creates names for Google Chrome, Firefox (with
-"Firefox Focus"), Microsoft Edge, Docker Desktop and 7-Zip. Customers can add their own software.
+and "Microsoft Edge (Chromium-based)". The seed creates names for every default product whose CVEs
+name platforms, e.g. Zoom, Sourcetree, FortiClient or Microsoft Teams. Customers can add their own software.
 The name has to be entered as written in CVE descriptions, upper and lower case do not matter.
 Products without names are never filtered. Every product is read the same way:
 
@@ -234,7 +234,9 @@ rule changes the classification of findings, not for changes that only add infor
 - **Kernel:** for Debian and Ubuntu, Vuls only evaluates the packages of the running kernel.
 - **Windows:** only the operating system, evaluated by its build without KB lists. .NET is not
   evaluated, Office only through the list of applications.
-- **macOS:** Apple apps only with agents that report bundle identifiers.
+- **macOS:** applications only with agent 3.8.0 or later. Apple apps and the rules for other applications
+  (`cve_cpe_mappings`) use the bundle identifier, names of macOS apps are translated and not unique.
+  Older agents get only the operating system evaluated.
 - **Applications:** only applications with a CPE rule (`cve_cpe_mappings`) are checked. All others
   are listed as unmapped in the coverage of the host. 0 findings is no proof.
 - **Not checked:** runtime, configuration, drivers or reachability.

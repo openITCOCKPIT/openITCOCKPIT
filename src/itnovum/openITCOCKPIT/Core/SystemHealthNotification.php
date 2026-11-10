@@ -110,28 +110,6 @@ class SystemHealthNotification {
     }
 
     /**
-     * @return ServicestatusIcon
-     */
-    private function getStatusIcon($state) {
-        switch (strtoupper($state)) {
-            case 'OK':
-                $stateId = 0;
-                break;
-            case 'WARNING':
-                $stateId = 1;
-                break;
-            case 'CRITICAL':
-                $stateId = 2;
-                break;
-            default:
-                $stateId = 3;
-                break;
-        }
-
-        return new ServicestatusIcon($stateId);
-    }
-
-    /**
      * @return void
      */
     public function sendNotification() {
@@ -141,8 +119,8 @@ class SystemHealthNotification {
             /** @var SystemsettingsTable $SystemsettingsTable */
             $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
             $systemsettings = $SystemsettingsTable->findAsArray();
-            $statusIcon = $this->getStatusIcon($this->state);
-            $statusSatelliteIcon = $this->getStatusIcon($this->satellites_state);
+            $statusIcon = ServicestatusIcon::fromStatusText($this->state);
+            $statusSatelliteIcon = ServicestatusIcon::fromStatusText($this->satellites_state);
             $subject = $statusIcon->getEmoji() . ' ' . __('System health is {0}', $this->getState());
 
             if ($this->data['isDistributeModuleInstalled'] ?? 0 == 1) {

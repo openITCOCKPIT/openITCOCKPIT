@@ -45,6 +45,7 @@ use itnovum\openITCOCKPIT\Filter\GenericFilter;
  * disappears from the open CVEs without any further action.
  *
  * @property \App\Model\Table\CvePackageStateCvesTable&\Cake\ORM\Association\HasMany $CvePackageStateCves
+ * @property \App\Model\Table\CveHostFindingsTable&\Cake\ORM\Association\HasMany $CveHostFindings
  *
  * @method \App\Model\Entity\Cve newEmptyEntity()
  * @method \App\Model\Entity\Cve newEntity(array $data, array $options = [])
@@ -103,6 +104,10 @@ class CvesTable extends Table {
         $this->addBehavior('Timestamp');
 
         $this->hasMany('CvePackageStateCves', [
+            'foreignKey' => 'cve_id',
+        ]);
+
+        $this->hasMany('CveHostFindings', [
             'foreignKey' => 'cve_id',
         ]);
     }
@@ -316,8 +321,10 @@ class CvesTable extends Table {
      * @return int Number of deleted CVEs
      */
     public function deleteUnusedCves(): int {
+        // Findings of hosts keep their CVE, also after they got resolved, because they are the history
         return $this->deleteAll([
-            'id NOT IN' => $this->CvePackageStateCves->find()->select(['CvePackageStateCves.cve_id'])
+            ['id NOT IN' => $this->CvePackageStateCves->find()->select(['CvePackageStateCves.cve_id'])],
+            ['id NOT IN' => $this->CveHostFindings->find()->select(['CveHostFindings.cve_id'])],
         ]);
     }
 

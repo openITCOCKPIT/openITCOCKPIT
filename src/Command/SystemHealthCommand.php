@@ -351,7 +351,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
     }
 
-    public function sendHealthNotification(array $data, bool $sendingMail) {
+    public function sendHealthNotification(array $data, bool $sendingMail): void {
         if (!$sendingMail) {
             return;
         }

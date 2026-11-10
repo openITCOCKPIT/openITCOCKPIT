@@ -3464,6 +3464,7 @@ class HostsController extends AppController {
                 if ($dashboard->get('grafana_uid')) {
                     $GrafanaApiConfiguration->setGrafanaUid($dashboard->get('grafana_uid'));
                 }
+                $GrafanaApiConfiguration->setDashboardStyle($this->request->getQuery('theme'));
                 $iframeUrl = $GrafanaApiConfiguration->getIframeUrlForDatepicker($timerange, $refresh);
             }
         }

@@ -235,6 +235,7 @@ class GrafanaConfigurationController extends AppController {
                     $GrafanaConfiguration = GrafanaApiConfiguration::fromArray($grafanaConfiguration);
                     $GrafanaConfiguration->setHostUuid($host->get('uuid'));
                     $GrafanaConfiguration->setGrafanaUid($hostDashboard->get('grafana_uid'));
+                    $GrafanaConfiguration->setDashboardStyle($this->request->getQuery('theme'));
                     $iframeUrl = $GrafanaConfiguration->getIframeUrl();
                 } else {
                     $hostId = null;

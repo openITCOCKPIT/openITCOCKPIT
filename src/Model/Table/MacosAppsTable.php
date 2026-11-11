@@ -29,9 +29,7 @@ namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\MacosAppsHost;
-use Cake\Database\Expression\QueryExpression;
 use Cake\Log\Log;
-use Cake\ORM\Query;
 use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -176,57 +174,38 @@ class MacosAppsTable extends Table {
     }
 
     /**
-     * Get all Macos apps of a specific host
+     * Returns all installations of a host. One app can be installed several times in different versions,
+     * e.g. Python, so the result is a list and not indexed by app.
      *
      * @param int $hostId
      * @return MacosAppsHost[]
      */
-    public function getAllMacosAppsOfHost(int $hostId): array {
+    public function getInstallationsOfHost(int $hostId): array {
         /** @var MacosAppsHostsTable $MacosAppsHostsTable */
         $MacosAppsHostsTable = TableRegistry::getTableLocator()->get('MacosAppsHosts');
-        $query = $MacosAppsHostsTable->find()
+
+        return $MacosAppsHostsTable->find()
             ->where([
                 'host_id' => $hostId,
             ])
-            ->contain([
-                'MacosApps' => function (SelectQuery $query) {
-                    return $query->select([
-                        'id',
-                        'name',
-                    ]);
-                }
-            ]);
-
-        $result = [];
-        foreach ($query->toArray() as $macosAppHost) {
-            $result[$macosAppHost->macos_app_id] = $macosAppHost;
-        }
-
-        return $result;
-    }
-
-    public function deleteUnusedApps() {
-        $query = $this->deleteQuery();
-        $query->delete('macos_apps')
-            ->where(function (QueryExpression $exp, Query\DeleteQuery $query) {
-                return $exp->notExists(
-                    $this->find()
-                        ->select(1)
-                        ->from(['macos_apps_hosts'])
-                        ->where(['macos_apps_hosts.macos_app_id = macos_apps.id'])
-                );
-            });
-
-        return $query->execute();
+            ->orderBy(['id' => 'asc'])
+            ->toArray();
     }
 
     /**
-     * Save installed apps for a specific host
+     * Stores the installed apps a macOS agent reports.
+     *
+     * An installation is one app (by name) in one version. The same app can be installed several times,
+     * e.g. Python of the Command Line Tools and of python.org, each of them is its own row in macos_apps_hosts.
+     * The stored installations are compared with the reported ones:
+     * - reported but not stored: insert
+     * - stored but not reported anymore: delete (uninstalled or updated to another version)
+     * - stored more than once: keep one row and delete the rest
+     * - stored with another bundle identifier: update it (agents before 3.8.0 report none)
      *
      * @param int $hostId
-     * @param array $installedApps
+     * @param array $installedApps Apps of the agent with the keys Name, Version, Description and BundleID
      * @return bool
-     * @throws \Exception
      */
     public function saveAppsForHost(int $hostId, array $installedApps): bool {
         if (empty($installedApps)) {
@@ -236,50 +215,38 @@ class MacosAppsTable extends Table {
         /** @var MacosAppsHostsTable $MacosAppsHostsTable */
         $MacosAppsHostsTable = TableRegistry::getTableLocator()->get('MacosAppsHosts');
 
+        // 1. Add apps that are new for the whole system to the catalog (macos_apps)
         // key = app name, value = app id
         $existingApps = $this->getAllMacosAppsAsMap();
-        // key = app id, value = MacosAppsHost entity
-        $existingAppsOfHost = $this->getAllMacosAppsOfHost($hostId);
 
         $newApps = [];
-        $newAppsHosts = [];
-
-        // Fake app for testing
-        /*
-        $installedApps[] = [
-            'Name'      => 'delete-test',
-            'Version'   => '2.0.0',
-            'Description' => 'Fake app for deletion test',
-        ];*/
         foreach ($installedApps as $app) {
             if (empty($app['Name']) || empty($app['Version'])) {
                 continue;
             }
 
-            if (!isset($existingApps[$app['Name']])) {
-                // New App - add to macos_apps
-                $desc = null;
+            if (!isset($existingApps[$app['Name']]) && !isset($newApps[$app['Name']])) {
+                $description = null;
                 if (isset($app['Description'])) {
-                    $desc = substr($app['Description'], 0, 1000);
+                    $description = substr($app['Description'], 0, 1000);
                 }
 
-                $newApps[] = $this->newEntity([
+                $newApps[$app['Name']] = $this->newEntity([
                     'name'        => $app['Name'],
-                    'description' => $desc
+                    'description' => $description
                 ]);
             }
         }
 
         if (!empty($newApps)) {
             $this->saveMany($newApps);
-
-            // Add new app to existingApps map
             foreach ($newApps as $newApp) {
                 $existingApps[$newApp->name] = $newApp->id;
             }
         }
 
-        // Save / update new installed apps for host
+        // 2. Installations the agent reports, one per app and version
+        $reportedInstallations = [];
         foreach ($installedApps as $app) {
             if (empty($app['Name']) || empty($app['Version'])) {
                 continue;
@@ -290,69 +257,78 @@ class MacosAppsTable extends Table {
                 continue;
             }
 
-            $appId = $existingApps[$app['Name']];
-            if (isset($existingAppsOfHost[$appId])) {
-                // App already exists for host - update it
-                $macosAppHostEntity = $existingAppsOfHost[$appId];
-                $bundleId = $app['BundleID'] ?? null;
-                if ($macosAppHostEntity->version != $app['Version'] || $macosAppHostEntity->bundle_id !== $bundleId) {
-                    // ITC-3796 adds the bundleId so in case it is missing, has changed or the version has changed, we update the entry
-                    $macosAppHostEntity->version = $app['Version'];
-                    $macosAppHostEntity->bundle_id = $bundleId;
-                    if ($MacosAppsHostsTable->save($macosAppHostEntity)) {
-                        $existingAppsOfHost[$macosAppHostEntity->macos_app_id] = $macosAppHostEntity;
-                    }
-                }
-            } else {
-                // Create a new entry
-                $newAppsHosts[] = $MacosAppsHostsTable->newEntity([
-                    'host_id'      => $hostId,
-                    'macos_app_id' => $appId,
-                    'version'      => $app['Version'],
-                    'bundle_id'    => $app['BundleID'] ?? null
-                ]);
-            }
+            $appId = (int)$existingApps[$app['Name']];
+            // Same length as the column, so the comparison with stored versions works
+            $version = substr((string)$app['Version'], 0, 64);
+            $reportedInstallations[$this->getInstallationKey($appId, $version)] = [
+                'host_id'      => $hostId,
+                'macos_app_id' => $appId,
+                'version'      => $version,
+                'bundle_id'    => empty($app['BundleID']) ? null : $app['BundleID'],
+            ];
         }
 
-        if (!empty($newAppsHosts)) {
-            $MacosAppsHostsTable->saveMany($newAppsHosts);
+        // 3. Compare with the stored installations
+        $storedKeys = [];
+        $idsToDelete = [];
+        $changedInstallations = [];
+        foreach ($this->getInstallationsOfHost($hostId) as $installation) {
+            $key = $this->getInstallationKey($installation->macos_app_id, (string)$installation->version);
 
-            // Add new apps to existingApps map
-            foreach ($newAppsHosts as $newAppHost) {
-                $existingAppsOfHost[$newAppHost->macos_app_id] = $newAppHost;
-            }
-        }
-
-        // Remove uninstalled apps
-        $existingAppsOfHostNameAndId = [];
-        foreach ($existingAppsOfHost as $appMacosHost) {
-            // New installed apps may have no JOIN data (app name)
-            // but this is not needed as we want to remote uninstalled apps from the macos_apps_hosts table
-            if (!empty($appMacosHost->macos_app->name)) {
-                $existingAppsOfHostNameAndId[$appMacosHost->macos_app->name] = $appMacosHost->macos_app_id;
-            }
-        }
-
-
-        $currentlyInstalledAppsNameAndId = [];
-        foreach ($installedApps as $app) {
-            if (!isset($existingApps[$app['Name']])) {
+            $isStillInstalled = isset($reportedInstallations[$key]);
+            $isDuplicate = isset($storedKeys[$key]);
+            if (!$isStillInstalled || $isDuplicate) {
+                $idsToDelete[] = $installation->id;
                 continue;
             }
-            $appId = $existingApps[$app['Name']];
-            $currentlyInstalledAppsNameAndId[$app['Name']] = $appId;
+
+            $storedKeys[$key] = true;
+
+            // ITC-3796 Agents 3.8.0 and later report the bundle identifier, older rows have none
+            $bundleId = $reportedInstallations[$key]['bundle_id'];
+            if ($installation->bundle_id !== $bundleId) {
+                $installation->bundle_id = $bundleId;
+                $changedInstallations[] = $installation;
+            }
         }
 
-        $appsThatGotRemovedFromSystem = (array_diff_key($existingAppsOfHostNameAndId, $currentlyInstalledAppsNameAndId));
-        // Remove these apps from macos_apps_hosts
-        if (!empty($appsThatGotRemovedFromSystem)) {
-            $MacosAppsHostsTable->deleteAll(conditions: [
-                'macos_app_id IN' => array_values($appsThatGotRemovedFromSystem),
-                'host_id'         => $hostId,
-            ]);
+        $newInstallations = [];
+        foreach ($reportedInstallations as $key => $installation) {
+            if (!isset($storedKeys[$key])) {
+                $newInstallations[] = $MacosAppsHostsTable->newEntity($installation);
+            }
         }
+
+        // 4. Write all changes at once, so the list of the host is never half updated
+        $MacosAppsHostsTable->getConnection()->transactional(function () use ($MacosAppsHostsTable, $hostId, $idsToDelete, $changedInstallations, $newInstallations) {
+            if (!empty($idsToDelete)) {
+                $MacosAppsHostsTable->deleteAll([
+                    'id IN'   => $idsToDelete,
+                    'host_id' => $hostId,
+                ]);
+            }
+
+            if (!empty($changedInstallations)) {
+                $MacosAppsHostsTable->saveManyOrFail($changedInstallations);
+            }
+
+            if (!empty($newInstallations)) {
+                $MacosAppsHostsTable->saveManyOrFail($newInstallations);
+            }
+        });
 
         return true;
+    }
+
+    /**
+     * One app in one version
+     *
+     * @param int $appId
+     * @param string $version
+     * @return string
+     */
+    private function getInstallationKey(int $appId, string $version): string {
+        return $appId . '|' . $version;
     }
 
     /**

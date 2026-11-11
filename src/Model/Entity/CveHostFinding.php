@@ -52,6 +52,8 @@ use Cake\ORM\Entity;
  * @property int|null $severity
  * @property string|null $severity_source
  * @property string $view_name
+ * @property string $rule
+ * @property int $reasons
  * @property string $color
  * @property int $rule_rank
  * @property bool $review_required
@@ -95,6 +97,8 @@ class CveHostFinding extends Entity {
         'severity'          => true,
         'severity_source'   => true,
         'view_name'         => true,
+        'rule'              => true,
+        'reasons'           => true,
         'color'             => true,
         'rule_rank'         => true,
         'review_required'   => true,

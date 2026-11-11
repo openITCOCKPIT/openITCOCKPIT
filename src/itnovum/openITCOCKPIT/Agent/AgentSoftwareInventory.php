@@ -138,9 +138,7 @@ class AgentSoftwareInventory {
      */
     public function cleanupUnusedPackages(): void {
         $this->PackagesLinuxTable->deleteUnusedPackages();
-        $this->WindowsAppsTable->deleteUnusedApps();
         $this->WindowsUpdatesTable->deleteUnusedUpdates();
-        $this->MacosAppsTable->deleteUnusedApps();
         $this->MacosUpdatesTable->deleteUnusedUpdates();
     }
 

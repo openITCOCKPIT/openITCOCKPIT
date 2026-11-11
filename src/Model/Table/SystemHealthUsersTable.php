@@ -28,6 +28,7 @@ namespace App\Model\Table;
 use App\itnovum\openITCOCKPIT\Filter\SystemHealthUsersFilter;
 use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -101,13 +102,55 @@ class SystemHealthUsersTable extends Table {
     }
 
     /**
-     * @param $notify_on_warning
-     * @param $notify_on_critical
-     * @param $notify_on_recovery
-     * @return array
+     * I will return all active users subscribed to the given notification types
+     * as mailing list (key: email, value: full name of the user).
+     *
+     * @param int $notify_on_warning
+     * @param int $notify_on_critical
+     * @param int $notify_on_recovery
+     * @return array<string, string>
      */
-    public function getUsersForNotifications($notify_on_warning, $notify_on_critical, $notify_on_recovery) {
+    public function getUsersForNotifications($notify_on_warning, $notify_on_critical, $notify_on_recovery): array {
+        $users = [];
+        foreach ($this->getUsersForNotificationsQuery($notify_on_warning, $notify_on_critical, $notify_on_recovery)->all() as $record) {
+            $users[$record['user']['email']] = $record['full_name'];
+        }
 
+        return $users;
+    }
+
+    /**
+     * I will apply the same filter as getUsersForNotifications(), but return the user id and usergroup id as well,
+     * so that container permissions of each user can be resolved (e.g. for satellite notifications).
+     *
+     * @param int $notify_on_warning
+     * @param int $notify_on_critical
+     * @param int $notify_on_recovery
+     * @return array<int, array{id: int, usergroup_id: int, email: string, full_name: string}>
+     */
+    public function getUsersWithIdsForNotifications($notify_on_warning, $notify_on_critical, $notify_on_recovery): array {
+        $users = [];
+        foreach ($this->getUsersForNotificationsQuery($notify_on_warning, $notify_on_critical, $notify_on_recovery)->all() as $record) {
+            $users[] = [
+                'id'           => (int)$record['user']['id'],
+                'usergroup_id' => (int)$record['user']['usergroup_id'],
+                'email'        => $record['user']['email'],
+                'full_name'    => $record['full_name'],
+            ];
+        }
+
+        return $users;
+    }
+
+    /**
+     * I will build the query for all active users subscribed to the given notification types.
+     *
+     * @param int $notify_on_warning
+     * @param int $notify_on_critical
+     * @param int $notify_on_recovery
+     * @return SelectQuery
+     */
+    private function getUsersForNotificationsQuery($notify_on_warning, $notify_on_critical, $notify_on_recovery): SelectQuery {
         $query = $this->unhydratedFind();
         $query->select([
             'full_name' => $query->func()->concat([
@@ -115,6 +158,8 @@ class SystemHealthUsersTable extends Table {
                 ' ',
                 'Users.lastname'  => 'literal'
             ]),
+            'Users.id',
+            'Users.usergroup_id',
             'Users.email',
         ])
             ->contain(['Users'])
@@ -140,21 +185,7 @@ class SystemHealthUsersTable extends Table {
             ]);
         }
 
-        $query->all();
-
-        if (empty($query)) {
-            return [];
-        }
-
-        $users = [];
-        foreach ($query as $record) {
-
-            $users[$record['user']['email']] = $record['full_name'];
-
-        }
-
-        return $users;
-
+        return $query;
     }
 
     /**

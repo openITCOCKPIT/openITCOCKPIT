@@ -33,6 +33,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\itnovum\openITCOCKPIT\Core\Permissions\MyRightsFactory;
+use App\itnovum\openITCOCKPIT\Core\SatelliteHealthNotification;
 use App\itnovum\openITCOCKPIT\Core\SystemHealthNotification;
 use App\itnovum\openITCOCKPIT\Supervisor\Supervisorctl;
 use App\Model\Table\SystemHealthUsersTable;
@@ -82,12 +84,15 @@ class SystemHealthCommand extends Command implements CronjobInterface {
     public function execute(Arguments $args, ConsoleIo $io) {
         $io->out('Fetch system health information...', 0);
 
+        // Fetch latest SystemHealth Information
         $data = $this->fetchInformation();
-        $dataForEmail = $this->determineState($data);
-        $sendingMail = $this->checkSendingMail($io);
-        $this->saveToCache($data);
-        $this->sendHealthNotification($dataForEmail, $sendingMail);
+        $this->sendHealthNotifications($data);
 
+        // Save current states as previous states for the next run.
+        // Must be called after sendHealthNotifications(), which determines the current states.
+        $this->saveToCache($data);
+
+        // Message OK to console.
         $io->success('   Ok');
         $io->hr();
     }
@@ -312,18 +317,18 @@ class SystemHealthCommand extends Command implements CronjobInterface {
                  * warning/critical levels consistent across different host sizes.
                  */
                 if ($cpu_cores > 0) {
-                    $loadPercentage =  ((float)$parsedHealth['cpu_load15'] / $cpu_cores) * 100;
+                    $loadPercentage = ((float)$parsedHealth['cpu_load15'] / $cpu_cores) * 100;
                     $parsedHealth['cpu_state'] = $this->getStateByPercentage($loadPercentage, $thresholds['cpu']['warning'], $thresholds['cpu']['critical']);
                 }
 
                 // RAM
                 if (isset($parsedHealth['memory']['memory']['percentage'])) {
-                    $parsedHealth['memory']['memory']['state'] = $this->getStateByPercentage($parsedHealth['memory']['memory']['percentage'],$thresholds['ram']['warning'],$thresholds['ram']['critical']);
+                    $parsedHealth['memory']['memory']['state'] = $this->getStateByPercentage($parsedHealth['memory']['memory']['percentage'], $thresholds['ram']['warning'], $thresholds['ram']['critical']);
                 }
 
                 // SWAP
                 if (isset($parsedHealth['memory']['swap']['percentage'])) {
-                    $parsedHealth['memory']['swap']['state'] = $this->getStateByPercentage($parsedHealth['memory']['swap']['percentage'],$thresholds['swap']['warning'],$thresholds['swap']['critical']);
+                    $parsedHealth['memory']['swap']['state'] = $this->getStateByPercentage($parsedHealth['memory']['swap']['percentage'], $thresholds['swap']['warning'], $thresholds['swap']['critical']);
                 }
 
                 // DISKS
@@ -333,7 +338,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
                         if ($thresholds['exclude_regex'] !== null && (preg_match($thresholds['exclude_regex'], $disk['disk'] ?? '') === 1 || preg_match($thresholds['exclude_regex'], $disk['mountpoint'] ?? '') === 1)) {
                             continue;
                         }
-                        $disk['state'] = $this->getStateByPercentage($disk['use_percentage'],$thresholds['disk']['warning'],$thresholds['disk']['critical']);
+                        $disk['state'] = $this->getStateByPercentage($disk['use_percentage'], $thresholds['disk']['warning'], $thresholds['disk']['critical']);
                         $disksWithState[] = $disk;
                     }
                     $parsedHealth['disks'] = $disksWithState;
@@ -351,72 +356,175 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
     }
 
-    public function sendHealthNotification(array $data, bool $sendingMail): void {
-        if (!$sendingMail) {
-            return;
-        }
-        $notify_on_warning = 0;
-        $notify_on_critical = 0;
-        $notify_on_recovery = 0;
+    /**
+     * I will determine the system and satellites state and send the SystemHealthNotification
+     * and SatelliteHealthNotifications if the respective state has changed.
+     *
+     * @param array $data Result of fetchInformation()
+     * @return void
+     */
+    public function sendHealthNotifications(array $data): void {
+        // Determine system and satellites state and enrich the data for the email
+        $dataForEmail = $this->determineState($data);
 
-        switch (strtoupper($this->state)) {
-            case 'OK':
-                $notify_on_recovery = 1;
-                break;
-            case 'WARNING':
-                $notify_on_warning = 1;
-                break;
-            case 'CRITICAL':
-                $notify_on_critical = 1;
-                break;
-            default:
-                break;
-        }
+        // Compare with the states of the previous run BEFORE the cache gets overwritten
+        $sendSystemHealthMail = $this->checkSendingSystemHealthMail();
+        $sendSatelliteHealthMail = $this->checkSendingSatelliteHealthMail();
 
-        switch (strtoupper($this->satellites_state)) {
-            case 'OK':
-                $notify_on_recovery = 1;
-                break;
-            case 'WARNING':
-                $notify_on_warning = 1;
-                break;
-            case 'CRITICAL':
-                $notify_on_critical = 1;
-                break;
-            default:
-                break;
+        // Maybe send SystemHealth
+        if ($sendSystemHealthMail) {
+            $this->sendSystemHealthNotification($dataForEmail);
+        } else {
+            $this->io->verbose('Not sending SystemHealthNotification: system state has not changed');
         }
 
-        if (!$notify_on_recovery && !$notify_on_critical && !$notify_on_warning) {
+        // Maybe send SatelliteHealth
+        if (Plugin::isLoaded('DistributeModule')) {
+            if ($sendSatelliteHealthMail) {
+                $this->sendSatelliteHealthNotifications($dataForEmail['satellites'] ?? []);
+            } else {
+                $this->io->verbose('Not sending SatelliteHealthNotification: satellites state has not changed');
+            }
+        }
+    }
+
+    /**
+     * I will send the SystemHealthNotification to all users subscribed to the current system state.
+     *
+     * @param array $data Result of determineState()
+     * @return void
+     */
+    private function sendSystemHealthNotification(array $data): void {
+        $flags = $this->getNotificationFlagsByState($this->state);
+        if ($flags === null) {
+            $this->io->verbose(sprintf('Not sending SystemHealthNotification: no notifications for state "%s"', $this->state));
             return;
         }
 
         /** @var SystemHealthUsersTable $SystemHealthUsersTable */
         $SystemHealthUsersTable = TableRegistry::getTableLocator()->get('SystemHealthUsers');
-        $users = $SystemHealthUsersTable->getUsersForNotifications($notify_on_warning, $notify_on_critical, $notify_on_recovery);
+        $users = $SystemHealthUsersTable->getUsersForNotifications(...$flags);
 
-        $systemHealthNotification = new SystemHealthNotification($users, $this->state, $this->satellites_state);
+        $systemHealthNotification = new SystemHealthNotification($users, $this->state);
         $systemHealthNotification->setData($data);
         $systemHealthNotification->sendNotification();
     }
 
     /**
-     * @return bool
+     * I will send one SatelliteHealthNotification per user, containing only the satellites
+     * the user has container permissions for.
+     *
+     * @param array $satellites Result of getSatellitesStatusWithHealth()
+     * @return void
      */
-    public function checkSendingMail($io) {
-
-        $cache = Cache::read('system_health', 'permissions');
-        $sendingMail = false;
-
-        if ((!empty($cache) && !empty($cache['previousState']) && $cache['previousState'] !== $this->state) ||
-            (!empty($cache) && !empty($cache['previousSatellitesState']) && $cache['previousSatellitesState'] !== $this->satellites_state)) {
-            $sendingMail = true;
+    private function sendSatelliteHealthNotifications(array $satellites): void {
+        $flags = $this->getNotificationFlagsByState($this->satellites_state);
+        if ($flags === null) {
+            $this->io->verbose(sprintf('Not sending SatelliteHealthNotification: no notifications for state "%s"', $this->satellites_state));
+            return;
         }
 
-        return $sendingMail;
+        // On recovery, all satellites of the user get reported (they are all OK now).
+        // Otherwise only satellites with a problem get reported.
+        $isRecovery = strtolower($this->satellites_state) === 'ok';
+
+        foreach ($satellites as $index => $satellite) {
+            $satellites[$index]['state'] = $this->getStateOfSatellite($satellite);
+        }
+
+        /** @var SystemHealthUsersTable $SystemHealthUsersTable */
+        $SystemHealthUsersTable = TableRegistry::getTableLocator()->get('SystemHealthUsers');
+        $users = $SystemHealthUsersTable->getUsersWithIdsForNotifications(...$flags);
+
+        foreach ($users as $user) {
+            $this->io->verbose('Composing SatelliteHealthNotification to user: ' . $user['email']);
+
+            $userPermissions = MyRightsFactory::getUserPermissions($user['id'], $user['usergroup_id']);
+            $SatelliteHealthNotification = new SatelliteHealthNotification($user['email'], $user['full_name'], $this->io);
+
+            $stateForUser = 'unknown';
+            foreach ($satellites as $satellite) {
+                if (!$this->isSatelliteAllowedForUser($satellite, $userPermissions)) {
+                    $this->io->verbose("User {$user['email']} does not have permission to see satellite {$satellite['name']} (ID: {$satellite['id']}), skipping.");
+                    continue;
+                }
+
+                if (!$isRecovery && !in_array($satellite['state'], ['warning', 'critical'], true)) {
+                    $this->io->verbose("Satellite {$satellite['name']} (ID: {$satellite['id']}) is in state {$satellite['state']}, skipping for user {$user['email']}.");
+                    continue;
+                }
+
+                $SatelliteHealthNotification->addSatelliteState($satellite);
+                $stateForUser = $this->mergeState($stateForUser, $satellite['state']);
+            }
+
+            $SatelliteHealthNotification->setState($stateForUser);
+            $SatelliteHealthNotification->sendNotification();
+        }
     }
 
     /**
+     * I will check whether the user may see the given satellite (container check).
+     * Same logic as SatellitesController::index() (read permission on the satellite container is enough).
+     *
+     * @param array $satellite
+     * @param array $userPermissions Result of MyRightsFactory::getUserPermissions()
+     * @return bool
+     */
+    private function isSatelliteAllowedForUser(array $satellite, array $userPermissions): bool {
+        if ($userPermissions['hasRootPrivileges'] === true) {
+            return true;
+        }
+
+        if (!isset($satellite['container_id'])) {
+            return false;
+        }
+
+        return in_array((int)$satellite['container_id'], array_map('intval', $userPermissions['MY_RIGHTS']), true);
+    }
+
+    /**
+     * I will return the arguments for SystemHealthUsersTable::getUsersForNotifications()
+     * [notify_on_warning, notify_on_critical, notify_on_recovery] or null if no notification should be sent.
+     *
+     * @param string $state
+     * @return int[]|null
+     */
+    private function getNotificationFlagsByState(string $state): ?array {
+        return match (strtoupper($state)) {
+            'OK' => [0, 0, 1],
+            'WARNING' => [1, 0, 0],
+            'CRITICAL' => [0, 1, 0],
+            default => null,
+        };
+    }
+
+    /**
+     * I will compare the current system state with the state of the previous run (cache).
+     *
+     * @return bool true if the system state has changed
+     */
+    private function checkSendingSystemHealthMail(): bool {
+        $cache = Cache::read('system_health', 'permissions');
+
+        return !empty($cache) && !empty($cache['previousState']) && $cache['previousState'] !== $this->state;
+    }
+
+    /**
+     * I will compare the current satellites state with the state of the previous run (cache).
+     *
+     * @return bool true if the satellites state has changed
+     */
+    private function checkSendingSatelliteHealthMail(): bool {
+        $cache = Cache::read('system_health', 'permissions');
+
+        return !empty($cache) && !empty($cache['previousSatellitesState']) && $cache['previousSatellitesState'] !== $this->satellites_state;
+    }
+
+    /**
+     * I will calculate the system state and the satellites state and enrich the data with both states.
+     *
+     * @param array $data Result of fetchInformation()
      * @return array
      */
     public function determineState($data) {
@@ -473,46 +581,9 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         }
 
         foreach ($dataForEmail['satellites'] ?? [] as $satellite) {
-
-            if (isset($satellite['status'])) {
-                $satellite_status = "";
-                if (is_numeric($satellite['status'])) {
-                    $satellite_status = $this->getSatellitesState($satellite['status']);
-                } else if (is_string($satellite['status'])) {
-                    $satellite_status = $satellite['status'];
-                }
-
-                $this->setSatellitesHealthState($satellite_status);
+            foreach ($this->getStatesOfSatellite($satellite) as $satelliteState) {
+                $this->setSatellitesHealthState($satelliteState);
             }
-
-            $satInfo = $satellite['satellite_information'] ?? [];
-
-            if (!$satInfo || empty($satInfo['system_health'])) {
-                continue;
-            }
-
-            $systemHealth = $satInfo['system_health'];
-            // RAM
-            if (isset($systemHealth['memory']['memory']['state'])) {
-                $this->setSatellitesHealthState($systemHealth['memory']['memory']['state']);
-            }
-            if (isset($systemHealth['memory']['swap']['state'])) {
-                $this->setSatellitesHealthState($systemHealth['memory']['swap']['state']);
-            }
-            // Disks
-            if (!empty($systemHealth['disks']) && is_array($systemHealth['disks'])) {
-                foreach ($systemHealth['disks'] as $disk) {
-                    if (isset($disk['state'])) {
-                        $this->setSatellitesHealthState($disk['state']);
-                    }
-                }
-            }
-
-            //CPU
-            if (isset($systemHealth['cpu_cores'], $systemHealth['cpu_load15'], $systemHealth['cpu_state'])) {
-                $this->setSatellitesHealthState($systemHealth['cpu_state']);
-            }
-
         }
 
         $this->setHealthState($dataForEmail['memory_usage']['memory']['state']);
@@ -529,34 +600,107 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
     }
 
-    private function setHealthState($state) {
+    /**
+     * I will return all single states (sync status, RAM, Swap, Disks, CPU) of one satellite.
+     *
+     * @param array $satellite
+     * @return string[]
+     */
+    private function getStatesOfSatellite(array $satellite): array {
+        $states = [];
 
-        //Do not overwrite critical with ok or warning
-        if ($this->state === 'critical') {
-            return;
+        if (isset($satellite['status'])) {
+            $satellite_status = "";
+            if (is_numeric($satellite['status'])) {
+                $satellite_status = $this->getSatellitesState((int)$satellite['status']);
+            } else if (is_string($satellite['status'])) {
+                $satellite_status = $satellite['status'];
+            }
+            $states[] = $satellite_status;
         }
 
-        //Do not overwrite warning with ok
-        if ($this->state === 'warning' && $state !== 'critical') {
-            return;
+        $systemHealth = $satellite['satellite_information']['system_health'] ?? [];
+        if (empty($systemHealth) || !is_array($systemHealth)) {
+            return $states;
         }
 
-        $this->state = $state;
+        // RAM
+        if (isset($systemHealth['memory']['memory']['state'])) {
+            $states[] = $systemHealth['memory']['memory']['state'];
+        }
+        if (isset($systemHealth['memory']['swap']['state'])) {
+            $states[] = $systemHealth['memory']['swap']['state'];
+        }
+        // Disks
+        if (!empty($systemHealth['disks']) && is_array($systemHealth['disks'])) {
+            foreach ($systemHealth['disks'] as $disk) {
+                if (isset($disk['state'])) {
+                    $states[] = $disk['state'];
+                }
+            }
+        }
+
+        //CPU
+        if (isset($systemHealth['cpu_cores'], $systemHealth['cpu_load15'], $systemHealth['cpu_state'])) {
+            $states[] = $systemHealth['cpu_state'];
+        }
+
+        return $states;
     }
 
-    private function setSatellitesHealthState($satellites_state) {
+    /**
+     * I will return the combined state of one satellite (ok, warning, critical or unknown).
+     *
+     * @param array $satellite
+     * @return string
+     */
+    private function getStateOfSatellite(array $satellite): string {
+        $state = 'unknown';
+        foreach ($this->getStatesOfSatellite($satellite) as $singleState) {
+            $state = $this->mergeState($state, $singleState);
+        }
+        return $state;
+    }
 
+    /**
+     * I will merge two states. critical can not be overwritten, warning can only be overwritten by critical.
+     *
+     * @param string $currentState
+     * @param string $newState
+     * @return string
+     */
+    private function mergeState(string $currentState, string $newState): string {
         //Do not overwrite critical with ok or warning
-        if ($this->satellites_state === 'critical') {
-            return;
+        if ($currentState === 'critical') {
+            return $currentState;
         }
 
         //Do not overwrite warning with ok
-        if ($this->satellites_state === 'warning' && $satellites_state !== 'critical') {
-            return;
+        if ($currentState === 'warning' && $newState !== 'critical') {
+            return $currentState;
         }
 
-        $this->satellites_state = $satellites_state;
+        return $newState;
+    }
+
+    /**
+     * I will merge the given state into the system state.
+     *
+     * @param string $state
+     * @return void
+     */
+    private function setHealthState($state) {
+        $this->state = $this->mergeState((string)$this->state, (string)$state);
+    }
+
+    /**
+     * I will merge the given state into the satellites state.
+     *
+     * @param string $satellites_state
+     * @return void
+     */
+    private function setSatellitesHealthState($satellites_state) {
+        $this->satellites_state = $this->mergeState((string)$this->satellites_state, (string)$satellites_state);
     }
 
     public function saveToCache($data) {
@@ -586,19 +730,19 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
     private function getSatelliteThresholds(array $settings): array {
         return [
-            'cpu'  => [
+            'cpu'           => [
                 'warning'  => $this->getPercentSetting($settings['SYSTEM_HEALTH.SATELLITES_THRESHOLD_CPU_LOAD_WARNING_IN_PERCENT'] ?? null, 75),
                 'critical' => $this->getPercentSetting($settings['SYSTEM_HEALTH.SATELLITES_THRESHOLD_CPU_LOAD_CRITICAL_IN_PERCENT'] ?? null, 90),
             ],
-            'ram'  => [
+            'ram'           => [
                 'warning'  => $this->getPercentSetting($settings['SYSTEM_HEALTH.SATELLITES_THRESHOLD_RAM_WARNING_IN_PERCENT'] ?? null, 75),
                 'critical' => $this->getPercentSetting($settings['SYSTEM_HEALTH.SATELLITES_THRESHOLD_RAM_CRITICAL_IN_PERCENT'] ?? null, 90),
             ],
-            'swap' => [
+            'swap'          => [
                 'warning'  => $this->getPercentSetting($settings['SYSTEM_HEALTH.SATELLITES_THRESHOLD_SWAP_WARNING_IN_PERCENT'] ?? null, 75),
                 'critical' => $this->getPercentSetting($settings['SYSTEM_HEALTH.SATELLITES_THRESHOLD_SWAP_CRITICAL_IN_PERCENT'] ?? null, 90),
             ],
-            'disk' => [
+            'disk'          => [
                 'warning'  => $this->getPercentSetting($settings['SYSTEM_HEALTH.SATELLITES_THRESHOLD_DISK_WARNING_IN_PERCENT'] ?? null, 75),
                 'critical' => $this->getPercentSetting($settings['SYSTEM_HEALTH.SATELLITES_THRESHOLD_DISK_CRITICAL_IN_PERCENT'] ?? null, 90),
             ],
@@ -610,8 +754,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
         return (is_numeric($value) && $value > 0) ? (float)$value : (float)$default;
     }
 
-    private function getStateByPercentage($percentage, $warningInPercent, $criticalInPercent): string
-    {
+    private function getStateByPercentage($percentage, $warningInPercent, $criticalInPercent): string {
         $state = 'ok';
         if ($percentage >= $warningInPercent) {
             $state = 'warning';

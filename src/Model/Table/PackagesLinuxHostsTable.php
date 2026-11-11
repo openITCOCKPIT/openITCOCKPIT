@@ -333,10 +333,11 @@ class PackagesLinuxHostsTable extends Table {
 
     /**
      * Returns all installed packages of a host with the fields the CVE check requires.
-     * Used to build the package states (CvePackageStatesTable) that get sent to Vuls.
+     * Used to build the package states (CvePackageStatesTable) that get sent to Vuls,
+     * and to build the findings of the host (LinuxFindingBuilder), which also need the available update.
      *
      * @param int $hostId
-     * @return array<int, array{id: int, cve_package_state_id: int|null, name: string, version: string, architecture: string|null, source_package: string|null, source_version: string|null, modularity_label: string|null}>
+     * @return array<int, array{id: int, cve_package_state_id: int|null, name: string, version: string, architecture: string|null, source_package: string|null, source_version: string|null, modularity_label: string|null, needs_update: int, available_version: string|null}>
      */
     public function getPackagesForCveCheck(int $hostId): array {
         return $this->unhydratedFind()
@@ -349,6 +350,8 @@ class PackagesLinuxHostsTable extends Table {
                 'source_package'       => 'PackagesLinuxHosts.source_package',
                 'source_version'       => 'PackagesLinuxHosts.source_version',
                 'modularity_label'     => 'PackagesLinuxHosts.modularity_label',
+                'needs_update'         => 'PackagesLinuxHosts.needs_update',
+                'available_version'    => 'PackagesLinuxHosts.available_version',
             ])
             ->innerJoinWith('PackagesLinux')
             ->where([

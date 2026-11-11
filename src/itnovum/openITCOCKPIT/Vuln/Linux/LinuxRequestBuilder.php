@@ -28,6 +28,7 @@ declare(strict_types=1);
 namespace itnovum\openITCOCKPIT\Vuln\Linux;
 
 use App\Model\Entity\CvePackageState;
+use itnovum\openITCOCKPIT\Vuln\Evaluation\CoverageReason;
 use itnovum\openITCOCKPIT\Vuln\Vuls\VulsRequest;
 
 /**
@@ -68,7 +69,7 @@ final class LinuxRequestBuilder {
 
             if ($releasePackage === null) {
                 foreach ($states as $state) {
-                    $plan->skip($state->id, 'suse_release_package_missing');
+                    $plan->skip($state->id, CoverageReason::SUSE_RELEASE_PACKAGE_MISSING);
                 }
                 return $plan;
             }
@@ -83,7 +84,7 @@ final class LinuxRequestBuilder {
 
             $entry = $this->packageEntry($distribution, $state);
             if ($entry === null) {
-                $plan->skip($state->id, 'version_without_release');
+                $plan->skip($state->id, CoverageReason::VERSION_WITHOUT_RELEASE);
                 continue;
             }
 

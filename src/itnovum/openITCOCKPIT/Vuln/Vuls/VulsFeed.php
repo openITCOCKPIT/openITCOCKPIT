@@ -82,7 +82,7 @@ class VulsFeed {
         $size = @filesize($file);
         $modified = @filemtime($file);
         if ($size === false || $modified === false) {
-            throw new VulsException('The Vuls database does not exist or is not readable: ' . $file);
+            throw new VulsException('The Vuls database does not exist or is not accessible: ' . $file);
         }
 
         return [$size, $modified];

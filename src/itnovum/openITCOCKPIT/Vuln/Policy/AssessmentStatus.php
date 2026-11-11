@@ -28,10 +28,11 @@ declare(strict_types=1);
 namespace itnovum\openITCOCKPIT\Vuln\Policy;
 
 /**
- * State of a host as shown in the host list. Together with the color the frontend derives the text,
+ * Status of the CVE assessment of a host as shown in the host list (not the monitoring state of the host).
+ * Together with the color the frontend derives the text,
  * e.g. Evaluated and red is "urgent", Evaluated and green is "no priority" (never "secure").
  */
-enum HostStatus: string {
+enum AssessmentStatus: string {
 
     /** Evaluated with current data */
     case Evaluated = 'evaluated';

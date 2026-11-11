@@ -97,6 +97,21 @@ class CveDailyStatsTable extends Table {
     }
 
     /**
+     * Every evaluation and every daily classification of a host writes the values of the day. A missing row means
+     * the host has not been classified on this day yet, e.g. a decision that ends today has not been applied.
+     *
+     * @param int $hostId
+     * @param Date $date
+     * @return bool
+     */
+    public function hasStatsOfDay(int $hostId, Date $date): bool {
+        return $this->exists([
+            'CveDailyStats.host_id'   => $hostId,
+            'CveDailyStats.stat_date' => $date,
+        ]);
+    }
+
+    /**
      * Stores the values of an evaluation for the given day.
      *
      * @param int $hostId

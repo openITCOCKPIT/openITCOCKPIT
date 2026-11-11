@@ -404,10 +404,10 @@ class CvePackageStatesTable extends Table {
             $entities = [];
             foreach (array_diff_key($chunk, $existing) as $state) {
                 $entities[] = $this->newEntity($state + [
-                    'cve_count' => 0,
-                    'has_kev'   => false,
-                    'last_seen' => $seen,
-                ]);
+                        'cve_count' => 0,
+                        'has_kev'   => false,
+                        'last_seen' => $seen,
+                    ]);
             }
 
             if (!empty($entities)) {
@@ -520,6 +520,38 @@ class CvePackageStatesTable extends Table {
         foreach (array_chunk(array_values(array_unique($stateHashes)), self::CHUNK_SIZE) as $chunk) {
             foreach ($this->find()->where(['state_hash IN' => $chunk])->all() as $state) {
                 $states[$state->state_hash] = $state;
+            }
+        }
+
+        return $states;
+    }
+
+    /**
+     * Returns the check status of the given package states, as input for the findings of a host (LinuxFindingBuilder).
+     *
+     * @param int[] $stateIds
+     * @return array<int, array{id: int, name: string, version: string, is_kernel: bool, feed_digest: string|null, checked: \Cake\I18n\DateTime|null, error_message: string|null}>
+     *         Indexed by id
+     */
+    public function getCheckStatusByIds(array $stateIds): array {
+        $states = [];
+
+        foreach (array_chunk(array_values(array_unique($stateIds)), self::CHUNK_SIZE) as $chunk) {
+            $rows = $this->unhydratedFind()
+                ->select([
+                    'CvePackageStates.id',
+                    'CvePackageStates.name',
+                    'CvePackageStates.version',
+                    'CvePackageStates.is_kernel',
+                    'CvePackageStates.feed_digest',
+                    'CvePackageStates.checked',
+                    'CvePackageStates.error_message',
+                ])
+                ->where(['CvePackageStates.id IN' => $chunk])
+                ->all();
+
+            foreach ($rows as $row) {
+                $states[(int)$row['id']] = $row;
             }
         }
 

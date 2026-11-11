@@ -89,9 +89,9 @@ class HostRules {
         }
 
         $isStale = $this->isInventoryStale($inventoryAgeSeconds) || $this->isFeedStale($feedDate, $now);
-        $hostStatus = $this->hostStatus($status, $isStale);
+        $assessmentStatus = $this->assessmentStatus($status, $isStale);
 
-        if ($hostStatus === HostStatus::Stale || $hostStatus === HostStatus::NotEvaluated) {
+        if ($assessmentStatus === AssessmentStatus::Stale || $assessmentStatus === AssessmentStatus::NotEvaluated) {
             $color = Color::Gray;
         }
 
@@ -101,9 +101,9 @@ class HostRules {
         }
 
         return new HostState(
-            status: $hostStatus,
+            status: $assessmentStatus,
             color: $color,
-            sortOrder: $this->sortOrder($hostStatus, $color),
+            sortOrder: $this->sortOrder($assessmentStatus, $color),
             inventoryAgeDays: $inventoryAgeDays
         );
     }
@@ -126,32 +126,32 @@ class HostRules {
     /**
      * Not evaluable and failed are shown as they are, even with stale data: there is nothing newer to show.
      */
-    private function hostStatus(EvaluationStatus $status, bool $isStale): HostStatus {
+    private function assessmentStatus(EvaluationStatus $status, bool $isStale): AssessmentStatus {
         if ($status === EvaluationStatus::NotEvaluable) {
-            return HostStatus::NotEvaluated;
+            return AssessmentStatus::NotEvaluated;
         }
         if ($status === EvaluationStatus::Failed) {
-            return HostStatus::Failed;
+            return AssessmentStatus::Failed;
         }
         if ($isStale) {
-            return HostStatus::Stale;
+            return AssessmentStatus::Stale;
         }
         if ($status === EvaluationStatus::Partial) {
-            return HostStatus::Partial;
+            return AssessmentStatus::Partial;
         }
-        return HostStatus::Evaluated;
+        return AssessmentStatus::Evaluated;
     }
 
     /**
      * Urgent hosts first, then stale hosts, hosts without evaluation last. Within a group by color.
      */
-    private function sortOrder(HostStatus $status, Color $color): int {
+    private function sortOrder(AssessmentStatus $status, Color $color): int {
         $groupOffset = 0;
         switch ($status) {
-            case HostStatus::NotEvaluated:
+            case AssessmentStatus::NotEvaluated:
                 $groupOffset = 20;
                 break;
-            case HostStatus::Stale:
+            case AssessmentStatus::Stale:
                 $groupOffset = 10;
                 break;
         }

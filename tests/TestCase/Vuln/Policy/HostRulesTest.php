@@ -33,7 +33,7 @@ use itnovum\openITCOCKPIT\Vuln\Policy\Color;
 use itnovum\openITCOCKPIT\Vuln\Policy\CveRollup;
 use itnovum\openITCOCKPIT\Vuln\Policy\EvaluationStatus;
 use itnovum\openITCOCKPIT\Vuln\Policy\HostRules;
-use itnovum\openITCOCKPIT\Vuln\Policy\HostStatus;
+use itnovum\openITCOCKPIT\Vuln\Policy\AssessmentStatus;
 use itnovum\openITCOCKPIT\Vuln\Policy\HostTotals;
 use itnovum\openITCOCKPIT\Vuln\Policy\Reason;
 use itnovum\openITCOCKPIT\Vuln\Policy\Rule;
@@ -72,17 +72,17 @@ class HostRulesTest extends TestCase {
         $feed = new DateTimeImmutable('2026-11-04');
 
         $state = $rules->state(EvaluationStatus::Complete, Color::Red, $fresh, $feed, $now);
-        $this->assertSame(HostStatus::Evaluated, $state->status);
+        $this->assertSame(AssessmentStatus::Evaluated, $state->status);
         $this->assertSame(Color::Red, $state->color);
 
-        $this->assertSame(HostStatus::Partial, $rules->state(EvaluationStatus::Partial, Color::Yellow, $fresh, $feed, $now)->status);
-        $this->assertSame(HostStatus::NotEvaluated, $rules->state(EvaluationStatus::NotEvaluable, Color::Gray, null, $feed, $now)->status);
+        $this->assertSame(AssessmentStatus::Partial, $rules->state(EvaluationStatus::Partial, Color::Yellow, $fresh, $feed, $now)->status);
+        $this->assertSame(AssessmentStatus::NotEvaluated, $rules->state(EvaluationStatus::NotEvaluable, Color::Gray, null, $feed, $now)->status);
     }
 
     public function testOldInventoryIsStaleAndGray(): void {
         $state = (new HostRules())->state(EvaluationStatus::Complete, Color::Red, new DateTimeImmutable('2026-11-03 11:00:00'), new DateTimeImmutable('2026-11-04'), new DateTimeImmutable('2026-11-06 12:00:00'));
 
-        $this->assertSame(HostStatus::Stale, $state->status);
+        $this->assertSame(AssessmentStatus::Stale, $state->status);
         $this->assertSame(Color::Gray, $state->color);
         $this->assertSame(3, $state->inventoryAgeDays);
     }
@@ -92,9 +92,9 @@ class HostRulesTest extends TestCase {
         $fresh = new DateTimeImmutable('2026-11-06 11:00:00');
         $oldFeed = new DateTimeImmutable('2026-10-01');
 
-        $this->assertSame(HostStatus::Stale, (new HostRules())->state(EvaluationStatus::Complete, Color::Red, $fresh, $oldFeed, $now)->status);
-        $this->assertSame(HostStatus::Stale, (new HostRules())->state(EvaluationStatus::Complete, Color::Red, $fresh, null, $now)->status);
-        $this->assertSame(HostStatus::Evaluated, (new HostRules(48, 60))->state(EvaluationStatus::Complete, Color::Red, $fresh, $oldFeed, $now)->status);
+        $this->assertSame(AssessmentStatus::Stale, (new HostRules())->state(EvaluationStatus::Complete, Color::Red, $fresh, $oldFeed, $now)->status);
+        $this->assertSame(AssessmentStatus::Stale, (new HostRules())->state(EvaluationStatus::Complete, Color::Red, $fresh, null, $now)->status);
+        $this->assertSame(AssessmentStatus::Evaluated, (new HostRules(48, 60))->state(EvaluationStatus::Complete, Color::Red, $fresh, $oldFeed, $now)->status);
     }
 
     public function testUrgentHostsFirstAndHostsWithoutEvaluationLast(): void {

@@ -33,13 +33,13 @@ namespace itnovum\openITCOCKPIT\Vuln\Policy;
 readonly class HostState {
 
     /**
-     * @param HostStatus $status
+     * @param AssessmentStatus $status
      * @param Color $color Gray if the data is stale or nothing could be evaluated
      * @param int $sortOrder Urgent hosts first, then stale hosts, hosts without evaluation last
      * @param int|null $inventoryAgeDays null if the age of the inventory is unknown
      */
     public function __construct(
-        public HostStatus $status,
+        public AssessmentStatus $status,
         public Color      $color,
         public int        $sortOrder,
         public ?int       $inventoryAgeDays

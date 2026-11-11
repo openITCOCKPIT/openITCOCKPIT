@@ -151,7 +151,7 @@ count as findings, but are listed per host in the coverage (`cve_host_coverage`,
 
 `HostRules` derives the color of a host from its findings and adds the freshness of the data.
 
-| Status (`HostStatus`) | Color | Shown as | Condition |
+| Status (`AssessmentStatus`) | Color | Shown as | Condition |
 | --- | --- | --- | --- |
 | `evaluated` or `partial` | red | Urgent | At least one red finding that needs action |
 | `evaluated` or `partial` | yellow | Action required | At least one yellow finding that needs action |

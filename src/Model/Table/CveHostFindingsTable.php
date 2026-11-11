@@ -347,6 +347,8 @@ class CveHostFindingsTable extends Table {
                     }
 
                     $entity = $this->patchEntity($existing[$hash], $data);
+                    // A resolved finding is reported again (same CVE, package and version, e.g. after a reinstall
+                    // or downgrade): reopen it instead of creating a new one, so its decision and history stay
                     if ($entity->resolved_at !== null) {
                         $entity->resolved_at = null;
                         $entity->reopened_at = $now;
@@ -386,22 +388,69 @@ class CveHostFindingsTable extends Table {
     }
 
     /**
-     * Returns all open findings of a host with the CVE and the decision, as input for the classification.
+     * Returns all open findings of a host as input for the classification: the fields of the finding,
+     * the signals of the CVE (kev_cisa, metasploit_count, ...) and the decision as "decision" (null if none).
+     * The rows fit FindingFacts::fromRow() and Decision::fromRow().
      *
      * @param int $hostId
-     * @return \App\Model\Entity\CveHostFinding[]
+     * @return array<int, array>
      */
     public function getOpenFindingsOfHost(int $hostId): array {
-        return $this->find()
+        $rows = $this->unhydratedFind()
+            ->select($this)
+            // A custom select does not include the fields of contained associations on its own
+            ->select($this->CveDecisions)
+            ->select([
+                'kev_cisa'               => 'Cves.kev_cisa',
+                'kev_vulncheck'          => 'Cves.kev_vulncheck',
+                'metasploit_count'       => 'Cves.metasploit_count',
+                'verified_exploit_count' => 'Cves.verified_exploit_count',
+                'poc_exploit_count'      => 'Cves.poc_exploit_count',
+            ])
+            ->innerJoinWith('Cves')
             ->contain([
-                'Cves',
-                'CveDecisions',
+                'CveDecisions'
             ])
             ->where([
                 'CveHostFindings.host_id'        => $hostId,
                 'CveHostFindings.resolved_at IS' => null,
             ])
+            ->orderBy(['CveHostFindings.id' => 'asc'])
             ->toArray();
+
+        foreach ($rows as $index => $row) {
+            $rows[$index]['decision'] = $row['cve_decision'] ?? null;
+            unset($rows[$index]['cve_decision']);
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Returns the decisions of all findings of a host, also of resolved ones, indexed by finding_hash.
+     * Used to classify the findings of a new evaluation before they get stored: a finding that comes back
+     * keeps its decision.
+     *
+     * @param int $hostId
+     * @return array<string, array> Rows of cve_decisions
+     */
+    public function getDecisionsOfHost(int $hostId): array {
+        $rows = $this->CveDecisions->unhydratedFind()
+            ->select($this->CveDecisions)
+            ->select(['finding_hash' => 'CveHostFindings.finding_hash'])
+            ->innerJoin(
+                ['CveHostFindings' => 'cve_host_findings'],
+                ['CveHostFindings.id = CveDecisions.cve_host_finding_id']
+            )
+            ->where(['CveHostFindings.host_id' => $hostId])
+            ->toArray();
+
+        $decisions = [];
+        foreach ($rows as $row) {
+            $decisions[(string)$row['finding_hash']] = $row;
+        }
+
+        return $decisions;
     }
 
     /**

@@ -189,4 +189,39 @@ class CvePackageStateCvesTable extends Table {
             ])
             ->toArray();
     }
+
+    /**
+     * Returns the CVEs of many package states without master data, as input for the findings of a host.
+     *
+     * @param int[] $cvePackageStateIds
+     * @return array<int, array<int, array{cve_id: int, fixed_in: string|null, fix_state: string|null, not_fixed_yet: bool, severity: int|null, severity_source: string|null}>>
+     *         CVEs per package state id, ordered by cves.id
+     */
+    public function getMatchesOfStates(array $cvePackageStateIds): array {
+        $matches = [];
+
+        foreach (array_chunk(array_values(array_unique($cvePackageStateIds)), self::CHUNK_SIZE) as $chunk) {
+            $rows = $this->unhydratedFind()
+                ->select([
+                    'CvePackageStateCves.cve_package_state_id',
+                    'CvePackageStateCves.cve_id',
+                    'CvePackageStateCves.fixed_in',
+                    'CvePackageStateCves.fix_state',
+                    'CvePackageStateCves.not_fixed_yet',
+                    'CvePackageStateCves.severity',
+                    'CvePackageStateCves.severity_source',
+                ])
+                ->where(['CvePackageStateCves.cve_package_state_id IN' => $chunk])
+                ->orderBy(['CvePackageStateCves.cve_id' => 'asc'])
+                ->all();
+
+            foreach ($rows as $row) {
+                $stateId = (int)$row['cve_package_state_id'];
+                unset($row['cve_package_state_id']);
+                $matches[$stateId][] = $row;
+            }
+        }
+
+        return $matches;
+    }
 }

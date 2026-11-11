@@ -172,6 +172,14 @@ class InstallSeed extends \Migrations\BaseSeed {
                 'interval' => '1440',
                 'enabled'  => '0',
             ],
+            [
+                // Checks the software inventory for CVEs and evaluates the hosts. Disabled by default:
+                // it requires the Vuls server, which is not part of every installation.
+                'task'     => 'CveCheck',
+                'plugin'   => 'Core',
+                'interval' => '60',
+                'enabled'  => '0',
+            ],
         ];
 
         //Check if records exists

@@ -229,6 +229,40 @@ class CvesTable extends Table {
     }
 
     /**
+     * Returns the signals of the given CVEs that the policy uses: KEV and exploits.
+     * Used to classify new findings, see FindingFacts::fromRow().
+     *
+     * @param int[] $ids Primary keys
+     * @return array<int, array{kev_cisa: bool, kev_vulncheck: bool, metasploit_count: int, verified_exploit_count: int, poc_exploit_count: int}>
+     *         Indexed by primary key
+     */
+    public function getPolicySignalsByIds(array $ids): array {
+        $signals = [];
+
+        foreach (array_chunk(array_values(array_unique($ids)), self::CHUNK_SIZE) as $chunk) {
+            $rows = $this->unhydratedFind()
+                ->select([
+                    'Cves.id',
+                    'Cves.kev_cisa',
+                    'Cves.kev_vulncheck',
+                    'Cves.metasploit_count',
+                    'Cves.verified_exploit_count',
+                    'Cves.poc_exploit_count',
+                ])
+                ->where(['Cves.id IN' => $chunk])
+                ->all();
+
+            foreach ($rows as $row) {
+                $id = (int)$row['id'];
+                unset($row['id']);
+                $signals[$id] = $row;
+            }
+        }
+
+        return $signals;
+    }
+
+    /**
      * Returns all open CVEs: CVEs that affect a package that is currently installed on at least one enabled host.
      *
      * @param GenericFilter $GenericFilter

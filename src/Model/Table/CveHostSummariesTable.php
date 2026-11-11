@@ -35,6 +35,9 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\GenericFilter;
+use itnovum\openITCOCKPIT\Vuln\Policy\EvaluationStatus;
+use itnovum\openITCOCKPIT\Vuln\Policy\HostRules;
+use itnovum\openITCOCKPIT\Vuln\Policy\HostTotals;
 
 /**
  * CveHostSummaries Model
@@ -187,8 +190,9 @@ class CveHostSummariesTable extends Table {
     }
 
     /**
-     * Stores a failed evaluation. The counters and the color of the last successful evaluation stay untouched,
+     * Stores a failed evaluation. The counters of the last successful evaluation stay untouched,
      * so the host list still shows the last known state together with the error.
+     * The color follows HostRules: red findings of the last evaluation keep the host red, otherwise it turns gray.
      *
      * @param int $hostId
      * @param string $platform
@@ -199,10 +203,14 @@ class CveHostSummariesTable extends Table {
     public function saveFailure(int $hostId, string $platform, string $errorMessage, DateTime $now): CveHostSummary {
         $summary = $this->getSummaryEntity($hostId);
 
+        $totals = new HostTotals();
+        $totals->red = (int)$summary->red_count;
+
         $summary = $this->patchEntity($summary, [
             'host_id'       => $hostId,
             'platform'      => $platform,
             'status'        => self::STATUS_FAILED,
+            'color'         => (new HostRules())->color(EvaluationStatus::Failed, $totals)->value,
             'failed'        => $now,
             'error_message' => mb_substr($errorMessage, 0, 10000),
         ]);
@@ -211,18 +219,64 @@ class CveHostSummariesTable extends Table {
     }
 
     /**
-     * Fingerprint of the last successful evaluation. Hosts with an unchanged fingerprint do not need a new evaluation.
+     * Stores color and counters after a new classification without a new evaluation, e.g. because a decision
+     * expired. Status, fingerprint and the time of the evaluation stay.
      *
      * @param int $hostId
-     * @return string|null
+     * @param string $color
+     * @param array<string, int> $counters The COUNTERS without installations
+     * @return void
      */
-    public function getFingerprint(int $hostId): ?string {
-        $summary = $this->unhydratedFind()
-            ->select(['fingerprint'])
+    public function saveClassificationTotals(int $hostId, string $color, array $counters): void {
+        $summary = $this->find()
             ->where(['CveHostSummaries.host_id' => $hostId])
             ->first();
+        if ($summary === null) {
+            return;
+        }
 
-        return $summary['fingerprint'] ?? null;
+        $data = array_intersect_key($counters, array_flip(self::COUNTERS));
+        unset($data['installations'], $data['evaluated_installations']);
+        $data['color'] = $color;
+
+        $summary = $this->patchEntity($summary, $data, ['fields' => array_keys($data)]);
+        if ($summary->isDirty()) {
+            $this->saveOrFail($summary);
+        }
+    }
+
+    /**
+     * Fingerprint and time of the last evaluation. Hosts with an unchanged fingerprint do not need a new evaluation.
+     * A failed evaluation keeps the fingerprint of the last successful one, so the host gets evaluated again.
+     *
+     * @param int $hostId
+     * @return array{fingerprint: string|null, evaluated: DateTime|null, status: string}|null null if the host has never been evaluated
+     */
+    public function getLastEvaluation(int $hostId): ?array {
+        return $this->unhydratedFind()
+            ->select([
+                'CveHostSummaries.fingerprint',
+                'CveHostSummaries.evaluated',
+                'CveHostSummaries.status',
+            ])
+            ->where(['CveHostSummaries.host_id' => $hostId])
+            ->first();
+    }
+
+    /**
+     * Ids of hosts that have a summary but do not exist anymore, e.g. because they got deleted
+     * while the CVE data was kept.
+     *
+     * @return int[]
+     */
+    public function getIdsOfDeletedHosts(): array {
+        return $this->unhydratedFind()
+            ->select(['CveHostSummaries.host_id'])
+            ->leftJoin(['Hosts' => 'hosts'], ['Hosts.id = CveHostSummaries.host_id'])
+            ->where(['Hosts.id IS' => null])
+            ->all()
+            ->extract('host_id')
+            ->toList();
     }
 
     /**

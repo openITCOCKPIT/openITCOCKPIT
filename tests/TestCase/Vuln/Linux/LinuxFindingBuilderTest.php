@@ -238,6 +238,19 @@ class LinuxFindingBuilderTest extends TestCase {
         $this->assertSame(['linux-image-6.12.74+deb13-amd64'], $evaluation->coverage[CveHostCoverage::TYPE_INACTIVE_KERNEL]);
     }
 
+    public function testDistributionsWithOnlyFixedCvesInTheFeedSaySo(): void {
+        $alma = $this->installation('openssl-libs', '1:3.5.8-2.el9_8', 'openssl', '3.5.8-2.el9_8');
+        $evaluation = $this->build('almalinux', '9.8', '5.14.0-687.44.1.el9_8.x86_64', [$alma]);
+        $this->assertSame(EvaluationStatus::Complete, $evaluation->status, 'Only informs');
+        $this->assertSame([CoverageReason::UNFIXED_CVES_NOT_IN_FEED], $evaluation->reasons);
+
+        $rhel = $this->installation('openssl-libs', '1:3.5.8-2.el9_8', 'openssl', '3.5.8-2.el9_8');
+        $this->assertSame([], $this->build('redhat', '9.8', '5.14.0-687.44.1.el9_8.x86_64', [$rhel])->reasons);
+
+        $debian = $this->installation('openssl', '3.5.7-1~deb13u3', 'openssl', '3.5.7-1~deb13u3');
+        $this->assertSame([], $this->build('debian', '13.7', '6.12.113+deb13-amd64', [$debian])->reasons);
+    }
+
     public function testFingerprintChangesWithEverythingTheEvaluationDependsOn(): void {
         $curl = $this->installation('curl', '8.14.1-2+deb13u7', 'curl', '8.14.1-2+deb13u7');
         $builder = new LinuxFindingBuilder();

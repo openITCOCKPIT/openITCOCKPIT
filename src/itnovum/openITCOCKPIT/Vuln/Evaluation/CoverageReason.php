@@ -95,6 +95,12 @@ final class CoverageReason {
     public const MODULE_PACKAGES_UNVERIFIED = 'module_packages_unverified';
 
     /**
+     * The Vuls database only knows fixed CVEs of this distribution, see LinuxDistribution::knowsOnlyFixedCves().
+     * CVEs without a fix of the vendor are not shown, unlike on Debian, Ubuntu, Red Hat or SUSE.
+     */
+    public const UNFIXED_CVES_NOT_IN_FEED = 'unfixed_cves_not_in_feed';
+
+    /**
      * The host also has applications of another operating system in its inventory, e.g. Windows apps on a
      * Linux host. Either the inventory is outdated or the host has been reinstalled.
      */
@@ -107,6 +113,7 @@ final class CoverageReason {
         self::INACTIVE_KERNELS_NOT_EVALUATED,
         self::MODULE_PACKAGES_UNVERIFIED,
         self::PLATFORM_CONFLICT,
+        self::UNFIXED_CVES_NOT_IN_FEED,
     ];
 
     /**

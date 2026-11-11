@@ -144,6 +144,10 @@ final class LinuxFindingBuilder {
         if ($foreignApps > 0) {
             $reasons[CoverageReason::PLATFORM_CONFLICT] = true;
         }
+        // Not a gap of the inventory but of the data: say so, so nobody takes the missing unfixed CVEs as "not affected"
+        if ($evaluated > 0 && $distribution->knowsOnlyFixedCves()) {
+            $reasons[CoverageReason::UNFIXED_CVES_NOT_IN_FEED] = true;
+        }
 
         $reasons = array_keys($reasons);
         sort($reasons);

@@ -64,6 +64,20 @@ final class LinuxDistribution {
         'sled'                => 'suse.linux.enterprise.desktop',
     ];
 
+    /**
+     * Vuls families whose data sources in the Vuls database only contain advisories of fixed CVEs
+     * (AlmaLinux and Rocky errata, Oracle ELSA, Amazon ALAS, Fedora updates). An affected package without a fix of
+     * the vendor yields no CVE at all. Checked against the extractors of vuls-data-update (pkg/extract/<source>),
+     * which never write the fix status "unfixed" for these sources.
+     */
+    private const FIXED_ONLY_FAMILIES = [
+        'alma',
+        'rocky',
+        'oracle',
+        'amazon',
+        'fedora',
+    ];
+
     private function __construct(
         public readonly string $osName,
         public readonly string $osVersion,
@@ -91,6 +105,13 @@ final class LinuxDistribution {
         }
 
         return null;
+    }
+
+    /**
+     * @return bool True if Vuls only knows fixed CVEs of this distribution, see FIXED_ONLY_FAMILIES
+     */
+    public function knowsOnlyFixedCves(): bool {
+        return in_array($this->family, self::FIXED_ONLY_FAMILIES, true);
     }
 
     /**

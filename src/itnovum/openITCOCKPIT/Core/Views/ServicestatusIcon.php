@@ -254,6 +254,8 @@ class ServicestatusIcon {
     }
 
     /**
+     * I will create a ServicestatusIcon from a status text (ok, warning, critical, everything else is unknown).
+     *
      * @param string $state
      * @return self
      */

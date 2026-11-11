@@ -117,7 +117,10 @@ class SystemHealthUsersTable extends Table {
             ]),
             'Users.email',
         ])
-            ->contain(['Users']);
+            ->contain(['Users'])
+            ->where([
+                'Users.is_active' => 1
+            ]);
 
         if (!empty($notify_on_warning)) {
             $query->where([

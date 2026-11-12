@@ -120,22 +120,37 @@ class SystemHealthUsersTable extends Table {
     }
 
     /**
-     * I will apply the same filter as getUsersForNotifications(), but return the user id and usergroup id as well,
-     * so that container permissions of each user can be resolved (e.g. for satellite notifications).
+     * I will return all active users subscribed to at least one notification type incl. user id, usergroup id
+     * and the subscribed notification types, so that container permissions and subscriptions can be resolved
+     * per user (e.g. for satellite notifications).
      *
-     * @param int $notify_on_warning
-     * @param int $notify_on_critical
-     * @param int $notify_on_recovery
-     * @return array<int, array{id: int, usergroup_id: int, email: string, full_name: string}>
+     * @return array<int, array{id: int, usergroup_id: int, email: string, full_name: string, notify_on_warning: int, notify_on_critical: int, notify_on_recovery: int}>
      */
-    public function getUsersWithIdsForNotifications($notify_on_warning, $notify_on_critical, $notify_on_recovery): array {
+    public function getUsersForSatelliteHealthNotifications(): array {
+        $query = $this->getUsersForNotificationsQuery(0, 0, 0);
+        $query->select([
+            'SystemHealthUsers.notify_on_warning',
+            'SystemHealthUsers.notify_on_critical',
+            'SystemHealthUsers.notify_on_recovery',
+        ])
+            ->where([
+                'OR' => [
+                    'SystemHealthUsers.notify_on_warning'  => 1,
+                    'SystemHealthUsers.notify_on_critical' => 1,
+                    'SystemHealthUsers.notify_on_recovery' => 1,
+                ]
+            ]);
+
         $users = [];
-        foreach ($this->getUsersForNotificationsQuery($notify_on_warning, $notify_on_critical, $notify_on_recovery)->all() as $record) {
+        foreach ($query->all() as $record) {
             $users[] = [
-                'id'           => (int)$record['user']['id'],
-                'usergroup_id' => (int)$record['user']['usergroup_id'],
-                'email'        => $record['user']['email'],
-                'full_name'    => $record['full_name'],
+                'id'                 => (int)$record['user']['id'],
+                'usergroup_id'       => (int)$record['user']['usergroup_id'],
+                'email'              => $record['user']['email'],
+                'full_name'          => $record['full_name'],
+                'notify_on_warning'  => (int)$record['notify_on_warning'],
+                'notify_on_critical' => (int)$record['notify_on_critical'],
+                'notify_on_recovery' => (int)$record['notify_on_recovery'],
             ];
         }
 

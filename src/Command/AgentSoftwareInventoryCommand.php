@@ -77,6 +77,7 @@ class AgentSoftwareInventoryCommand extends Command implements CronjobInterface 
 
         $AgentSoftwareInventory = new AgentSoftwareInventory();
 
+        $io->out(''); // missing new line from a message above
         foreach ($AgentconfigsTable->getConfigForSoftwareInventory() as $agentconfig) {
             try {
                 $io->out(sprintf('     Fetching software inventory from Host [%d]%s ...', $agentconfig->host->id, $agentconfig->host->name));

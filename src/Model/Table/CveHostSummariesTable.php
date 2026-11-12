@@ -34,7 +34,7 @@ use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
-use itnovum\openITCOCKPIT\Filter\GenericFilter;
+use itnovum\openITCOCKPIT\Filter\CvesFilter;
 use itnovum\openITCOCKPIT\Vuln\Policy\EvaluationStatus;
 use itnovum\openITCOCKPIT\Vuln\Policy\HostRules;
 use itnovum\openITCOCKPIT\Vuln\Policy\HostTotals;
@@ -282,12 +282,12 @@ class CveHostSummariesTable extends Table {
     /**
      * Returns the host list, most urgent hosts first.
      *
-     * @param GenericFilter $GenericFilter
+     * @param CvesFilter $CvesFilter
      * @param PaginateOMat|null $PaginateOMat
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getHostsIndex(GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
+    public function getCveHostsIndex(CvesFilter $CvesFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
         $query = $this->unhydratedFind()
             ->contain([
                 'Hosts' => function (SelectQuery $query) {
@@ -301,15 +301,12 @@ class CveHostSummariesTable extends Table {
             ])
             ->where([
                 'Hosts.disabled' => 0
-            ]);
+            ])
+            ->where($CvesFilter->indexFilter());
 
         $this->filterByRights($query, $MY_RIGHTS);
 
-        if (!empty($GenericFilter->genericFilters())) {
-            $query->where($GenericFilter->genericFilters());
-        }
-
-        $query->orderBy($GenericFilter->getOrderForPaginator([
+        $query->orderBy($CvesFilter->getOrderForPaginator([
             'CveHostSummaries.red_count'    => 'desc',
             'CveHostSummaries.action_count' => 'desc',
             'CveHostSummaries.open_count'   => 'desc',
@@ -325,6 +322,73 @@ class CveHostSummariesTable extends Table {
             return $this->scrollCake4($query, $PaginateOMat->getHandler());
         }
         return $this->paginateCake4($query, $PaginateOMat->getHandler());
+    }
+
+    /**
+     * Summary of one host for the head of the host details.
+     *
+     * @param int $hostId
+     * @param array $MY_RIGHTS
+     * @return array|null null if the host has never been evaluated or the user may not see it
+     */
+    public function getSummaryOfHost(int $hostId, array $MY_RIGHTS = []): ?array {
+        $query = $this->unhydratedFind()
+            ->contain([
+                'Hosts' => function (SelectQuery $query) {
+                    return $query->select([
+                        'Hosts.id',
+                        'Hosts.name',
+                        'Hosts.uuid',
+                        'Hosts.container_id',
+                        'Hosts.disabled',
+                    ]);
+                }
+            ])
+            ->where([
+                'CveHostSummaries.host_id' => $hostId
+            ]);
+        $this->filterByRights($query, $MY_RIGHTS);
+
+        return $query->first();
+    }
+
+    /**
+     * Summaries of several hosts, e.g. for an icon in the host list.
+     *
+     * @param int[] $hostIds
+     * @param array $MY_RIGHTS
+     * @return array<int, array> Indexed by host id, hosts without evaluation are missing
+     */
+    public function getSummariesOfHosts(array $hostIds, array $MY_RIGHTS = []): array {
+        if (empty($hostIds)) {
+            return [];
+        }
+
+        $query = $this->unhydratedFind()
+            ->select([
+                'CveHostSummaries.host_id',
+                'CveHostSummaries.platform',
+                'CveHostSummaries.status',
+                'CveHostSummaries.color',
+                'CveHostSummaries.inventory_last_update',
+                'CveHostSummaries.evaluated',
+                'CveHostSummaries.open_count',
+                'CveHostSummaries.action_count',
+                'CveHostSummaries.red_count',
+                'CveHostSummaries.kev_count',
+            ])
+            ->innerJoinWith('Hosts')
+            ->where([
+                'CveHostSummaries.host_id IN' => $hostIds,
+                'Hosts.disabled'              => 0,
+            ]);
+        $this->filterByRights($query, $MY_RIGHTS);
+
+        $summaries = [];
+        foreach ($query->toArray() as $row) {
+            $summaries[(int)$row['host_id']] = $row;
+        }
+        return $summaries;
     }
 
     /**

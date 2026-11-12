@@ -36,13 +36,16 @@ use Cake\Validation\Validator;
  * CveDailyStats Model
  *
  * Values per host and day for the trend. Several evaluations on one day update the same row: the counters show
- * the last state of the day, new and resolved findings add up.
+ * the last state of the day, new and resolved findings add up. created and modified tell when the first and the
+ * last evaluation of the day ran.
  *
  * @property \App\Model\Table\HostsTable&\Cake\ORM\Association\BelongsTo $Hosts
  *
  * @method \App\Model\Entity\CveDailyStat newEmptyEntity()
  * @method \App\Model\Entity\CveDailyStat patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \App\Model\Entity\CveDailyStat saveOrFail(\Cake\Datasource\EntityInterface $entity, array $options = [])
+ *
+ * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class CveDailyStatsTable extends Table {
 
@@ -63,6 +66,9 @@ class CveDailyStatsTable extends Table {
         $this->setTable('cve_daily_stats');
         $this->setDisplayField('stat_date');
         $this->setPrimaryKey('id');
+
+        // created: first evaluation of the day, modified: last evaluation or classification of the day
+        $this->addBehavior('Timestamp');
 
         $this->belongsTo('Hosts', [
             'foreignKey' => 'host_id',
@@ -141,6 +147,8 @@ class CveDailyStatsTable extends Table {
             $stat = $this->newEntity($data);
         } else {
             $stat = $this->patchEntity($stat, $data);
+            // Unchanged counters would skip the save, modified still has to tell when the host got evaluated
+            $this->getBehavior('Timestamp')->touch($stat);
         }
 
         return $this->saveOrFail($stat);

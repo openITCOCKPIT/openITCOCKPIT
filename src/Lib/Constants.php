@@ -161,6 +161,7 @@ class Constants {
         define('OBJECT_RESOURCE', 1 << 31);                  // ScmModule
         define('OBJECT_RESOURCEGROUP', 1 << 32);             // ScmModule
         define('OBJECT_CALENDAR', 1 << 33);
+        define('OBJECT_CVE_DECISION', 1 << 34);             // Changelog only, decisions about CVE findings
     }
 
     private function defineHosttemplateTypes(): void {

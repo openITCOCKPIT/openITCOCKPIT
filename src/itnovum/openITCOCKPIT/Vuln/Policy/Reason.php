@@ -134,7 +134,7 @@ final class Reason {
     | self::DECISION_POLICY_CHANGED;
 
     /**
-     * Names of all reasons, for logs and the command line. The frontend uses the bits, not these names.
+     * Names of all reasons, for logs, the command line and the API (lower case, see CveFormatter).
      */
     private const NAMES = [
         self::CISA_KEV                      => 'CISA_KEV',

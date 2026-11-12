@@ -28,13 +28,15 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use App\Model\Entity\CveHostFinding;
 use Cake\I18n\DateTime;
 use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
-use itnovum\openITCOCKPIT\Filter\GenericFilter;
+use itnovum\openITCOCKPIT\Filter\CvesFilter;
 use itnovum\openITCOCKPIT\Vuln\Policy\Rule;
+use itnovum\openITCOCKPIT\Vuln\Policy\Severity;
 
 /**
  * CveHostFindings Model
@@ -71,6 +73,24 @@ class CveHostFindingsTable extends Table {
     public const VIEW_UNFIXED = 'unfixed';
     public const VIEW_ACCEPTED = 'accepted';
     public const VIEW_NOT_AFFECTED = 'not_affected';
+
+    /**
+     * Conditions of one finding for the queries that group findings. Same meaning as in the policy:
+     * CveRollup, FindingFacts::isKev(), hasWeaponizedExploit() and hasRemedy().
+     */
+    private const NEEDS_ACTION = "CveHostFindings.view_name = 'action'";
+    private const IS_RED = "CveHostFindings.view_name = 'action' AND CveHostFindings.color = 'red'";
+    private const IS_KEV = 'Cves.kev_cisa = 1 OR Cves.kev_vulncheck = 1';
+    private const HAS_EXPLOIT = 'Cves.metasploit_count > 0 OR Cves.verified_exploit_count > 0';
+    private const HAS_REMEDY = "CveHostFindings.not_fixed_yet = 0 AND (IFNULL(CveHostFindings.fixed_in, '') != '' OR CveHostFindings.update_available = 1)";
+    private const IS_IN_PROGRESS = "CveDecisions.state = 'in_progress'";
+    private const HAS_USABLE_UPDATE = 'CveHostFindings.update_available = 1 AND CveHostFindings.not_fixed_yet = 0';
+
+    /** Distinct CVEs or hosts whose findings match one of the conditions above */
+    private const COUNT_CVES_IF = 'COUNT(DISTINCT CASE WHEN %s THEN CveHostFindings.cve_id END)';
+    private const COUNT_HOSTS_IF = 'COUNT(DISTINCT CASE WHEN %s THEN CveHostFindings.host_id END)';
+    /** 1 if at least one finding of the group matches */
+    private const ANY = 'MAX(CASE WHEN %s THEN 1 ELSE 0 END)';
 
     /**
      * Number of rows per query when reading or writing many findings at once
@@ -484,51 +504,445 @@ class CveHostFindingsTable extends Table {
     }
 
     /**
-     * Returns the open findings of a host for the host details, most urgent first.
+     * Components (package and version) of one host in one view, most urgent first.
+     * The CVEs of a component get loaded with getFindingsOfHost() when it is expanded, a kernel can have thousands.
+     * All counters count distinct CVEs.
      *
      * @param int $hostId
-     * @param GenericFilter $GenericFilter
+     * @param string $viewName One of the VIEW_* constants
+     * @param CvesFilter $CvesFilter
      * @param PaginateOMat|null $PaginateOMat
      * @param array $MY_RIGHTS
-     * @param string|null $viewName Only findings of this view, e.g. CveHostFindingsTable::VIEW_ACTION
      * @return array
      */
-    public function getFindingsOfHost(int $hostId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = [], ?string $viewName = null): array {
-        $query = $this->getFindingsQuery($MY_RIGHTS)
+    public function getComponentsOfHost(int $hostId, string $viewName, CvesFilter $CvesFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
+        $query = $this->getAggregateQuery($MY_RIGHTS);
+        $query
+            ->select([
+                'component_type'    => 'CveHostFindings.component_type',
+                'component_name'    => 'CveHostFindings.component_name',
+                'component_version' => 'CveHostFindings.component_version',
+                'is_kernel'         => $query->func()->max('CveHostFindings.is_kernel'),
+                'is_running'        => $query->func()->max('CveHostFindings.is_running'),
+                'update_available'  => $query->func()->max('CveHostFindings.update_available'),
+                'usable_update'     => $query->expr(sprintf(self::ANY, self::HAS_USABLE_UPDATE)),
+                'update_version'    => $query->func()->max('CveHostFindings.update_version')->setReturnType('string'),
+                'lowest_rule_rank'  => $query->func()->min('CveHostFindings.rule_rank'),
+                'highest_severity'  => $query->func()->max('CveHostFindings.severity'),
+                'cve_count'         => $query->expr('COUNT(DISTINCT CveHostFindings.cve_id)'),
+                'red_count'         => $query->expr(sprintf(self::COUNT_CVES_IF, self::IS_RED)),
+                'kev_count'         => $query->expr(sprintf(self::COUNT_CVES_IF, self::IS_KEV)),
+                'exploit_count'     => $query->expr(sprintf(self::COUNT_CVES_IF, self::HAS_EXPLOIT)),
+                'in_progress_count' => $query->expr(sprintf(self::COUNT_CVES_IF, self::IS_IN_PROGRESS)),
+            ])
             ->where([
-                'CveHostFindings.host_id' => $hostId
-            ]);
+                'CveHostFindings.host_id'   => $hostId,
+                'CveHostFindings.view_name' => $viewName,
+            ])
+            ->where($CvesFilter->hostComponentsFilter())
+            ->groupBy([
+                'CveHostFindings.component_type',
+                'CveHostFindings.component_name',
+                'CveHostFindings.component_version',
+            ])
+            ->orderBy($CvesFilter->getOrderForPaginator([
+                'lowest_rule_rank' => 'asc',
+                'red_count'        => 'desc',
+                'highest_severity' => 'desc',
+                'cve_count'        => 'desc',
+                'component_name'   => 'asc',
+            ]));
 
-        if ($viewName !== null) {
-            $query->where(['CveHostFindings.view_name' => $viewName]);
-        }
-
-        return $this->getFindingsResult($query, $GenericFilter, $PaginateOMat, [
-            'CveHostFindings.rule_rank' => 'asc',
-            'CveHostFindings.severity'  => 'desc',
-            'Cves.cvss_score'           => 'desc',
-        ]);
+        return $this->getResult($query, $PaginateOMat);
     }
 
     /**
-     * Returns the open findings of one CVE on all hosts, for the CVE details.
+     * Findings of one host in one view, most urgent first. With component name and version only the findings
+     * of this component, as shown when it is expanded in the host details.
      *
-     * @param string $cveId e.g. CVE-2026-1234
-     * @param GenericFilter $GenericFilter
+     * @param int $hostId
+     * @param string $viewName One of the VIEW_* constants
+     * @param CvesFilter $CvesFilter
+     * @param PaginateOMat|null $PaginateOMat
+     * @param array $MY_RIGHTS
+     * @param string|null $componentName
+     * @param string|null $componentVersion
+     * @return array
+     */
+    public function getFindingsOfHost(int $hostId, string $viewName, CvesFilter $CvesFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = [], ?string $componentName = null, ?string $componentVersion = null): array {
+        $query = $this->getFindingsQuery($MY_RIGHTS)
+            ->where([
+                'CveHostFindings.host_id'   => $hostId,
+                'CveHostFindings.view_name' => $viewName,
+            ])
+            ->where($CvesFilter->hostFindingsFilter());
+
+        if ($componentName !== null) {
+            $query->where(['CveHostFindings.component_name' => $componentName]);
+        }
+        if ($componentVersion !== null) {
+            $query->where(['CveHostFindings.component_version' => $componentVersion]);
+        }
+
+        $query->orderBy($CvesFilter->getOrderForPaginator([
+            'CveHostFindings.rule_rank' => 'asc',
+            'CveHostFindings.severity'  => 'desc',
+            'Cves.cvss_score'           => 'desc',
+            'Cves.cve_id'               => 'asc',
+        ]));
+
+        return $this->getResult($query, $PaginateOMat);
+    }
+
+    /**
+     * Number of open findings and distinct CVEs per view of one host, e.g. for the tabs of the host details.
+     *
+     * @param int $hostId
+     * @return array<string, array{findings: int, cves: int}> Every view, also views without findings
+     */
+    public function getCountsPerView(int $hostId): array {
+        $counts = [];
+        foreach ([self::VIEW_ACTION, self::VIEW_UNFIXED, self::VIEW_ACCEPTED, self::VIEW_NOT_AFFECTED] as $viewName) {
+            $counts[$viewName] = ['findings' => 0, 'cves' => 0];
+        }
+
+        $query = $this->find();
+        $query
+            ->select([
+                'view_name' => 'CveHostFindings.view_name',
+                'findings'  => $query->func()->count('*'),
+                'cves'      => $query->expr('COUNT(DISTINCT CveHostFindings.cve_id)'),
+            ])
+            ->where([
+                'CveHostFindings.host_id'        => $hostId,
+                'CveHostFindings.resolved_at IS' => null,
+            ])
+            ->groupBy(['CveHostFindings.view_name'])
+            ->disableHydration();
+
+        foreach ($query->toArray() as $row) {
+            $counts[(string)$row['view_name']] = ['findings' => (int)$row['findings'], 'cves' => (int)$row['cves']];
+        }
+
+        return $counts;
+    }
+
+    /**
+     * One finding with everything the finding details show: the full CVE, the host and the decision.
+     * Resolved findings are returned as well, a link to a finding stays valid.
+     *
+     * @param int $findingId
+     * @param array $MY_RIGHTS
+     * @return array|null null if the finding does not exist or the user may not see its host
+     */
+    public function getFindingById(int $findingId, array $MY_RIGHTS = []): ?array {
+        $query = $this->unhydratedFind()
+            ->contain([
+                'Cves'         => function (SelectQuery $query) {
+                    return $query->select($this->Cves);
+                },
+                'Hosts'        => function (SelectQuery $query) {
+                    return $query->select([
+                        'Hosts.id',
+                        'Hosts.name',
+                        'Hosts.uuid',
+                        'Hosts.container_id',
+                        'Hosts.disabled',
+                    ]);
+                },
+                'CveDecisions' => function (SelectQuery $query) {
+                    return $this->selectDecision($query);
+                },
+            ])
+            ->where([
+                'CveHostFindings.id' => $findingId,
+            ]);
+        $this->restrictToRights($query, $MY_RIGHTS);
+
+        return $query->first();
+    }
+
+    /**
+     * Findings with host for a decision of several findings at once, see CveDecisionsTable::decideMany().
+     *
+     * @param int[] $findingIds
+     * @return array<int, CveHostFinding> Indexed by id, resolved findings are not returned
+     */
+    public function getOpenFindingsByIds(array $findingIds): array {
+        if (empty($findingIds)) {
+            return [];
+        }
+
+        return $this->find()
+            ->contain([
+                'Hosts' => fn(SelectQuery $query) => $query->select(['Hosts.id', 'Hosts.name', 'Hosts.uuid', 'Hosts.container_id']),
+                'Cves'  => fn(SelectQuery $query) => $query->select(['Cves.id', 'Cves.cve_id']),
+            ])
+            ->where([
+                'CveHostFindings.id IN'          => $findingIds,
+                'CveHostFindings.resolved_at IS' => null,
+            ])
+            ->all()
+            ->indexBy('id')
+            ->toArray();
+    }
+
+    /**
+     * Open CVEs across all hosts, most urgent first. Not affected findings do not count, as for the hosts.
+     *
+     * @param CvesFilter $CvesFilter
      * @param PaginateOMat|null $PaginateOMat
      * @param array $MY_RIGHTS
      * @return array
      */
-    public function getFindingsByCveId(string $cveId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
+    public function getCvesIndex(CvesFilter $CvesFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
+        $query = $this->getAggregateQuery($MY_RIGHTS);
+        $query
+            ->select([
+                'id'                     => 'Cves.id',
+                'cve_id'                 => 'Cves.cve_id',
+                'summary'                => 'Cves.summary',
+                'published'              => 'Cves.published',
+                'cvss_score'             => 'Cves.cvss_score',
+                'cvss_source'            => 'Cves.cvss_source',
+                'kev_cisa'               => 'Cves.kev_cisa',
+                'kev_vulncheck'          => 'Cves.kev_vulncheck',
+                'metasploit_count'       => 'Cves.metasploit_count',
+                'verified_exploit_count' => 'Cves.verified_exploit_count',
+                'poc_exploit_count'      => 'Cves.poc_exploit_count',
+                'highest_severity'       => $query->func()->max('CveHostFindings.severity'),
+                'lowest_rule_rank'       => $query->func()->min('CveHostFindings.rule_rank'),
+                'host_count'             => $query->expr('COUNT(DISTINCT CveHostFindings.host_id)'),
+                'action_host_count'      => $query->expr(sprintf(self::COUNT_HOSTS_IF, self::NEEDS_ACTION)),
+                'red_host_count'         => $query->expr(sprintf(self::COUNT_HOSTS_IF, self::IS_RED)),
+                'fixable_host_count'     => $query->expr(sprintf(self::COUNT_HOSTS_IF, self::HAS_REMEDY)),
+                'finding_count'          => $query->func()->count('*'),
+            ])
+            ->where([
+                'CveHostFindings.view_name !=' => self::VIEW_NOT_AFFECTED,
+            ])
+            ->where($CvesFilter->cvesFilter())
+            // Cves.id is the primary key, the other fields of the CVE depend on it
+            ->groupBy(['Cves.id'])
+            ->orderBy($CvesFilter->getOrderForPaginator([
+                'lowest_rule_rank' => 'asc',
+                'red_host_count'   => 'desc',
+                'host_count'       => 'desc',
+                'cve_id'           => 'desc',
+            ]));
+
+        // The aliases cve_id and published are columns of this table with another type (the id of the CVE),
+        // without this the CVE ID would be converted to int
+        $query->getSelectTypeMap()->setTypes(['cve_id' => 'string', 'published' => 'datetime', 'cvss_score' => 'decimal']);
+
+        return $this->getResult($query, $PaginateOMat);
+    }
+
+    /**
+     * Open findings of one CVE on all hosts, for the CVE details.
+     *
+     * @param string $cveId e.g. CVE-2026-1234
+     * @param CvesFilter $CvesFilter
+     * @param PaginateOMat|null $PaginateOMat
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getFindingsByCveId(string $cveId, CvesFilter $CvesFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
         $query = $this->getFindingsQuery($MY_RIGHTS)
             ->where([
                 'Cves.cve_id' => $cveId
-            ]);
+            ])
+            ->where($CvesFilter->viewFilter())
+            ->orderBy($CvesFilter->getOrderForPaginator([
+                'CveHostFindings.rule_rank' => 'asc',
+                'Hosts.name'                => 'asc',
+            ]));
 
-        return $this->getFindingsResult($query, $GenericFilter, $PaginateOMat, [
-            'CveHostFindings.rule_rank' => 'asc',
-            'Hosts.name'                => 'asc',
-        ]);
+        return $this->getResult($query, $PaginateOMat);
+    }
+
+    /**
+     * What to do across all hosts, e.g. "update openssl to 3.0.13-0ubuntu3.6, fixes 12 CVEs on 8 hosts".
+     * Only findings that need action. One row per component and target version: hosts with different releases
+     * get different updates of the same package.
+     *
+     * @param CvesFilter $CvesFilter
+     * @param PaginateOMat|null $PaginateOMat
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getRecommendations(CvesFilter $CvesFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
+        $query = $this->getAggregateQuery($MY_RIGHTS);
+        $query
+            ->select([
+                'component_type'    => 'CveHostFindings.component_type',
+                'component_name'    => 'CveHostFindings.component_name',
+                'is_kernel'         => 'CveHostFindings.is_kernel',
+                'update_version'    => 'CveHostFindings.update_version',
+                'update_available'  => $query->func()->max('CveHostFindings.update_available'),
+                'usable_update'     => $query->expr(sprintf(self::ANY, self::HAS_USABLE_UPDATE)),
+                'host_update_count' => $query->expr(sprintf(self::COUNT_HOSTS_IF, self::HAS_USABLE_UPDATE)),
+                'lowest_rule_rank'  => $query->func()->min('CveHostFindings.rule_rank'),
+                'highest_severity'  => $query->func()->max('CveHostFindings.severity'),
+                'cve_count'         => $query->expr('COUNT(DISTINCT CveHostFindings.cve_id)'),
+                'red_count'         => $query->expr(sprintf(self::COUNT_CVES_IF, self::IS_RED)),
+                'kev_count'         => $query->expr(sprintf(self::COUNT_CVES_IF, self::IS_KEV)),
+                'host_count'        => $query->expr('COUNT(DISTINCT CveHostFindings.host_id)'),
+                'version_count'     => $query->expr('COUNT(DISTINCT CveHostFindings.component_version)'),
+            ])
+            ->where([
+                'CveHostFindings.view_name' => self::VIEW_ACTION,
+            ])
+            ->where($CvesFilter->recommendationsFilter())
+            ->groupBy([
+                'CveHostFindings.component_type',
+                'CveHostFindings.component_name',
+                'CveHostFindings.is_kernel',
+                'CveHostFindings.update_version',
+            ])
+            ->orderBy($CvesFilter->getOrderForPaginator([
+                'lowest_rule_rank' => 'asc',
+                'red_count'        => 'desc',
+                'cve_count'        => 'desc',
+                'host_count'       => 'desc',
+                'component_name'   => 'asc',
+            ]));
+
+        return $this->getResult($query, $PaginateOMat);
+    }
+
+    /**
+     * Affected software across all hosts: one row per component and version with open CVEs.
+     *
+     * @param CvesFilter $CvesFilter
+     * @param PaginateOMat|null $PaginateOMat
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getSoftwareIndex(CvesFilter $CvesFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
+        $query = $this->getAggregateQuery($MY_RIGHTS);
+        $query
+            ->select([
+                'component_type'    => 'CveHostFindings.component_type',
+                'component_name'    => 'CveHostFindings.component_name',
+                'component_version' => 'CveHostFindings.component_version',
+                'is_kernel'         => $query->func()->max('CveHostFindings.is_kernel'),
+                'lowest_rule_rank'  => $query->func()->min('CveHostFindings.rule_rank'),
+                'highest_severity'  => $query->func()->max('CveHostFindings.severity'),
+                'cve_count'         => $query->expr('COUNT(DISTINCT CveHostFindings.cve_id)'),
+                'action_count'      => $query->expr(sprintf(self::COUNT_CVES_IF, self::NEEDS_ACTION)),
+                'red_count'         => $query->expr(sprintf(self::COUNT_CVES_IF, self::IS_RED)),
+                'host_count'        => $query->expr('COUNT(DISTINCT CveHostFindings.host_id)'),
+            ])
+            ->where([
+                'CveHostFindings.view_name !=' => self::VIEW_NOT_AFFECTED,
+            ])
+            ->where($CvesFilter->softwareFilter())
+            ->groupBy([
+                'CveHostFindings.component_type',
+                'CveHostFindings.component_name',
+                'CveHostFindings.component_version',
+            ])
+            ->orderBy($CvesFilter->getOrderForPaginator([
+                'lowest_rule_rank' => 'asc',
+                'red_count'        => 'desc',
+                'cve_count'        => 'desc',
+                'component_name'   => 'asc',
+            ]));
+
+        return $this->getResult($query, $PaginateOMat);
+    }
+
+    /**
+     * Hosts with open CVEs in one component and version.
+     *
+     * @param string $componentName
+     * @param string $componentVersion
+     * @param CvesFilter $CvesFilter
+     * @param PaginateOMat|null $PaginateOMat
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getHostsOfComponent(string $componentName, string $componentVersion, CvesFilter $CvesFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
+        $query = $this->getAggregateQuery($MY_RIGHTS);
+        $query
+            ->select([
+                'host_id'          => 'Hosts.id',
+                'host_name'        => 'Hosts.name',
+                'host_uuid'        => 'Hosts.uuid',
+                'component_type'   => $query->func()->max('CveHostFindings.component_type')->setReturnType('string'),
+                'is_kernel'        => $query->func()->max('CveHostFindings.is_kernel'),
+                'is_running'       => $query->func()->max('CveHostFindings.is_running'),
+                'update_available' => $query->func()->max('CveHostFindings.update_available'),
+                'usable_update'    => $query->expr(sprintf(self::ANY, self::HAS_USABLE_UPDATE)),
+                'update_version'   => $query->func()->max('CveHostFindings.update_version')->setReturnType('string'),
+                'lowest_rule_rank' => $query->func()->min('CveHostFindings.rule_rank'),
+                'highest_severity' => $query->func()->max('CveHostFindings.severity'),
+                'cve_count'        => $query->expr('COUNT(DISTINCT CveHostFindings.cve_id)'),
+                'action_count'     => $query->expr(sprintf(self::COUNT_CVES_IF, self::NEEDS_ACTION)),
+                'red_count'        => $query->expr(sprintf(self::COUNT_CVES_IF, self::IS_RED)),
+            ])
+            ->where([
+                'CveHostFindings.component_name'    => $componentName,
+                'CveHostFindings.component_version' => $componentVersion,
+                'CveHostFindings.view_name !='      => self::VIEW_NOT_AFFECTED,
+            ])
+            ->where($CvesFilter->softwareFilter())
+            ->groupBy(['Hosts.id'])
+            ->orderBy($CvesFilter->getOrderForPaginator([
+                'lowest_rule_rank' => 'asc',
+                'red_count'        => 'desc',
+                'host_name'        => 'asc',
+            ]));
+
+        return $this->getResult($query, $PaginateOMat);
+    }
+
+    /**
+     * Counters across all hosts, as HostTotals counts them per host: every CVE counts once, even if it affects
+     * many hosts. A CVE is open if at least one of its findings is not "not affected".
+     *
+     * @param array $MY_RIGHTS
+     * @return array{open: int, critical: int, high: int, medium: int, low: int, unknown: int, kev: int, exploit: int, fixable: int, action: int, red: int, in_progress: int}
+     */
+    public function getCveTotals(array $MY_RIGHTS = []): array {
+        $totals = array_fill_keys(['open', 'critical', 'high', 'medium', 'low', 'unknown', 'kev', 'exploit', 'fixable', 'action', 'red', 'in_progress'], 0);
+
+        $query = $this->getAggregateQuery($MY_RIGHTS);
+        $query
+            ->select([
+                'highest_severity' => $query->func()->max('CveHostFindings.severity'),
+                'kev'              => $query->expr(sprintf(self::ANY, self::IS_KEV)),
+                'exploit'          => $query->expr(sprintf(self::ANY, self::HAS_EXPLOIT)),
+                'fixable'          => $query->expr(sprintf(self::ANY, self::HAS_REMEDY)),
+                'action'           => $query->expr(sprintf(self::ANY, self::NEEDS_ACTION)),
+                'red'              => $query->expr(sprintf(self::ANY, self::IS_RED)),
+                'in_progress'      => $query->expr(sprintf(self::ANY, self::IS_IN_PROGRESS)),
+            ])
+            ->where([
+                'CveHostFindings.view_name !=' => self::VIEW_NOT_AFFECTED,
+            ])
+            ->groupBy(['CveHostFindings.cve_id']);
+
+        foreach ($query->toArray() as $row) {
+            $totals['open']++;
+            foreach (['kev', 'exploit', 'fixable', 'action', 'red', 'in_progress'] as $flag) {
+                $totals[$flag] += (int)$row[$flag];
+            }
+
+            // Same buckets as HostTotals: severity "none" (e.g. Debian "unimportant") counts as low
+            $severity = $row['highest_severity'] === null ? null : Severity::from((int)$row['highest_severity']);
+            $bucket = match ($severity) {
+                null => 'unknown',
+                Severity::Critical => 'critical',
+                Severity::High => 'high',
+                Severity::Medium => 'medium',
+                Severity::Low, Severity::None => 'low',
+            };
+            $totals[$bucket]++;
+        }
+
+        return $totals;
     }
 
     /**
@@ -547,7 +961,8 @@ class CveHostFindingsTable extends Table {
     }
 
     /**
-     * Open findings with CVE, host and decision of enabled hosts
+     * Open findings with CVE, host and decision of enabled hosts. Every field of the finding is selected,
+     * the rows fit FindingFacts::fromRow() for the recommendation.
      *
      * @param array $MY_RIGHTS
      * @return SelectQuery
@@ -560,6 +975,7 @@ class CveHostFindingsTable extends Table {
                         'Cves.id',
                         'Cves.cve_id',
                         'Cves.summary',
+                        'Cves.published',
                         'Cves.cvss_score',
                         'Cves.cvss_source',
                         'Cves.kev_cisa',
@@ -578,52 +994,99 @@ class CveHostFindingsTable extends Table {
                     ]);
                 },
                 'CveDecisions' => function (SelectQuery $query) {
-                    return $query->select([
-                        'CveDecisions.id',
-                        'CveDecisions.cve_host_finding_id',
-                        'CveDecisions.state',
-                        'CveDecisions.owner',
-                        'CveDecisions.reason',
-                        'CveDecisions.review_after',
-                        'CveDecisions.evidence_url',
-                        'CveDecisions.user_id',
-                        'CveDecisions.modified',
-                    ]);
+                    return $this->selectDecision($query);
                 },
             ])
             ->where([
                 'CveHostFindings.resolved_at IS' => null,
                 'Hosts.disabled'                 => 0,
             ]);
-
-        if (!empty($MY_RIGHTS)) {
-            $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
-                'HostsToContainersSharing.host_id = Hosts.id'
-            ]);
-            $query->where([
-                'HostsToContainersSharing.container_id IN' => $MY_RIGHTS
-            ]);
-        }
+        $this->restrictToRights($query, $MY_RIGHTS);
 
         return $query;
     }
 
     /**
+     * Fields of a decision as the frontend shows them, with the user who made it.
+     *
      * @param SelectQuery $query
-     * @param GenericFilter $GenericFilter
-     * @param PaginateOMat|null $PaginateOMat
-     * @param array $defaultOrder Used if the filter does not request another order
-     * @return array
+     * @return SelectQuery
      */
-    private function getFindingsResult(SelectQuery $query, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat, array $defaultOrder): array {
-        if (!empty($GenericFilter->genericFilters())) {
-            $query->where($GenericFilter->genericFilters());
+    private function selectDecision(SelectQuery $query): SelectQuery {
+        return $query
+            ->select([
+                'CveDecisions.id',
+                'CveDecisions.cve_host_finding_id',
+                'CveDecisions.state',
+                'CveDecisions.owner',
+                'CveDecisions.reason',
+                'CveDecisions.review_after',
+                'CveDecisions.evidence_url',
+                'CveDecisions.severity',
+                'CveDecisions.fixed_in',
+                'CveDecisions.fix_state',
+                'CveDecisions.not_fixed_yet',
+                'CveDecisions.policy_version',
+                'CveDecisions.user_id',
+                'CveDecisions.created',
+                'CveDecisions.modified',
+            ])
+            ->contain([
+                'Users' => fn(SelectQuery $query) => $query->select(['Users.id', 'Users.firstname', 'Users.lastname']),
+            ]);
+    }
+
+    /**
+     * Open findings of enabled hosts for queries that group findings, with the CVE and the decision joined.
+     * Hydration is disabled, the rows contain the aliases of the select.
+     *
+     * @param array $MY_RIGHTS
+     * @return SelectQuery
+     */
+    private function getAggregateQuery(array $MY_RIGHTS): SelectQuery {
+        $query = $this->find()
+            ->innerJoinWith('Cves')
+            ->innerJoinWith('Hosts')
+            ->leftJoinWith('CveDecisions')
+            ->where([
+                'CveHostFindings.resolved_at IS' => null,
+                'Hosts.disabled'                 => 0,
+            ])
+            ->disableHydration();
+        $this->restrictToRights($query, $MY_RIGHTS);
+
+        return $query;
+    }
+
+    /**
+     * Only findings of hosts the user may see. A subquery instead of a join: a host shared with several containers
+     * of the user would be counted once per container.
+     *
+     * @param SelectQuery $query
+     * @param array $MY_RIGHTS Empty for root users
+     * @return void
+     */
+    private function restrictToRights(SelectQuery $query, array $MY_RIGHTS): void {
+        if (empty($MY_RIGHTS)) {
+            return;
         }
 
-        $query->orderBy($GenericFilter->getOrderForPaginator($defaultOrder));
-        // A host shared with several containers of the user would appear once per container
-        $query->groupBy(['CveHostFindings.id']);
+        $query->where([
+            'CveHostFindings.host_id IN' => $this->Hosts->find()
+                ->select(['Hosts.id'])
+                ->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
+                    'HostsToContainersSharing.host_id = Hosts.id'
+                ])
+                ->where(['HostsToContainersSharing.container_id IN' => $MY_RIGHTS])
+        ]);
+    }
 
+    /**
+     * @param SelectQuery $query
+     * @param PaginateOMat|null $PaginateOMat
+     * @return array
+     */
+    private function getResult(SelectQuery $query, ?PaginateOMat $PaginateOMat): array {
         if ($PaginateOMat === null) {
             //Just execute query
             return $query->toArray();

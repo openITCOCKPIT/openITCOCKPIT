@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\CveDecision;
 use App\Model\Entity\CveHostFinding;
 use Cake\I18n\Date;
@@ -34,6 +35,8 @@ use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use itnovum\openITCOCKPIT\Database\PaginateOMat;
+use itnovum\openITCOCKPIT\Filter\CvesFilter;
 
 /**
  * CveDecisions Model
@@ -60,6 +63,8 @@ use Cake\Validation\Validator;
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class CveDecisionsTable extends Table {
+
+    use PaginationAndScrollIndexTrait;
 
     /**
      * Initialize method
@@ -234,6 +239,102 @@ class CveDecisionsTable extends Table {
         }
 
         return $decision;
+    }
+
+    /**
+     * The same decision for several findings at once, e.g. one CVE accepted on all hosts. All or nothing:
+     * if one decision is invalid, none gets saved, a partly applied decision would be hard to find again.
+     *
+     * @param CveHostFinding[] $findings
+     * @param array $data User input: state, owner, reason, review_after (Y-m-d), evidence_url
+     * @param int|null $userId User who made the decision
+     * @param string $policyVersion Current version of the policy
+     * @return array{decisions: array<int, CveDecision>, errors: array<int, array>} Indexed by the id of the finding,
+     *                                                                            no decision is saved if errors is not empty
+     */
+    public function decideMany(array $findings, array $data, ?int $userId, string $policyVersion): array {
+        $decisions = [];
+        $errors = [];
+
+        $this->getConnection()->transactional(function () use ($findings, $data, $userId, $policyVersion, &$decisions, &$errors) {
+            foreach ($findings as $finding) {
+                $decision = $this->decide($finding, $data, $userId, $policyVersion);
+                $decisions[$finding->id] = $decision;
+                if ($decision->hasErrors()) {
+                    $errors[$finding->id] = $decision->getErrors();
+                }
+            }
+            // Returning false rolls back the decisions saved before
+            return empty($errors);
+        });
+
+        return ['decisions' => $decisions, 'errors' => $errors];
+    }
+
+    /**
+     * Decisions of open findings for the list of decisions, the next review date first.
+     *
+     * @param CvesFilter $CvesFilter
+     * @param PaginateOMat|null $PaginateOMat
+     * @param array $MY_RIGHTS
+     * @return array
+     */
+    public function getDecisionsIndex(CvesFilter $CvesFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
+        $query = $this->find()
+            ->select($this)
+            ->select([
+                'host_id'           => 'CveHostFindings.host_id',
+                'host_name'         => 'Hosts.name',
+                'host_uuid'         => 'Hosts.uuid',
+                'cve_id'            => 'Cves.cve_id',
+                'component_type'    => 'CveHostFindings.component_type',
+                'component_name'    => 'CveHostFindings.component_name',
+                'component_version' => 'CveHostFindings.component_version',
+                'view_name'         => 'CveHostFindings.view_name',
+                'rule'              => 'CveHostFindings.rule',
+                'color'             => 'CveHostFindings.color',
+                'review_required'   => 'CveHostFindings.review_required',
+                'user_firstname'    => 'Users.firstname',
+                'user_lastname'     => 'Users.lastname',
+            ])
+            ->innerJoinWith('CveHostFindings.Cves')
+            ->innerJoinWith('CveHostFindings.Hosts')
+            ->leftJoinWith('Users')
+            ->where([
+                'CveHostFindings.resolved_at IS' => null,
+                'Hosts.disabled'                 => 0,
+            ])
+            ->where($CvesFilter->decisionsFilter())
+            ->orderBy($CvesFilter->getOrderForPaginator([
+                'CveDecisions.review_after' => 'asc',
+                'Hosts.name'                => 'asc',
+                'Cves.cve_id'               => 'asc',
+            ]))
+            ->disableHydration();
+        // cve_id is also a column of the joined findings (the id of the CVE), without this it would be converted to int
+        $query->getSelectTypeMap()->setTypes(['cve_id' => 'string', 'host_id' => 'integer', 'review_required' => 'boolean']);
+
+        if (!empty($MY_RIGHTS)) {
+            // A subquery instead of a join, a host shared with several containers would appear once per container
+            $query->where([
+                'CveHostFindings.host_id IN' => $this->CveHostFindings->Hosts->find()
+                    ->select(['Hosts.id'])
+                    ->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
+                        'HostsToContainersSharing.host_id = Hosts.id'
+                    ])
+                    ->where(['HostsToContainersSharing.container_id IN' => $MY_RIGHTS])
+            ]);
+        }
+
+        if ($PaginateOMat === null) {
+            //Just execute query
+            return $query->toArray();
+        }
+
+        if ($PaginateOMat->useScroll()) {
+            return $this->scrollCake4($query, $PaginateOMat->getHandler());
+        }
+        return $this->paginateCake4($query, $PaginateOMat->getHandler());
     }
 
     /**

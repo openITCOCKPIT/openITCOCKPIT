@@ -403,4 +403,28 @@ class PackagesHostDetailsTable extends Table {
         return $query->toArray();
 
     }
+
+    /**
+     * Operating system of the hosts as the agent reported it, for the links of the vendors (AdvisoryLink)
+     *
+     * @param int[] $hostIds
+     * @return array<int, array{os_type: string|null, os_name: string|null}> Indexed by host id, hosts without inventory are missing
+     */
+    public function getOperatingSystemsByHostIds(array $hostIds): array {
+        $hostIds = array_values(array_unique(array_filter($hostIds)));
+        if (empty($hostIds)) {
+            return [];
+        }
+
+        $rows = $this->unhydratedFind()
+            ->select(['host_id', 'os_type', 'os_name'])
+            ->where(['host_id IN' => $hostIds])
+            ->all();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int)$row['host_id']] = ['os_type' => $row['os_type'], 'os_name' => $row['os_name']];
+        }
+        return $result;
+    }
 }

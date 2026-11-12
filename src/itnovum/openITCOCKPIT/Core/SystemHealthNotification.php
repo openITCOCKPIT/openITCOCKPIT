@@ -26,6 +26,7 @@
 namespace App\itnovum\openITCOCKPIT\Core;
 
 use App\Model\Table\SystemsettingsTable;
+use Cake\Log\Log;
 use Cake\Mailer\Mailer;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\Views\Logo;
@@ -138,7 +139,11 @@ class SystemHealthNotification {
                     ->setVar('systemAddress', $systemsettings['SYSTEM']['SYSTEM.ADDRESS'])
                     ->setVar('systemHealth', $this->data);
 
-                $Mailer->deliver();
+                try {
+                    $Mailer->deliver();
+                } catch (\Throwable $e) {
+                    Log::error(sprintf('Could not send SystemHealthNotification to %s: %s', $email, $e->getMessage()));
+                }
             }
         }
 

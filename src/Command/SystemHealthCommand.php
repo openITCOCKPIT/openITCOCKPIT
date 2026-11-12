@@ -247,6 +247,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
         return $data;
     }
+
     public function getSatellitesStatusWithHealth(array $systemHealthSettings): array {
 
         $SatellitesTable = TableRegistry::getTableLocator()->get('DistributeModule.Satellites');
@@ -350,56 +351,53 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
     }
 
-    public function sendHealthNotification($data, $sendingMail) {
+    public function sendHealthNotification(array $data, bool $sendingMail): void {
+        if (!$sendingMail) {
+            return;
+        }
+        $notify_on_warning = 0;
+        $notify_on_critical = 0;
+        $notify_on_recovery = 0;
 
-        if ($sendingMail) {
-
-            $notify_on_warning = 0;
-            $notify_on_critical = 0;
-            $notify_on_recovery = 0;
-
-            switch (strtoupper($this->state)) {
-                case 'OK':
-                    $notify_on_recovery = 1;
-                    break;
-                case 'WARNING':
-                    $notify_on_warning = 1;
-                    break;
-                case 'CRITICAL':
-                    $notify_on_critical = 1;
-                    break;
-                default:
-                    break;
-            }
-
-            switch (strtoupper($this->satellites_state)) {
-                case 'OK':
-                    $notify_on_recovery = 1;
-                    break;
-                case 'WARNING':
-                    $notify_on_warning = 1;
-                    break;
-                case 'CRITICAL':
-                    $notify_on_critical = 1;
-                    break;
-                default:
-                    break;
-            }
-
-            if (!$notify_on_recovery && !$notify_on_critical && !$notify_on_warning) {
-                return;
-            }
-
-            /** @var SystemHealthUsersTable $SystemHealthUsersTable */
-            $SystemHealthUsersTable = TableRegistry::getTableLocator()->get('SystemHealthUsers');
-            $users = $SystemHealthUsersTable->getUsersForNotifications($notify_on_warning, $notify_on_critical, $notify_on_recovery);
-
-            $systemHealthNotification = new SystemHealthNotification($users, $this->state, $this->satellites_state);
-            $systemHealthNotification->setData($data);
-            $systemHealthNotification->sendNotification();
-
+        switch (strtoupper($this->state)) {
+            case 'OK':
+                $notify_on_recovery = 1;
+                break;
+            case 'WARNING':
+                $notify_on_warning = 1;
+                break;
+            case 'CRITICAL':
+                $notify_on_critical = 1;
+                break;
+            default:
+                break;
         }
 
+        switch (strtoupper($this->satellites_state)) {
+            case 'OK':
+                $notify_on_recovery = 1;
+                break;
+            case 'WARNING':
+                $notify_on_warning = 1;
+                break;
+            case 'CRITICAL':
+                $notify_on_critical = 1;
+                break;
+            default:
+                break;
+        }
+
+        if (!$notify_on_recovery && !$notify_on_critical && !$notify_on_warning) {
+            return;
+        }
+
+        /** @var SystemHealthUsersTable $SystemHealthUsersTable */
+        $SystemHealthUsersTable = TableRegistry::getTableLocator()->get('SystemHealthUsers');
+        $users = $SystemHealthUsersTable->getUsersForNotifications($notify_on_warning, $notify_on_critical, $notify_on_recovery);
+
+        $systemHealthNotification = new SystemHealthNotification($users, $this->state, $this->satellites_state);
+        $systemHealthNotification->setData($data);
+        $systemHealthNotification->sendNotification();
     }
 
     /**

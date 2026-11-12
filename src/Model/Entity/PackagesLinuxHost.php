@@ -45,7 +45,6 @@ use Cake\ORM\Entity;
  * @property string $architecture
  * @property string $modularity_label
  * @property string $source_rpm
- * @property int|null $cve_package_state_id
  * @property \Cake\I18n\DateTime $modified
  * @property \Cake\I18n\DateTime $created
  *
@@ -74,7 +73,6 @@ class PackagesLinuxHost extends Entity {
         'architecture'         => true,
         'modularity_label'     => true,
         'source_rpm'           => true,
-        'cve_package_state_id' => true,
         'modified'             => true,
         'created'              => true,
         'host'                 => true,

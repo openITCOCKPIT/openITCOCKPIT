@@ -403,41 +403,4 @@ class PackagesHostDetailsTable extends Table {
         return $query->toArray();
 
     }
-
-    /**
-     * Returns all enabled Linux hosts that have a software inventory, with the fields the CVE check requires.
-     * Details of deleted hosts are ignored by the join on the hosts table.
-     *
-     * @param int[] $hostIds Limit the result to these hosts, all hosts if empty
-     * @return array<int, array{host_id: int, host_name: string, os_name: string, os_version: string, os_family: string|null, kernel_release: string|null, packages_hash: string|null, last_update: \Cake\I18n\DateTime|null}>
-     */
-    public function getLinuxHostsForCveCheck(array $hostIds = []): array {
-        $query = $this->unhydratedFind()
-            ->select([
-                'host_id'        => 'PackagesHostDetails.host_id',
-                'host_name'      => 'Hosts.name',
-                'os_name'        => 'PackagesHostDetails.os_name',
-                'os_version'     => 'PackagesHostDetails.os_version',
-                'os_family'      => 'PackagesHostDetails.os_family',
-                'kernel_release' => 'PackagesHostDetails.kernel_release',
-                'packages_hash'  => 'PackagesHostDetails.packages_hash',
-                'last_update'    => 'PackagesHostDetails.last_update',
-            ])
-            ->innerJoinWith('Hosts')
-            ->where([
-                'PackagesHostDetails.os_type' => 'linux',
-                'Hosts.disabled'              => 0,
-            ])
-            ->orderBy([
-                'PackagesHostDetails.host_id' => 'asc'
-            ]);
-
-        if (!empty($hostIds)) {
-            $query->where([
-                'PackagesHostDetails.host_id IN' => $hostIds
-            ]);
-        }
-
-        return $query->toArray();
-    }
 }

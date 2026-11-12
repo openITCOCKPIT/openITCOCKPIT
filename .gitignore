@@ -135,6 +135,7 @@ plugins/ChangecalendarModule
 plugins/MSTeamsModule
 plugins/IsarFlowModule
 plugins/ScmModule
+plugins/CveModule
 plugins/JiraModule
 plugins/DellModule
 plugins/ProxmoxModule

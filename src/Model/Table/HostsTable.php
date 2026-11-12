@@ -54,7 +54,6 @@ use itnovum\openITCOCKPIT\Core\Hoststatus;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\HostFilter;
-use itnovum\openITCOCKPIT\Vuln\Evaluation\HostEvaluator;
 
 /**
  * Hosts Model
@@ -4485,8 +4484,10 @@ class HostsTable extends Table {
 
         $this->_clenupHostEscalationAndDependency($hostdependenciesToDelete, $hostescalationsToDelete);
 
-        // CVE findings, decisions and summary of the host. The CVE check also removes data of hosts that got deleted another way.
-        (new HostEvaluator())->deleteHost((int)$Host->get('id'));
+        if (Plugin::isLoaded('CveModule')) {
+            // CVE findings, decisions and summary of the host. The CVE check also removes data of hosts that got deleted another way.
+            (new \CveModule\Lib\Evaluation\HostEvaluator())->deleteHost((int)$Host->get('id'));
+        }
 
         //Save host to DeletedHostsTable
         $data = $DeletedHostsTable->newEntity([

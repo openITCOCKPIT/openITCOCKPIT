@@ -32,7 +32,7 @@ use Cake\ORM\Entity;
 /**
  * CveDailyStat Entity
  *
- * Values of one host on one day, used for the trend.
+ * Values of one host on one day, used for the trend. Every evaluation of the day updates the row.
  *
  * @property int $id
  * @property \Cake\I18n\Date $stat_date
@@ -43,6 +43,8 @@ use Cake\ORM\Entity;
  * @property int $kev_count
  * @property int $new_count
  * @property int $resolved_count
+ * @property \Cake\I18n\DateTime $created First evaluation of the day
+ * @property \Cake\I18n\DateTime $modified Last evaluation or classification of the day
  */
 class CveDailyStat extends Entity {
     /**

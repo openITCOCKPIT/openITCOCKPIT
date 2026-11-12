@@ -38,9 +38,9 @@ use Cake\Validation\Validator;
  * to ask across all hosts, e.g. which applications are installed most often without a CPE rule.
  *
  * Types, see CveHostCoverage::TYPE_*:
- * - reason:             Reason code of the evaluation, e.g. missing_source_metadata or running_kernel_unknown
+ * - reason:             Reason code of the evaluation, e.g. missing_source_metadata or running_kernel_unknown (CoverageReason class)
  * - missing_metadata:   Package without the information Vuls requires
- * - inactive_kernel:    Installed kernel that is not running
+ * - inactive_kernel:    Installed kernel that is not running (as was not evaluated by Vuls)
  * - unmapped_app:       Application without a CPE rule
  * - other_platform_cve: CVE that only affects another operating system according to its description
  *

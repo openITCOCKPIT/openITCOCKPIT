@@ -27,13 +27,9 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
-use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\Cve;
-use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
-use itnovum\openITCOCKPIT\Database\PaginateOMat;
-use itnovum\openITCOCKPIT\Filter\GenericFilter;
 
 /**
  * Cves Model
@@ -60,8 +56,6 @@ use itnovum\openITCOCKPIT\Filter\GenericFilter;
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class CvesTable extends Table {
-
-    use PaginationAndScrollIndexTrait;
 
     /**
      * Number of rows per query when reading or writing many CVEs at once
@@ -263,90 +257,15 @@ class CvesTable extends Table {
     }
 
     /**
-     * Returns all open CVEs: CVEs that affect a package that is currently installed on at least one enabled host.
-     *
-     * @param GenericFilter $GenericFilter
-     * @param PaginateOMat|null $PaginateOMat
-     * @param array $MY_RIGHTS
-     * @return array
-     */
-    public function getOpenCves(GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
-        $query = $this->unhydratedFind();
-        $query
-            ->select([
-                'Cves.id',
-                'Cves.cve_id',
-                'Cves.summary',
-                'Cves.published',
-                'Cves.cvss_score',
-                'Cves.cvss_source',
-                'Cves.kev_cisa',
-                'Cves.kev_vulncheck',
-                'Cves.metasploit_count',
-                'Cves.verified_exploit_count',
-                'max_severity'  => $query->func()->max('CvePackageStateCves.severity'),
-                'host_count'    => $query->expr('COUNT(DISTINCT PackagesLinuxHosts.host_id)'),
-                'package_count' => $query->expr('COUNT(DISTINCT CvePackageStates.name)'),
-                'fix_available' => $query->func()->max($query->expr('CvePackageStateCves.fixed_in IS NOT NULL')),
-            ]);
-
-        $this->joinInstalledPackages($query, $MY_RIGHTS);
-
-        if (!empty($GenericFilter->genericFilters())) {
-            $query->where($GenericFilter->genericFilters());
-        }
-
-        $query
-            ->groupBy(['Cves.id'])
-            ->orderBy($GenericFilter->getOrderForPaginator('Cves.cvss_score', 'desc'));
-
-        return $this->getResult($query, $PaginateOMat);
-    }
-
-    /**
-     * Returns all installed packages of enabled hosts that are affected by the given CVE. One row per installation.
+     * One CVE with all its master data, e.g. for the CVE details.
      *
      * @param string $cveId e.g. CVE-2026-1234
-     * @param GenericFilter $GenericFilter
-     * @param PaginateOMat|null $PaginateOMat
-     * @param array $MY_RIGHTS
-     * @return array
+     * @return array|null
      */
-    public function getHostsByCveId(string $cveId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
-        $query = $this->unhydratedFind()
-            ->select([
-                'Hosts.id',
-                'Hosts.name',
-                'Hosts.uuid',
-                'Hosts.container_id',
-                'PackagesLinuxHosts.id',
-                'PackagesLinuxHosts.current_version',
-                'PackagesLinuxHosts.available_version',
-                'PackagesLinuxHosts.needs_update',
-                'CvePackageStates.id',
-                'CvePackageStates.name',
-                'CvePackageStates.is_kernel',
-                'CvePackageStates.kernel_release',
-                'CvePackageStateCves.fixed_in',
-                'CvePackageStateCves.fix_state',
-                'CvePackageStateCves.not_fixed_yet',
-                'CvePackageStateCves.severity',
-                'CvePackageStateCves.severity_source',
-            ])
-            ->where([
-                'Cves.cve_id' => $cveId
-            ]);
-
-        $this->joinInstalledPackages($query, $MY_RIGHTS);
-
-        if (!empty($GenericFilter->genericFilters())) {
-            $query->where($GenericFilter->genericFilters());
-        }
-
-        $query
-            ->orderBy($GenericFilter->getOrderForPaginator('Hosts.name', 'asc'));
-
-        return $this->getResult($query, $PaginateOMat);
+    public function getCveByCveId(string $cveId): ?array {
+        return $this->unhydratedFind()
+            ->where(['Cves.cve_id' => $cveId])
+            ->first();
     }
 
     /**
@@ -360,66 +279,6 @@ class CvesTable extends Table {
             ['id NOT IN' => $this->CvePackageStateCves->find()->select(['CvePackageStateCves.cve_id'])],
             ['id NOT IN' => $this->CveHostFindings->find()->select(['CveHostFindings.cve_id'])],
         ]);
-    }
-
-    /**
-     * Joins CVE -> package state -> installed package -> enabled host.
-     * The version check ignores links of installations that got updated after the last CVE check.
-     *
-     * @param SelectQuery $query
-     * @param array $MY_RIGHTS
-     * @return void
-     */
-    private function joinInstalledPackages(SelectQuery $query, array $MY_RIGHTS): void {
-        $query
-            ->innerJoin(
-                ['CvePackageStateCves' => 'cve_package_state_cves'],
-                ['CvePackageStateCves.cve_id = Cves.id']
-            )
-            ->innerJoin(
-                ['CvePackageStates' => 'cve_package_states'],
-                ['CvePackageStates.id = CvePackageStateCves.cve_package_state_id']
-            )
-            ->innerJoin(
-                ['PackagesLinuxHosts' => 'packages_linux_hosts'],
-                [
-                    'PackagesLinuxHosts.cve_package_state_id = CvePackageStates.id',
-                    'PackagesLinuxHosts.current_version = CvePackageStates.version',
-                ]
-            )
-            ->innerJoin(
-                ['Hosts' => 'hosts'],
-                ['Hosts.id = PackagesLinuxHosts.host_id']
-            )
-            ->where([
-                'Hosts.disabled' => 0
-            ]);
-
-        if (!empty($MY_RIGHTS)) {
-            $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
-                'HostsToContainersSharing.host_id = Hosts.id'
-            ]);
-            $query->where([
-                'HostsToContainersSharing.container_id IN' => $MY_RIGHTS
-            ]);
-        }
-    }
-
-    /**
-     * @param SelectQuery $query
-     * @param PaginateOMat|null $PaginateOMat
-     * @return array
-     */
-    private function getResult(SelectQuery $query, ?PaginateOMat $PaginateOMat): array {
-        if ($PaginateOMat === null) {
-            //Just execute query
-            return $query->toArray();
-        }
-
-        if ($PaginateOMat->useScroll()) {
-            return $this->scrollCake4($query, $PaginateOMat->getHandler());
-        }
-        return $this->paginateCake4($query, $PaginateOMat->getHandler());
     }
 
     /**

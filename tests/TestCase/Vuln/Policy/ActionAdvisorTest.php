@@ -32,6 +32,7 @@ use itnovum\openITCOCKPIT\Vuln\Policy\ActionAdvisor;
 use itnovum\openITCOCKPIT\Vuln\Policy\Classification;
 use itnovum\openITCOCKPIT\Vuln\Policy\FindingClassifier;
 use itnovum\openITCOCKPIT\Vuln\Policy\FindingFacts;
+use itnovum\openITCOCKPIT\Vuln\Policy\FindingView;
 use itnovum\openITCOCKPIT\Vuln\Policy\Rule;
 use PHPUnit\Framework\TestCase;
 
@@ -70,6 +71,20 @@ class ActionAdvisorTest extends TestCase {
 
     public function testApplicationsWithoutFixData(): void {
         $this->assertSame(Action::UpdateToVendorVersion, $this->action($this->finding(['component_type' => 'app'])));
+    }
+
+    public function testComponentOfOneHost(): void {
+        $advisor = new ActionAdvisor();
+
+        $this->assertSame(Action::ReviewDecision, $advisor->forHostComponent(FindingView::Accepted, 'package', false, null, true, '2.0')->action);
+        $this->assertSame(Action::RemoveOrUpdateKernel, $advisor->forHostComponent(FindingView::Action, 'package', true, false, true, '6.8.0-150')->action);
+
+        $update = $advisor->forHostComponent(FindingView::Action, 'package', true, true, true, '6.8.0-150');
+        $this->assertSame(Action::InstallUpdate, $update->action, 'The running kernel gets updated');
+        $this->assertSame('6.8.0-150', $update->version);
+
+        $this->assertSame(Action::WatchVendor, $advisor->forHostComponent(FindingView::Unfixed, 'package', false, null, false, '')->action);
+        $this->assertSame(Action::UpdateToVendorVersion, $advisor->forHostComponent(FindingView::Action, 'app', false, null, false, '')->action);
     }
 
     public function testComponentAcrossHosts(): void {

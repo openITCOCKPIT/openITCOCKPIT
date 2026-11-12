@@ -64,6 +64,38 @@ class ActionAdvisor {
     }
 
     /**
+     * Recommendation for one component (package and version) of one host, as shown for the grouped findings
+     * in the host details. Same order as forFinding().
+     *
+     * @param FindingView $view View the component is shown in
+     * @param string $componentType package, os or app
+     * @param bool $isKernel
+     * @param bool|null $isRunning Only for kernels, null if unknown
+     * @param bool $hasUsableUpdate An update is available and the vendor does not say "not fixed yet" for at least one CVE
+     * @param string $updateVersion
+     * @return Recommendation
+     */
+    public function forHostComponent(FindingView $view, string $componentType, bool $isKernel, ?bool $isRunning, bool $hasUsableUpdate, string $updateVersion): Recommendation {
+        if ($view === FindingView::Accepted || $view === FindingView::NotAffected) {
+            return new Recommendation(Action::ReviewDecision);
+        }
+
+        if ($isKernel && $isRunning === false) {
+            return new Recommendation(Action::RemoveOrUpdateKernel);
+        }
+
+        if ($hasUsableUpdate) {
+            return new Recommendation(Action::InstallUpdate, $updateVersion === '' ? null : $updateVersion);
+        }
+
+        if ($componentType === 'app' || $componentType === 'os') {
+            return new Recommendation(Action::UpdateToVendorVersion);
+        }
+
+        return new Recommendation(Action::WatchVendor);
+    }
+
+    /**
      * Recommendation for a component across several hosts, e.g. "update package openssl on 12 hosts".
      *
      * @param string $componentType package, os or app

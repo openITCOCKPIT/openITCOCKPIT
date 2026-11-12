@@ -49,6 +49,7 @@ class DefaultRolePermissions {
                 'Containers'            => ['index', 'showDetails'],
                 'Cronjobs'              => ['index'],
                 'Currentstatereports'   => ['index'],
+                'Cves'                  => ['index'],
                 'DeletedHosts'          => ['index'],
                 'Documentations'        => ['view', 'wiki'],
                 'Downtimereports'       => ['index', 'host', 'service'],

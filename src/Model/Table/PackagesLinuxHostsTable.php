@@ -40,7 +40,6 @@ use itnovum\openITCOCKPIT\Filter\GenericFilter;
  *
  * @property \App\Model\Table\HostsTable&\Cake\ORM\Association\BelongsTo $Hosts
  * @property \App\Model\Table\PackagesLinuxTable&\Cake\ORM\Association\BelongsTo $PackagesLinux
- * @property \App\Model\Table\CvePackageStatesTable&\Cake\ORM\Association\BelongsTo $CvePackageStates
  *
  * @method \App\Model\Entity\PackagesLinuxHost newEmptyEntity()
  * @method \App\Model\Entity\PackagesLinuxHost newEntity(array $data, array $options = [])
@@ -85,12 +84,6 @@ class PackagesLinuxHostsTable extends Table {
         $this->belongsTo('PackagesLinux', [
             'foreignKey' => 'package_linux_id',
             'joinType'   => 'INNER',
-        ]);
-
-        // NULL if the package could not be checked for CVEs
-        $this->belongsTo('CvePackageStates', [
-            'foreignKey' => 'cve_package_state_id',
-            'joinType'   => 'LEFT',
         ]);
     }
 
@@ -159,10 +152,6 @@ class PackagesLinuxHostsTable extends Table {
             ->scalar('source_rpm')
             ->maxLength('source_rpm', 255)
             ->allowEmptyString('source_rpm');
-
-        $validator
-            ->integer('cve_package_state_id')
-            ->allowEmptyString('cve_package_state_id');
 
         return $validator;
     }
@@ -329,130 +318,5 @@ class PackagesLinuxHostsTable extends Table {
                 'needs_update' => 1
             ])
             ->toArray();
-    }
-
-    /**
-     * Returns all installed packages of a host with the fields the CVE check requires.
-     * Used to build the package states (CvePackageStatesTable) that get sent to Vuls,
-     * and to build the findings of the host (LinuxFindingBuilder), which also need the available update.
-     *
-     * @param int $hostId
-     * @return array<int, array{id: int, cve_package_state_id: int|null, name: string, version: string, architecture: string|null, source_package: string|null, source_version: string|null, modularity_label: string|null, needs_update: int, available_version: string|null}>
-     */
-    public function getPackagesForCveCheck(int $hostId): array {
-        return $this->unhydratedFind()
-            ->select([
-                'id'                   => 'PackagesLinuxHosts.id',
-                'cve_package_state_id' => 'PackagesLinuxHosts.cve_package_state_id',
-                'name'                 => 'PackagesLinux.name',
-                'version'              => 'PackagesLinuxHosts.current_version',
-                'architecture'         => 'PackagesLinuxHosts.architecture',
-                'source_package'       => 'PackagesLinuxHosts.source_package',
-                'source_version'       => 'PackagesLinuxHosts.source_version',
-                'modularity_label'     => 'PackagesLinuxHosts.modularity_label',
-                'needs_update'         => 'PackagesLinuxHosts.needs_update',
-                'available_version'    => 'PackagesLinuxHosts.available_version',
-            ])
-            ->innerJoinWith('PackagesLinux')
-            ->where([
-                'PackagesLinuxHosts.host_id' => $hostId
-            ])
-            ->orderBy([
-                'PackagesLinux.name'                 => 'asc',
-                'PackagesLinuxHosts.current_version' => 'asc',
-            ])
-            ->toArray();
-    }
-
-    /**
-     * Returns the package list of a host like getPackagesOfHost(), with the CVE status of every package.
-     *
-     * Each row contains the linked package state as "cve_package_state" (NULL if the package could not be checked)
-     * and the field "cve_status", one of the CvePackageStatesTable::CVE_STATUS_* constants.
-     * The CVEs of one package are returned by CvePackageStateCvesTable::getCvesOfPackageState().
-     *
-     * @param int $hostId
-     * @param GenericFilter $GenericFilter
-     * @param PaginateOMat|null $PaginateOMat
-     * @param array $MY_RIGHTS
-     * @param bool $onlyAffected Only return packages that are affected by at least one CVE
-     * @return array
-     */
-    public function getPackagesOfHostWithCves(int $hostId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = [], bool $onlyAffected = false): array {
-        $query = $this->unhydratedFind()
-            ->innerJoin(
-                ['Hosts' => 'hosts'],
-                ['Hosts.id = PackagesLinuxHosts.host_id']
-            )
-            ->contain([
-                'PackagesLinux'    => function (SelectQuery $query) {
-                    return $query->select([
-                        'PackagesLinux.id',
-                        'PackagesLinux.name',
-                        'PackagesLinux.description',
-                    ]);
-                },
-                'CvePackageStates' => function (SelectQuery $query) {
-                    return $query
-                        ->select([
-                            'CvePackageStates.id',
-                            'CvePackageStates.is_kernel',
-                            'CvePackageStates.kernel_release',
-                            'CvePackageStates.feed_digest',
-                            'CvePackageStates.checked',
-                            'CvePackageStates.cve_count',
-                            'CvePackageStates.max_severity',
-                            'CvePackageStates.has_kev',
-                            'CvePackageStates.error_message',
-                        ])
-                        // Ignore the link if the package got updated after the last CVE check
-                        ->where(['CvePackageStates.version = PackagesLinuxHosts.current_version']);
-                }
-            ])
-            ->where([
-                'Hosts.disabled'             => 0,
-                'PackagesLinuxHosts.host_id' => $hostId
-            ]);
-
-        if ($onlyAffected) {
-            $query->where([
-                'CvePackageStates.checked IS NOT' => null,
-                'CvePackageStates.cve_count >'    => 0,
-            ]);
-        }
-
-        if (!empty($MY_RIGHTS)) {
-            $query->innerJoin(['HostsToContainersSharing' => 'hosts_to_containers'], [
-                'HostsToContainersSharing.host_id = Hosts.id'
-            ]);
-            $query->where([
-                'HostsToContainersSharing.container_id IN' => $MY_RIGHTS
-            ]);
-        }
-
-        if (!empty($GenericFilter->genericFilters())) {
-            $query->where($GenericFilter->genericFilters());
-        }
-
-        $query->orderBy(
-            $GenericFilter->getOrderForPaginator('PackagesLinux.name', 'asc')
-        );
-
-        if ($PaginateOMat === null) {
-            //Just execute query
-            $result = $query->toArray();
-        } else {
-            if ($PaginateOMat->useScroll()) {
-                $result = $this->scrollCake4($query, $PaginateOMat->getHandler());
-            } else {
-                $result = $this->paginateCake4($query, $PaginateOMat->getHandler());
-            }
-        }
-
-        foreach ($result as $index => $row) {
-            $result[$index]['cve_status'] = $this->CvePackageStates->getCveStatus($row['cve_package_state'] ?? null);
-        }
-
-        return $result;
     }
 }

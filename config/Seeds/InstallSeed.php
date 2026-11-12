@@ -139,15 +139,6 @@ class InstallSeed extends \Migrations\BaseSeed {
         );
         $MysqlWizardImporter->import();
 
-        /******************* CVE vulnerability management *******************/
-
-        // Default rules that map installed Windows and macOS applications to their CPE.
-        // Only adds what is missing, changes of users stay.
-        $CveCpeProductImporter = new \itnovum\openITCOCKPIT\InitialDatabase\CveCpeProduct(
-            TableRegistry::getTableLocator()->get('CveCpeProducts')
-        );
-        $CveCpeProductImporter->import();
-
         // Add new cronjobs to database
         //Cronjobs
         $table = $this->table('cronjobs');
@@ -170,14 +161,6 @@ class InstallSeed extends \Migrations\BaseSeed {
                 'task'     => 'LdapUserImport',
                 'plugin'   => 'Core',
                 'interval' => '1440',
-                'enabled'  => '0',
-            ],
-            [
-                // Checks the software inventory for CVEs and evaluates the hosts. Disabled by default:
-                // it requires the Vuls server, which is not part of every installation.
-                'task'     => 'CveCheck',
-                'plugin'   => 'Core',
-                'interval' => '60',
                 'enabled'  => '0',
             ],
         ];

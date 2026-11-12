@@ -719,23 +719,6 @@ class AclDependencies {
             ->dependency('Packages', 'index', 'Packages', 'host_macos_updates')
             ->dependency('Packages', 'index', 'Packages', 'host_macos_apps');
 
-        // CVE vulnerability management: "index" reads everything, "decide" also ends decisions
-        $this
-            ->dependency('Cves', 'index', 'Cves', 'summary')
-            ->dependency('Cves', 'index', 'Cves', 'trend')
-            ->dependency('Cves', 'index', 'Cves', 'host')
-            ->dependency('Cves', 'index', 'Cves', 'host_components')
-            ->dependency('Cves', 'index', 'Cves', 'host_findings')
-            ->dependency('Cves', 'index', 'Cves', 'host_coverage')
-            ->dependency('Cves', 'index', 'Cves', 'finding')
-            ->dependency('Cves', 'index', 'Cves', 'decisions')
-            ->dependency('Cves', 'index', 'Cves', 'cves')
-            ->dependency('Cves', 'index', 'Cves', 'view')
-            ->dependency('Cves', 'index', 'Cves', 'recommendations')
-            ->dependency('Cves', 'index', 'Cves', 'software')
-            ->dependency('Cves', 'index', 'Cves', 'host_states')
-            ->dependency('Cves', 'decide', 'Cves', 'remove_decision');
-
         $this
             ->dependency('Notificationsrelay', 'index', 'Notificationsrelay', 'testAndRegisterRelay');
 

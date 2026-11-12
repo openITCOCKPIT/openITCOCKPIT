@@ -356,7 +356,7 @@ class ChangelogsTable extends Table {
                 'Usergroup'          => '{(id|name)}',
                 'Containers'         => '{n}.{(id|name|permission_level)}',
             ],
-            // Decisions about CVE findings, one entry per host and request, see CvesController
+            // CveModule: decisions about CVE findings, one entry per host and request, see CveModule\Controller\CvesController
             'cvedecision'          => [
                 'CveDecision'          => '{(state|owner|reason|review_after|evidence_url)}',
                 'CveDecision.findings' => '{n}.{(id|cve_id|component_name|component_version)}',

@@ -45,6 +45,7 @@ use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Plugin;
+use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\Interfaces\CronjobInterface;
 use itnovum\openITCOCKPIT\Core\System\Gearman;
@@ -59,6 +60,14 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
     private $state = 'unknown';
     private $satellites_state = 'unknown';
+
+    /**
+     * I will hold the combined state of each satellite (key: satelite id, value: ok, warning, critical or unknown).
+     * Gets filled by determineState() and stored in the cache for the next run.
+     *
+     * @var array<int, string>
+     */
+    private array $satelliteStates = [];
 
     /**
      * Hook method for defining this command's option parser.
@@ -86,11 +95,18 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
         // Fetch latest SystemHealth Information
         $data = $this->fetchInformation();
-        $this->sendHealthNotifications($data);
+
+        $dataForEmail = $this->determineState($data);
+
+        // Read the states of the previous run BEFORE the cache gets overwritten
+        $previousStates = $this->getPreviousStatesFromCache();
 
         // Save current states as previous states for the next run.
-        // Must be called after sendHealthNotifications(), which determines the current states.
+        // This happens BEFORE sending the notifications, so that a failing mail delivery
+        // does not result in the same notifications being sent again on every run.
         $this->saveToCache($data);
+
+        $this->sendHealthNotifications($dataForEmail, $previousStates);
 
         // Message OK to console.
         $io->success('   Ok');
@@ -357,22 +373,21 @@ class SystemHealthCommand extends Command implements CronjobInterface {
     }
 
     /**
-     * I will determine the system and satellites state and send the SystemHealthNotification
-     * and SatelliteHealthNotifications if the respective state has changed.
+     * I will send the SystemHealthNotification and SatelliteHealthNotifications
+     * if the respective state has changed compared to the previous run.
      *
-     * @param array $data Result of fetchInformation()
+     * @param array $dataForEmail Result of determineState()
+     * @param array|null $previousStates Result of getPreviousStatesFromCache()
      * @return void
      */
-    public function sendHealthNotifications(array $data): void {
-        // Determine system and satellites state and enrich the data for the email
-        $dataForEmail = $this->determineState($data);
-
-        // Compare with the states of the previous run BEFORE the cache gets overwritten
-        $sendSystemHealthMail = $this->checkSendingSystemHealthMail();
-        $sendSatelliteHealthMail = $this->checkSendingSatelliteHealthMail();
+    public function sendHealthNotifications(array $dataForEmail, ?array $previousStates): void {
+        if ($previousStates === null) {
+            $this->io->verbose('Not sending any health notifications: no states of a previous run available');
+            return;
+        }
 
         // Maybe send SystemHealth
-        if ($sendSystemHealthMail) {
+        if (!empty($previousStates['state']) && $previousStates['state'] !== $this->state) {
             $this->sendSystemHealthNotification($dataForEmail);
         } else {
             $this->io->verbose('Not sending SystemHealthNotification: system state has not changed');
@@ -380,11 +395,12 @@ class SystemHealthCommand extends Command implements CronjobInterface {
 
         // Maybe send SatelliteHealth
         if (Plugin::isLoaded('DistributeModule')) {
-            if ($sendSatelliteHealthMail) {
-                $this->sendSatelliteHealthNotifications($dataForEmail['satellites'] ?? []);
-            } else {
-                $this->io->verbose('Not sending SatelliteHealthNotification: satellites state has not changed');
+            if (!is_array($previousStates['satelliteStates'])) {
+                // e.g. first run after an update - the cache does not contain per satellite states yet
+                $this->io->verbose('Not sending SatelliteHealthNotification: no satellite states of a previous run available');
+                return;
             }
+            $this->sendSatelliteHealthNotifications($dataForEmail['satellites'] ?? [], $previousStates['satelliteStates']);
         }
     }
 
@@ -411,56 +427,122 @@ class SystemHealthCommand extends Command implements CronjobInterface {
     }
 
     /**
-     * I will send one SatelliteHealthNotification per user, containing only the satellites
-     * the user has container permissions for.
+     * I will compare the state of every satellite with its state of the previous run and send
+     * one SatelliteHealthNotification per user. Each notifications only contains the satellites that
+     * - changed their state,
+     * - the user has container permissions for and
+     * - match the notification types (warning, critical, recovery) the user has subscribed to.
      *
      * @param array $satellites Result of getSatellitesStatusWithHealth()
+     * @param array<int, string> $previousSatelliteStates Per satellite states of the previous run
      * @return void
      */
-    private function sendSatelliteHealthNotifications(array $satellites): void {
-        $flags = $this->getNotificationFlagsByState($this->satellites_state);
-        if ($flags === null) {
-            $this->io->verbose(sprintf('Not sending SatelliteHealthNotification: no notifications for state "%s"', $this->satellites_state));
-            return;
+    private function sendSatelliteHealthNotifications(array $satellites, array $previousSatelliteStates): void {
+        // Collect all satellites with a state change that triggers a notification
+        $changedSatellites = [];
+        foreach ($satellites as $satellite) {
+            $satelliteId = (int)$satellite['id'];
+            if (!array_key_exists($satelliteId, $previousSatelliteStates)) {
+                // New satellite, nothing to compare with
+                continue;
+            }
+
+            $previousState = (string)$previousSatelliteStates[$satelliteId];
+            $currentState = $this->satelliteStates[$satelliteId] ?? 'unknown';
+            $notificationType = $this->getSatelliteNotificationType($previousState, $currentState);
+            if ($notificationType === null) {
+                continue;
+            }
+
+            $this->io->verbose("Satellite {$satellite['name']} (ID: {$satelliteId}) changed from {$previousState} to {$currentState} ({$notificationType}).");
+            $satellite['state'] = $currentState;
+            $satellite['previous_state'] = $previousState;
+            $changedSatellites[] = [
+                'type'      => $notificationType,
+                'satellite' => $satellite
+            ];
         }
 
-        // On recovery, all satellites of the user get reported (they are all OK now).
-        // Otherwise only satellites with a problem get reported.
-        $isRecovery = strtolower($this->satellites_state) === 'ok';
-
-        foreach ($satellites as $index => $satellite) {
-            $satellites[$index]['state'] = $this->getStateOfSatellite($satellite);
+        if (empty($changedSatellites)) {
+            $this->io->verbose('Not sending SatelliteHealthNotification: no satellite changed its state');
+            return;
         }
 
         /** @var SystemHealthUsersTable $SystemHealthUsersTable */
         $SystemHealthUsersTable = TableRegistry::getTableLocator()->get('SystemHealthUsers');
-        $users = $SystemHealthUsersTable->getUsersWithIdsForNotifications(...$flags);
+        $users = $SystemHealthUsersTable->getUsersForSatelliteHealthNotifications();
 
         foreach ($users as $user) {
-            $this->io->verbose('Composing SatelliteHealthNotification to user: ' . $user['email']);
+            // One failing user (permissions, mail delivery) must not prevent the notifications for all other users
+            try {
+                $this->sendSatelliteHealthNotificationToUser($user, $changedSatellites);
+            } catch (\Throwable $e) {
+                $message = sprintf('Could not send SatelliteHealthNotification to %s: %s', $user['email'], $e->getMessage());
+                $this->io->error($message);
+                Log::error($message);
+            }
+        }
+    }
 
-            $userPermissions = MyRightsFactory::getUserPermissions($user['id'], $user['usergroup_id']);
-            $SatelliteHealthNotification = new SatelliteHealthNotification($user['email'], $user['full_name'], $this->io);
+    /**
+     * I will send the SatelliteHealthNotification to one user, if at least one changed satellite is relevant for the user.
+     *
+     * @param array $user One record of SystemHealthUsersTable::getUsersForSatelliteHealthNotifications()
+     * @param array $changedSatellites [['type' => warning|critical|recovery, 'satellite' => array], ...]
+     * @return void
+     */
+    private function sendSatelliteHealthNotificationToUser(array $user, array $changedSatellites): void {
+        $this->io->verbose('Composing SatelliteHealthNotification to user: ' . $user['email']);
 
-            $stateForUser = 'unknown';
-            foreach ($satellites as $satellite) {
-                if (!$this->isSatelliteAllowedForUser($satellite, $userPermissions)) {
-                    $this->io->verbose("User {$user['email']} does not have permission to see satellite {$satellite['name']} (ID: {$satellite['id']}), skipping.");
-                    continue;
-                }
+        $userPermissions = null;
+        $SatelliteHealthNotification = new SatelliteHealthNotification($user['email'], $user['full_name'], $this->io);
 
-                if (!$isRecovery && !in_array($satellite['state'], ['warning', 'critical'], true)) {
-                    $this->io->verbose("Satellite {$satellite['name']} (ID: {$satellite['id']}) is in state {$satellite['state']}, skipping for user {$user['email']}.");
-                    continue;
-                }
+        $stateForUser = 'unknown';
+        foreach ($changedSatellites as $changedSatellite) {
+            $satellite = $changedSatellite['satellite'];
 
-                $SatelliteHealthNotification->addSatelliteState($satellite);
-                $stateForUser = $this->mergeState($stateForUser, $satellite['state']);
+            if (empty($user['notify_on_' . $changedSatellite['type']])) {
+                $this->io->verbose("User {$user['email']} is not subscribed to {$changedSatellite['type']} notifications, skipping satellite {$satellite['name']} (ID: {$satellite['id']}).");
+                continue;
             }
 
-            $SatelliteHealthNotification->setState($stateForUser);
-            $SatelliteHealthNotification->sendNotification();
+            // Resolve the permissions only if required
+            if ($userPermissions === null) {
+                $userPermissions = MyRightsFactory::getUserPermissions($user['id'], $user['usergroup_id']);
+            }
+            if (!$this->isSatelliteAllowedForUser($satellite, $userPermissions)) {
+                $this->io->verbose("User {$user['email']} does not have permission to see satellite {$satellite['name']} (ID: {$satellite['id']}), skipping.");
+                continue;
+            }
+
+            $SatelliteHealthNotification->addSatelliteState($satellite);
+            $stateForUser = $this->mergeState($stateForUser, $satellite['state']);
         }
+
+        $SatelliteHealthNotification->setState($stateForUser);
+        $SatelliteHealthNotification->sendNotification();
+    }
+
+    /**
+     * I will return the notification type for the state change of one satellite
+     * (warning, critical or recovery) or null if the state change does not trigger a notification.
+     *
+     * @param string $previousState
+     * @param string $currentState
+     * @return string|null
+     */
+    private function getSatelliteNotificationType(string $previousState, string $currentState): ?string {
+        if ($previousState === $currentState) {
+            return null;
+        }
+
+        return match ($currentState) {
+            'warning' => 'warning',
+            'critical' => 'critical',
+            // Only a change from a problem state to ok is a recovery (unknown -> ok is not)
+            'ok' => in_array($previousState, ['warning', 'critical'], true) ? 'recovery' : null,
+            default => null,
+        };
     }
 
     /**
@@ -500,25 +582,21 @@ class SystemHealthCommand extends Command implements CronjobInterface {
     }
 
     /**
-     * I will compare the current system state with the state of the previous run (cache).
+     * I will return the states of the previous run (cache) or null if no previous run is cached.
      *
-     * @return bool true if the system state has changed
+     * @return array{state: string|null, satellitesState: string|null, satelliteStates: array<int, string>|null}|null
      */
-    private function checkSendingSystemHealthMail(): bool {
+    private function getPreviousStatesFromCache(): ?array {
         $cache = Cache::read('system_health', 'permissions');
+        if (empty($cache) || !is_array($cache)) {
+            return null;
+        }
 
-        return !empty($cache) && !empty($cache['previousState']) && $cache['previousState'] !== $this->state;
-    }
-
-    /**
-     * I will compare the current satellites state with the state of the previous run (cache).
-     *
-     * @return bool true if the satellites state has changed
-     */
-    private function checkSendingSatelliteHealthMail(): bool {
-        $cache = Cache::read('system_health', 'permissions');
-
-        return !empty($cache) && !empty($cache['previousSatellitesState']) && $cache['previousSatellitesState'] !== $this->satellites_state;
+        return [
+            'state'           => $cache['previousState'] ?? null,
+            'satellitesState' => $cache['previousSatellitesState'] ?? null,
+            'satelliteStates' => isset($cache['previousSatelliteStates']) && is_array($cache['previousSatelliteStates']) ? $cache['previousSatelliteStates'] : null,
+        ];
     }
 
     /**
@@ -580,10 +658,12 @@ class SystemHealthCommand extends Command implements CronjobInterface {
             $this->setHealthState('warning');
         }
 
+        $this->satelliteStates = [];
         foreach ($dataForEmail['satellites'] ?? [] as $satellite) {
             foreach ($this->getStatesOfSatellite($satellite) as $satelliteState) {
                 $this->setSatellitesHealthState($satelliteState);
             }
+            $this->satelliteStates[(int)$satellite['id']] = $this->getStateOfSatellite($satellite);
         }
 
         $this->setHealthState($dataForEmail['memory_usage']['memory']['state']);
@@ -706,6 +786,7 @@ class SystemHealthCommand extends Command implements CronjobInterface {
     public function saveToCache($data) {
         $data['previousState'] = $this->state;
         $data['previousSatellitesState'] = $this->satellites_state;
+        $data['previousSatelliteStates'] = $this->satelliteStates;
 
         $data['update'] = time();
 

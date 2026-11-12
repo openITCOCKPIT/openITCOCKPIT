@@ -253,4 +253,28 @@ class ServicestatusIcon {
         ];
     }
 
+    /**
+     * I will create a ServicestatusIcon from a status text (ok, warning, critical, everything else is unknown).
+     *
+     * @param string $state
+     * @return self
+     */
+    public static function fromStatusText(string $state): self {
+        switch (strtoupper($state)) {
+            case 'OK':
+                $stateId = 0;
+                break;
+            case 'WARNING':
+                $stateId = 1;
+                break;
+            case 'CRITICAL':
+                $stateId = 2;
+                break;
+            default:
+                $stateId = 3;
+                break;
+        }
+
+        return new self($stateId);
+    }
 }

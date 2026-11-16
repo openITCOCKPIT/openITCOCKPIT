@@ -682,6 +682,48 @@ class Agent extends Importer {
                 'plugin_name'        => 'GpuUsage',
                 'servicetemplate_id' => 'a1af2eba-bb3e-4bff-be6c-8e3b249402ea'
             ],
+
+            // Agent 3.8: filesystems which do not respond and AIX
+            [
+                'name'               => 'disks_hanging',
+                'plugin_name'        => 'MountHanging',
+                'servicetemplate_id' => '6a4730ce-81ba-4346-baa1-efa5bcd6652a'
+            ],
+            [
+                'name'               => 'lpar',
+                'plugin_name'        => 'Lpar',
+                'servicetemplate_id' => '69f1739f-1beb-46ac-a956-44f1a404373d'
+            ],
+            [
+                'name'               => 'src_services',
+                'plugin_name'        => 'SrcService',
+                'servicetemplate_id' => 'b209aca9-ef4d-4460-967a-f375094cde81'
+            ],
+            [
+                'name'               => 'errpt',
+                'plugin_name'        => 'Errpt',
+                'servicetemplate_id' => 'e54a0383-e770-4bc6-a3e7-2479bb7b993b'
+            ],
+            [
+                'name'               => 'volume_groups',
+                'plugin_name'        => 'VolumeGroups',
+                'servicetemplate_id' => 'dab4ae54-56b8-41c1-b6cd-a8bd95dfae89'
+            ],
+            [
+                'name'               => 'multipath',
+                'plugin_name'        => 'Multipath',
+                'servicetemplate_id' => '6df13998-56b0-4582-ab14-34926f7280f0'
+            ],
+            [
+                'name'               => 'network_adapters',
+                'plugin_name'        => 'NetworkAdapters',
+                'servicetemplate_id' => '1b66126d-9283-4297-bedc-a4f35adec835'
+            ],
+            [
+                'name'               => 'paging_spaces',
+                'plugin_name'        => 'PagingSpaces',
+                'servicetemplate_id' => '58b67b01-726c-4172-8e2d-bc88f24880b5'
+            ],
         ];
         return $data;
     }
@@ -3262,6 +3304,205 @@ class Agent extends Importer {
                     ]
                 ]
             ],
+            [
+                'name'             => 'check_oitc_agent_mount_hanging',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => 'cb8e94c1-3e68-4386-be08-b1c664351d9f',
+                'description'      => "Checks if a filesystem does not respond within 5 seconds, e.g. if the server of a NFS or CIFS share is not reachable (Linux, macOS, FreeBSD and AIX).\n" .
+                    "The agent does not block: the query of a filesystem which does not respond keeps running in the background and is reused by the next check run. The services of the disk usage, free space and inodes of such a filesystem are critical, too.\n" .
+                    "macOS answers queries of a NFS share which does not respond from its cache, the agent detects it only if it runs as root.\n" .
+                    "State: state if a filesystem does not respond (ok, warning, critical or unknown).\n" .
+                    "Exclude mountpoints: regular expression (case insensitive, optional).",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'State if not responding'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'Exclude mountpoints (regex)'
+                    ]
+                ]
+            ],
+            [
+                'name'             => 'check_oitc_agent_lpar',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => 'efc81ca0-be82-492b-b67b-4ccd68f52a9c',
+                'description'      => "Checks the processor usage of an AIX LPAR (logical partition) with shared processors: consumed physical processors (physc), entitlement consumption and the usage of the capacity the partition can use at most (capped: entitlement, uncapped: virtual processors, at most the processors of the shared pool). The values are the average of the check interval of the agent.\n" .
+                    "Capacity: warning and critical in percent.\n" .
+                    "Entitlement: warning and critical in percent (optional), uncapped partitions can use more than 100% of their entitlement.\n" .
+                    "Partitions with dedicated processors are always OK.",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'Capacity warning %'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'Capacity critical %'
+                    ],
+                    [
+                        'name'       => '$ARG3$',
+                        'human_name' => 'Entitlement warning %'
+                    ],
+                    [
+                        'name'       => '$ARG4$',
+                        'human_name' => 'Entitlement critical %'
+                    ]
+                ]
+            ],
+            [
+                'name'             => 'check_oitc_agent_src_service',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => 'c966d86c-eb09-4381-86f3-4636ef8abed5',
+                'description'      => "Checks a subsystem of the System Resource Controller of AIX (lssrc -a): active = OK, inoperative = critical, other states (e.g. stopping) = warning.\n" .
+                    "Subsystem: name of the subsystem (e.g. sshd) or a regular expression (case insensitive, e.g. ^(nfsd|biod|rpc\\.(mountd|statd|lockd))$). All matching subsystems have to be active.\n" .
+                    "Strict: 1 = compare the name exactly, 0 = regular expression.",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'Subsystem'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'Strict'
+                    ]
+                ]
+            ],
+            [
+                'name'             => 'check_oitc_agent_errpt',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => 'e06d29c7-a360-4558-a844-9e28289152b5',
+                'description'      => "Checks the AIX error log (errpt): entries within the time window of the agent (errpt-window, default 24 hours).\n" .
+                    "Exclude: regular expression on \"identifier resource description\" (case insensitive, optional), e.g. ^DC32143C .\n" .
+                    "State for permanent errors, temporary errors and informational (and unknown) entries: ok, warning, critical or unknown.",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'Exclude (regex)'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'State for permanent errors'
+                    ],
+                    [
+                        'name'       => '$ARG3$',
+                        'human_name' => 'State for temporary errors'
+                    ],
+                    [
+                        'name'       => '$ARG4$',
+                        'human_name' => 'State for informational entries'
+                    ]
+                ]
+            ],
+            [
+                'name'             => 'check_oitc_agent_volume_groups',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => 'a45007a4-15e8-46b1-8f9b-a025d49bfbf2',
+                'description'      => "Checks the volume groups of AIX (lsvg) with their logical and physical volumes: stale partitions, stale or missing physical volumes and stale logical volumes are critical.\n" .
+                    "Volume groups: regular expression (case insensitive), empty for all volume groups.\n" .
+                    "Used partitions: warning and critical in percent of the physical partitions (optional). A volume group without free partitions can not grow, the usage of the filesystems is checked by the disk usage service.\n" .
+                    "State of offline volume groups: state if a volume group is varied off, e.g. on the standby node of a cluster (ok, warning, critical or unknown).",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'Volume groups (regex)'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'Used partitions warning %'
+                    ],
+                    [
+                        'name'       => '$ARG3$',
+                        'human_name' => 'Used partitions critical %'
+                    ],
+                    [
+                        'name'       => '$ARG4$',
+                        'human_name' => 'State of offline volume groups'
+                    ]
+                ]
+            ],
+            [
+                'name'             => 'check_oitc_agent_multipath',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => '32883591-8087-4322-8922-05e1058c0b4d',
+                'description'      => "Checks the paths of the multipath disks of AIX (MPIO, lspath): failed and missing paths are critical, disabled and defined paths a warning, disks without an enabled path critical.\n" .
+                    "Disks: regular expression (case insensitive), empty for all disks.\n" .
+                    "Minimum paths: critical if a disk has fewer enabled paths (optional).",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'Disks (regex)'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'Minimum enabled paths'
+                    ]
+                ]
+            ],
+            [
+                'name'             => 'check_oitc_agent_network_adapters',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => 'de8ce405-4386-4f8b-ad22-0c8fedd29a35',
+                'description'      => "Checks the Ethernet adapters of AIX (lsdev, entstat -d) including EtherChannel and Network Interface Backup. Adapters which are not available (e.g. Defined) are ignored.\n" .
+                    "Critical: adapter not running, link down, virtual LAN not operational, IEEE 802.3ad not aggregated.\n" .
+                    "Warning: problems of the members of an EtherChannel (e.g. link down, LACP not in sync).\n" .
+                    "Adapters: regular expression (case insensitive, e.g. ^ent4$), empty for all adapters.\n" .
+                    "State for the backup adapter: state if an EtherChannel or a Network Interface Backup runs on the backup adapter (ok, warning, critical or unknown).",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'Adapters (regex)'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'State for the backup adapter'
+                    ]
+                ]
+            ],
+            [
+                'name'             => 'check_oitc_agent_paging_spaces',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => '512b10ef-7dd2-456a-a264-0162d42640af',
+                'description'      => "Checks the paging spaces of AIX (lsps -a): usage of each paging space and if it is active.\n" .
+                    "Paging spaces: regular expression (case insensitive), empty for all paging spaces.\n" .
+                    "Warning and critical: usage of each paging space in percent.\n" .
+                    "State if inactive: state if a paging space is not active (ok, warning, critical or unknown).",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'Paging spaces (regex)'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'Usage warning %'
+                    ],
+                    [
+                        'name'       => '$ARG3$',
+                        'human_name' => 'Usage critical %'
+                    ],
+                    [
+                        'name'       => '$ARG4$',
+                        'human_name' => 'State if inactive'
+                    ]
+                ]
+            ],
         ];
         return $data;
     }
@@ -5692,6 +5933,16 @@ class Agent extends Importer {
             // Agent 3.8: GPUs
             $this->getAgentServicetemplate('77b842b4-d2c7-4756-ab71-8b17f897fde4', 'OITC_AGENT_GPU_HEALTH', 'GPU health', '0f151328-bd7e-47ee-bd9b-27acd00fdcd9', ['0', 'warning', '', '', 'warning']),
             $this->getAgentServicetemplate('a1af2eba-bb3e-4bff-be6c-8e3b249402ea', 'OITC_AGENT_GPU_USAGE', 'GPU usage', 'f9b9c97d-da60-47e8-b236-852edf7f7708', ['', '', '', '', '', '10', '5', '', '']),
+
+            // Agent 3.8: filesystems which do not respond and AIX
+            $this->getAgentServicetemplate('6a4730ce-81ba-4346-baa1-efa5bcd6652a', 'OITC_AGENT_MOUNT_HANGING', 'Not responding filesystems', 'cb8e94c1-3e68-4386-be08-b1c664351d9f', ['critical', '']),
+            $this->getAgentServicetemplate('69f1739f-1beb-46ac-a956-44f1a404373d', 'OITC_AGENT_LPAR', 'LPAR processor usage', 'efc81ca0-be82-492b-b67b-4ccd68f52a9c', ['80', '90', '', '']),
+            $this->getAgentServicetemplate('b209aca9-ef4d-4460-967a-f375094cde81', 'OITC_AGENT_SRC_SERVICE', 'SRC subsystem', 'c966d86c-eb09-4381-86f3-4636ef8abed5', ['', '1']),
+            $this->getAgentServicetemplate('e54a0383-e770-4bc6-a3e7-2479bb7b993b', 'OITC_AGENT_ERRPT', 'AIX error log', 'e06d29c7-a360-4558-a844-9e28289152b5', ['', 'critical', 'warning', 'ok']),
+            $this->getAgentServicetemplate('dab4ae54-56b8-41c1-b6cd-a8bd95dfae89', 'OITC_AGENT_VOLUME_GROUPS', 'Volume group', 'a45007a4-15e8-46b1-8f9b-a025d49bfbf2', ['', '', '', 'ok']),
+            $this->getAgentServicetemplate('6df13998-56b0-4582-ab14-34926f7280f0', 'OITC_AGENT_MULTIPATH', 'Multipath', '32883591-8087-4322-8922-05e1058c0b4d', ['', '']),
+            $this->getAgentServicetemplate('1b66126d-9283-4297-bedc-a4f35adec835', 'OITC_AGENT_NETWORK_ADAPTERS', 'Network adapter', 'de8ce405-4386-4f8b-ad22-0c8fedd29a35', ['', 'warning']),
+            $this->getAgentServicetemplate('58b67b01-726c-4172-8e2d-bc88f24880b5', 'OITC_AGENT_PAGING_SPACES', 'Paging spaces', '512b10ef-7dd2-456a-a264-0162d42640af', ['', '80', '90', 'warning']),
         ];
         return $data;
     }

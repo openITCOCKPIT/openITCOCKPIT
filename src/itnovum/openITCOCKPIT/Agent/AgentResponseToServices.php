@@ -184,6 +184,11 @@ class AgentResponseToServices {
                         if ($readonlyService) {
                             $services['disks_readonly'] = $readonlyService;
                         }
+
+                        $hangingService = $this->getServiceStructByName('disks_hanging', 'Not responding filesystems');
+                        if ($hangingService) {
+                            $services['disks_hanging'] = $hangingService;
+                        }
                     }
                     break;
                 case 'net_io':
@@ -464,6 +469,38 @@ class AgentResponseToServices {
                     $services = array_merge($services, $this->getServiceStructsForGpus());
                     break;
 
+                case 'lpar':
+                case 'errpt':
+                case 'multipath':
+                case 'paging_spaces':
+                    // AIX: one service for the LPAR, the error log, all multipath disks and all paging spaces
+                    $aixServices = $this->getServiceStructForAixCheck($mainKey);
+                    if ($aixServices) {
+                        $services[$mainKey] = $aixServices;
+                    }
+                    break;
+
+                case 'src_services':
+                    $srcServices = $this->getServiceStructsForSrcServices();
+                    if ($srcServices) {
+                        $services['src_services'] = $srcServices;
+                    }
+                    break;
+
+                case 'volume_groups':
+                    $volumeGroupServices = $this->getServiceStructsForVolumeGroups();
+                    if ($volumeGroupServices) {
+                        $services['volume_groups'] = $volumeGroupServices;
+                    }
+                    break;
+
+                case 'network_adapters':
+                    $networkAdapterServices = $this->getServiceStructsForNetworkAdapters();
+                    if ($networkAdapterServices) {
+                        $services['network_adapters'] = $networkAdapterServices;
+                    }
+                    break;
+
                 case 'packagemanager':
                     if (!empty($this->agentResponse['packagemanager']['Enabled'])) {
                         $packagemanager = $this->getServiceStructByName('packagemanager', 'System Updates');
@@ -608,7 +645,9 @@ class AgentResponseToServices {
             return false;
         }
         $services = [];
-        if (isset($this->agentResponse['disk_io'])) {
+        // The agent reports an error instead of the disks if the statistics are not available,
+        // e.g. on AIX if the disk statistics are disabled (sys0 iostat=false)
+        if (isset($this->agentResponse['disk_io']) && is_array($this->agentResponse['disk_io']) && !isset($this->agentResponse['disk_io']['error'])) {
             $servicetemplatecommandargumentvalues = $agentcheck['servicetemplate']['servicetemplatecommandargumentvalues'];
             foreach ($this->agentResponse['disk_io'] as $deviceName => $device) {
                 if (!$this->doesServiceAlreadyExists($agentcheck['servicetemplate_id'], [2 => $this->shortCommandargumentValue($deviceName)])) {
@@ -1677,5 +1716,112 @@ class AgentResponseToServices {
             }
         }
         return $services;
+    }
+
+    /**
+     * AIX checks with one service: LPAR, error log, multipath disks and paging spaces
+     *
+     * @param string $key Key of the agent response and name of the agent check
+     * @return array|false
+     */
+    private function getServiceStructForAixCheck(string $key) {
+        $names = [
+            'lpar'          => 'LPAR processor usage',
+            'errpt'         => 'AIX error log',
+            'multipath'     => 'Multipath',
+            'paging_spaces' => 'Paging spaces'
+        ];
+
+        $items = $this->agentResponse[$key];
+        if (!is_array($items) || isset($items['error']) || empty($items)) {
+            return false;
+        }
+        return $this->getServiceStructByName($key, $names[$key]);
+    }
+
+    /**
+     * AIX: one service per active subsystem of the System Resource Controller
+     *
+     * @return array|false
+     */
+    private function getServiceStructsForSrcServices() {
+        $subsystems = $this->agentResponse['src_services'];
+        if (!is_array($subsystems) || isset($subsystems['error'])) {
+            return false;
+        }
+
+        $values = [];
+        foreach ($subsystems as $subsystem) {
+            if (!isset($subsystem['name']) || ($subsystem['status'] ?? '') !== 'active') {
+                continue;
+            }
+            $values[$subsystem['name']] = $subsystem['name'];
+        }
+        return $this->getServiceStructsForValues('src_services', 0, $values, 'SRC subsystem: %s');
+    }
+
+    /**
+     * AIX: one service per volume group, so every volume group can get its own thresholds. Volume groups which are
+     * varied off (e.g. on the standby node of a cluster) are suggested too, the service template reports them as OK.
+     *
+     * @return array|false
+     */
+    private function getServiceStructsForVolumeGroups() {
+        $volumeGroups = $this->agentResponse['volume_groups'];
+        if (!is_array($volumeGroups) || isset($volumeGroups['error'])) {
+            return false;
+        }
+
+        $values = [];
+        foreach ($volumeGroups as $volumeGroup) {
+            if (!isset($volumeGroup['name'])) {
+                continue;
+            }
+            $values[$this->getExactRegex($volumeGroup['name'])] = $volumeGroup['name'];
+        }
+        return $this->getServiceStructsForValues('volume_groups', 0, $values, 'Volume group: %s');
+    }
+
+    /**
+     * AIX: one service per available Ethernet adapter or EtherChannel. The members of an EtherChannel are part of the
+     * service of the EtherChannel, the agent does not report them as own adapters.
+     *
+     * @return array|false
+     */
+    private function getServiceStructsForNetworkAdapters() {
+        $adapters = $this->agentResponse['network_adapters'];
+        if (!is_array($adapters) || isset($adapters['error'])) {
+            return false;
+        }
+
+        $values = [];
+        foreach ($adapters as $adapter) {
+            if (!isset($adapter['name']) || ($adapter['state'] ?? '') !== 'Available') {
+                continue;
+            }
+            $values[$this->getExactRegex($adapter['name'])] = $this->getNetworkAdapterName($adapter);
+        }
+        return $this->getServiceStructsForValues('network_adapters', 0, $values, 'Network adapter: %s');
+    }
+
+    /**
+     * @param array $adapter
+     * @return string e.g. "ent4 (EtherChannel)"
+     */
+    private function getNetworkAdapterName(array $adapter) {
+        if (isset($adapter['etherchannel'])) {
+            return sprintf('%s (EtherChannel)', $adapter['name']);
+        }
+        return $adapter['name'];
+    }
+
+    /**
+     * Regular expression which matches exactly the given name, e.g. ^rootvg$
+     *
+     * @param string $name
+     * @return string
+     */
+    private function getExactRegex(string $name) {
+        return '^' . preg_quote($name, '#') . '$';
     }
 }

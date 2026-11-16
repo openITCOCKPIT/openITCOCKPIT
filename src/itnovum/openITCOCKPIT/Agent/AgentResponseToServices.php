@@ -473,7 +473,10 @@ class AgentResponseToServices {
                 case 'errpt':
                 case 'multipath':
                 case 'paging_spaces':
-                    // AIX: one service for the LPAR, the error log, all multipath disks and all paging spaces
+                case 'powerha':
+                case 'sendmail':
+                    // AIX: one service for the LPAR, the error log, all multipath disks, all paging spaces, the PowerHA
+                    // cluster and the sendmail mail queue
                     $aixServices = $this->getServiceStructForAixCheck($mainKey);
                     if ($aixServices) {
                         $services[$mainKey] = $aixServices;
@@ -1719,7 +1722,7 @@ class AgentResponseToServices {
     }
 
     /**
-     * AIX checks with one service: LPAR, error log, multipath disks and paging spaces
+     * AIX checks with one service: LPAR, error log, multipath disks, paging spaces, PowerHA cluster and sendmail queue
      *
      * @param string $key Key of the agent response and name of the agent check
      * @return array|false
@@ -1729,7 +1732,9 @@ class AgentResponseToServices {
             'lpar'          => 'LPAR processor usage',
             'errpt'         => 'AIX error log',
             'multipath'     => 'Multipath',
-            'paging_spaces' => 'Paging spaces'
+            'paging_spaces' => 'Paging spaces',
+            'powerha'       => 'PowerHA cluster',
+            'sendmail'      => 'Sendmail queue'
         ];
 
         $items = $this->agentResponse[$key];

@@ -724,6 +724,16 @@ class Agent extends Importer {
                 'plugin_name'        => 'PagingSpaces',
                 'servicetemplate_id' => '58b67b01-726c-4172-8e2d-bc88f24880b5'
             ],
+            [
+                'name'               => 'powerha',
+                'plugin_name'        => 'PowerHA',
+                'servicetemplate_id' => '9d803140-98d4-4795-9e67-b9b1283b6d1c'
+            ],
+            [
+                'name'               => 'sendmail',
+                'plugin_name'        => 'SendmailQueue',
+                'servicetemplate_id' => '8fc33455-cfd2-4c79-8c9b-a647011e67dd'
+            ],
         ];
         return $data;
     }
@@ -3503,6 +3513,82 @@ class Agent extends Importer {
                     ]
                 ]
             ],
+            [
+                'name'             => 'check_oitc_agent_powerha',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => '472a8a46-488c-42ec-8dfd-c6b098e6ab1d',
+                'description'      => "Checks the cluster PowerHA SystemMirror from the view of the AIX node of the agent (requires root).\n" .
+                    "Critical: an event script failed (ST_RP_FAILED), resource groups in ERROR or not online on any node, applications which are not online (e.g. MONITOR FAILED), Cluster-Aware AIX or remote communications of a node DOWN and the repository disk DOWN.\n" .
+                    "Warning: the cluster manager processes an event, resource groups which are ACQUIRING or RELEASING, concurrent resource groups which are not online on all nodes, remote nodes whose cluster services are not NORMAL, a suspended application monitor and the backup repository disk DOWN.\n" .
+                    "Resource groups: regular expression (case insensitive), empty for all resource groups.\n" .
+                    "State if not on home node: state if a resource group is not online on its home node, e.g. after a fallover.\n" .
+                    "State of unsynchronized changes: state if the cluster configuration was changed but not synchronized to all nodes.\n" .
+                    "State if not running: state if the cluster services of the node are not running (ST_INIT), e.g. ok for a standby node whose cluster services are stopped on purpose.\n" .
+                    "State if not monitored: state if an application has no application monitor (ONLINE NOT MONITORED), PowerHA does not notice if such an application stops.\n" .
+                    "States: ok, warning, critical or unknown.",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'Resource groups (regex)'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'State if not on home node'
+                    ],
+                    [
+                        'name'       => '$ARG3$',
+                        'human_name' => 'State of unsynchronized changes'
+                    ],
+                    [
+                        'name'       => '$ARG4$',
+                        'human_name' => 'State if not running'
+                    ],
+                    [
+                        'name'       => '$ARG5$',
+                        'human_name' => 'State if not monitored'
+                    ]
+                ]
+            ],
+            [
+                'name'             => 'check_oitc_agent_sendmail_queue',
+                'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
+                'command_type'     => CHECK_COMMAND,
+                'human_args'       => null,
+                'uuid'             => '856a1d23-b527-436c-a7cb-f9e520c2d4aa',
+                'description'      => "Checks the mail queue of sendmail (AIX, mailq requires root). Deferred messages had a failed delivery attempt.\n" .
+                    "Warning and Critical: Number of messages.\n" .
+                    "Warning and Critical deferred: Number of deferred messages (optional).\n" .
+                    "Warning and Critical age: Age of the oldest message (optional), e.g. 1h. Durations can be written with units: s, m, h, d, w (e.g. 25h or 7d).\n" .
+                    "Thresholds use the range format of the monitoring plugins: https://www.monitoring-plugins.org/doc/guidelines.html#THRESHOLDFORMAT",
+                'commandarguments' => [
+                    [
+                        'name'       => '$ARG1$',
+                        'human_name' => 'Warning messages'
+                    ],
+                    [
+                        'name'       => '$ARG2$',
+                        'human_name' => 'Critical messages'
+                    ],
+                    [
+                        'name'       => '$ARG3$',
+                        'human_name' => 'Warning deferred'
+                    ],
+                    [
+                        'name'       => '$ARG4$',
+                        'human_name' => 'Critical deferred'
+                    ],
+                    [
+                        'name'       => '$ARG5$',
+                        'human_name' => 'Warning age'
+                    ],
+                    [
+                        'name'       => '$ARG6$',
+                        'human_name' => 'Critical age'
+                    ]
+                ]
+            ],
         ];
         return $data;
     }
@@ -5943,6 +6029,8 @@ class Agent extends Importer {
             $this->getAgentServicetemplate('6df13998-56b0-4582-ab14-34926f7280f0', 'OITC_AGENT_MULTIPATH', 'Multipath', '32883591-8087-4322-8922-05e1058c0b4d', ['', '']),
             $this->getAgentServicetemplate('1b66126d-9283-4297-bedc-a4f35adec835', 'OITC_AGENT_NETWORK_ADAPTERS', 'Network adapter', 'de8ce405-4386-4f8b-ad22-0c8fedd29a35', ['', 'warning']),
             $this->getAgentServicetemplate('58b67b01-726c-4172-8e2d-bc88f24880b5', 'OITC_AGENT_PAGING_SPACES', 'Paging spaces', '512b10ef-7dd2-456a-a264-0162d42640af', ['', '80', '90', 'warning']),
+            $this->getAgentServicetemplate('9d803140-98d4-4795-9e67-b9b1283b6d1c', 'OITC_AGENT_POWERHA', 'PowerHA cluster', '472a8a46-488c-42ec-8dfd-c6b098e6ab1d', ['', 'warning', 'warning', 'critical', 'ok']),
+            $this->getAgentServicetemplate('8fc33455-cfd2-4c79-8c9b-a647011e67dd', 'OITC_AGENT_SENDMAIL_QUEUE', 'Sendmail queue', '856a1d23-b527-436c-a7cb-f9e520c2d4aa', ['50', '100', '', '', '', '']),
         ];
         return $data;
     }

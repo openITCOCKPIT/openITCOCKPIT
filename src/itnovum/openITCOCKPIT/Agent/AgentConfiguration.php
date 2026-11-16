@@ -127,6 +127,8 @@ class AgentConfiguration {
             'multipath'                          => true, // AIX paths of multipath disks (MPIO, lspath)
             'networkadapters'                    => true, // AIX Ethernet adapters, EtherChannel and Network Interface Backup (entstat -d)
             'pagingspaces'                       => true, // AIX paging spaces (lsps -a)
+            'powerha'                            => true, // AIX PowerHA SystemMirror cluster (requires root)
+            'sendmail'                           => true, // AIX sendmail mail queue (mailq, requires root)
         ],
         'int'    => [
             'bind_port'                         => 3333, // Bind port of the Agents web server

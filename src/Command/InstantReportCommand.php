@@ -36,13 +36,16 @@ namespace App\Command;
 use App\itnovum\openITCOCKPIT\Core\Permissions\MyRightsFactory;
 use App\itnovum\openITCOCKPIT\Core\Reports\InstantreportCreator;
 use App\Model\Entity\Instantreport;
+use App\Model\Entity\ReportMailLog;
 use App\Model\Entity\User;
 use App\Model\Table\InstantreportsTable;
+use App\Model\Table\ReportMailLogTable;
 use App\Model\Table\SystemsettingsTable;
 use Cake\Command\Command;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
+use Cake\Log\Log;
 use Cake\Mailer\Mailer;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\Interfaces\CronjobInterface;
@@ -88,6 +91,10 @@ class InstantReportCommand extends Command implements CronjobInterface {
 
         /** @var InstantreportsTable $InstantreportsTable */
         $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
+
+        /** @var ReportMailLogTable $ReportMailLogTable */
+        $ReportMailLogTable = TableRegistry::getTableLocator()->get('ReportMailLog');
+
         $instanreports = $InstantreportsTable->find()
             ->contain('Users')
             ->where([
@@ -130,71 +137,121 @@ class InstantReportCommand extends Command implements CronjobInterface {
                 $instantReportCronPdfName = preg_replace('[^0-9a-zA-Z_\s]', '_', $instantreportName) . '.pdf';
                 $subject = $sendIntervals[$instantreport->get('send_interval')] . ' Instant Report ' . $instantreportName;
 
+                $sentEmails = [];
+                $failedEmails = [];
+
+                // Every user gets an own email, because the PDF is created with the permissions of the user.
+                // Errors are handled per user, so that one failed email does not prevent the other users from receiving the report.
                 foreach ($instantreport->get('users') as $user) {
                     /** @var User $user */
-                    if (!$UserPermissionsCache->has($user->get('id'))) {
-                        $UserPermissionsCache->set(
-                            $user->get('id'),
-                            MyRightsFactory::getUserPermissions($user->get('id'), $user->get('usergroup_id'))
+
+                    $ReportMailLogEntity = $ReportMailLogTable->newEntity([
+                        'report_type'   => ReportMailLog::REPORT_TYPE_INSTANTREPORT,
+                        'report_id'     => $instantreportId,
+                        'report_name'   => $instantreportName,
+                        'container_id'  => $instantreport->get('container_id'),
+                        'recipients'    => [
+                            [
+                                'user_id' => $user->get('id'),
+                                'name'    => trim($user->get('firstname') . ' ' . $user->get('lastname')),
+                                'email'   => $user->get('email')
+                            ]
+                        ],
+                        'subject'       => $subject,
+                        'attachments'   => [$instantReportCronPdfName],
+                        'has_been_sent' => ReportMailLog::NOT_SENT,
+                        'report_start'  => (new \DateTime())->setTimestamp($fromDate),
+                        'report_end'    => (new \DateTime())->setTimestamp($toDate),
+                        'send_time'     => new \DateTime()
+                    ]);
+
+                    try {
+                        if (!$UserPermissionsCache->has($user->get('id'))) {
+                            $UserPermissionsCache->set(
+                                $user->get('id'),
+                                MyRightsFactory::getUserPermissions($user->get('id'), $user->get('usergroup_id'))
+                            );
+                        }
+
+                        $userPermissions = $UserPermissionsCache->get($user->get('id'));
+
+                        $InstantreportCreator = new InstantreportCreator(
+                            $UserTime,
+                            $userPermissions['MY_RIGHTS'],
+                            $userPermissions['hasRootPrivileges']
                         );
+                        $instantReport = $InstantreportCreator->createReport(
+                            $instantreportId,
+                            $fromDate,
+                            $toDate
+                        );
+
+                        $PdfRenderer = new PdfRenderer();
+                        $PdfRenderer->templatePath('Instantreports/pdf');
+                        $PdfRenderer->template('create_pdf_report', 'default');
+                        $PdfRenderer->viewVars([
+                            'instantReport' => $instantReport,
+                            'fromDate'      => $UserTime->format($fromDate),
+                            'toDate'        => $UserTime->format($toDate),
+                            'UserTime'      => $UserTime
+                        ]);
+                        // Get the PDF string returned
+                        $pdf = $PdfRenderer->output();
+
+                        $Mailer = new Mailer();
+                        $Mailer->setSubject($subject);
+                        $Mailer->setFrom($_systemsettings['MONITORING']['MONITORING.FROM_ADDRESS'], $_systemsettings['MONITORING']['MONITORING.FROM_NAME']);
+                        $Mailer->setEmailFormat('both');
+                        $Mailer->setTo($user->get('email'));
+                        $Mailer->setAttachments([
+                            'logo.png'                => [
+                                'file'      => $Logo->getSmallLogoPdfPath(),
+                                'mimetype'  => 'image/png',
+                                'contentId' => '100'
+                            ],
+                            $instantReportCronPdfName => [
+                                'data'     => $pdf,
+                                'mimetype' => 'application/pdf'
+                            ]
+                        ]);
+                        $Mailer->viewBuilder()
+                            ->setTemplate('instantreport_mail')
+                            ->setVar('instantReportName', $instantreportName);
+
+                        $ReportMailLogEntity->set('send_time', new \DateTime());
+                        $Mailer->deliver();
+
+                        $ReportMailLogEntity->set('has_been_sent', ReportMailLog::SENT);
+                        // "Sent" only means accepted by the next mail system - store what this actually was
+                        $ReportMailLogEntity->set('message', $ReportMailLogTable->getDeliveryInfo($Mailer));
+                        $sentEmails[] = $user->get('email');
+                    } catch (\Throwable $ex) {
+                        $ReportMailLogEntity->set('has_been_sent', ReportMailLog::NOT_SENT);
+                        $ReportMailLogEntity->set('message', $ex->getMessage());
+                        $failedEmails[] = $user->get('email');
+
+                        $io->out('<red> ' . __('An error occured while sending instant report mail to "{0}": ', $user->get('email')) . $ex->getMessage() . '</red>');
                     }
 
-                    $userPermissions = $UserPermissionsCache->get($user->get('id'));
-
-                    $InstantreportCreator = new InstantreportCreator(
-                        $UserTime,
-                        $userPermissions['MY_RIGHTS'],
-                        $userPermissions['hasRootPrivileges']
-                    );
-                    $instantReport = $InstantreportCreator->createReport(
-                        $instantreportId,
-                        $fromDate,
-                        $toDate
-                    );
-
-                    $PdfRenderer = new PdfRenderer();
-                    $PdfRenderer->templatePath('Instantreports/pdf');
-                    $PdfRenderer->template('create_pdf_report', 'default');
-                    $PdfRenderer->viewVars([
-                        'instantReport' => $instantReport,
-                        'fromDate'      => $UserTime->format($fromDate),
-                        'toDate'        => $UserTime->format($toDate),
-                        'UserTime'      => $UserTime
-                    ]);
-                    // Get the PDF string returned
-                    $pdf = $PdfRenderer->output();
-
-                    //$file = fopen('/tmp/test.pdf', 'w+');
-                    //fwrite($file, $pdf);
-                    //fclose($file);
-
-                    $Mailer = new Mailer();
-                    $Mailer->setSubject($subject);
-                    $Mailer->setFrom($_systemsettings['MONITORING']['MONITORING.FROM_ADDRESS'], $_systemsettings['MONITORING']['MONITORING.FROM_NAME']);
-                    $Mailer->setEmailFormat('both');
-                    $Mailer->setTo($user->get('email'));
-                    $Mailer->setAttachments([
-                        'logo.png'                => [
-                            'file'      => $Logo->getSmallLogoPdfPath(),
-                            'mimetype'  => 'image/png',
-                            'contentId' => '100'
-                        ],
-                        $instantReportCronPdfName => [
-                            'data'     => $pdf,
-                            'mimetype' => 'application/pdf'
-                        ]
-                    ]);
-                    $Mailer->viewBuilder()
-                        ->setTemplate('instantreport_mail')
-                        ->setVar('instantReportName', $instantreportName);
-
-                    $Mailer->deliver();
+                    if (!$ReportMailLogTable->save($ReportMailLogEntity)) {
+                        Log::error('ReportMailLog entity could not be saved! ' . print_r($ReportMailLogEntity->getErrors(), true));
+                    }
                 }
 
-                $instantreport->set('last_send_date', date('Y-m-d H:i:s'));
-                $InstantreportsTable->save($instantreport);
+                // Only set last_send_date if at least one email was sent successfully.
+                // If all emails failed (e.g. the mail server is not reachable), the report will be sent again on the next run.
+                // Failed emails of a partially sent report are visible in the report mail log and will not be resent,
+                // to avoid that users who already received the report get it twice.
+                if (!empty($sentEmails)) {
+                    $toSend = true;
+                    $instantreport->set('last_send_date', date('Y-m-d H:i:s'));
+                    $InstantreportsTable->save($instantreport);
 
-                $io->success('Report "' . $instantreport->get('id') . '" sent to mail address "' . implode(', ', $emailsToSend) . '"');
+                    $io->success('Report "' . $instantreport->get('id') . '" sent to mail address "' . implode(', ', $sentEmails) . '"');
+                }
+                if (!empty($failedEmails)) {
+                    $io->out('<red> ' . __('Report "{0}" could not be sent to mail address "{1}"', $instantreport->get('id'), implode(', ', $failedEmails)) . '</red>');
+                }
 
             } catch (\Exception $ex) {
                 $io->out('<red> ' . __('An error occured while sending instant report mail: ') . $ex->getMessage() . '</red>');

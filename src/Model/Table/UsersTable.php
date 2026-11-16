@@ -757,6 +757,29 @@ class UsersTable extends Table {
     }
 
     /**
+     * Returns the ids of all given users that (still) exist in the database.
+     *
+     * @param int[] $userIds
+     * @return int[]
+     */
+    public function getExistingUserIds(array $userIds): array {
+        $userIds = array_values(array_unique(array_map('intval', $userIds)));
+        if (empty($userIds)) {
+            return [];
+        }
+
+        $result = $this->find()
+            ->select(['Users.id'])
+            ->where(['Users.id IN' => $userIds])
+            ->disableHydration()
+            ->all()
+            ->extract('id')
+            ->toList();
+
+        return array_map('intval', $result);
+    }
+
+    /**
      * @return string
      */
     public function generatePassword() {

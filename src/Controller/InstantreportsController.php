@@ -37,9 +37,12 @@ namespace App\Controller;
 use App\Form\InstantreportForm;
 use App\itnovum\openITCOCKPIT\Core\Reports\InstantreportCreator;
 use App\Lib\Exceptions\MissingDbBackendException;
+use App\Model\Entity\ReportMailLog;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\InstantreportsTable;
+use App\Model\Table\ReportMailLogTable;
 use App\Model\Table\TimeperiodsTable;
+use App\Model\Table\UsersTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
@@ -52,6 +55,7 @@ use itnovum\openITCOCKPIT\Core\Views\StatehistoryService;
 use itnovum\openITCOCKPIT\Core\Views\UserTime;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\InstantreportFilter;
+use itnovum\openITCOCKPIT\Filter\ReportMailLogFilter;
 use Statusengine2Module\Model\Entity\DowntimeHost;
 
 
@@ -293,6 +297,95 @@ class InstantreportsController extends AppController {
         $this->set('success', false);
         $this->viewBuilder()->setOption('serialize', ['success']);
         return;
+    }
+
+    /**
+     * Returns the mail log (sent and failed emails) of the given instant report.
+     *
+     * @param int|null $id
+     * @return void
+     */
+    public function mailLog($id = null) {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var InstantreportsTable $InstantreportsTable */
+        $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
+
+        /** @var ReportMailLogTable $ReportMailLogTable */
+        $ReportMailLogTable = TableRegistry::getTableLocator()->get('ReportMailLog');
+
+        if (!$InstantreportsTable->existsById($id)) {
+            throw new NotFoundException(__('Instant report not found'));
+        }
+
+        $instantreport = $InstantreportsTable->getInstantreportById($id);
+        if (!$this->allowedByContainerId($instantreport['Instantreport']['container_id'], false)) {
+            $this->render403();
+            return;
+        }
+
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
+        $ReportMailLogFilter = new ReportMailLogFilter($this->request, $UserTime);
+        $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $ReportMailLogFilter->getPage());
+
+        $mailLog = $ReportMailLogTable->getMailLogByReport(
+            ReportMailLog::REPORT_TYPE_INSTANTREPORT,
+            (int)$id,
+            $ReportMailLogFilter,
+            $PaginateOMat,
+            $MY_RIGHTS
+        );
+
+        // Check with one query which of the recipient users still exist, so the frontend
+        // only links users that have not been deleted in the meantime.
+        $recipientUserIds = [];
+        foreach ($mailLog as $logEntry) {
+            foreach ((array)$logEntry['recipients'] as $recipient) {
+                if (!empty($recipient['user_id'])) {
+                    $recipientUserIds[(int)$recipient['user_id']] = (int)$recipient['user_id'];
+                }
+            }
+        }
+        /** @var UsersTable $UsersTable */
+        $UsersTable = TableRegistry::getTableLocator()->get('Users');
+        $existingUserIds = $UsersTable->getExistingUserIds($recipientUserIds);
+
+        foreach ($mailLog as $index => $logEntry) {
+            $recipients = [];
+            foreach ((array)$logEntry['recipients'] as $recipient) {
+                $recipient['user_exists'] = !empty($recipient['user_id']) && in_array((int)$recipient['user_id'], $existingUserIds, true);
+                $recipients[] = $recipient;
+            }
+            $mailLog[$index]['recipients'] = $recipients;
+
+            $mailLog[$index]['send_time'] = $UserTime->format($logEntry['send_time']);
+            $mailLog[$index]['created'] = $UserTime->format($logEntry['created']);
+            $mailLog[$index]['report_start'] = $logEntry['report_start'] !== null ? $UserTime->format($logEntry['report_start']) : null;
+            $mailLog[$index]['report_end'] = $logEntry['report_end'] !== null ? $UserTime->format($logEntry['report_end']) : null;
+            $mailLog[$index]['has_been_sent'] = (int)$logEntry['has_been_sent'] === ReportMailLog::SENT;
+        }
+
+        $this->set('instantreport', [
+            'id'           => $instantreport['Instantreport']['id'],
+            'name'         => $instantreport['Instantreport']['name'],
+            'container_id' => $instantreport['Instantreport']['container_id'],
+        ]);
+        $this->set('mailLog', $mailLog);
+
+        $toJson = ['instantreport', 'mailLog', 'paging'];
+        if ($this->isScrollRequest()) {
+            $toJson = ['instantreport', 'mailLog', 'scroll'];
+        }
+        $this->viewBuilder()->setOption('serialize', $toJson);
     }
 
     /**

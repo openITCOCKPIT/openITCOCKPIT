@@ -121,6 +121,12 @@ class AgentConfiguration {
             'ipmi'                               => false, // IPMI monitoring via /dev/ipmi0 on Linux or IPMI driver on Windows - no ipmitool required
             'gpus'                               => true, // GPU monitoring: NVIDIA (nvidia-smi), AMD and Intel (Linux), all GPUs on Windows
             'systemhealth'                       => true, // Linux system health (OOM kills, file descriptors)
+            'lpar'                               => true, // AIX LPAR: consumed physical processors and entitlement
+            'srcservices'                        => true, // AIX subsystems of the System Resource Controller (lssrc -a)
+            'errpt'                              => true, // AIX error log (errpt)
+            'multipath'                          => true, // AIX paths of multipath disks (MPIO, lspath)
+            'networkadapters'                    => true, // AIX Ethernet adapters, EtherChannel and Network Interface Backup (entstat -d)
+            'pagingspaces'                       => true, // AIX paging spaces (lsps -a)
         ],
         'int'    => [
             'bind_port'                         => 3333, // Bind port of the Agents web server
@@ -131,6 +137,7 @@ class AgentConfiguration {
             'ipmi_interval'                     => 60, // Interval in seconds how often the Agent should execute IPMI checks
             'ipmi_sel_window'                   => 86400, //SEL entries with warnings or errors are reported for this time in seconds (default 24 hours)
             'wineventlog_max_records'           => 1000, // Maximum number of records to fetch from the Windows Event Log (default 1000, EvtApi only)
+            'errpt_window'                      => 86400, // AIX error log entries are reported for this time in seconds (default 24 hours)
         ],
         'array'  => [
             'win_eventlog_types' => [  // Types that should be monitored in the Windows Event log

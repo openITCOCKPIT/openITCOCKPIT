@@ -28,12 +28,15 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use App\Model\Entity\ReportMailLog;
 use Cake\Mailer\Mailer;
 use Cake\Mailer\Transport\MailTransport;
 use Cake\Mailer\Transport\SmtpTransport;
 use Cake\ORM\Behavior\TimestampBehavior;
 use Cake\ORM\Table;
+use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
+use itnovum\openITCOCKPIT\Core\Views\UserTime;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\ReportMailLogFilter;
 
@@ -275,5 +278,48 @@ class ReportMailLogTable extends Table {
             return $this->scrollCake4($query, $PaginateOMat->getHandler());
         }
         return $this->paginateCake4($query, $PaginateOMat->getHandler());
+    }
+
+    /**
+     * Prepares the result of getMailLogByReport() for the API:
+     * - adds "user_exists" to every recipient (checked with one query), so the frontend
+     *   only links users that have not been deleted in the meantime
+     * - formats all dates in the time zone of the user
+     * - casts has_been_sent to bool
+     *
+     * @param array $mailLog
+     * @param UserTime $UserTime
+     * @return array
+     */
+    public function formatMailLogForApi(array $mailLog, UserTime $UserTime): array {
+        $recipientUserIds = [];
+        foreach ($mailLog as $logEntry) {
+            foreach ((array)$logEntry['recipients'] as $recipient) {
+                if (!empty($recipient['user_id'])) {
+                    $recipientUserIds[(int)$recipient['user_id']] = (int)$recipient['user_id'];
+                }
+            }
+        }
+
+        /** @var UsersTable $UsersTable */
+        $UsersTable = TableRegistry::getTableLocator()->get('Users');
+        $existingUserIds = $UsersTable->getExistingUserIds($recipientUserIds);
+
+        foreach ($mailLog as $index => $logEntry) {
+            $recipients = [];
+            foreach ((array)$logEntry['recipients'] as $recipient) {
+                $recipient['user_exists'] = !empty($recipient['user_id']) && in_array((int)$recipient['user_id'], $existingUserIds, true);
+                $recipients[] = $recipient;
+            }
+            $mailLog[$index]['recipients'] = $recipients;
+
+            $mailLog[$index]['send_time'] = $UserTime->format($logEntry['send_time']);
+            $mailLog[$index]['created'] = $UserTime->format($logEntry['created']);
+            $mailLog[$index]['report_start'] = $logEntry['report_start'] !== null ? $UserTime->format($logEntry['report_start']) : null;
+            $mailLog[$index]['report_end'] = $logEntry['report_end'] !== null ? $UserTime->format($logEntry['report_end']) : null;
+            $mailLog[$index]['has_been_sent'] = (int)$logEntry['has_been_sent'] === ReportMailLog::SENT;
+        }
+
+        return $mailLog;
     }
 }

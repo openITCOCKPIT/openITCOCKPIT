@@ -42,7 +42,6 @@ use App\Model\Table\ContainersTable;
 use App\Model\Table\InstantreportsTable;
 use App\Model\Table\ReportMailLogTable;
 use App\Model\Table\TimeperiodsTable;
-use App\Model\Table\UsersTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
@@ -344,35 +343,7 @@ class InstantreportsController extends AppController {
             $PaginateOMat,
             $MY_RIGHTS
         );
-
-        // Check with one query which of the recipient users still exist, so the frontend
-        // only links users that have not been deleted in the meantime.
-        $recipientUserIds = [];
-        foreach ($mailLog as $logEntry) {
-            foreach ((array)$logEntry['recipients'] as $recipient) {
-                if (!empty($recipient['user_id'])) {
-                    $recipientUserIds[(int)$recipient['user_id']] = (int)$recipient['user_id'];
-                }
-            }
-        }
-        /** @var UsersTable $UsersTable */
-        $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        $existingUserIds = $UsersTable->getExistingUserIds($recipientUserIds);
-
-        foreach ($mailLog as $index => $logEntry) {
-            $recipients = [];
-            foreach ((array)$logEntry['recipients'] as $recipient) {
-                $recipient['user_exists'] = !empty($recipient['user_id']) && in_array((int)$recipient['user_id'], $existingUserIds, true);
-                $recipients[] = $recipient;
-            }
-            $mailLog[$index]['recipients'] = $recipients;
-
-            $mailLog[$index]['send_time'] = $UserTime->format($logEntry['send_time']);
-            $mailLog[$index]['created'] = $UserTime->format($logEntry['created']);
-            $mailLog[$index]['report_start'] = $logEntry['report_start'] !== null ? $UserTime->format($logEntry['report_start']) : null;
-            $mailLog[$index]['report_end'] = $logEntry['report_end'] !== null ? $UserTime->format($logEntry['report_end']) : null;
-            $mailLog[$index]['has_been_sent'] = (int)$logEntry['has_been_sent'] === ReportMailLog::SENT;
-        }
+        $mailLog = $ReportMailLogTable->formatMailLogForApi($mailLog, $UserTime);
 
         $this->set('instantreport', [
             'id'           => $instantreport['Instantreport']['id'],

@@ -608,7 +608,9 @@ class AgentResponseToServices {
             return false;
         }
         $services = [];
-        if (isset($this->agentResponse['disk_io'])) {
+        // The agent reports an error instead of the disks if the statistics are not available,
+        // e.g. on AIX if the disk statistics are disabled (sys0 iostat=false)
+        if (isset($this->agentResponse['disk_io']) && is_array($this->agentResponse['disk_io']) && !isset($this->agentResponse['disk_io']['error'])) {
             $servicetemplatecommandargumentvalues = $agentcheck['servicetemplate']['servicetemplatecommandargumentvalues'];
             foreach ($this->agentResponse['disk_io'] as $deviceName => $device) {
                 if (!$this->doesServiceAlreadyExists($agentcheck['servicetemplate_id'], [2 => $this->shortCommandargumentValue($deviceName)])) {

@@ -3337,7 +3337,7 @@ class Agent extends Importer {
                 ]
             ],
             [
-                'name'             => 'check_oitc_agent_lpar',
+                'name'             => 'check_oitc_agent_aix_lpar',
                 'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
                 'command_type'     => CHECK_COMMAND,
                 'human_args'       => null,
@@ -3366,7 +3366,7 @@ class Agent extends Importer {
                 ]
             ],
             [
-                'name'             => 'check_oitc_agent_src_service',
+                'name'             => 'check_oitc_agent_aix_src_service',
                 'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
                 'command_type'     => CHECK_COMMAND,
                 'human_args'       => null,
@@ -3386,7 +3386,7 @@ class Agent extends Importer {
                 ]
             ],
             [
-                'name'             => 'check_oitc_agent_errpt',
+                'name'             => 'check_oitc_agent_aix_errpt',
                 'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
                 'command_type'     => CHECK_COMMAND,
                 'human_args'       => null,
@@ -3443,7 +3443,7 @@ class Agent extends Importer {
                 ]
             ],
             [
-                'name'             => 'check_oitc_agent_multipath',
+                'name'             => 'check_oitc_agent_aix_multipath',
                 'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
                 'command_type'     => CHECK_COMMAND,
                 'human_args'       => null,
@@ -3463,7 +3463,7 @@ class Agent extends Importer {
                 ]
             ],
             [
-                'name'             => 'check_oitc_agent_network_adapters',
+                'name'             => 'check_oitc_agent_aix_network_adapters',
                 'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
                 'command_type'     => CHECK_COMMAND,
                 'human_args'       => null,
@@ -3485,7 +3485,7 @@ class Agent extends Importer {
                 ]
             ],
             [
-                'name'             => 'check_oitc_agent_paging_spaces',
+                'name'             => 'check_oitc_agent_aix_paging_spaces',
                 'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
                 'command_type'     => CHECK_COMMAND,
                 'human_args'       => null,
@@ -3514,7 +3514,7 @@ class Agent extends Importer {
                 ]
             ],
             [
-                'name'             => 'check_oitc_agent_powerha',
+                'name'             => 'check_oitc_agent_aix_powerha',
                 'command_line'     => '$USER1$/check_dummy 3 "No data received from agent"',
                 'command_type'     => CHECK_COMMAND,
                 'human_args'       => null,
@@ -6022,14 +6022,14 @@ class Agent extends Importer {
 
             // Agent 3.8: filesystems which do not respond and AIX
             $this->getAgentServicetemplate('6a4730ce-81ba-4346-baa1-efa5bcd6652a', 'OITC_AGENT_MOUNT_HANGING', 'Not responding filesystems', 'cb8e94c1-3e68-4386-be08-b1c664351d9f', ['critical', '']),
-            $this->getAgentServicetemplate('69f1739f-1beb-46ac-a956-44f1a404373d', 'OITC_AGENT_LPAR', 'LPAR processor usage', 'efc81ca0-be82-492b-b67b-4ccd68f52a9c', ['80', '90', '', '']),
-            $this->getAgentServicetemplate('b209aca9-ef4d-4460-967a-f375094cde81', 'OITC_AGENT_SRC_SERVICE', 'SRC subsystem', 'c966d86c-eb09-4381-86f3-4636ef8abed5', ['', '1']),
-            $this->getAgentServicetemplate('e54a0383-e770-4bc6-a3e7-2479bb7b993b', 'OITC_AGENT_ERRPT', 'AIX error log', 'e06d29c7-a360-4558-a844-9e28289152b5', ['', 'critical', 'warning', 'ok']),
+            $this->getAgentServicetemplate('69f1739f-1beb-46ac-a956-44f1a404373d', 'OITC_AGENT_AIX_LPAR', 'LPAR processor usage', 'efc81ca0-be82-492b-b67b-4ccd68f52a9c', ['80', '90', '', '']),
+            $this->getAgentServicetemplate('b209aca9-ef4d-4460-967a-f375094cde81', 'OITC_AGENT_AIX_SRC_SERVICE', 'SRC subsystem', 'c966d86c-eb09-4381-86f3-4636ef8abed5', ['', '1']),
+            $this->getAgentServicetemplate('e54a0383-e770-4bc6-a3e7-2479bb7b993b', 'OITC_AGENT_AIX_ERRPT', 'AIX error log', 'e06d29c7-a360-4558-a844-9e28289152b5', ['', 'critical', 'warning', 'ok']),
             $this->getAgentServicetemplate('dab4ae54-56b8-41c1-b6cd-a8bd95dfae89', 'OITC_AGENT_VOLUME_GROUPS', 'Volume group', 'a45007a4-15e8-46b1-8f9b-a025d49bfbf2', ['', '', '', 'ok']),
-            $this->getAgentServicetemplate('6df13998-56b0-4582-ab14-34926f7280f0', 'OITC_AGENT_MULTIPATH', 'Multipath', '32883591-8087-4322-8922-05e1058c0b4d', ['', '']),
-            $this->getAgentServicetemplate('1b66126d-9283-4297-bedc-a4f35adec835', 'OITC_AGENT_NETWORK_ADAPTERS', 'Network adapter', 'de8ce405-4386-4f8b-ad22-0c8fedd29a35', ['', 'warning']),
-            $this->getAgentServicetemplate('58b67b01-726c-4172-8e2d-bc88f24880b5', 'OITC_AGENT_PAGING_SPACES', 'Paging spaces', '512b10ef-7dd2-456a-a264-0162d42640af', ['', '80', '90', 'warning']),
-            $this->getAgentServicetemplate('9d803140-98d4-4795-9e67-b9b1283b6d1c', 'OITC_AGENT_POWERHA', 'PowerHA cluster', '472a8a46-488c-42ec-8dfd-c6b098e6ab1d', ['', 'warning', 'warning', 'critical', 'ok']),
+            $this->getAgentServicetemplate('6df13998-56b0-4582-ab14-34926f7280f0', 'OITC_AGENT_AIX_MULTIPATH', 'Multipath', '32883591-8087-4322-8922-05e1058c0b4d', ['', '']),
+            $this->getAgentServicetemplate('1b66126d-9283-4297-bedc-a4f35adec835', 'OITC_AGENT_AIX_NETWORK_ADAPTERS', 'Network adapter', 'de8ce405-4386-4f8b-ad22-0c8fedd29a35', ['', 'warning']),
+            $this->getAgentServicetemplate('58b67b01-726c-4172-8e2d-bc88f24880b5', 'OITC_AGENT_AIX_PAGING_SPACES', 'Paging spaces', '512b10ef-7dd2-456a-a264-0162d42640af', ['', '80', '90', 'warning']),
+            $this->getAgentServicetemplate('9d803140-98d4-4795-9e67-b9b1283b6d1c', 'OITC_AGENT_AIX_POWERHA', 'PowerHA cluster', '472a8a46-488c-42ec-8dfd-c6b098e6ab1d', ['', 'warning', 'warning', 'critical', 'ok']),
             $this->getAgentServicetemplate('8fc33455-cfd2-4c79-8c9b-a647011e67dd', 'OITC_AGENT_SENDMAIL_QUEUE', 'Sendmail queue', '856a1d23-b527-436c-a7cb-f9e520c2d4aa', ['50', '100', '', '', '', '']),
         ];
         return $data;

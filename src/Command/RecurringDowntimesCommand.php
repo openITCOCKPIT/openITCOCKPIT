@@ -50,6 +50,8 @@ use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use DistributeModule\Model\Table\SatellitesTable;
 use itnovum\openITCOCKPIT\Core\Interfaces\CronjobInterface;
+use Statusengine3Module\Model\Table\StatusengineHostScheduleddowntimesTable;
+use Statusengine3Module\Model\Table\StatusengineServiceScheduleddowntimesTable;
 
 /**
  * RecurringDowntimes command.
@@ -62,6 +64,8 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
     private HostsTable $hostsTable;
     private SystemdowntimesTable $systemdowntimesTable;
     private ExternalCommands $externalCommands;
+    private StatusengineHostScheduleddowntimesTable $statusengineHostScheduleddowntimesTable;
+    private StatusengineServiceScheduleddowntimesTable $statusengineServiceScheduleddowntimesTable;
 
     /**
      * Hook method for defining this command's option parser.
@@ -93,6 +97,8 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
             $this->hostsTable = TableRegistry::getTableLocator()->get('Hosts');
             $this->servicesTable = TableRegistry::getTableLocator()->get('Services');
             $this->hostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
+            $this->statusengineHostScheduleddowntimesTable = TableRegistry::getTableLocator()->get('StatusengineHostScheduleddowntimes');
+            $this->statusengineServiceScheduleddowntimesTable = TableRegistry::getTableLocator()->get('StatusengineServiceScheduleddowntimes');
 
             $this->externalCommands = new ExternalCommands();
 
@@ -126,7 +132,7 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
                         continue;
                     }
                     //Checking if the downtime is already set in Nagios/Naemon
-                    if (1 === 2) {
+                    if ($this->isDowntimeScheduled($systemdowntime)) {
                         $this->delegateDowntime($systemdowntime);
                     }
                 }
@@ -141,7 +147,7 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
                         continue;
                     }
 
-                    if (1 === 2) {
+                    if ($this->isDowntimeScheduled($systemdowntime)) {
                         $this->delegateDowntime($systemdowntime);
                     }
                 }
@@ -158,11 +164,32 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
                     }
 
                     //Checking if the downtime is allready set in nagios
-                    if (1 === 2) {
+                    if ($this->isDowntimeScheduled($systemdowntime)) {
                         $this->delegateDowntime($systemdowntime);
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * I will check whether the given $systemdowntime is already scheduled by searching entries in
+     * @param Systemdowntime $systemdowntime
+     * @return bool
+     * @see StatusengineHostScheduleddowntimesTable and @see StatusengineServiceScheduleddowntimesTable
+     */
+    private function isDowntimeScheduled(Systemdowntime $systemdowntime): bool {
+        switch ((int)$systemdowntime->get('objecttype_id')) {
+            case OBJECT_SERVICE:
+                return $this->statusengineServiceScheduleddowntimesTable->checkIfRecurringDowntimeWasScheduled($systemdowntime);
+            case OBJECT_HOST:
+            case OBJECT_NODE:      // Missing Link? Node Downtimes are put on the hosts of the hostgroup, so we can only check if the downtime is scheduled for the host?
+            case OBJECT_SATELLITE: // Missing Link? Satellite Downtimes are put on the hosts of the hostgroup, so we can only check if the downtime is scheduled for the host?
+            case OBJECT_HOSTGROUP: // Missing Link? Hostgroup Downtimes are put on the hosts of the hostgroup, so we can only check if the downtime is scheduled for the host?
+                return $this->statusengineHostScheduleddowntimesTable->checkIfRecurringDowntimeWasScheduled($systemdowntime);
+                break;
+            default:
+                return false;
         }
     }
 

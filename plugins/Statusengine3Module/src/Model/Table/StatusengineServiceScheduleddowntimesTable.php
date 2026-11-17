@@ -27,7 +27,7 @@ declare(strict_types=1);
 
 namespace Statusengine3Module\Model\Table;
 
-use Cake\ORM\Query;
+use App\Model\Entity\Systemdowntime;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -85,5 +85,17 @@ class StatusengineServiceScheduleddowntimesTable extends Table {
     public function buildRules(RulesChecker $rules): RulesChecker {
         //Readonly table
         return $rules;
+    }
+
+    public function checkIfRecurringDowntimeWasScheduled(Systemdowntime $systemdowntime): bool {
+        return !empty(
+        $this
+            ->unhydratedFind()
+            ->where([
+                'comment' => sprintf('AUTO[%s]: %s', $systemdowntime->id, $systemdowntime->comment)
+            ])
+            ->all()
+            ->toArray()
+        );
     }
 }

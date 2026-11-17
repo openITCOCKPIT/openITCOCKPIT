@@ -89,7 +89,7 @@ class Systemdowntime extends Entity {
     /**
      * @return bool
      */
-    public function hasWeekdays() {
+    public function hasWeekdays(): bool {
         return !empty($this->getWeekdays());
     }
 
@@ -107,7 +107,7 @@ class Systemdowntime extends Entity {
     /**
      * @return bool
      */
-    public function hasDayOfMonth() {
+    public function hasDayOfMonth(): bool {
         return !empty($this->getDayOfMonth());
     }
 
@@ -136,7 +136,7 @@ class Systemdowntime extends Entity {
      * @param int $timestamp
      * @return bool
      */
-    public function isTimestampInThePast($timestamp = 0) {
+    public function isTimestampInThePast($timestamp = 0): bool {
         return $timestamp < time();
     }
 

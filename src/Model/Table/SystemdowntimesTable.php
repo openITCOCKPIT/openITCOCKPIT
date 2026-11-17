@@ -26,6 +26,7 @@
 namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
+use App\Model\Entity\Systemdowntime;
 use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -673,12 +674,11 @@ class SystemdowntimesTable extends Table {
     }
 
     /**
-     * @return array
+     * @return Systemdowntime[]
      */
     public function getRecurringDowntimesForCronjob() {
-        $query = $this->find()
-            ->all();
-        return $query->toArray();
+        return $this->find()
+            ->all()->toArray();
     }
 
 }

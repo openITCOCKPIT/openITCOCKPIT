@@ -40,7 +40,6 @@ use App\Model\Table\HostgroupsTable;
 use App\Model\Table\HostsTable;
 use App\Model\Table\ServicesTable;
 use App\Model\Table\SystemdowntimesTable;
-use App\Model\Table\SystemsettingsTable;
 use Cake\Command\Command;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
@@ -51,7 +50,6 @@ use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use DistributeModule\Model\Table\SatellitesTable;
 use itnovum\openITCOCKPIT\Core\Interfaces\CronjobInterface;
-use itnovum\openITCOCKPIT\Core\MonitoringEngine\StatusDat;
 
 /**
  * RecurringDowntimes command.
@@ -64,11 +62,6 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
     private HostsTable $hostsTable;
     private SystemdowntimesTable $systemdowntimesTable;
     private ExternalCommands $externalCommands;
-
-    /**
-     * @var StatusDat
-     */
-    private $StatusDat;
 
     /**
      * Hook method for defining this command's option parser.
@@ -94,12 +87,6 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
     public function execute(Arguments $args, ConsoleIo $io) {
         $io->setStyle('red', ['text' => 'red', 'blink' => false]);
 
-        /** @var SystemsettingsTable $SystemsettingsTable */
-        $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
-
-        $record = $SystemsettingsTable->getSystemsettingByKey('MONITORING.STATUS_DAT');
-        $statusdatPath = $record->get('value');
-
         try {
             $this->systemdowntimesTable = TableRegistry::getTableLocator()->get('Systemdowntimes');
             $this->containersTable = TableRegistry::getTableLocator()->get('Containers');
@@ -109,8 +96,6 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
 
             $this->externalCommands = new ExternalCommands();
 
-            $this->StatusDat = new StatusDat($statusdatPath);
-            $this->StatusDat->parseDowntimes();
         } catch (\RuntimeException $e) {
             $io->out('<red>' . $e->getMessage() . '</red>');
             $io->hr();
@@ -141,7 +126,7 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
                         continue;
                     }
                     //Checking if the downtime is already set in Nagios/Naemon
-                    if (!$this->StatusDat->checkIfRecurringDowntimeWasScheduled($systemdowntime->get('id'), $systemdowntime->get('comment'))) {
+                    if (1 === 2) {
                         $this->delegateDowntime($systemdowntime);
                     }
                 }
@@ -156,7 +141,7 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
                         continue;
                     }
 
-                    if ($this->StatusDat->checkIfRecurringDowntimeWasScheduled($systemdowntime->get('id'), $systemdowntime->get('comment')) === false) {
+                    if (1 === 2) {
                         $this->delegateDowntime($systemdowntime);
                     }
                 }
@@ -173,7 +158,7 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
                     }
 
                     //Checking if the downtime is allready set in nagios
-                    if ($this->StatusDat->checkIfRecurringDowntimeWasScheduled($systemdowntime->get('id'), $systemdowntime->get('comment')) === false) {
+                    if (1 === 2) {
                         $this->delegateDowntime($systemdowntime);
                     }
                 }

@@ -40,7 +40,7 @@ use Cake\ORM\TableRegistry;
  * manually
  *
  * Apply:
- * oitc migrations seed
+ * oitc seeds run
  */
 class InstallSeed extends \Migrations\BaseSeed {
     /**

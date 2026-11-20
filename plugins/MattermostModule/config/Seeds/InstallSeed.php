@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today AVENDIS GmbH
 //
 // This file is dual licensed
 //
@@ -31,7 +32,7 @@ declare(strict_types=1);
  * oitc4 bake seed -p MattermostModule --table commands --data Install
  *
  * Apply:
- * oitc4 migrations seed -p MattermostModule
+ * oitc4 seeds run -p MattermostModule
  */
 class InstallSeed extends \Migrations\BaseSeed {
     /**

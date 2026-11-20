@@ -37,7 +37,7 @@ use Migrations\BaseSeed;
  * oitc bake seed --table calendars  AddUuidToCalendarsSeed
  *
  * Apply:
- * oitc migrations seed
+ * oitc seeds run
  */
 class AddUuidToCalendarsSeed extends BaseSeed {
     /**

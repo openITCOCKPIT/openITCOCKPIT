@@ -97,8 +97,8 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
             $this->hostsTable = TableRegistry::getTableLocator()->get('Hosts');
             $this->servicesTable = TableRegistry::getTableLocator()->get('Services');
             $this->hostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
-            $this->statusengineHostScheduleddowntimesTable = TableRegistry::getTableLocator()->get('StatusengineHostScheduleddowntimes');
-            $this->statusengineServiceScheduleddowntimesTable = TableRegistry::getTableLocator()->get('StatusengineServiceScheduleddowntimes');
+            $this->statusengineHostScheduleddowntimesTable = TableRegistry::getTableLocator()->get('Statusengine3Module.StatusengineHostScheduleddowntimes');
+            $this->statusengineServiceScheduleddowntimesTable = TableRegistry::getTableLocator()->get('Statusengine3Module.StatusengineServiceScheduleddowntimes');
 
             $this->externalCommands = new ExternalCommands();
 
@@ -176,7 +176,9 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
                 return $this->statusengineServiceScheduleddowntimesTable->checkIfRecurringDowntimeWasScheduled($systemdowntime);
             case OBJECT_HOST:
             case OBJECT_NODE:      // Missing Link? Node Downtimes are put on the hosts of the hostgroup, so we can only check if the downtime is scheduled for the host?
+                /* Was macht die GUI hier, welche OPtionen habe ich? Mus sich beides prüfen? */
             case OBJECT_SATELLITE: // Missing Link? Satellite Downtimes are put on the hosts of the hostgroup, so we can only check if the downtime is scheduled for the host?
+                /* Was macht die GUI hier, welche OPtionen habe ich? Mus sich beides prüfen? */
             case OBJECT_HOSTGROUP: // Missing Link? Hostgroup Downtimes are put on the hosts of the hostgroup, so we can only check if the downtime is scheduled for the host?
                 return $this->statusengineHostScheduleddowntimesTable->checkIfRecurringDowntimeWasScheduled($systemdowntime);
                 break;
@@ -203,11 +205,11 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
                 $this->setServiceDowntime($systemdowntime);
                 break;
 
-            case OBJECT_NODE: //Node / Container downtimes
+            case OBJECT_NODE:
                 $this->setNodeDowntime($systemdowntime);
                 break;
 
-            case OBJECT_SATELLITE: //Satellite downtimes
+            case OBJECT_SATELLITE:
                 $this->setSatelliteDowntime($systemdowntime);
                 break;
         }

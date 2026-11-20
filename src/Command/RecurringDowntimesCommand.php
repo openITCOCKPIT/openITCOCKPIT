@@ -120,52 +120,44 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
         $systemdowntimes = $this->systemdowntimesTable->getRecurringDowntimesForCronjob();
 
         foreach ($systemdowntimes as $systemdowntime) {
+            //Skip downtime if scheduled end time is in the past
+            if ($systemdowntime->isTimestampInThePast($systemdowntime->getScheduledEndTime())) {
+                continue;
+            }
+
             /** @var \App\Model\Entity\Systemdowntime $systemdowntime */
             $currentWeekday = date('N');
             $currentdayOfMonth = date('j');
 
+            //Example: Today is the 5 day of month and this is a monday
             if ($systemdowntime->hasWeekdays() && $systemdowntime->hasDayOfMonth()) {
                 if (in_array($currentWeekday, $systemdowntime->getWeekdays(), true) && in_array($currentdayOfMonth, $systemdowntime->getDayOfMonth(), true)) {
-                    //Example: Today is the 5 day of month and this is a monday
-                    if ($systemdowntime->isTimestampInThePast($systemdowntime->getScheduledEndTime()) === true) {
-                        //Skip downtime if scheduled end time is in the past
-                        continue;
-                    }
-                    //Checking if the downtime is already set in Nagios/Naemon
-                    if ($this->isDowntimeScheduled($systemdowntime)) {
-                        $this->delegateDowntime($systemdowntime);
-                    }
-                }
-            }
-
-            if ($systemdowntime->hasWeekdays() && !$systemdowntime->hasDayOfMonth()) {
-                if (in_array($currentWeekday, $systemdowntime->getWeekdays(), true)) {
-                    //Example: today is monday
-                    //Checking if the downtime is already set in Nagios/Naemon and make sure scheduled end time is not in the past
-                    if ($systemdowntime->isTimestampInThePast($systemdowntime->getScheduledEndTime())) {
-                        //Skip downtime if scheduled end time is in the past
-                        continue;
-                    }
-
-                    if ($this->isDowntimeScheduled($systemdowntime)) {
-                        $this->delegateDowntime($systemdowntime);
-                    }
-                }
-            }
-
-            if ($systemdowntime->hasDayOfMonth() && !$systemdowntime->hasWeekdays()) {
-                if (in_array($currentdayOfMonth, $systemdowntime->getDayOfMonth(), true)) {
-                    //Example: today the 6 or 10 or 30 day of the current month
-
-                    //Checking if the downtime is already set in Nagios/Naemon and make sure scheduled end time is not in the past
-                    if ($systemdowntime->isTimestampInThePast($systemdowntime->getScheduledEndTime())) {
-                        //Skip downtime if scheduled end time is in the past
-                        continue;
-                    }
 
                     //Checking if the downtime is allready set in nagios
                     if ($this->isDowntimeScheduled($systemdowntime)) {
-                        $this->delegateDowntime($systemdowntime);
+                        $this->scheduleDowntime($systemdowntime);
+                    }
+                }
+            }
+
+            //Example: today is monday
+            if ($systemdowntime->hasWeekdays() && !$systemdowntime->hasDayOfMonth()) {
+                if (in_array($currentWeekday, $systemdowntime->getWeekdays(), true)) {
+
+                    //Checking if the downtime is allready set in nagios
+                    if ($this->isDowntimeScheduled($systemdowntime)) {
+                        $this->scheduleDowntime($systemdowntime);
+                    }
+                }
+            }
+
+            //Example: today the 6 or 10 or 30 day of the current month
+            if ($systemdowntime->hasDayOfMonth() && !$systemdowntime->hasWeekdays()) {
+                if (in_array($currentdayOfMonth, $systemdowntime->getDayOfMonth(), true)) {
+
+                    //Checking if the downtime is allready set in nagios
+                    if ($this->isDowntimeScheduled($systemdowntime)) {
+                        $this->scheduleDowntime($systemdowntime);
                     }
                 }
             }
@@ -197,7 +189,7 @@ class RecurringDowntimesCommand extends Command implements CronjobInterface {
      * @param Systemdowntime $systemdowntime
      * @return void
      */
-    private function delegateDowntime(Systemdowntime $systemdowntime) {
+    private function scheduleDowntime(Systemdowntime $systemdowntime): void {
         switch ((int)$systemdowntime->get('objecttype_id')) {
             case OBJECT_HOST:
                 $this->setHostDowntime($systemdowntime);

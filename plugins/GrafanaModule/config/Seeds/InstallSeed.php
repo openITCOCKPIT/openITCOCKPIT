@@ -35,6 +35,15 @@ declare(strict_types=1);
  * oitc4 seeds run -p GrafanaModule
  */
 class InstallSeed extends \Migrations\BaseSeed {
+
+    /**
+     * It will run every openitcockpit-update runs
+     * https://book.cakephp.org/migrations/5/guides/seeding.html#idempotent-seeds
+     */
+    public function isIdempotent(): bool {
+        return true;
+    }
+
     /**
      * Run Method.
      *

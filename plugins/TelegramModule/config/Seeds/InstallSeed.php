@@ -25,6 +25,15 @@ class InstallSeed extends BaseSeed {
     private const CRONJOBS_TABLE_NAME = 'cronjobs';
 
     /**
+     * It will run every openitcockpit-update runs
+     * https://book.cakephp.org/migrations/5/guides/seeding.html#idempotent-seeds
+     */
+    public function isIdempotent(): bool {
+        return true;
+    }
+
+
+    /**
      * Run Method.
      *
      * Write your database seeder using this method.

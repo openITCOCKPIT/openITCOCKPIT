@@ -49,6 +49,24 @@ class ReportMailLogFilter extends Filter {
     }
 
     /**
+     * Filter for the global report mail log (Logs -> Report Mail Log) over all report types
+     *
+     * @return array
+     */
+    public function globalIndexFilter() {
+        $filters = [
+            'like'   => [
+                'ReportMailLog.report_name'
+            ],
+            'equals' => [
+                'ReportMailLog.report_type'
+            ]
+        ];
+
+        return $this->getConditionsByFilters($filters);
+    }
+
+    /**
      * Start of the time range (server time). Default: 30 days ago
      *
      * @return int

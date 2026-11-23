@@ -343,7 +343,7 @@ class InstantreportsController extends AppController {
             $PaginateOMat,
             $MY_RIGHTS
         );
-        $mailLog = $ReportMailLogTable->formatMailLogForApi($mailLog, $UserTime);
+        $mailLog = $ReportMailLogTable->formatMailLogForApi($mailLog, $UserTime, $MY_RIGHTS);
 
         $this->set('instantreport', [
             'id'           => $instantreport['Instantreport']['id'],

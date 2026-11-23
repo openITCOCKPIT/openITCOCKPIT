@@ -108,6 +108,13 @@ class InstantReportCommand extends Command implements CronjobInterface {
 
 
         $toSend = false;
+        $sendIntervals = [
+            __('Never'),
+            __('Daily'),
+            __('Weekly'),
+            __('Monthly'),
+            __('Yearly')
+        ];
         /** @var  $instantreport Instantreport */
         foreach ($instanreports as $instantreport) {
             try {
@@ -128,8 +135,7 @@ class InstantReportCommand extends Command implements CronjobInterface {
                 $instantreportName = $instantreport->get('name');
                 $UserTime = new UserTime(date_default_timezone_get(), 'd.m.Y H:i:s');
                 $instantReportCronPdfName = preg_replace('[^0-9a-zA-Z_\s]', '_', $instantreportName) . '.pdf';
-                // Only the report name, like for Autoreports and SLA reports
-                $subject = $instantreportName;
+                $subject = $sendIntervals[$instantreport->get('send_interval')] . ' Instant Report ' . $instantreportName;
 
                 $sentEmails = [];
                 $failedEmails = [];

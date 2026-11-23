@@ -763,20 +763,137 @@ class UsersTable extends Table {
      * @return int[]
      */
     public function getExistingUserIds(array $userIds): array {
-        $userIds = array_values(array_unique(array_map('intval', $userIds)));
+        // Unique ids (as array keys)
+        $uniqueUserIds = [];
+        foreach ($userIds as $userId) {
+            $uniqueUserIds[(int)$userId] = (int)$userId;
+        }
+        $userIds = array_values($uniqueUserIds);
+
         if (empty($userIds)) {
             return [];
         }
 
-        $result = $this->find()
+        $result = $this->unhydratedFind()
             ->select(['Users.id'])
             ->where(['Users.id IN' => $userIds])
-            ->disableHydration()
             ->all()
             ->extract('id')
             ->toList();
 
-        return array_map('intval', $result);
+        $existingUserIds = [];
+        foreach ($result as $userId) {
+            $existingUserIds[] = (int)$userId;
+        }
+        return $existingUserIds;
+    }
+
+    /**
+     * Returns the current name ("firstname lastname") and email of all given users that (still) exist.
+     *
+     * @param int[] $userIds
+     * @return array<int, array{name: string, email: string}> Indexed by user id
+     */
+    public function getNamesAndEmailsByIds(array $userIds): array {
+        // Unique ids (as array keys)
+        $uniqueUserIds = [];
+        foreach ($userIds as $userId) {
+            $uniqueUserIds[(int)$userId] = (int)$userId;
+        }
+        $userIds = array_values($uniqueUserIds);
+
+        if (empty($userIds)) {
+            return [];
+        }
+
+        $users = $this->unhydratedFind()
+            ->select([
+                'Users.id',
+                'Users.firstname',
+                'Users.lastname',
+                'Users.email'
+            ])
+            ->where(['Users.id IN' => $userIds])
+            ->all();
+
+        $result = [];
+        foreach ($users as $user) {
+            $result[(int)$user['id']] = [
+                'name'  => trim($user['firstname'] . ' ' . $user['lastname']),
+                'email' => (string)$user['email']
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * Returns the ids of all given users, the current user is allowed to see.
+     * Same logic as in getUsersIndex(): A user is visible, if one of his containers is in $MY_RIGHTS -
+     * either assigned directly or through a user container role.
+     *
+     * @param int[] $userIds
+     * @param array $MY_RIGHTS Container ids the current user has access to. Empty array = no restriction (root user)
+     * @return int[]
+     */
+    public function getVisibleUserIds(array $userIds, array $MY_RIGHTS = []): array {
+        if (empty($MY_RIGHTS)) {
+            return $this->getExistingUserIds($userIds);
+        }
+
+        // Unique ids (as array keys)
+        $uniqueUserIds = [];
+        foreach ($userIds as $userId) {
+            $uniqueUserIds[(int)$userId] = (int)$userId;
+        }
+        $userIds = array_values($uniqueUserIds);
+
+        if (empty($userIds)) {
+            return [];
+        }
+
+        //Get all user ids where container assigned are made directly at the user
+        $directUserIds = $this->unhydratedFind()
+            ->select([
+                'Users.id'
+            ])
+            ->matching('Containers')
+            ->where([
+                'Users.id IN'                                 => $userIds,
+                'ContainersUsersMemberships.container_id IN' => $MY_RIGHTS
+            ])
+            ->groupBy([
+                'Users.id'
+            ])
+            ->all()
+            ->extract('id')
+            ->toList();
+
+        //Get all user ids where container assigned are made through an user container role
+        $userIdsThroughContainerRoles = $this->unhydratedFind()
+            ->select([
+                'Users.id'
+            ])
+            ->matching('Usercontainerroles.Containers')
+            ->where([
+                'Users.id IN'      => $userIds,
+                'Containers.id IN' => $MY_RIGHTS
+            ])
+            ->groupBy([
+                'Users.id'
+            ])
+            ->all()
+            ->extract('id')
+            ->toList();
+
+        $visibleUserIds = [];
+        foreach ($directUserIds as $userId) {
+            $visibleUserIds[(int)$userId] = (int)$userId;
+        }
+        foreach ($userIdsThroughContainerRoles as $userId) {
+            $visibleUserIds[(int)$userId] = (int)$userId;
+        }
+
+        return array_values($visibleUserIds);
     }
 
     /**

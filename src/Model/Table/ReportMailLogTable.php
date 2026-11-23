@@ -29,6 +29,7 @@ namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\ReportMailLog;
+use Cake\Core\Plugin;
 use Cake\Mailer\Mailer;
 use Cake\Mailer\Transport\MailTransport;
 use Cake\Mailer\Transport\SmtpTransport;
@@ -275,17 +276,172 @@ class ReportMailLogTable extends Table {
     }
 
     /**
+     * Returns the global report mail log over all report types (Logs -> Report Mail Log).
+     *
+     * Permissions are checked against the container_id that is stored in the log entry
+     * (snapshot at the time of sending).
+     *
+     * @param ReportMailLogFilter $ReportMailLogFilter
+     * @param PaginateOMat|null $PaginateOMat
+     * @param array $MY_RIGHTS Container ids the user has access to. Empty array = no restriction (root user)
+     * @return array
+     */
+    public function getMailLogIndex(ReportMailLogFilter $ReportMailLogFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
+        $where = $ReportMailLogFilter->globalIndexFilter();
+
+        $where['ReportMailLog.send_time >='] = date('Y-m-d H:i:s', $ReportMailLogFilter->getFrom());
+        $where['ReportMailLog.send_time <='] = date('Y-m-d H:i:s', $ReportMailLogFilter->getTo());
+
+        if (!empty($MY_RIGHTS)) {
+            $where['ReportMailLog.container_id IN'] = $MY_RIGHTS;
+        }
+
+        $query = $this->unhydratedFind('all')
+            ->select([
+                'ReportMailLog.id',
+                'ReportMailLog.report_type',
+                'ReportMailLog.report_id',
+                'ReportMailLog.report_name',
+                'ReportMailLog.container_id',
+                'ReportMailLog.recipients',
+                'ReportMailLog.subject',
+                'ReportMailLog.has_been_sent',
+                'ReportMailLog.message',
+                'ReportMailLog.send_time',
+            ])
+            ->where($where)
+            ->orderBy(
+                $ReportMailLogFilter->getOrderForPaginator('ReportMailLog.send_time', 'desc')
+            );
+
+        if ($PaginateOMat === null) {
+            //Just execute query
+            return $query->toArray();
+        }
+
+        if ($PaginateOMat->useScroll()) {
+            return $this->scrollCake4($query, $PaginateOMat->getHandler());
+        }
+        return $this->paginateCake4($query, $PaginateOMat->getHandler());
+    }
+
+    /**
+     * Report types that can show up in the report mail log, with the table of the report.
+     * Report types of modules are only available if the module is installed.
+     *
+     * @return array<string, array{name: string, table: string, plugin: string|null}>
+     */
+    public function getReportTypes(): array {
+        $reportTypes = [
+            ReportMailLog::REPORT_TYPE_INSTANTREPORT => [
+                'name'   => __('Instant Report'),
+                'table'  => 'Instantreports',
+                'plugin' => null
+            ],
+            ReportMailLog::REPORT_TYPE_AUTOREPORT    => [
+                'name'   => __('Autoreport'),
+                'table'  => 'AutoreportModule.Autoreports',
+                'plugin' => 'AutoreportModule'
+            ],
+            ReportMailLog::REPORT_TYPE_SLA           => [
+                'name'   => __('SLA'),
+                'table'  => 'SLAModule.Slas',
+                'plugin' => 'SLAModule'
+            ],
+        ];
+
+        foreach ($reportTypes as $reportType => $config) {
+            if ($config['plugin'] !== null && !Plugin::isLoaded($config['plugin'])) {
+                unset($reportTypes[$reportType]);
+            }
+        }
+
+        return $reportTypes;
+    }
+
+    /**
+     * Checks with one query per report type, which of the given reports still exist.
+     *
+     * @param array<string, int[]> $reportIdsByType e.g. ['instantreport' => [1, 4], 'sla' => [2]]
+     * @return array<string, int[]> Existing report ids grouped by report type
+     */
+    public function getExistingReportIdsByType(array $reportIdsByType): array {
+        $reportTypes = $this->getReportTypes();
+
+        $result = [];
+        foreach ($reportIdsByType as $reportType => $reportIds) {
+            $result[$reportType] = [];
+
+            // Unique ids (as array keys)
+            $uniqueReportIds = [];
+            foreach ($reportIds as $reportId) {
+                $uniqueReportIds[(int)$reportId] = (int)$reportId;
+            }
+            $reportIds = array_values($uniqueReportIds);
+
+            if (empty($reportIds) || !isset($reportTypes[$reportType])) {
+                // Unknown report type or module is not installed (anymore)
+                continue;
+            }
+
+            $ReportTable = TableRegistry::getTableLocator()->get($reportTypes[$reportType]['table']);
+            $alias = $ReportTable->getAlias();
+            $existingIds = $ReportTable->unhydratedFind()
+                ->select([$alias . '.id'])
+                ->where([$alias . '.id IN' => $reportIds])
+                ->all()
+                ->extract('id')
+                ->toList();
+
+            foreach ($existingIds as $existingId) {
+                $result[$reportType][] = (int)$existingId;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Prepares the result of getMailLogByReport() for the API:
-     * - adds "user_exists" to every recipient (checked with one query), so the frontend
-     *   only links users that have not been deleted in the meantime
+     * - prepares the recipients (deleted users, recipients the user is not allowed to see), see prepareRecipientsForApi()
      * - formats all dates in the time zone of the user
      * - casts has_been_sent to bool
      *
      * @param array $mailLog
      * @param UserTime $UserTime
+     * @param array $MY_RIGHTS
      * @return array
      */
-    public function formatMailLogForApi(array $mailLog, UserTime $UserTime): array {
+    public function formatMailLogForApi(array $mailLog, UserTime $UserTime, array $MY_RIGHTS = []): array {
+        $mailLog = $this->prepareRecipientsForApi($mailLog, $MY_RIGHTS);
+
+        foreach ($mailLog as $index => $logEntry) {
+            $mailLog[$index]['send_time'] = $UserTime->format($logEntry['send_time']);
+            $mailLog[$index]['created'] = $UserTime->format($logEntry['created']);
+            $mailLog[$index]['report_start'] = $logEntry['report_start'] !== null ? $UserTime->format($logEntry['report_start']) : null;
+            $mailLog[$index]['report_end'] = $logEntry['report_end'] !== null ? $UserTime->format($logEntry['report_end']) : null;
+            $mailLog[$index]['has_been_sent'] = (int)$logEntry['has_been_sent'] === ReportMailLog::SENT;
+        }
+
+        return $mailLog;
+    }
+
+    /**
+     * Prepares the recipients of the given log entries for the API:
+     * - "user_exists": false if the user has been deleted in the meantime, so the frontend only links existing users
+     * - "is_visible": false if the current user is not allowed to see the recipient (see UsersTable::getVisibleUserIds()).
+     *   Name and email of hidden recipients are removed, so they never leave the server.
+     * - "current_name" / "current_email": current values of the user, if they differ from the snapshot
+     *   at the time of sending ("name" / "email"), otherwise null
+     *
+     * For non-root users, deleted users and recipients without user_id are hidden as well,
+     * because their container permissions can not be checked (anymore).
+     *
+     * @param array $mailLog Log entries with "recipients"
+     * @param array $MY_RIGHTS Container ids the current user has access to. Empty array = no restriction (root user)
+     * @return array
+     */
+    public function prepareRecipientsForApi(array $mailLog, array $MY_RIGHTS = []): array {
         $recipientUserIds = [];
         foreach ($mailLog as $logEntry) {
             foreach ((array)$logEntry['recipients'] as $recipient) {
@@ -297,21 +453,49 @@ class ReportMailLogTable extends Table {
 
         /** @var UsersTable $UsersTable */
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
-        $existingUserIds = $UsersTable->getExistingUserIds($recipientUserIds);
+        // Current name and email of all existing users (deleted users are missing in the result)
+        $currentUsers = $UsersTable->getNamesAndEmailsByIds($recipientUserIds);
+        $visibleUserIds = $UsersTable->getVisibleUserIds($recipientUserIds, $MY_RIGHTS);
 
         foreach ($mailLog as $index => $logEntry) {
             $recipients = [];
             foreach ((array)$logEntry['recipients'] as $recipient) {
-                $recipient['user_exists'] = !empty($recipient['user_id']) && in_array((int)$recipient['user_id'], $existingUserIds, true);
+                $userId = !empty($recipient['user_id']) ? (int)$recipient['user_id'] : null;
+
+                $isVisible = empty($MY_RIGHTS) || ($userId !== null && in_array($userId, $visibleUserIds, true));
+                if (!$isVisible) {
+                    $recipients[] = [
+                        'user_id'       => null,
+                        'name'          => null,
+                        'email'         => null,
+                        'current_name'  => null,
+                        'current_email' => null,
+                        'user_exists'   => false,
+                        'is_visible'    => false
+                    ];
+                    continue;
+                }
+
+                $userExists = $userId !== null && isset($currentUsers[$userId]);
+
+                $recipient['user_exists'] = $userExists;
+                $recipient['is_visible'] = true;
+                $recipient['current_name'] = null;
+                $recipient['current_email'] = null;
+
+                if ($userExists) {
+                    // Older entries may not have a name snapshot - nothing to compare then
+                    if (!empty($recipient['name']) && $recipient['name'] !== $currentUsers[$userId]['name']) {
+                        $recipient['current_name'] = $currentUsers[$userId]['name'];
+                    }
+                    if ((string)($recipient['email'] ?? '') !== $currentUsers[$userId]['email']) {
+                        $recipient['current_email'] = $currentUsers[$userId]['email'];
+                    }
+                }
+
                 $recipients[] = $recipient;
             }
             $mailLog[$index]['recipients'] = $recipients;
-
-            $mailLog[$index]['send_time'] = $UserTime->format($logEntry['send_time']);
-            $mailLog[$index]['created'] = $UserTime->format($logEntry['created']);
-            $mailLog[$index]['report_start'] = $logEntry['report_start'] !== null ? $UserTime->format($logEntry['report_start']) : null;
-            $mailLog[$index]['report_end'] = $logEntry['report_end'] !== null ? $UserTime->format($logEntry['report_end']) : null;
-            $mailLog[$index]['has_been_sent'] = (int)$logEntry['has_been_sent'] === ReportMailLog::SENT;
         }
 
         return $mailLog;

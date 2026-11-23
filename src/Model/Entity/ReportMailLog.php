@@ -40,7 +40,7 @@ use Cake\ORM\Entity;
  * @property array $recipients [['user_id' => int|null, 'name' => string|null, 'email' => string], ...]
  * @property string $subject
  * @property int $has_been_sent
- * @property string|null $message Error message if not sent, otherwise info by which mail system the email was accepted
+ * @property string|null $message Error message if not sent, null if sent
  * @property \Cake\I18n\DateTime|null $report_start
  * @property \Cake\I18n\DateTime|null $report_end
  * @property \Cake\I18n\DateTime $send_time

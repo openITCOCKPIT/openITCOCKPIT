@@ -30,9 +30,6 @@ namespace App\Model\Table;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\ReportMailLog;
 use Cake\Core\Plugin;
-use Cake\Mailer\Mailer;
-use Cake\Mailer\Transport\MailTransport;
-use Cake\Mailer\Transport\SmtpTransport;
 use Cake\ORM\Behavior\TimestampBehavior;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -166,40 +163,6 @@ class ReportMailLogTable extends Table {
             ->notEmptyDateTime('send_time');
 
         return $validator;
-    }
-
-    /**
-     * Returns a short info text for successfully sent emails, describing what "sent" actually means.
-     *
-     * A successful Mailer::deliver() only means, that the email was accepted by the next mail system
-     * (local sendmail / Postfix or the configured SMTP server). It is no proof of final delivery.
-     * Example: With the MailTransport (PHP mail()), sendmail exiting with EX_TEMPFAIL (75) is treated as success
-     * by PHP, even if Postfix is not configured at all.
-     *
-     * @param Mailer $Mailer
-     * @return string
-     */
-    public function getDeliveryInfo(Mailer $Mailer): string {
-        try {
-            $Transport = $Mailer->getTransport();
-        } catch (\Throwable $e) {
-            return __('Accepted by mail transport. Final delivery is not confirmed.');
-        }
-
-        if ($Transport instanceof MailTransport) {
-            return __('Accepted by the local mail system. Final delivery is not confirmed.');
-        }
-
-        if ($Transport instanceof SmtpTransport) {
-            return __('Accepted by SMTP server {0}:{1}. Final delivery is not confirmed.',
-                $Transport->getConfig('host'),
-                $Transport->getConfig('port')
-            );
-        }
-
-        return __('Accepted by mail transport {0}. Final delivery is not confirmed.',
-            (new \ReflectionClass($Transport))->getShortName()
-        );
     }
 
     /**

@@ -221,8 +221,6 @@ class InstantReportCommand extends Command implements CronjobInterface {
                         $Mailer->deliver();
 
                         $ReportMailLogEntity->set('has_been_sent', ReportMailLog::SENT);
-                        // "Sent" only means accepted by the next mail system - store what this actually was
-                        $ReportMailLogEntity->set('message', $ReportMailLogTable->getDeliveryInfo($Mailer));
                         $sentEmails[] = $user->get('email');
                     } catch (\Throwable $ex) {
                         $ReportMailLogEntity->set('has_been_sent', ReportMailLog::NOT_SENT);

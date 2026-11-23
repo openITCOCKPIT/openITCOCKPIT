@@ -105,12 +105,6 @@ class CreateReportMailLog extends BaseMigration {
                     'limit'   => 255,
                     'null'    => false,
                 ])
-                ->addColumn('attachments', 'text', [
-                    'comment' => 'JSON list of attachment file names',
-                    'default' => null,
-                    'limit'   => null,
-                    'null'    => true,
-                ])
                 ->addColumn('has_been_sent', 'integer', [
                     'default' => 0,
                     'limit'   => 1,

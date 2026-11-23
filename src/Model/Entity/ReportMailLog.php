@@ -39,7 +39,6 @@ use Cake\ORM\Entity;
  * @property int $container_id
  * @property array $recipients [['user_id' => int|null, 'name' => string|null, 'email' => string], ...]
  * @property string $subject
- * @property array|null $attachments List of attachment file names
  * @property int $has_been_sent
  * @property string|null $message Error message if not sent, otherwise info by which mail system the email was accepted
  * @property \Cake\I18n\DateTime|null $report_start
@@ -74,7 +73,6 @@ class ReportMailLog extends Entity {
         'container_id'  => true,
         'recipients'    => true,
         'subject'       => true,
-        'attachments'   => true,
         'has_been_sent' => true,
         'message'       => true,
         'report_start'  => true,

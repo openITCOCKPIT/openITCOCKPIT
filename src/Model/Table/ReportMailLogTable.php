@@ -46,8 +46,8 @@ use itnovum\openITCOCKPIT\Filter\ReportMailLogFilter;
  * Central log of all report emails (Instant Reports, Autoreports, SLA Reports, ...).
  * One record per sent email.
  *
- * The columns "recipients" and "attachments" are mapped to the JSON type, so the
- * entity holds plain PHP arrays and the ORM takes care of encoding / decoding.
+ * The column "recipients" is mapped to the JSON type, so the entity holds a plain
+ * PHP array and the ORM takes care of encoding / decoding.
  *
  * There are intentionally no buildRules() (existsIn): writing a log entry must never
  * fail because a report, user or container has been deleted in the meantime.
@@ -87,7 +87,6 @@ class ReportMailLogTable extends Table {
         $this->addBehavior('Timestamp');
 
         $this->getSchema()->setColumnType('recipients', 'json');
-        $this->getSchema()->setColumnType('attachments', 'json');
 
         // LEFT join, as the container may have been deleted after the email was sent
         $this->belongsTo('Containers', [
@@ -142,10 +141,6 @@ class ReportMailLogTable extends Table {
             ->scalar('subject')
             ->requirePresence('subject', 'create')
             ->notEmptyString('subject');
-
-        $validator
-            ->array('attachments')
-            ->allowEmptyArray('attachments');
 
         $validator
             ->integer('has_been_sent')
@@ -248,7 +243,6 @@ class ReportMailLogTable extends Table {
                 'ReportMailLog.container_id',
                 'ReportMailLog.recipients',
                 'ReportMailLog.subject',
-                'ReportMailLog.attachments',
                 'ReportMailLog.has_been_sent',
                 'ReportMailLog.message',
                 'ReportMailLog.report_start',

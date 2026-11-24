@@ -66,7 +66,7 @@ class ReportMailLogController extends AppController {
         $mailLog = $ReportMailLogTable->getMailLogIndex($ReportMailLogFilter, $PaginateOMat, $MY_RIGHTS);
         $mailLog = $ReportMailLogTable->prepareRecipientsForApi($mailLog, $MY_RIGHTS);
 
-        // Check with one query per report type, which reports still exist.
+        // Check per report type, which reports still exist.
         // Only existing reports in a writable container get linked in the frontend.
         $reportIdsByType = [];
         foreach ($mailLog as $logEntry) {

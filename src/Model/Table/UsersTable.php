@@ -757,38 +757,6 @@ class UsersTable extends Table {
     }
 
     /**
-     * Returns the ids of all given users that (still) exist in the database.
-     *
-     * @param int[] $userIds
-     * @return int[]
-     */
-    public function getExistingUserIds(array $userIds): array {
-        // Unique ids (as array keys)
-        $uniqueUserIds = [];
-        foreach ($userIds as $userId) {
-            $uniqueUserIds[(int)$userId] = (int)$userId;
-        }
-        $userIds = array_values($uniqueUserIds);
-
-        if (empty($userIds)) {
-            return [];
-        }
-
-        $result = $this->unhydratedFind()
-            ->select(['Users.id'])
-            ->where(['Users.id IN' => $userIds])
-            ->all()
-            ->extract('id')
-            ->toList();
-
-        $existingUserIds = [];
-        foreach ($result as $userId) {
-            $existingUserIds[] = (int)$userId;
-        }
-        return $existingUserIds;
-    }
-
-    /**
      * Returns the current name ("firstname lastname") and email of all given users that (still) exist.
      *
      * @param int[] $userIds
@@ -831,16 +799,17 @@ class UsersTable extends Table {
      * Same logic as in getUsersIndex(): A user is visible, if one of his containers is in $MY_RIGHTS -
      * either assigned directly or through a user container role.
      *
+     * Only for non-root users - root users can see all users, so there is nothing to check.
+     *
      * @param int[] $userIds
-     * @param array $MY_RIGHTS Container ids the current user has access to. Empty array = no restriction (root user)
-     * @return int[]
+     * @param array $MY_RIGHTS Container ids the current user has access to
+     * @return int[] Empty if $MY_RIGHTS is empty
      */
-    public function getVisibleUserIds(array $userIds, array $MY_RIGHTS = []): array {
+    public function getVisibleUserIds(array $userIds, array $MY_RIGHTS): array {
         if (empty($MY_RIGHTS)) {
-            return $this->getExistingUserIds($userIds);
+            return [];
         }
 
-        // Unique ids (as array keys)
         $uniqueUserIds = [];
         foreach ($userIds as $userId) {
             $uniqueUserIds[(int)$userId] = (int)$userId;
@@ -851,7 +820,6 @@ class UsersTable extends Table {
             return [];
         }
 
-        //Get all user ids where container assigned are made directly at the user
         $directUserIds = $this->unhydratedFind()
             ->select([
                 'Users.id'
@@ -868,7 +836,6 @@ class UsersTable extends Table {
             ->extract('id')
             ->toList();
 
-        //Get all user ids where container assigned are made through an user container role
         $userIdsThroughContainerRoles = $this->unhydratedFind()
             ->select([
                 'Users.id'

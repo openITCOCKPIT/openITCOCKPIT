@@ -246,7 +246,7 @@ class ReportMailLogTable extends Table {
      *
      * @param ReportMailLogFilter $ReportMailLogFilter
      * @param PaginateOMat|null $PaginateOMat
-     * @param array $MY_RIGHTS Container ids the user has access to. Empty array = no restriction (root user)
+     * @param array $MY_RIGHTS
      * @return array
      */
     public function getMailLogIndex(ReportMailLogFilter $ReportMailLogFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
@@ -289,7 +289,7 @@ class ReportMailLogTable extends Table {
     }
 
     /**
-     * Report types that can show up in the report mail log, with the table of the report.
+     * Report types that can show up in the report mail log
      * Report types of modules are only available if the module is installed.
      *
      * @return array<string, array{name: string, table: string, plugin: string|null}>
@@ -343,7 +343,6 @@ class ReportMailLogTable extends Table {
             $reportIds = array_values($uniqueReportIds);
 
             if (empty($reportIds) || !isset($reportTypes[$reportType])) {
-                // Unknown report type or module is not installed (anymore)
                 continue;
             }
 
@@ -396,10 +395,6 @@ class ReportMailLogTable extends Table {
      *   Name and email of hidden recipients are removed, so they never leave the server.
      * - "current_name" / "current_email": current values of the user, if they differ from the snapshot
      *   at the time of sending ("name" / "email"), otherwise null
-     *
-     * For non-root users, deleted users and recipients without user_id are hidden as well,
-     * because their container permissions can not be checked (anymore).
-     *
      * @param array $mailLog Log entries with "recipients"
      * @param array $MY_RIGHTS Container ids the current user has access to. Empty array = no restriction (root user)
      * @return array
@@ -418,7 +413,11 @@ class ReportMailLogTable extends Table {
         $UsersTable = TableRegistry::getTableLocator()->get('Users');
         // Current name and email of all existing users (deleted users are missing in the result)
         $currentUsers = $UsersTable->getNamesAndEmailsByIds($recipientUserIds);
-        $visibleUserIds = $UsersTable->getVisibleUserIds($recipientUserIds, $MY_RIGHTS);
+        // Root users can see all users - no need to check the container permissions
+        $visibleUserIds = [];
+        if (!empty($MY_RIGHTS)) {
+            $visibleUserIds = $UsersTable->getVisibleUserIds($recipientUserIds, $MY_RIGHTS);
+        }
 
         foreach ($mailLog as $index => $logEntry) {
             $recipients = [];

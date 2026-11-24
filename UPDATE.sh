@@ -445,7 +445,14 @@ fi
 
 if [[ "$NOSYSTEMFILES" == "false" ]]; then
   echo "Copy required system files"
-  rsync -K -a ${APPDIR}/system/etc/. /etc/
+  # ITC-3914 rsync >= 3.5 (Debian 13) and the RHEL 9 backport refuse to follow symlinked
+  # directories inside the destination tree unless --insecure-links is given.
+  # Older rsync versions (e.g. Ubuntu 24.04) do not know the option at all.
+  RSYNC_OPTS="-K -a"
+  if rsync --insecure-links --version >/dev/null 2>&1; then
+    RSYNC_OPTS="$RSYNC_OPTS --insecure-links"
+  fi
+  rsync $RSYNC_OPTS ${APPDIR}/system/etc/. /etc/ # we use rsync because the destination can be a symlink on RHEL
   chown root:root /etc
   cp -r ${APPDIR}/system/lib/. /lib/
   cp -r ${APPDIR}/system/usr/. /usr/

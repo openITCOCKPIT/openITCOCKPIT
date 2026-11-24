@@ -104,9 +104,16 @@ if [[ "$OS_BASE" == "RHEL" ]]; then
     chown www-data:root /var/lib/nginx/tmp -R
     cp ${APPDIR}/system/nginx/nginx.rhel${OSVERSION}.conf /etc/nginx/nginx.conf
 
-    # myqsl
-    mkdir -p /etc/mysql
-    ln -s /etc/my.cnf.d /etc/mysql/conf.d
+    # ITC-3914 mysql
+    # /etc/mysql/conf.d has to be a relative symlink to /etc/my.cnf.d:
+    # rsync >= 3.5 (Debian 13) and the RHEL 9 backport (3.2.7-1.el9_8) refuse
+    # to follow symlinked directories inside the destination tree (ELOOP).
+    # -n replaces an existing link instead of nesting it inside the target dir.
+    mkdir -p /etc/mysql /etc/my.cnf.d
+    if [[ -d /etc/mysql/conf.d && ! -L /etc/mysql/conf.d ]]; then
+        mv /etc/mysql/conf.d "/etc/mysql/conf.d.bak.$(date +%Y%m%d-%H%M%S)"
+    fi
+    ln -sfn ../my.cnf.d /etc/mysql/conf.d
 
     # create snakeoil ssl certificate if no exists
     mkdir -p /etc/ssl/private
@@ -147,10 +154,17 @@ if [[ "$OS_BASE" == "RHEL" ]]; then
 fi # End RHEL section
 
 echo "Copy required system files"
-rsync -K -a ${APPDIR}/system/etc/. /etc/ # we use rsync because the destination can be a symlink on RHEL
+# ITC-3914 rsync >= 3.5 (Debian 13) and the RHEL 9 backport refuse to follow symlinked
+# directories inside the destination tree unless --insecure-links is given.
+# Older rsync versions (e.g. Ubuntu 24.04) do not know the option at all.
+RSYNC_OPTS="-K -a"
+if rsync --insecure-links --version >/dev/null 2>&1; then
+    RSYNC_OPTS="$RSYNC_OPTS --insecure-links"
+fi
+rsync $RSYNC_OPTS ${APPDIR}/system/etc/. /etc/ # we use rsync because the destination can be a symlink on RHEL
 chown root:root /etc
 cp -r ${APPDIR}/system/lib/. /lib/
-rsync -K -a ${APPDIR}/system/fpm/. /etc/php/${PHPVersion}/fpm/
+rsync $RSYNC_OPTS ${APPDIR}/system/fpm/. /etc/php/${PHPVersion}/fpm/
 cp -r ${APPDIR}/system/usr/. /usr/
 cp ${APPDIR}/system/nginx/ssl_options_$OSVERSION /etc/nginx/openitc/ssl_options.conf
 cp ${APPDIR}/system/nginx/ssl_cert.conf /etc/nginx/openitc/ssl_cert.conf

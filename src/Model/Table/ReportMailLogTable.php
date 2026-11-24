@@ -30,6 +30,8 @@ namespace App\Model\Table;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\ReportMailLog;
 use Cake\Core\Plugin;
+use Cake\Database\Type\JsonType;
+use Cake\Database\TypeFactory;
 use Cake\ORM\Behavior\TimestampBehavior;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -83,8 +85,12 @@ class ReportMailLogTable extends Table {
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
-
-        $this->getSchema()->setColumnType('recipients', 'json');
+        // recipients; save: php-array -> json-string; read: json-string -> php-array
+        // Own instance of the JSON type with JSON_UNESCAPED_UNICODE, so umlauts are stored as "ü" and not as "\u00fc".
+        // Otherwise the LIKE search on recipients would not find names like "Müller".
+        // Own type name, so the default "json" type of CakePHP is not changed for other tables.
+        TypeFactory::set('report_mail_log_json', (new JsonType('report_mail_log_json'))->setEncodingOptions(JSON_UNESCAPED_UNICODE));
+        $this->getSchema()->setColumnType('recipients', 'report_mail_log_json');
 
         // LEFT join, as the container may have been deleted after the email was sent
         $this->belongsTo('Containers', [
@@ -115,10 +121,6 @@ class ReportMailLogTable extends Table {
             ->requirePresence('report_id', 'create')
             ->greaterThan('report_id', 0);
 
-        // No maxLength() for report_name, subject and message:
-        // The validator runs before the entity setters, and the entity truncates
-        // these values to the column length (see ReportMailLog::_setReportName() etc.).
-        // A long value must not prevent the log entry from being saved.
         $validator
             ->scalar('report_name')
             ->requirePresence('report_name', 'create')
@@ -181,14 +183,6 @@ class ReportMailLogTable extends Table {
     public function getMailLogByReport(string $reportType, int $reportId, ReportMailLogFilter $ReportMailLogFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []): array {
         $where = $ReportMailLogFilter->indexFilter();
 
-        // recipients is mapped to the JSON type. Without an explicit string type, the ORM would
-        // JSON encode the LIKE value ('"%foo%"'), and the search would never match.
-        $recipientsLike = null;
-        if (isset($where['ReportMailLog.recipients LIKE'])) {
-            $recipientsLike = $where['ReportMailLog.recipients LIKE'];
-            unset($where['ReportMailLog.recipients LIKE']);
-        }
-
         $where['ReportMailLog.report_type'] = $reportType;
         $where['ReportMailLog.report_id'] = $reportId;
         $where['ReportMailLog.send_time >='] = date('Y-m-d H:i:s', $ReportMailLogFilter->getFrom());
@@ -214,21 +208,15 @@ class ReportMailLogTable extends Table {
                 'ReportMailLog.send_time',
                 'ReportMailLog.created',
             ])
-            ->where($where);
-
-        if ($recipientsLike !== null) {
-            $query->andWhere(
-                ['ReportMailLog.recipients LIKE' => $recipientsLike],
-                ['ReportMailLog.recipients' => 'string']
-            );
-        }
+            // recipients is mapped to the JSON type. Without 'string' the ORM would JSON encode the
+            // LIKE value of the recipients filter ('"%foo%"'), and the search would never match.
+            ->where($where, ['ReportMailLog.recipients' => 'string']);
 
         $query->orderBy(
             $ReportMailLogFilter->getOrderForPaginator('ReportMailLog.send_time', 'desc')
         );
 
         if ($PaginateOMat === null) {
-            //Just execute query
             return $query->toArray();
         }
 
@@ -278,7 +266,6 @@ class ReportMailLogTable extends Table {
             );
 
         if ($PaginateOMat === null) {
-            //Just execute query
             return $query->toArray();
         }
 

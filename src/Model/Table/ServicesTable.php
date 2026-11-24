@@ -668,7 +668,8 @@ class ServicesTable extends Table {
             $query->having($having);
         }
         $query->orderBy([
-            'servicename' => 'asc'
+            'servicename' => 'asc',
+            'Services.id' => 'asc'
         ])
             ->limit(ITN_AJAX_LIMIT)
             ->all();
@@ -789,7 +790,8 @@ class ServicesTable extends Table {
                 $where
             )
             ->orderBy([
-                'servicename' => 'asc'
+                'servicename' => 'asc',
+                'Services.id' => 'asc'
             ])
             ->limit(ITN_AJAX_LIMIT);
 
@@ -6497,7 +6499,8 @@ class ServicesTable extends Table {
             $query->having($having);
         }
         $query->orderBy([
-            'servicename' => 'asc'
+            'servicename' => 'asc',
+            'Services.id' => 'asc'
         ])
             ->limit(ITN_AJAX_LIMIT)
             ->all();

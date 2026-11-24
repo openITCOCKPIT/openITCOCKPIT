@@ -65,11 +65,6 @@ class Update3To4Command extends Command {
     private $limit = 1000;
 
     /**
-     * @var ConsoleIo
-     */
-    private $io;
-
-    /**
      * Statusengine Node Name
      * @var string
      */
@@ -295,9 +290,8 @@ class Update3To4Command extends Command {
 
         $systemsettings = $SystemsettingsTable->findAsArray();
 
-        $users = $UsersTable->find()
+        $users = $UsersTable->unhydratedFind()
             ->where(['password !=' => ''])
-            ->disableHydration()
             ->all();
 
         $users = $users->toArray();
@@ -934,7 +928,7 @@ class Update3To4Command extends Command {
         /** @var \Statusengine2Module\Model\Table\NotificationHostsTable $NotificationHostsTable */
         $NotificationHostsTable = TableRegistry::getTableLocator()->get('Statusengine2Module.NotificationHosts');
 
-        $query = $NotificationHostsTable->find()
+        $query = $NotificationHostsTable->unhydratedFind()
             ->select([
                 'NotificationHosts.object_id',
                 'NotificationHosts.notification_type',
@@ -1005,7 +999,6 @@ class Update3To4Command extends Command {
 
         $query->offset($offset);
         $query->limit($this->limit);
-        $query->disableHydration();
         $query->disableResultsCasting();
         return $query->toArray();
     }
@@ -1014,7 +1007,7 @@ class Update3To4Command extends Command {
         /** @var \Statusengine2Module\Model\Table\NotificationServicesTable $NotificationServicesTable */
         $NotificationServicesTable = TableRegistry::getTableLocator()->get('Statusengine2Module.NotificationServices');
 
-        $query = $NotificationServicesTable->find();
+        $query = $NotificationServicesTable->unhydratedFind();
         $query->select([
             'NotificationServices.object_id',
             'NotificationServices.notification_type',
@@ -1100,7 +1093,6 @@ class Update3To4Command extends Command {
 
         $query->offset($offset);
         $query->limit($this->limit);
-        $query->disableHydration();
         $query->disableResultsCasting();
         return $query->toArray();
     }
@@ -1109,7 +1101,7 @@ class Update3To4Command extends Command {
         /** @var \Statusengine2Module\Model\Table\StatehistoryHostsTable $StatehistoryHostsTable */
         $StatehistoryHostsTable = TableRegistry::getTableLocator()->get('Statusengine2Module.StatehistoryHosts');
 
-        $query = $StatehistoryHostsTable->find();
+        $query = $StatehistoryHostsTable->unhydratedFind();
         $query
             ->select([
                 'StatehistoryHosts.state_time',
@@ -1139,7 +1131,6 @@ class Update3To4Command extends Command {
 
         $query->offset($offset);
         $query->limit($this->limit);
-        $query->disableHydration();
         $query->disableResultsCasting();
         return $query->toArray();
     }
@@ -1148,7 +1139,7 @@ class Update3To4Command extends Command {
         /** @var \Statusengine2Module\Model\Table\StatehistoryServicesTable $StatehistoryServicesTable */
         $StatehistoryServicesTable = TableRegistry::getTableLocator()->get('Statusengine2Module.StatehistoryServices');
 
-        $query = $StatehistoryServicesTable->find();
+        $query = $StatehistoryServicesTable->unhydratedFind();
         $query
             ->select([
                 'StatehistoryServices.state_time',
@@ -1179,7 +1170,6 @@ class Update3To4Command extends Command {
 
         $query->offset($offset);
         $query->limit($this->limit);
-        $query->disableHydration();
         $query->disableResultsCasting();
         return $query->toArray();
     }
@@ -1189,7 +1179,7 @@ class Update3To4Command extends Command {
         $AcknowledgementHostsTable = TableRegistry::getTableLocator()->get('Statusengine2Module.AcknowledgementHosts');
 
 
-        $query = $AcknowledgementHostsTable->find();
+        $query = $AcknowledgementHostsTable->unhydratedFind();
 
         $query
             ->select([
@@ -1218,7 +1208,6 @@ class Update3To4Command extends Command {
 
         $query->offset($offset);
         $query->limit($this->limit);
-        $query->disableHydration();
         $query->disableResultsCasting();
         return $query->toArray();
     }
@@ -1228,7 +1217,7 @@ class Update3To4Command extends Command {
         $AcknowledgementServicesTable = TableRegistry::getTableLocator()->get('Statusengine2Module.AcknowledgementServices');
 
 
-        $query = $AcknowledgementServicesTable->find();
+        $query = $AcknowledgementServicesTable->unhydratedFind();
 
         $query
             ->select([
@@ -1258,7 +1247,6 @@ class Update3To4Command extends Command {
 
         $query->offset($offset);
         $query->limit($this->limit);
-        $query->disableHydration();
         $query->disableResultsCasting();
         return $query->toArray();
     }
@@ -1267,7 +1255,7 @@ class Update3To4Command extends Command {
         /** @var \Statusengine2Module\Model\Table\DowntimeHostsTable $DowntimeHostsTable */
         $DowntimeHostsTable = TableRegistry::getTableLocator()->get('Statusengine2Module.DowntimeHosts');
 
-        $query = $DowntimeHostsTable->find();
+        $query = $DowntimeHostsTable->unhydratedFind();
 
         $query
             ->select([
@@ -1301,7 +1289,6 @@ class Update3To4Command extends Command {
 
         $query->offset($offset);
         $query->limit($this->limit);
-        $query->disableHydration();
         $query->disableResultsCasting();
         return $query->toArray();
     }
@@ -1310,7 +1297,7 @@ class Update3To4Command extends Command {
         /** @var \Statusengine2Module\Model\Table\DowntimeServicesTable $DowntimeServicesTable */
         $DowntimeServicesTable = TableRegistry::getTableLocator()->get('Statusengine2Module.DowntimeServices');
 
-        $query = $DowntimeServicesTable->find();
+        $query = $DowntimeServicesTable->unhydratedFind();
 
         $query
             ->select([
@@ -1345,7 +1332,6 @@ class Update3To4Command extends Command {
 
         $query->offset($offset);
         $query->limit($this->limit);
-        $query->disableHydration();
         $query->disableResultsCasting();
         return $query->toArray();
     }
@@ -1354,7 +1340,7 @@ class Update3To4Command extends Command {
         /** @var \Statusengine2Module\Model\Table\HostchecksTable $HostchecksTable */
         $HostchecksTable = TableRegistry::getTableLocator()->get('Statusengine2Module.Hostchecks');
 
-        $query = $HostchecksTable->find();
+        $query = $HostchecksTable->unhydratedFind();
         $query
             ->select([
                 'Hostchecks.start_time',
@@ -1389,7 +1375,6 @@ class Update3To4Command extends Command {
 
         $query->offset($offset);
         $query->limit($this->limit);
-        $query->disableHydration();
         $query->disableResultsCasting();
         return $query->toArray();
     }
@@ -1398,7 +1383,7 @@ class Update3To4Command extends Command {
         /** @var \Statusengine2Module\Model\Table\ServicechecksTable $ServicechecksTable */
         $ServicechecksTable = TableRegistry::getTableLocator()->get('Statusengine2Module.Servicechecks');
 
-        $query = $ServicechecksTable->find();
+        $query = $ServicechecksTable->unhydratedFind();
         $query
             ->select([
                 'Servicechecks.start_time',
@@ -1434,7 +1419,6 @@ class Update3To4Command extends Command {
 
         $query->offset($offset);
         $query->limit($this->limit);
-        $query->disableHydration();
         $query->disableResultsCasting();
         return $query->toArray();
     }
@@ -1443,7 +1427,7 @@ class Update3To4Command extends Command {
         /** @var \Statusengine2Module\Model\Table\LogentriesTable $LogentriesTable */
         $LogentriesTable = TableRegistry::getTableLocator()->get('Statusengine2Module.Logentries');
 
-        $query = $LogentriesTable->find();
+        $query = $LogentriesTable->unhydratedFind();
 
         if ($asCount === true) {
             return $query->count();
@@ -1451,7 +1435,6 @@ class Update3To4Command extends Command {
 
         $query->offset($offset);
         $query->limit($this->limit);
-        $query->disableHydration();
         $query->disableResultsCasting();
         return $query->toArray();
     }

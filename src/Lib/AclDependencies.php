@@ -321,7 +321,9 @@ class AclDependencies {
 
         $this
             ->dependency('Cronjobs', 'add', 'Cronjobs', 'getTasks')
-            ->dependency('Cronjobs', 'edit', 'Cronjobs', 'getTasks');
+            ->dependency('Cronjobs', 'add', 'Cronjobs', 'getPlugins')
+            ->dependency('Cronjobs', 'edit', 'Cronjobs', 'getTasks')
+            ->dependency('Cronjobs', 'edit', 'Cronjobs', 'getPlugins');
 
 
         $this
@@ -389,6 +391,7 @@ class AclDependencies {
             ->dependency('Hosts', 'delete', 'Hosts', 'mass_delete')
             ->dependency('Hosts', 'deactivate', 'Hosts', 'mass_deactivate')
             ->dependency('Hosts', 'browser', 'Hosts', 'getGrafanaIframeUrlForDatepicker')
+            ->dependency('Hosts', 'notificationsOverview', 'Hosts', 'notificationsOverviewAllowed')
             ->dependency('Hosts', 'browser', 'Hosts', 'loadAdditionalInformation')
             ->dependency('Hosts', 'browser', 'Hosts', 'loadSlaInformation')
             ->dependency('Hosts', 'browser', 'Hosts', 'loadIsarFlowInformation')
@@ -505,7 +508,8 @@ class AclDependencies {
             ->dependency('Services', 'edit', 'Services', 'loadEventhandlerCommandArguments')
             ->dependency('Services', 'serviceList', 'Services', 'deleted')
             ->dependency('Services', 'browser', 'Services', 'loadCustomalerts')
-            ->dependency('Services', 'browser', 'Services', 'loadSlaInformation');
+            ->dependency('Services', 'browser', 'Services', 'loadSlaInformation')
+            ->dependency('Services', 'notificationsOverview', 'Services', 'notificationsOverviewAllowed');
 
 
         $this
@@ -773,8 +777,7 @@ class AclDependencies {
      * @return array
      */
     public function getDependentAcos(AcosTable $AcosTable, array $selectedAcos): array {
-        $threadedAcos = $AcosTable->find('threaded')
-            ->disableHydration()
+        $threadedAcos = $AcosTable->unhydratedFind('threaded')
             ->all();
 
         $acos = [];

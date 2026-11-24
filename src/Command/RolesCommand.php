@@ -108,7 +108,7 @@ class RolesCommand extends Command {
             $io->out(__('Checking permissions for user group "{0}"...', $usergroupName), 0);
 
             //Get current Aros and Acos of the user usergroup
-            $usergroup = $UsergroupsTable->find()
+            $usergroup = $UsergroupsTable->unhydratedFind()
                 ->contain([
                     'Aros' => [
                         'Acos'
@@ -117,7 +117,6 @@ class RolesCommand extends Command {
                 ->where([
                     'Usergroups.id' => $usergroupId
                 ])
-                ->disableHydration()
                 ->firstOrFail();
 
             //Create an list of AcoId => 0/1
@@ -345,7 +344,7 @@ class RolesCommand extends Command {
         $ArosAcosTable = TableRegistry::getTableLocator()->get('ArosAcos');
 
         //Get current Aros and Acos of the user usergroup
-        $usergroup = $UsergroupsTable->find()
+        $usergroup = $UsergroupsTable->unhydratedFind()
             ->contain([
                 'Aros' => [
                     'Acos'
@@ -354,7 +353,6 @@ class RolesCommand extends Command {
             ->where([
                 'Usergroups.name' => 'Administrator'
             ])
-            ->disableHydration()
             ->firstOrFail();
 
 
@@ -416,7 +414,7 @@ class RolesCommand extends Command {
 
             //Get current Aros and Acos of the user usergroup
             try {
-                $usergroup = $UsergroupsTable->find()
+                $usergroup = $UsergroupsTable->unhydratedFind()
                     ->contain([
                         'Aros' => [
                             'Acos'
@@ -425,7 +423,6 @@ class RolesCommand extends Command {
                     ->where([
                         'Usergroups.name' => $userRoleName
                     ])
-                    ->disableHydration()
                     ->firstOrFail();
             }catch (RecordNotFoundException $e){
                 // Usergroup "Viewer" not found. Got renamed?

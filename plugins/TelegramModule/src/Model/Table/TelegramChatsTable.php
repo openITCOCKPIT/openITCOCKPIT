@@ -21,7 +21,7 @@ use Cake\Validation\Validator;
  * @method \TelegramModule\Model\Entity\TelegramChats saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \TelegramModule\Model\Entity\TelegramChats patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \TelegramModule\Model\Entity\TelegramChats[] patchEntities($entities, array $data, array $options = [])
- * @method \TelegramModule\Model\Entity\TelegramChats findOrCreate($search, callable $callback = null, $options = [])
+ * @method \TelegramModule\Model\Entity\TelegramChats findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -80,8 +80,7 @@ class TelegramChatsTable extends Table {
      * @return \Cake\Datasource\ResultSetInterface
      */
     public function getTelegramChats() {
-        $result = $this->find()
-            ->disableHydration()
+        $result = $this->unhydratedFind()
             ->all();
 
         return $result;

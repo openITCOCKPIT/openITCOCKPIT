@@ -112,7 +112,7 @@ class ServicestatusTable extends Table implements ServicestatusTableInterface {
             $select[] = 'Servicestatus.service_description';
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select($select)
             ->innerJoin(
                 ['Services' => 'services'],
@@ -135,7 +135,6 @@ class ServicestatusTable extends Table implements ServicestatusTableInterface {
         }
 
         $query->where($where);
-        $query->disableHydration();
 
         if ($findType === 'all') {
             $result = $query->all();

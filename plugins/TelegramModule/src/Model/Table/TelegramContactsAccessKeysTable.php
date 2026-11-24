@@ -21,7 +21,7 @@ use Cake\Validation\Validator;
  * @method \TelegramModule\Model\Entity\TelegramContactsAccessKeys saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
  * @method \TelegramModule\Model\Entity\TelegramContactsAccessKeys patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
  * @method \TelegramModule\Model\Entity\TelegramContactsAccessKeys[] patchEntities($entities, array $data, array $options = [])
- * @method \TelegramModule\Model\Entity\TelegramContactsAccessKeys findOrCreate($search, callable $callback = null, $options = [])
+ * @method \TelegramModule\Model\Entity\TelegramContactsAccessKeys findOrCreate($search, ?callable $callback = null, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
@@ -116,8 +116,7 @@ class TelegramContactsAccessKeysTable extends Table {
      */
     public function getAllAsArray() {
         $contactsAccessKeys = [];
-        $contactsAccessKeysQuery = $this->find()
-            ->disableHydration()
+        $contactsAccessKeysQuery = $this->unhydratedFind()
             ->all();
 
         if ($contactsAccessKeysQuery !== null) {

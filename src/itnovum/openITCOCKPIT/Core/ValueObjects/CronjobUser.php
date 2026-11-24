@@ -49,8 +49,4 @@ class CronjobUser extends User {
         return 0;
     }
 
-    public function getUserAvatar() {
-        return WWW_ROOT . 'img' . DS . 'logos' . DS . 'openitcockpit-logo-url.png';
-    }
-
 }

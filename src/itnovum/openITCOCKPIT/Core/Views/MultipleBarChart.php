@@ -69,7 +69,6 @@ class MultipleBarChart {
         $this->createChartGrid();
         $this->create($chartData);
         imagepng($this->img, $filepath . DS . $filename, 0);
-        imagedestroy($this->img);
 
         return $filename;
     }

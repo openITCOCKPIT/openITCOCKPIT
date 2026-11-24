@@ -29,6 +29,7 @@ namespace App\Model\Table;
 
 use App\Lib\PluginManager;
 use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Utility\Hash;
@@ -708,10 +709,10 @@ class WizardAssignmentsTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface|null
      */
     public function getWizardByUuidForEdit($uuid) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where(['WizardAssignments.uuid' => $uuid])
             ->contain([
-                'Servicetemplates' => function (Query $query) {
+                'Servicetemplates' => function (SelectQuery $query) {
                     $query->enableAutoFields(false)
                         ->select([
                             'Servicetemplates.id'
@@ -719,7 +720,6 @@ class WizardAssignmentsTable extends Table {
                     return $query;
                 }
             ])
-            ->disableHydration()
             ->first();
 
 

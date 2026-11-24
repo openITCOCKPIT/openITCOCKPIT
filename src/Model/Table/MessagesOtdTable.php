@@ -153,8 +153,7 @@ class MessagesOtdTable extends Table {
      * @return mixed
      */
     public function getMessagesOTDIndex(GenericFilter $GenericFilter, $PaginateOMat = null) {
-        $query = $this->find('all')
-            ->disableHydration();
+        $query = $this->unhydratedFind('all');
         $where = $GenericFilter->genericFilters();
         if (!empty($where['MessagesOtd.date LIKE'])) {
             if (strpos($where['MessagesOtd.date LIKE'], '-') !== false) {
@@ -197,14 +196,13 @@ class MessagesOtdTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface
      */
     public function getMessageOtdByIdForEdit($id) {
-        $result = $this->find()
+        $result = $this->unhydratedFind()
             ->contain([
                 'Usergroups'
             ])
             ->where([
                 'MessagesOtd.id' => $id
             ])
-            ->disableHydration()
             ->firstOrFail();
 
         $result['usergroups'] = [
@@ -221,7 +219,7 @@ class MessagesOtdTable extends Table {
      */
     public function getMessageOtdForToday($userTimezone, $usergroupId) {
         $today = new \DateTime('now', new \DateTimeZone($userTimezone));
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         return $query->select([
             'MessagesOtd.id',
             'MessagesOtd.title',
@@ -230,14 +228,13 @@ class MessagesOtdTable extends Table {
             'MessagesOtd.date',
             'MessagesOtd.expiration_duration',
             'MessagesOtd.style',
-            'usergroup_ids' => $query->newExpr('GROUP_CONCAT(DISTINCT MessagesOtdToUsergroups.usergroup_id)'),
+            'usergroup_ids' => $query->expr('GROUP_CONCAT(DISTINCT MessagesOtdToUsergroups.usergroup_id)'),
         ])->leftJoin(
             ['MessagesOtdToUsergroups' => 'messages_otd_to_usergroups'],
             ['MessagesOtdToUsergroups.message_otd_id = MessagesOtd.id']
         )->where([
             ':today BETWEEN MessagesOtd.date AND IF(MessagesOtd.expiration_duration IS NULL, :today, DATE_ADD(MessagesOtd.date, INTERVAL MessagesOtd.expiration_duration DAY))'
         ])->bind(':today', $today, 'date')
-            ->disableHydration()
             ->groupBy('MessagesOtd.date')
             ->having([
                 'FIND_IN_SET(:usergroup_id, IF(usergroup_ids IS NULL, :usergroup_id, usergroup_ids))'

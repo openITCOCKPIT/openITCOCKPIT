@@ -111,9 +111,8 @@ class DeletedServicesTable extends Table {
      * @return array
      */
     public function getDeletedServicesIndex(ServiceFilter $ServiceFilter, $PaginateOMat = null) {
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->where($ServiceFilter->deletedFilter())
-            ->disableHydration()
             ->orderBy($ServiceFilter->getOrderForPaginator('DeletedDeleteds.created', 'desc'));
 
 

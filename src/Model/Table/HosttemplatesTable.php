@@ -35,7 +35,7 @@ use App\Model\Entity\Changelog;
 use App\Model\Entity\Hosttemplate;
 use App\Model\Entity\User;
 use Cake\Core\Plugin;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -424,7 +424,7 @@ class HosttemplatesTable extends Table {
      * @return array
      */
     public function getHosttemplatesIndex(HosttemplateFilter $HosttemplateFilter, $PaginateOMat = null, $MY_RIGHTS = []) {
-        $query = $this->find('all')->disableHydration();
+        $query = $this->unhydratedFind('all');
         $where = $HosttemplateFilter->indexFilter();
         if (!empty($MY_RIGHTS)) {
             $where['Hosttemplates.container_id IN'] = $MY_RIGHTS;
@@ -453,12 +453,11 @@ class HosttemplatesTable extends Table {
      * @return array
      */
     public function getHosttemplateById($id, $contain = ['Containers']) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Hosttemplates.id' => $id
             ])
             ->contain($contain)
-            ->disableHydration()
             ->first();
 
         return $this->formatFirstResultAsCake2($query, true);
@@ -470,12 +469,11 @@ class HosttemplatesTable extends Table {
      * @return array
      */
     public function getHosttemplateByUuid($uuid, $contain = ['Containers']) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Hosttemplates.uuid' => $uuid
             ])
             ->contain($contain)
-            ->disableHydration()
             ->first();
 
         return $this->formatFirstResultAsCake2($query, true);
@@ -503,12 +501,11 @@ class HosttemplatesTable extends Table {
             $contain[] = 'PrometheusExporters';
         };
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Hosttemplates.id' => $id
             ])
             ->contain($contain)
-            ->disableHydration()
             ->first();
 
         $hosttemplate = $query;
@@ -576,7 +573,7 @@ class HosttemplatesTable extends Table {
      * @return array
      */
     public function getHosttemplateForHostBrowser($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Hosttemplates.id' => $id
             ])
@@ -596,7 +593,6 @@ class HosttemplatesTable extends Table {
                     'Commandarguments'
                 ]
             ])
-            ->disableHydration()
             ->first();
 
         $hosttemplate = $query;
@@ -671,7 +667,7 @@ class HosttemplatesTable extends Table {
             $contain[] = 'PrometheusExporters';
         };
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hosttemplates.id',
                 'Hosttemplates.name',
@@ -688,7 +684,6 @@ class HosttemplatesTable extends Table {
         }
 
         $query
-            ->disableHydration()
             ->all();
 
         $query = $query->toArray();
@@ -704,7 +699,7 @@ class HosttemplatesTable extends Table {
      * @param array $containerIds
      * @param HosttemplateFilter $HosttemplateFilter
      * @param array $selected
-     * @return array|\Cake\ORM\Query
+     * @return array|SelectQuery
      */
     public function getHosttemplatesForAngular($containerIds, HosttemplateFilter $HosttemplateFilter, $selected = []) {
         if (!is_array($containerIds)) {
@@ -716,7 +711,7 @@ class HosttemplatesTable extends Table {
 
         $where = $HosttemplateFilter->ajaxFilter();
         $where['Hosttemplates.container_id IN'] = $containerIds;
-        $query = $this->find('list')
+        $query = $this->unhydratedFind('list')
             ->select([
                 'Hosttemplates.id',
                 'Hosttemplates.name'
@@ -725,8 +720,7 @@ class HosttemplatesTable extends Table {
             ->orderBy([
                 'Hosttemplates.name' => 'asc'
             ])
-            ->limit(ITN_AJAX_LIMIT)
-            ->disableHydration();
+            ->limit(ITN_AJAX_LIMIT);
 
         $hosttemplatesWithLimit = $query->toArray();
         if (empty($hosttemplatesWithLimit)) {
@@ -777,14 +771,13 @@ class HosttemplatesTable extends Table {
             $where['Hosttemplates.hosttemplatetype_id IN'] = $hosttemplateTypes;
         }
 
-        $query = $this->find($type)
+        $query = $this->unhydratedFind($type)
             ->where(
                 $where
             )
             ->orderBy([
                 'Hosttemplates.name' => 'asc',
-            ])
-            ->disableHydration();
+            ]);
 
         $result = $query->toArray();
         if (empty($result)) {
@@ -839,12 +832,11 @@ class HosttemplatesTable extends Table {
             $ids = [$ids];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hosttemplates.id',
                 'Hosttemplates.name'
-            ])
-            ->disableHydration();
+            ]);
         if (!empty($ids)) {
             $query->where([
                 'Hosttemplates.id IN' => $ids
@@ -856,7 +848,7 @@ class HosttemplatesTable extends Table {
 
     /**
      * @param null $uuid
-     * @return array|\Cake\ORM\Query
+     * @return array|SelectQuery
      */
     public function getHosttemplatesForExport($uuid = null) {
         $query = $this->find()
@@ -1034,20 +1026,19 @@ class HosttemplatesTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface|null
      */
     public function getHostgroupsByHosttemplateId($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hosttemplates.id'
             ])
             ->contain([
                 'Hostgroups' =>
-                    function (Query $query) {
+                    function (SelectQuery $query) {
                         return $query->enableAutoFields(false)->select(['id', 'uuid']);
                     }
             ])
             ->where([
                 'Hosttemplates.id' => $id
             ])
-            ->disableHydration()
             ->first();
 
         return $query;
@@ -1058,7 +1049,7 @@ class HosttemplatesTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface
      */
     public function getContactsAndContactgroupsById($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hosttemplates.id'
             ])
@@ -1069,7 +1060,6 @@ class HosttemplatesTable extends Table {
                 'Contactgroups',
                 'Contacts'
             ])
-            ->disableHydration()
             ->firstOrFail();
 
         $hosttemplate = $query;
@@ -1088,7 +1078,7 @@ class HosttemplatesTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface
      */
     public function getContactsAndContactgroupsByIdForServiceBrowser($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Hosttemplates.id'
             ])
@@ -1103,7 +1093,6 @@ class HosttemplatesTable extends Table {
                     'Containers'
                 ]
             ])
-            ->disableHydration()
             ->firstOrFail();
 
         $hosttemplate = $query;
@@ -1172,7 +1161,7 @@ class HosttemplatesTable extends Table {
         /** @var ContactsToHosttemplatesTable $ContactsToHosttemplatesTable */
         $ContactsToHosttemplatesTable = TableRegistry::getTableLocator()->get('ContactsToHosttemplates');
 
-        $query = $ContactsToHosttemplatesTable->find()
+        $query = $ContactsToHosttemplatesTable->unhydratedFind()
             ->select([
                 'hosttemplate_id'
             ])
@@ -1182,7 +1171,6 @@ class HosttemplatesTable extends Table {
             ->groupBy([
                 'hosttemplate_id'
             ])
-            ->disableHydration()
             ->all();
 
         $result = $query->toArray();
@@ -1297,7 +1285,7 @@ class HosttemplatesTable extends Table {
 
         $where = Hash::merge($_where, $where);
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Hosttemplates.' . $index,
             'Hosttemplates.name'
@@ -1309,8 +1297,6 @@ class HosttemplatesTable extends Table {
                 'Hosttemplates.container_id IN' => $MY_RIGHTS
             ]);
         }
-
-        $query->disableHydration();
         $query->orderBy([
             'Hosttemplates.name' => 'asc'
         ]);
@@ -1378,7 +1364,7 @@ class HosttemplatesTable extends Table {
         /** @var HostsTable $HostsTable */
         $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
 
-        $query = $HostsTable->find()
+        $query = $HostsTable->unhydratedFind()
             ->select([
                 'Hosts.id'
             ])
@@ -1388,7 +1374,6 @@ class HosttemplatesTable extends Table {
             ]);
 
         $hosts = $query
-            ->disableHydration()
             ->all();
 
         if (!empty($hosts)) {

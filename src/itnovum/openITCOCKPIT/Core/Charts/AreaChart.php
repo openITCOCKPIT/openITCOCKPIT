@@ -929,7 +929,6 @@ class AreaChart {
             }
         } finally {
             fclose($fp);
-            imagedestroy($image);
         }
 
         return $png;

@@ -77,8 +77,7 @@ class JiraSubTasksCommand extends Command {
         /** @var AcosTable $AcosTable */
         $AcosTable = TableRegistry::getTableLocator()->get('Acl.Acos');
 
-        $acos = $AcosTable->find('threaded')
-            ->disableHydration()
+        $acos = $AcosTable->unhydratedFind('threaded')
             ->all();
 
         foreach ($acos as $aco) {

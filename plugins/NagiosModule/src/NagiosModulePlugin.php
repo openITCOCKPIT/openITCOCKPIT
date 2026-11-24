@@ -25,7 +25,7 @@
 
 declare(strict_types=1);
 
-namespace MapModule;
+namespace NagiosModule;
 
 use Cake\Core\BasePlugin;
 use Cake\Core\PluginApplicationInterface;
@@ -33,19 +33,21 @@ use Cake\Http\MiddlewareQueue;
 use Cake\Routing\RouteBuilder;
 
 /**
- * Plugin for MapModule
+ * Plugin for NagiosModule
  */
-class Plugin extends BasePlugin {
+class NagiosModulePlugin extends BasePlugin
+{
     /**
      * Load all the plugin configuration and bootstrap logic.
      *
      * The host application is provided as an argument. This allows you to load
      * additional plugin dependencies, or attach events.
      *
-     * @param PluginApplicationInterface $app The host application
+     * @param \Cake\Core\PluginApplicationInterface $app The host application
      * @return void
      */
-    public function bootstrap(PluginApplicationInterface $app): void {
+    public function bootstrap(PluginApplicationInterface $app): void
+    {
     }
 
     /**
@@ -54,13 +56,14 @@ class Plugin extends BasePlugin {
      * If your plugin has many routes and you would like to isolate them into a separate file,
      * you can create `$plugin/config/routes.php` and delete this method.
      *
-     * @param RouteBuilder $routes The route builder to update.
+     * @param \Cake\Routing\RouteBuilder $routes The route builder to update.
      * @return void
      */
-    public function routes(RouteBuilder $routes): void {
+    public function routes(RouteBuilder $routes): void
+    {
         $routes->plugin(
-            'MapModule',
-            ['path' => '/map_module'],
+            'NagiosModule',
+            ['path' => '/nagios_module'],
             function (RouteBuilder $builder) {
                 // Add custom routes here
 
@@ -72,10 +75,11 @@ class Plugin extends BasePlugin {
     /**
      * Add middleware for the plugin.
      *
-     * @param MiddlewareQueue $middleware The middleware queue to update.
-     * @return MiddlewareQueue
+     * @param \Cake\Http\MiddlewareQueue $middleware The middleware queue to update.
+     * @return \Cake\Http\MiddlewareQueue
      */
-    public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue {
+    public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
+    {
         // Add your middlewares here
 
         return $middlewareQueue;

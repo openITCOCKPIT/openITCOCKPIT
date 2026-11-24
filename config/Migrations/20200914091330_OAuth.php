@@ -25,7 +25,6 @@
 
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
 
 /**
  * Class OAuth

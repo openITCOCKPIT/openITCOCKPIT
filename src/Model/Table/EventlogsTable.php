@@ -30,7 +30,7 @@ namespace App\Model\Table;
 use App\itnovum\openITCOCKPIT\Filter\EventlogsFilter;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\Log\Log;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Inflector;
@@ -146,8 +146,8 @@ class EventlogsTable extends Table {
             'model',
             'type',
             'object_id',
-            'name'       => $query->newExpr('IF(Users.email IS NULL, Eventlogs.name, CONCAT(Users.firstname, " ", Users.lastname))'),
-            'user_email' => $query->newExpr('IF(Users.email IS NOT NULL, Users.email, NULL)'),
+            'name'       => $query->expr('IF(Users.email IS NULL, Eventlogs.name, CONCAT(Users.firstname, " ", Users.lastname))'),
+            'user_email' => $query->expr('IF(Users.email IS NOT NULL, Users.email, NULL)'),
             'data',
             'created'
         ])->contain(['Containers', 'Users']);
@@ -156,7 +156,7 @@ class EventlogsTable extends Table {
             $query->where(['Eventlogs.type IN' => $logTypes]);
         }
 
-        $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
+        $query->innerJoinWith('Containers', function (SelectQuery $q) use ($MY_RIGHTS) {
             if (!empty($MY_RIGHTS)) {
                 return $q->where(['Containers.id IN' => $MY_RIGHTS]);
             }

@@ -39,7 +39,7 @@ use App\Model\Table\ServicegroupsTable;
 use App\Model\Table\TimeperiodsTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
@@ -166,11 +166,11 @@ class ServicedependenciesController extends AppController {
             throw new NotFoundException('Service dependency not found');
         }
         $servicedependency = $ServicedependenciesTable->get($id, contain: [
-            'Services'      => function (Query $q) {
+            'Services'      => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id', 'name']);
             },
-            'Servicegroups' => function (Query $q) {
+            'Servicegroups' => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id']);
             },

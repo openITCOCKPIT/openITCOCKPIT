@@ -130,7 +130,7 @@ class NotificationServicesTable extends Table implements NotificationServicesTab
 
             'HostsToContainers.container_id',
 
-            'servicename' => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+            'servicename' => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
         ])
             ->innerJoin(
                 ['Services' => 'services'],

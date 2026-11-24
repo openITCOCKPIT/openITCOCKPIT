@@ -193,7 +193,7 @@ class ContainerRecoverCommand extends Command {
 
                 if ($noErrors === true) {
                     $ContainersTable->addBehavior('Tree');
-                    $ContainersTable->recover();
+                    $ContainersTable->getBehavior('Tree')->recover();
                     $io->hr();
                     $io->success('Recovery successful');
                     return 0;

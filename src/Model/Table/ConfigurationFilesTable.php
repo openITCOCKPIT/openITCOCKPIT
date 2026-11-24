@@ -100,11 +100,10 @@ class ConfigurationFilesTable extends Table {
      * @return array|null
      */
     public function getConfigValuesByConfigFile($configFile) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'ConfigurationFiles.config_file' => $configFile
             ])
-            ->disableHydration()
             ->all();
 
         return $this->formatResultAsCake2($query->toArray(), false);

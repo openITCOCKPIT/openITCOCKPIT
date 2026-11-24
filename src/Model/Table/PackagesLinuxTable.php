@@ -32,6 +32,7 @@ use App\Model\Entity\PackagesLinuxHost;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Log\Log;
 use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -115,11 +116,10 @@ class PackagesLinuxTable extends Table {
     }
 
     public function getPackageBy($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'PackagesLinux.id' => $id
             ])
-            ->disableHydration()
             ->firstOrFail();
 
         return $query;
@@ -140,7 +140,7 @@ class PackagesLinuxTable extends Table {
      * @param null|int $offset
      */
     public function getPackagesLinuxWithLimit(?int $limit = null, ?int $offset = null): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'PackagesLinux.id',
                 'PackagesLinux.name',
@@ -152,8 +152,6 @@ class PackagesLinuxTable extends Table {
         if ($offset !== null) {
             $query->offset($offset);
         }
-
-        $query->disableHydration();
 
         $query->all();
         return $query->toArray();
@@ -190,7 +188,7 @@ class PackagesLinuxTable extends Table {
                 'host_id' => $hostId,
             ])
             ->contain([
-                'PackagesLinux' => function (Query $query) {
+                'PackagesLinux' => function (SelectQuery $query) {
                     return $query->select([
                         'id',
                         'name',
@@ -518,7 +516,7 @@ class PackagesLinuxTable extends Table {
                 'is_security_update' => 1,
             ]);
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'PackagesLinux.id',
             'PackagesLinux.name',
@@ -528,7 +526,7 @@ class PackagesLinuxTable extends Table {
             'PackagesLinux.modified',
             'available_updates'          => $subQueryForUpdates,
             'available_security_updates' => $subQueryForSecurityUpdates,
-            'packageStatus'              => $query->newExpr()->add([
+            'packageStatus'              => $query->expr()->add([
                 'CASE
             WHEN (' . $subQueryForSecurityUpdates . ') > 0 THEN 2
             WHEN (' . $subQueryForUpdates . ') > 0 THEN 1
@@ -537,7 +535,7 @@ class PackagesLinuxTable extends Table {
             ])
         ])
             ->contain([
-                'PackageLinuxHosts' => function (Query $query) use ($MY_RIGHTS) {
+                'PackageLinuxHosts' => function (SelectQuery $query) use ($MY_RIGHTS) {
                     $query->select([
                         'PackageLinuxHosts.package_linux_id',
                         'PackageLinuxHosts.needs_update',
@@ -588,8 +586,6 @@ class PackagesLinuxTable extends Table {
             )
         );
 
-        $query->disableHydration();
-
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $query->toArray();
@@ -623,10 +619,10 @@ class PackagesLinuxTable extends Table {
         ];
 
 
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->disableAutoFields()
             ->contain([
-                'PackageLinuxHosts' => function (Query $query) {
+                'PackageLinuxHosts' => function (SelectQuery $query) {
                     $query->select([
                         'PackageLinuxHosts.package_linux_id',
                         'PackageLinuxHosts.needs_update',
@@ -652,9 +648,6 @@ class PackagesLinuxTable extends Table {
                     return $query;
                 }
             ]);
-
-
-        $query->disableHydration();
         $result = $query->toArray();
         if (empty($result)) {
             return $all_packages_linux_summary;

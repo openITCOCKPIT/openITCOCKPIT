@@ -70,7 +70,14 @@ fi
 . /opt/openitc/etc/mysql/bash.conf
 
 echo "Copy required system files"
-rsync -K -a ${APPDIR}/system/etc/. /etc/ # we use rsync because the destination can be a symlink on RHEL
+# ITC-3914 rsync >= 3.5 (Debian 13) and the RHEL 9 backport refuse to follow symlinked
+# directories inside the destination tree unless --insecure-links is given.
+# Older rsync versions (e.g. Ubuntu 24.04) do not know the option at all.
+RSYNC_OPTS="-K -a"
+if rsync --insecure-links --version >/dev/null 2>&1; then
+    RSYNC_OPTS="$RSYNC_OPTS --insecure-links"
+fi
+rsync $RSYNC_OPTS ${APPDIR}/system/etc/. /etc/ # we use rsync because the destination can be a symlink on RHEL
 chown root:root /etc
 cp -r ${APPDIR}/system/usr/. /usr/
 cp ${APPDIR}/system/nginx/ssl_options_$OSVERSION /etc/nginx/openitc/ssl_options.conf
@@ -231,7 +238,7 @@ mysql --defaults-extra-file=${INIFILE} -e "DELETE FROM cronjobs WHERE task='Ackn
 echo "Running openITCOCKPIT Core database migration"
 oitc migrations migrate
 
-oitc migrations seed
+yes | oitc seeds run --quiet
 
 echo "Running openITCOCKPIT Module database migration/s"
 for PLUGIN in $(ls -1 "${APPDIR}/plugins"); do
@@ -245,7 +252,7 @@ for PLUGIN in $(ls -1 "${APPDIR}/plugins"); do
       num_files=$(find "${APPDIR}/plugins/${PLUGIN}/config/Seeds" -mindepth 1 -iname "*.php" -type f | wc -l)
       if [[ "$num_files" -gt 0 ]]; then
         echo "Importing default records for ${PLUGIN} into database"
-        oitc migrations seed -p "${PLUGIN}"
+        yes | oitc seeds run -p "${PLUGIN}"
       fi
     fi
 
@@ -353,7 +360,7 @@ fi
 echo ""
 
 echo "Copy required system files"
-rsync -K -a ${APPDIR}/system/etc/. /etc/
+rsync $RSYNC_OPTS ${APPDIR}/system/etc/. /etc/ # we use rsync because the destination can be a symlink on RHEL
 chown root:root /etc
 cp -r ${APPDIR}/system/usr/. /usr/
 cp ${APPDIR}/system/nginx/ssl_options_$OSVERSION /etc/nginx/openitc/ssl_options.conf

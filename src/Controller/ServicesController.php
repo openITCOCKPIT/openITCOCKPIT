@@ -68,8 +68,10 @@ use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\I18n\I18n;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
+use Collator;
 use CustomalertModule\Model\Table\CustomalertsTable;
 use DistributeModule\Model\Table\SatellitesTable;
 use EventcorrelationModule\Model\Table\EventcorrelationsTable;
@@ -2736,6 +2738,197 @@ class ServicesController extends AppController {
             'acknowledgements',
             'timeranges'
         ]);
+    }
+
+    /**
+     * @param int|null $id
+     * @throws MissingDbBackendException
+     */
+    public function notificationsOverview($id = null) {
+        $session = $this->request->getSession();
+        $session->close();
+
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var ServicesTable $ServicesTable */
+        $ServicesTable = TableRegistry::getTableLocator()->get('Services');
+
+        if (!$ServicesTable->existsById($id)) {
+            throw new NotFoundException(__('Service not found'));
+        }
+
+        $service = $ServicesTable->getServiceByIdForNotificationPeriods($id);
+
+        if (!$this->allowedByContainerId($service->getContainerIds(), false)) {
+            $this->render403();
+            return;
+        }
+
+        $servicetemplate = $service->get('servicetemplate');
+        $host = $service->get('host');
+        $hosttemplate = $host->get('hosttemplate');
+
+        $notificationsEnabled = (bool)($service->get('notifications_enabled') ?? $servicetemplate->get('notifications_enabled'));
+
+        $serviceTimeperiodId = $service->get('notify_period_id');
+        if (empty($serviceTimeperiodId)) {
+            $serviceTimeperiodId = $servicetemplate->get('notify_period_id');
+        }
+
+        /** @var TimeperiodsTable $TimeperiodsTable */
+        $TimeperiodsTable = TableRegistry::getTableLocator()->get('Timeperiods');
+
+        // Contacts and contact groups are inherited together. The first level that has contacts or
+        // contact groups wins: service → service template → host → host template (see ServiceMergerForView)
+        $contacts = [];
+        $contactgroups = [];
+        foreach ([$service, $servicetemplate, $host, $hosttemplate] as $level) {
+            $contacts = $level->get('contacts') ?? [];
+            $contactgroups = $level->get('contactgroups') ?? [];
+            if (!empty($contacts) || !empty($contactgroups)) {
+                break;
+            }
+        }
+
+        // Resolve contact groups into their contacts and remove duplicates by contact id
+        $resolvedContacts = [];
+        foreach ($contacts as $contact) {
+            $resolvedContacts[$contact->get('id')] = $contact;
+        }
+        foreach ($contactgroups as $contactgroup) {
+            foreach ($contactgroup->get('contacts') ?? [] as $contact) {
+                $resolvedContacts[$contact->get('id')] = $contact;
+            }
+        }
+
+        // Format as expected by the frontend (notification-period-overview.interfaces.ts)
+        $notificationPeriodService = [
+            'id'                   => $service->get('id'),
+            'name'                 => $service->get('name') ?? $servicetemplate->get('name'),
+            'hostname'             => $host->get('name'),
+            'notificationsEnabled' => $notificationsEnabled,
+            'notificationPeriodId' => (int)$serviceTimeperiodId,
+            'options'              => [
+                'warning'  => (bool)($service->get('notify_on_warning') ?? $servicetemplate->get('notify_on_warning')),
+                'critical' => (bool)($service->get('notify_on_critical') ?? $servicetemplate->get('notify_on_critical')),
+                'unknown'  => (bool)($service->get('notify_on_unknown') ?? $servicetemplate->get('notify_on_unknown')),
+                'recovery' => (bool)($service->get('notify_on_recovery') ?? $servicetemplate->get('notify_on_recovery')),
+                'flapping' => (bool)($service->get('notify_on_flapping') ?? $servicetemplate->get('notify_on_flapping')),
+                'downtime' => (bool)($service->get('notify_on_downtime') ?? $servicetemplate->get('notify_on_downtime'))
+            ]
+        ];
+
+        $notificationPeriodContacts = [];
+        foreach ($resolvedContacts as $contact) {
+            $notificationPeriodContacts[] = [
+                'id'                   => $contact->get('id'),
+                'name'                 => $contact->get('name'),
+                'notificationsEnabled' => (bool)$contact->get('service_notifications_enabled'),
+                'notificationPeriodId' => (int)$contact->get('service_timeperiod_id'),
+                'options'              => [
+                    'warning'  => (bool)$contact->get('notify_service_warning'),
+                    'critical' => (bool)$contact->get('notify_service_critical'),
+                    'unknown'  => (bool)$contact->get('notify_service_unknown'),
+                    'recovery' => (bool)$contact->get('notify_service_recovery'),
+                    'flapping' => (bool)$contact->get('notify_service_flapping'),
+                    'downtime' => (bool)$contact->get('notify_service_downtime')
+                ]
+            ];
+        }
+
+        $collator = new Collator(I18n::getLocale());
+        $collator->setStrength(Collator::SECONDARY);
+        usort($notificationPeriodContacts, fn($a, $b) => $collator->compare($a['name'], $b['name']));
+
+        $this->set('service', $notificationPeriodService);
+        // All used timeperiods incl. their exclude chain – the frontend resolves the excludes
+        $timeperiodIds = array_merge(
+            [$notificationPeriodService['notificationPeriodId']],
+            array_column($notificationPeriodContacts, 'notificationPeriodId')
+        );
+        $timeperiods = $TimeperiodsTable->getTimeperiodsWithExcludesForNotificationOverview($timeperiodIds);
+
+        $this->set('contacts', $notificationPeriodContacts);
+        $this->set('timeperiods', $timeperiods);
+        $this->viewBuilder()->setOption('serialize', ['service', 'contacts', 'timeperiods']);
+    }
+
+    /**
+     * The notifications overview is only allowed if the user has rights to the containers of all
+     * contact groups and to at least one container of every contact (incl. the contacts of the contact groups) of the service.
+     *
+     * @param int|null $id
+     */
+    public function notificationsOverviewAllowed($id = null) {
+        $session = $this->request->getSession();
+        $session->close();
+
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var ServicesTable $ServicesTable */
+        $ServicesTable = TableRegistry::getTableLocator()->get('Services');
+
+        if (!$ServicesTable->existsById($id)) {
+            throw new NotFoundException(__('Service not found'));
+        }
+
+        $service = $ServicesTable->getServiceContactsAndContactgroupsWithContainersById($id);
+
+        if (!$this->allowedByContainerId($service->getContainerIds(), false)) {
+            $this->render403();
+            return;
+        }
+
+        $notificationsOverviewAllowed = true;
+        if ($this->hasRootPrivileges === false) {
+            $host = $service->get('host');
+
+            // Contacts and contact groups are inherited together. The first level that has contacts or
+            // contact groups wins: service → service template → host → host template (see ServiceMergerForView)
+            $contacts = [];
+            $contactgroups = [];
+            foreach ([$service, $service->get('servicetemplate'), $host, $host->get('hosttemplate')] as $level) {
+                $contacts = $level->get('contacts') ?? [];
+                $contactgroups = $level->get('contactgroups') ?? [];
+                if (!empty($contacts) || !empty($contactgroups)) {
+                    break;
+                }
+            }
+
+            $contactgroupContainerIds = [];
+            foreach ($contactgroups as $contactgroup) {
+                // The container_id of a contact group points to its own container (CT_CONTACTGROUP),
+                // the parent_id is the container the contact group belongs to
+                $contactgroupContainerIds[] = (int)$contactgroup->get('container')->get('parent_id');
+                foreach ($contactgroup->get('contacts') ?? [] as $contact) {
+                    $contacts[] = $contact;
+                }
+            }
+
+            if (!empty(array_diff(array_unique($contactgroupContainerIds), $this->MY_RIGHTS))) {
+                $notificationsOverviewAllowed = false;
+            }
+
+            // Same as the contacts index: a contact is visible if at least one of its containers is in MY_RIGHTS
+            foreach ($contacts as $contact) {
+                $contactContainerIds = [];
+                foreach ($contact->get('containers') ?? [] as $container) {
+                    $contactContainerIds[] = (int)$container->get('id');
+                }
+
+                if (empty(array_intersect($contactContainerIds, $this->MY_RIGHTS))) {
+                    $notificationsOverviewAllowed = false;
+                    break;
+                }
+            }
+        }
+
+        $this->set('notifications_overview_allowed', $notificationsOverviewAllowed);
+        $this->viewBuilder()->setOption('serialize', ['notifications_overview_allowed']);
     }
 
     /****************************

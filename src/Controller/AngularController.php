@@ -854,7 +854,6 @@ class AngularController extends AppController {
         $this->response = $this->response->withHeader('Content-Type', 'image/png');
         $stream = new CallbackStream(function () use ($image) {
             imagepng($image, null, 0);
-            imagedestroy($image);
         });
         $this->response = $this->response->withBody($stream);
     }
@@ -884,7 +883,6 @@ class AngularController extends AppController {
         $this->response = $this->response->withHeader('Content-Type', 'image/png');
         $stream = new CallbackStream(function () use ($image) {
             imagepng($image, null, 0);
-            imagedestroy($image);
         });
         $this->response = $this->response->withBody($stream);
     }
@@ -907,7 +905,6 @@ class AngularController extends AppController {
         $this->response = $this->response->withHeader('Content-Type', 'image/png');
         $stream = new \Laminas\Diactoros\CallbackStream(function () use ($image) {
             imagepng($image, null, 0);
-            imagedestroy($image);
         });
         $this->response = $this->response->withBody($stream);
     }

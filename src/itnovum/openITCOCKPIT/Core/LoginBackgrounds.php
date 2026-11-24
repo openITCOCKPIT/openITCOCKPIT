@@ -127,7 +127,7 @@ class LoginBackgrounds {
 
             'valentines_day' => [
                 'description' => __('Valentine\'s Day'),
-                'particles'   => 'stars',
+                'particles'   => 'hearts',
                 'images'      => [
                     [
                         'image'  => 'christopher-beloch-P2fBIamIbQk-unsplash.jpg',
@@ -422,8 +422,6 @@ class LoginBackgrounds {
         if ($today >= $wmStart && $today <= $wmEnd) {
             $season = 'football_world_cup_2026';
         }
-
         return $season;
-
     }
 }

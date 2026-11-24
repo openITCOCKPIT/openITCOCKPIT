@@ -287,7 +287,6 @@ class PieChart {
 
         $image = $PieChart->getImage();
         imagepng($image, $filepath . DS . $filename, 0);
-        imagedestroy($image);
 
         return $filename;
     }
@@ -313,7 +312,6 @@ class PieChart {
 
         $image = $PieChart->getImage();
         imagepng($image, $filepath . DS . $filename, 0);
-        imagedestroy($image);
 
         return $filename;
     }

@@ -32,9 +32,18 @@ declare(strict_types=1);
  * oitc4 bake seed -p MapModule --table map_uploads --data Install
  *
  * Apply:
- * oitc4 migrations seed -p MapModule
+ * oitc4 seeds run -p MapModule
  */
 class InstallSeed extends \Migrations\BaseSeed {
+
+    /**
+     * It will run every openitcockpit-update runs
+     * https://book.cakephp.org/migrations/5/guides/seeding.html#idempotent-seeds
+     */
+    public function isIdempotent(): bool {
+        return true;
+    }
+
     /**
      * Run Method.
      *

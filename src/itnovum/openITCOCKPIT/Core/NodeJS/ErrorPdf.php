@@ -25,11 +25,18 @@
 
 namespace itnovum\openITCOCKPIT\Core\NodeJS;
 
+use Com\Tecnick\Pdf\Tcpdf;
+
 /**
  * Class ErrorPdf
  * @package itnovum\openITCOCKPIT\Core\NodeJS
  */
 class ErrorPdf {
+
+    /**
+     * Page margin in mm
+     */
+    private const MARGIN = 15;
 
     /**
      * @var string
@@ -64,40 +71,57 @@ class ErrorPdf {
     }
 
     /**
-     * @return bool|string
+     * Returns a simple PDF document (A4 portrait) containing the headline and the error text.
+     * Used as fallback if the Puppeteer service is not able to render the requested PDF.
+     *
+     * @return string Raw PDF data
      */
-    public function getPdfAsStream() {
-        $pdf = new \TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+    public function getPdfAsStream(): string {
+        // Unit mm, unicode, no font subsetting, compressed
+        $pdf = new Tcpdf('mm', true, false, true);
 
         // set document information
-        $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('openITCOCKPIT');
-        $pdf->SetTitle('Error while creating PDF file');
-        $pdf->SetSubject('Error while creating PDF file');
+        $pdf->setCreator('openITCOCKPIT');
+        $pdf->setAuthor('openITCOCKPIT');
+        $pdf->setTitle('Error while creating PDF file');
+        $pdf->setSubject('Error while creating PDF file');
 
-        // remove default header/footer
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
+        // tc-lib-pdf has no default header/footer, so nothing to disable here.
+        // Page breaks are handled automatically by addTextCell().
+        $pdf->addPage([
+            'format'      => 'A4',
+            'orientation' => 'P',
+            'margin'      => [
+                'PL' => self::MARGIN,
+                'PR' => self::MARGIN,
+                'CT' => self::MARGIN,
+                'CB' => self::MARGIN,
+            ],
+        ]);
 
-        // set default monospaced font
-        $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+        // Headline (helvetica is one of the PDF core fonts and does not need to be embedded)
+        $font = $pdf->font->insert($pdf->pon, 'helvetica', '', 20);
+        $pdf->page->addContent($font['out']);
+        $pdf->addTextCell(
+            txt: (string)$this->headline,
+            valign: 'T',
+            halign: 'C',
+            drawcell: false
+        );
 
-        // set margins
-        $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+        // Error text below the headline
+        $headlineBox = $pdf->getLastBBox();
+        $font = $pdf->font->insert($pdf->pon, 'helvetica', '', 12);
+        $pdf->page->addContent($font['out']);
+        $pdf->addTextCell(
+            txt: (string)$this->errorText,
+            posy: ($headlineBox['y'] + $headlineBox['h'] + 10) - self::MARGIN,
+            valign: 'T',
+            halign: 'C',
+            drawcell: false
+        );
 
-        // set auto page breaks
-        $pdf->SetAutoPageBreak(true, PDF_MARGIN_BOTTOM);
-
-        // set font
-        $pdf->SetFont('helvetica', '', 20);
-
-        // add a page
-        $pdf->AddPage();
-
-        $pdf->Write(0, $this->headline, '', 0, 'C', true, 0, false, false, 0);
-        $pdf->Write(10, $this->errorText, '', 0, 'C', true, 0, false, false, 0);
-
-        return $pdf->Output('error.pdf' /* gets ignored */, 'S');
+        return $pdf->getOutPDFString();
     }
 
 }

@@ -142,9 +142,8 @@ class CommandargumentsTable extends Table {
      * @return array
      */
     public function getByCommandId($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where(['Commandarguments.command_id' => $id])
-            ->disableHydration()
             ->all();
 
         return $this->formatResultAsCake2($query->toArray(), false);

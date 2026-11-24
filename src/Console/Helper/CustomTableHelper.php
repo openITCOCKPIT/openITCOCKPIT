@@ -13,9 +13,9 @@
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
 
-namespace App\Command\Helper;
+namespace App\Console\Helper;
 
-use Cake\Command\Helper\TableHelper;
+use Cake\Console\Helper\TableHelper;
 use UnexpectedValueException;
 
 class CustomTableHelper extends TableHelper {

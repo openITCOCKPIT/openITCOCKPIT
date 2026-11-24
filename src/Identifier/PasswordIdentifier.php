@@ -75,6 +75,20 @@ class PasswordIdentifier extends AbstractIdentifier implements IdentifierInterfa
     use ResolverAwareTrait;
 
     /**
+     * Key of the username in the credentials array passed to identify()
+     *
+     * @var string
+     */
+    public const CREDENTIAL_USERNAME = 'username';
+
+    /**
+     * Key of the password in the credentials array passed to identify()
+     *
+     * @var string
+     */
+    public const CREDENTIAL_PASSWORD = 'password';
+
+    /**
      * Default configuration.
      * - `fields` The fields to use to identify a user by:
      *   - `username`: one or many username fields.

@@ -40,7 +40,7 @@ use Cake\Command\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Log\Log;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Monitoring\QueryHandler;
@@ -78,11 +78,6 @@ class CmdCommand extends Command {
      * @var string
      */
     private $nagiosCmd = '/opt/openitc/nagios/var/rw/nagios.cmd';
-
-    /**
-     * @var ConsoleIo
-     */
-    private $io;
 
     /**
      * Hook method for defining this command's option parser.
@@ -156,7 +151,7 @@ class CmdCommand extends Command {
         /** @var ServicesTable $ServicesTable */
         $ServicesTable = TableRegistry::getTableLocator()->get('Services');
 
-        $query = $ServicesTable->find();
+        $query = $ServicesTable->unhydratedFind();
         $query
             ->select([
                 'id',
@@ -164,14 +159,14 @@ class CmdCommand extends Command {
                 'name'
             ])
             ->contain([
-                'Servicetemplates' => function (Query $query) {
+                'Servicetemplates' => function (SelectQuery $query) {
                     $query->select([
                         'id',
                         'name'
                     ]);
                     return $query;
                 },
-                'Hosts'            => function (Query $query) {
+                'Hosts'            => function (SelectQuery $query) {
                     $query->select([
                         'id',
                         'uuid',
@@ -183,7 +178,6 @@ class CmdCommand extends Command {
             ->where([
                 'Services.disabled' => 0
             ])
-            ->disableHydration()
             ->all();
 
         foreach ($query as $service) {
@@ -238,23 +232,23 @@ class CmdCommand extends Command {
         //$connection->getDriver()->disconnect();
         //$connection->getDriver()->connect();
 
-        $query = $ServicesTable->find();
+        $query = $ServicesTable->unhydratedFind();
         $query
             ->select([
                 'id',
                 'uuid',
                 'name',
-                'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
             ])
             ->contain([
-                'Servicetemplates' => function (Query $query) {
+                'Servicetemplates' => function (SelectQuery $query) {
                     $query->select([
                         'id',
                         'name'
                     ]);
                     return $query;
                 },
-                'Hosts'            => function (Query $query) {
+                'Hosts'            => function (SelectQuery $query) {
                     $query->select([
                         'id',
                         'uuid',
@@ -270,7 +264,6 @@ class CmdCommand extends Command {
             ->having([
                 'servicename' => $serviceDescription
             ])
-            ->disableHydration()
             ->first();
 
         $service = $query->toArray();

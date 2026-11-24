@@ -112,8 +112,7 @@ class UsergroupsController extends AppController {
         /** @var AcosTable $AcosTable */
         $AcosTable = TableRegistry::getTableLocator()->get('Acl.Acos');
         if ($this->request->is('get') && $this->isJsonRequest()) {
-            $acos = $AcosTable->find('threaded')
-                ->disableHydration()
+            $acos = $AcosTable->unhydratedFind('threaded')
                 ->orderByAsc('alias')
                 ->all();
             $AclDependencies = new AclDependencies();
@@ -235,8 +234,7 @@ class UsergroupsController extends AppController {
         /** @var AcosTable $AcosTable */
         $AcosTable = TableRegistry::getTableLocator()->get('Acl.Acos');
         if ($this->request->is('get')) {
-            $acos = $AcosTable->find('threaded')
-                ->disableHydration()
+            $acos = $AcosTable->unhydratedFind('threaded')
                 ->all();
             $AclDependencies = new AclDependencies();
             $acos = $AclDependencies->filterAcosForFrontend($acos->toArray());
@@ -505,7 +503,7 @@ class UsergroupsController extends AppController {
                 throw new NotFoundException(__('User group not found'));
             }
 
-            $usergroup = $UsergroupsTable->find()
+            $usergroup = $UsergroupsTable->unhydratedFind()
                 ->contain([
                     'Aros'       => [
                         'Acos'
@@ -519,7 +517,6 @@ class UsergroupsController extends AppController {
                 ->where([
                     'Usergroups.id' => $id
                 ])
-                ->disableHydration()
                 ->firstOrFail();
 
             $usergroup['ldapgroups'] = [

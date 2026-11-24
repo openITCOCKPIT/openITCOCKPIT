@@ -375,17 +375,15 @@ class ContainersController extends AppController {
         $ContainersTable = TableRegistry::getTableLocator()->get('Containers');
 
         if ($this->hasRootPrivileges === true) {
-            $containers = $ContainersTable->find()
+            $containers = $ContainersTable->unhydratedFind()
                 ->where(['Containers.containertype_id IN' => [CT_GLOBAL, CT_TENANT, CT_LOCATION, CT_NODE]])
-                ->disableHydration()
                 ->toArray();
         } else {
-            $containers = $ContainersTable->find()
+            $containers = $ContainersTable->unhydratedFind()
                 ->andWhere([
                     'Containers.containertype_id IN' => [CT_GLOBAL, CT_TENANT, CT_LOCATION, CT_NODE],
                     'Containers.id IN '              => $this->MY_RIGHTS
                 ])
-                ->disableHydration()
                 ->toArray();
         }
 

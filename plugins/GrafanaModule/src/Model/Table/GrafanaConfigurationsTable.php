@@ -148,9 +148,8 @@ class GrafanaConfigurationsTable extends Table {
      */
     public function getGrafanaConfigurationForEdit() {
         try {
-            $result = $this->find()
+            $result = $this->unhydratedFind()
                 ->contain(['GrafanaConfigurationHostgroupMembership'])
-                ->disableHydration()
                 ->firstOrFail();
 
             foreach ($result['grafana_configuration_hostgroup_membership'] as $hostgroup) {

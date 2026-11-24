@@ -111,13 +111,12 @@ class ServicecommandargumentvaluesTable extends Table {
      * @return array
      */
     public function getByServiceIdAndCommandId($serviceId, $commandId) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain(['Commandarguments'])
             ->where([
                 'Servicecommandargumentvalues.service_id' => $serviceId,
                 'Commandarguments.command_id'             => $commandId
             ])
-            ->disableHydration()
             ->all();
 
         $result = $query->toArray();

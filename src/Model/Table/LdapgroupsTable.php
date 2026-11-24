@@ -251,7 +251,7 @@ class LdapgroupsTable extends Table {
      * @return array
      */
     public function getLdapgroupsIndex(LdapgroupFilter $LdapgroupsFilter, $PaginateOMat = null) {
-        $query = $this->find('all')->disableHydration();
+        $query = $this->unhydratedFind('all');
         $query->where($LdapgroupsFilter->indexFilter());
         $query->orderBy($LdapgroupsFilter->getOrderForPaginator('Ldapgroups.cn', 'asc'));
 

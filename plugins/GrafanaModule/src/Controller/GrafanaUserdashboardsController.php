@@ -345,6 +345,7 @@ class GrafanaUserdashboardsController extends AppController {
         if ($refresh === null) {
             $refresh = 0;
         }
+        $GrafanaApiConfiguration->setDashboardStyle($this->request->getQuery('theme'));
         $iframeUrl = $GrafanaApiConfiguration->getIframeUrlForUserDashboard($dashboard->get('grafana_url'), $from, $refresh);
 
         $this->set('dashboardFoundInGrafana', $dashboardFoundInGrafana);
@@ -1148,6 +1149,7 @@ class GrafanaUserdashboardsController extends AppController {
                         $GrafanaConfiguration->setRefresh($dashboard->refresh);
                         $GrafanaConfiguration->setRange($dashboard->range);
                         $GrafanaConfiguration->setGraphTooltip($dashboard->tooltip);
+                        $GrafanaConfiguration->setDashboardStyle($this->request->getQuery('theme'));
                         $iframeUrl = $GrafanaConfiguration->getIframeUrlForUserDashboard($dashboard->get('grafana_url'));
                     }
                 }

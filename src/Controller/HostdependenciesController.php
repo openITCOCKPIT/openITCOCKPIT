@@ -42,7 +42,7 @@ use App\Model\Table\HostsTable;
 use App\Model\Table\TimeperiodsTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use itnovum\openITCOCKPIT\Core\AngularJS\Api;
@@ -177,11 +177,11 @@ class HostdependenciesController extends AppController {
             throw new NotFoundException('Host dependency not found');
         }
         $hostdependency = $HostdependenciesTable->get($id, contain: [
-            'Hosts'      => function (Query $q) {
+            'Hosts'      => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id', 'name']);
             },
-            'Hostgroups' => function (Query $q) {
+            'Hostgroups' => function (SelectQuery $q) {
                 return $q->enableAutoFields(false)
                     ->select(['id']);
             },

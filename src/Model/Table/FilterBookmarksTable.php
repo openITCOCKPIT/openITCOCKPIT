@@ -238,14 +238,13 @@ class FilterBookmarksTable extends Table {
             ];
         }
 
-        $result = $this->find()
+        $result = $this->unhydratedFind()
             ->where($where)
             ->orderBy([
                 'FilterBookmarks.id' => 'ASC',
             ]);
 
         $result
-            ->disableHydration()
             ->all();
 
 

@@ -348,9 +348,8 @@ class ContainersTable extends Table {
             $ids = [$ids];
         }
 
-        $node = $this->find()
+        $node = $this->unhydratedFind()
             ->where(['id IN ' => $ids])
-            ->disableHydration()
             ->all()
             ->toArray();
 
@@ -384,8 +383,7 @@ class ContainersTable extends Table {
     public function treePath($id = null, $delimiter = '/') {
         try {
             $containerNames = [];
-            $tree = $this->find('path', for: $id)
-                ->disableHydration()
+            $tree = $this->unhydratedFind('path', for: $id)
                 ->toArray();
 
             foreach ($tree as $node) {
@@ -409,8 +407,7 @@ class ContainersTable extends Table {
     public function getTreePathForBrowser($id, $MY_RIGHTS_LEVEL = []) {
         try {
             $result = [];
-            $tree = $this->find('path', for: $id)
-                ->disableHydration()
+            $tree = $this->unhydratedFind('path', for: $id)
                 ->toArray();
 
             foreach ($tree as $node) {
@@ -457,8 +454,7 @@ class ContainersTable extends Table {
      */
     public function easyPath($id, $ObjectsByConstancName, $options = [], $hasRootPrivileges = false, $exclude = []) {
         if ($this->containerCache === null) {
-            $query = $this->find('all')
-                ->disableHydration()
+            $query = $this->unhydratedFind('all')
                 ->toArray();
 
             $this->containerCache = $query;
@@ -514,7 +510,7 @@ class ContainersTable extends Table {
 
             $tmpResult = Cache::remember($cacheKey, function () use ($containerId) {
                 try {
-                    $query = $this->find('children', for: $containerId)->disableHydration()->select(['id', 'containertype_id'])->all();
+                    $query = $this->unhydratedFind('children', for: $containerId)->select(['id', 'containertype_id'])->all();
                     return $query->toArray();
                 } catch (RecordNotFoundException $e) {
                     return [];
@@ -580,8 +576,7 @@ class ContainersTable extends Table {
      */
     public function getPathById($id, bool $flat = false) {
         try {
-            $path = $this->find('path', for: $id)
-                ->disableHydration()
+            $path = $this->unhydratedFind('path', for: $id)
                 ->all()
                 ->toArray();
             if ($flat) {
@@ -597,8 +592,7 @@ class ContainersTable extends Table {
         $cacheKey = sprintf('%s:%s', $cacheKey, $id);
         $path = Cache::remember($cacheKey, function () use ($id) {
             try {
-                $path = $this->find('path', for: $id)
-                    ->disableHydration()
+                $path = $this->unhydratedFind('path', for: $id)
                     ->all()
                     ->toArray();
                 return $path;
@@ -615,8 +609,7 @@ class ContainersTable extends Table {
      * @return string
      */
     public function getPathByIdAsString($id, $delimiter = '/') {
-        $path = $this->find('path', for: $id)
-            ->disableHydration()
+        $path = $this->unhydratedFind('path', for: $id)
             ->all()
             ->toArray();
         $nodes = [];
@@ -645,9 +638,8 @@ class ContainersTable extends Table {
             $parentContainerId = [$parentContainerId];
         }
 
-        $containers = $this->find()
+        $containers = $this->unhydratedFind()
             ->where(['Containers.parent_id IN' => $parentContainerId])
-            ->disableHydration()
             ->all()
             ->toArray();
 
@@ -675,13 +667,13 @@ class ContainersTable extends Table {
      */
     public function getChildren($id, $threaded = false) {
         try {
-            $query = $this->find('children', for: $id);
+            $query = $this->unhydratedFind('children', for: $id);
 
             if ($threaded) {
                 $query->find('threaded');
             }
 
-            return $query->disableHydration()
+            return $query
                 ->all()
                 ->toArray();
 
@@ -836,7 +828,7 @@ class ContainersTable extends Table {
     public function getContainerWithAllChildren($containerId, $MY_RIGHTS = []) {
         $parentContainer = $this->getContainerById($containerId);
 
-        $query = $this->find('children', for: $containerId);
+        $query = $this->unhydratedFind('children', for: $containerId);
 
         $query->select([
             'Containers.id',
@@ -848,8 +840,7 @@ class ContainersTable extends Table {
         ])
             ->where([
                 'Containers.containertype_id IN ' => [CT_GLOBAL, CT_TENANT, CT_LOCATION, CT_NODE]
-            ])
-            ->disableHydration();
+            ]);
         $containers = $query->toArray();
         $containers[] = $parentContainer;
         $containers = Hash::sort($containers, '{n}.id', 'asc');
@@ -986,7 +977,7 @@ class ContainersTable extends Table {
     public function getContainerWithAllChildrenAndHosts($containerId, $MY_RIGHTS = []) {
         $parentContainer = $this->getContainerById($containerId, $MY_RIGHTS);
 
-        $query = $this->find('children', for: $containerId);
+        $query = $this->unhydratedFind('children', for: $containerId);
 
         $query->select([
             'Containers.id',
@@ -998,8 +989,7 @@ class ContainersTable extends Table {
         ])
             ->where([
                 'Containers.containertype_id IN ' => [CT_GLOBAL, CT_TENANT, CT_LOCATION, CT_NODE]
-            ])
-            ->disableHydration();
+            ]);
         $containers = $query->toArray();
         if (!empty($parentContainer)) {
             $containers[] = $parentContainer;
@@ -1337,12 +1327,12 @@ class ContainersTable extends Table {
      * @return array
      */
     public function getOrphanedContainers() {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Containers.id',
             'Containers.name',
             'Containers.containertype_id',
-            'orphaned' => $query->newExpr('
+            'orphaned' => $query->expr('
                 SELECT containers_sub.id
                 FROM containers AS containers_sub
                 WHERE containers_sub.id = Containers.parent_id')
@@ -1353,8 +1343,7 @@ class ContainersTable extends Table {
             ->having(
                 'orphaned IS NULL'
             )
-            ->disableAutoFields()
-            ->disableHydration();
+            ->disableAutoFields();
 
         $result = $query->all();
 
@@ -1652,12 +1641,12 @@ class ContainersTable extends Table {
             $ids = [$ids];
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         if (!empty($ids)) {
             $query->where(['id IN ' => $ids]);
         }
 
-        $query->disableHydration()
+        $query
             ->all()
             ->toArray();
 
@@ -1713,25 +1702,23 @@ class ContainersTable extends Table {
         $resolvedContainers = [];
         $userParentAndChildrenContainers = [];
 
-        $nodes = $this->find()
+        $nodes = $this->unhydratedFind()
             ->where([
                 'id IN '               => $ids,
                 'containertype_id IN ' => [CT_GLOBAL, CT_TENANT, CT_LOCATION, CT_NODE]
             ])
-            ->disableHydration()
             ->all()
             ->toArray();
         $delimiter = '/';
         foreach ($nodes as $container) {
             $path = $this->treePath($container['id'], $delimiter);
-            $tree = $this->find()
+            $tree = $this->unhydratedFind()
                 ->where([
                     'Containers.lft > '    => $container['lft'],
                     'Containers.rght < '   => $container['rght'],
                     'containertype_id IN ' => [CT_GLOBAL, CT_TENANT, CT_LOCATION, CT_NODE]
                 ])
                 ->orderBy('Containers.lft')
-                ->disableHydration()
                 ->toArray();
 
             $subContainers = Hash::extract($tree, '{n}.id');

@@ -172,14 +172,13 @@ class AcknowledgementServicesTable extends Table implements AcknowledgementServi
             $uuids = [$uuids];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'service_description IN' => $uuids
             ])
             ->orderBy([
                 'entry_time' => 'DESC',
             ])
-            ->disableHydration()
             ->all();
 
         $acks = $query->toArray();

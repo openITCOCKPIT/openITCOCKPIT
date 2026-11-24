@@ -28,8 +28,8 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Lib\PluginManager;
-use Cake\Console\Arguments;
 use Cake\Command\Command;
+use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use itnovum\openITCOCKPIT\Core\AngularJS\AngularAssets;
@@ -41,6 +41,10 @@ use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Compress command.
+ * @deprecated This file used to compress and minify frontend assets for openITCOCKPIT.
+ * Since openITCOCKPIT 5 openITCOCKPIT use a Angular Based Frontend, and this code is not longer needed.
+ * It is here, because legacy UPGRADEs may still need it.
+ * We should remove this file in a future release. (search for 'oitc compress' in the project before removing it)
  */
 class CompressCommand extends Command {
     /**

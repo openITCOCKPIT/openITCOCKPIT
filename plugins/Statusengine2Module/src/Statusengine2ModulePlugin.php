@@ -30,6 +30,6 @@ use Cake\Core\BasePlugin;
 /**
  * Plugin for Statusengine2Module
  */
-class Plugin extends BasePlugin
+class Statusengine2ModulePlugin extends BasePlugin
 {
 }

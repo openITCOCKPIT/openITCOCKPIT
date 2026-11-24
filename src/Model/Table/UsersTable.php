@@ -38,6 +38,7 @@ use App\Model\Entity\Changelog;
 use App\Model\Entity\User;
 use Authentication\PasswordHasher\DefaultPasswordHasher;
 use Cake\Database\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\Event;
 use Cake\Log\Log;
@@ -438,15 +439,14 @@ class UsersTable extends Table {
      */
     public function getUsersIndex(UsersFilter $UsersFilter, $PaginateOMat = null, $MY_RIGHTS = []) {
         //Get all user ids where container assigned are made directly at the user
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id'
             ])
             ->matching('Containers')
             ->groupBy([
                 'Users.id'
-            ])
-            ->disableHydration();
+            ]);
 
         if (!empty($MY_RIGHTS)) {
             $query->where([
@@ -456,15 +456,14 @@ class UsersTable extends Table {
         $userIds = Hash::extract($query->toArray(), '{n}.id');
 
         //Get all user ids where container assigned are made through an user container role
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
             ->groupBy([
                 'Users.id'
-            ])
-            ->disableHydration();
+            ]);
 
         if (!empty($MY_RIGHTS)) {
             $query->where([
@@ -550,7 +549,7 @@ class UsersTable extends Table {
      * @return array
      */
     public function getUserForEdit($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id',
                 'Users.usergroup_id',
@@ -585,7 +584,6 @@ class UsersTable extends Table {
                 ],
                 'Apikeys'
             ])
-            ->disableHydration()
             ->first();
 
 
@@ -637,7 +635,7 @@ class UsersTable extends Table {
      * @return array
      */
     public function getUserForPermissionCheck($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id',
                 'Users.usergroup_id'
@@ -651,7 +649,6 @@ class UsersTable extends Table {
                     'Containers'
                 ],
             ])
-            ->disableHydration()
             ->first();
 
         $user = $query;
@@ -712,8 +709,8 @@ class UsersTable extends Table {
     }
 
     public function getUserByEmail($email = null) {
-        $query = $this->find();
-        $query->disableHydration()
+        $query = $this->unhydratedFind();
+        $query
             ->where([
                 'Users.email' => $email,
             ])
@@ -828,15 +825,14 @@ class UsersTable extends Table {
         }
 
         //Get all user ids where container assigned are made directly at the user
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id'
             ])
             ->matching('Containers')
             ->groupBy([
                 'Users.id'
-            ])
-            ->disableHydration();
+            ]);
 
         if (!empty($containerIds)) {
             $query->where([
@@ -847,15 +843,14 @@ class UsersTable extends Table {
         $userIds = Hash::extract($query->toArray(), '{n}.id');
 
         //Get all user ids where container assigned are made through an user container role
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
             ->groupBy([
                 'Users.id'
-            ])
-            ->disableHydration();
+            ]);
 
         if (!empty($containerIds)) {
             $query->where([
@@ -870,7 +865,7 @@ class UsersTable extends Table {
             return [];
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Users.id',
             'Users.email',
@@ -909,7 +904,6 @@ class UsersTable extends Table {
             ->groupBy([
                 'Users.id'
             ])
-            ->disableHydration()
             ->all();
 
         if ($type === 'list') {
@@ -938,7 +932,7 @@ class UsersTable extends Table {
      * @return array
      */
     public function getFirstUser() {
-        $query = $this->find('all')->disableHydration();
+        $query = $this->unhydratedFind('all');
         $result = $query->first();
         return $this->formatFirstResultAsCake2($result);
     }
@@ -948,7 +942,7 @@ class UsersTable extends Table {
      * @return array|EntityInterface
      */
     public function getActiveUsersByIdForCake2Login($id) {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Users.id',
             'Users.email',
@@ -986,7 +980,6 @@ class UsersTable extends Table {
             ->contain([
                 'Usergroups'
             ])
-            ->disableHydration()
             ->where([
                 'Users.id'        => $id,
                 'Users.is_active' => 1,
@@ -1011,7 +1004,7 @@ class UsersTable extends Table {
      * @return array
      */
     public function getActiveUsersByEmail($email) {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Users.id',
             'Users.email',
@@ -1040,7 +1033,6 @@ class UsersTable extends Table {
                 'Users.lastname'  => 'literal'
             ])
         ])
-            ->disableHydration()
             ->where([
                 'Users.email'     => $email,
                 'Users.is_active' => 1
@@ -1186,8 +1178,7 @@ class UsersTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface|null
      */
     public function getUserById($id) {
-        $query = $this->find('all')
-            ->disableHydration()
+        $query = $this->unhydratedFind('all')
             ->contain([
                 'Containers',
                 'Usercontainerroles' => [
@@ -1216,15 +1207,14 @@ class UsersTable extends Table {
         }
 
         //Get all user ids where container assigned are made directly at the user
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id'
             ])
             ->matching('Containers')
             ->groupBy([
                 'Users.id'
-            ])
-            ->disableHydration();
+            ]);
 
         if (!empty($containerIds)) {
             $query->where([
@@ -1235,15 +1225,14 @@ class UsersTable extends Table {
         $userIds = Hash::extract($query->toArray(), '{n}.id');
 
         //Get all user ids where container assigned are made through an user container role
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
             ->groupBy([
                 'Users.id'
-            ])
-            ->disableHydration();
+            ]);
 
         if (!empty($containerIds)) {
             $query->where([
@@ -1397,7 +1386,6 @@ class UsersTable extends Table {
             imagealphablending($destImg, false);
             imagesavealpha($destImg, true);
             imagepng($destImg, $newImageFull);
-            imagedestroy($destImg);
 
             //Delete source image
             unlink($tmpImageFull);
@@ -1411,7 +1399,7 @@ class UsersTable extends Table {
      * @return array
      */
     public function getUsersForMailNotifications($usergroupsIds = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id',
                 'Users.email'
@@ -1429,7 +1417,6 @@ class UsersTable extends Table {
             'Users.id'
         ])
             ->disableAutoFields()
-            ->disableHydration()
             ->all();
 
         $users = $query->toArray();
@@ -1445,15 +1432,14 @@ class UsersTable extends Table {
      */
     public function getUsersForSystemHealth($MY_RIGHTS = []) {
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id'
             ])
             ->matching('Containers')
             ->groupBy([
                 'Users.id'
-            ])
-            ->disableHydration();
+            ]);
 
         if (!empty($MY_RIGHTS)) {
             $query->where([
@@ -1463,15 +1449,14 @@ class UsersTable extends Table {
         $userIds = Hash::extract($query->toArray(), '{n}.id');
 
         //Get all user ids where container assigned are made through an user container role
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id'
             ])
             ->matching('Usercontainerroles.Containers')
             ->groupBy([
                 'Users.id'
-            ])
-            ->disableHydration();
+            ]);
 
         if (!empty($MY_RIGHTS)) {
             $query->where([
@@ -1582,7 +1567,7 @@ class UsersTable extends Table {
         $query = $this->find()
             ->innerJoinWith('Containers')
             ->contain([
-                'Containers' => function (\Cake\ORM\Query $query) use ($containerId) {
+                'Containers' => function (SelectQuery $query) use ($containerId) {
                     return $query->select([
                         'Containers.id',
                     ])->whereNotInList('Containers.id', [$containerId]);
@@ -1648,10 +1633,10 @@ class UsersTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'id'   => 'DashboardTabs.id',
-            'name' => $query->newExpr('CONCAT(DashboardTabs.name, " (", Users.firstname, " " ,Users.lastname,")")'),
+            'name' => $query->expr('CONCAT(DashboardTabs.name, " (", Users.firstname, " " ,Users.lastname,")")'),
         ])
             ->innerJoinWith('DashboardTabs')
             ->leftJoin(
@@ -1685,7 +1670,6 @@ class UsersTable extends Table {
             );
         }
         $query->groupBy(['DashboardTabs.id'])
-            ->disableHydration()
             ->all();
         $result = $this->emptyArrayIfNull($query->toArray());
         if (empty($result)) {
@@ -1704,10 +1688,10 @@ class UsersTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'id'   => 'FilterBookmarks.id',
-            'name' => $query->newExpr('CONCAT(FilterBookmarks.name, " (", Users.firstname, " " ,Users.lastname,")")'),
+            'name' => $query->expr('CONCAT(FilterBookmarks.name, " (", Users.firstname, " " ,Users.lastname,")")'),
         ])
             ->innerJoinWith('FilterBookmarks')
             ->leftJoin(
@@ -1741,7 +1725,6 @@ class UsersTable extends Table {
             );
         }
         $query->groupBy(['FilterBookmarks.id'])
-            ->disableHydration()
             ->all();
         $result = $this->emptyArrayIfNull($query->toArray());
         if (empty($result)) {
@@ -2005,7 +1988,7 @@ class UsersTable extends Table {
         if (!is_array($ids)) {
             $ids = [$ids];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Users.id',
                 'Users.lastname',
@@ -2016,7 +1999,7 @@ class UsersTable extends Table {
                 'Users.id IN' => $ids
             ]);
         }
-        $query->disableHydration()
+        $query
             ->all();
 
         foreach ($query->toArray() as $user) {
@@ -2029,12 +2012,11 @@ class UsersTable extends Table {
      * @return User[]
      */
     public function getUsersForLdapImport() {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'id',
             'email' => $query->func()->lcase(['email' => 'identifier'])
         ])
-            ->disableHydration()
             ->all();
 
         return $query->toArray();

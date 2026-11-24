@@ -31,7 +31,7 @@ use App\Lib\Traits\CustomValidationTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Behavior\ContainerOwnedBehavior;
 use Cake\Database\Expression\ComparisonExpression;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -249,9 +249,9 @@ class ServiceescalationsTable extends Table {
      * @return array
      */
     public function getServiceescalationsIndex(ServiceescalationsFilter $ServiceescalationsFilter, $PaginateOMat = null, $MY_RIGHTS = []) {
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->contain([
-                'Contacts'         => function (Query $q) {
+                'Contacts'         => function (SelectQuery $q) {
                     return $q->enableAutoFields(false)
                         ->select([
                             'Contacts.id',
@@ -259,7 +259,7 @@ class ServiceescalationsTable extends Table {
                         ]);
                 },
                 'Contactgroups'    => [
-                    'Containers' => function (Query $q) {
+                    'Containers' => function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->select([
                                 'Contactgroups.id',
@@ -267,14 +267,14 @@ class ServiceescalationsTable extends Table {
                             ]);
                     },
                 ],
-                'Timeperiods'      => function (Query $q) {
+                'Timeperiods'      => function (SelectQuery $q) {
                     return $q->enableAutoFields(false)
                         ->select([
                             'Timeperiods.id',
                             'Timeperiods.name'
                         ]);
                 },
-                'Services'         => function (Query $q) {
+                'Services'         => function (SelectQuery $q) {
                     return $q->enableAutoFields(false)
                         ->where([
                             'ServiceescalationsServiceMemberships.excluded' => 0
@@ -283,11 +283,11 @@ class ServiceescalationsTable extends Table {
                         ->innerJoinWith('Hosts')
                         ->select([
                             'Services.id',
-                            'servicename' => $q->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
+                            'servicename' => $q->expr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
                             'Services.disabled'
                         ]);
                 },
-                'ServicesExcluded' => function (Query $q) {
+                'ServicesExcluded' => function (SelectQuery $q) {
                     return $q->enableAutoFields(false)
                         ->where([
                             'ServiceescalationsServiceMemberships.excluded' => 1
@@ -296,13 +296,13 @@ class ServiceescalationsTable extends Table {
                         ->innerJoinWith('Hosts')
                         ->select([
                             'ServicesExcluded.id',
-                            'servicename' => $q->newExpr('CONCAT(Hosts.name, "/", IF(ServicesExcluded.name IS NULL, Servicetemplates.name, ServicesExcluded.name))'),
+                            'servicename' => $q->expr('CONCAT(Hosts.name, "/", IF(ServicesExcluded.name IS NULL, Servicetemplates.name, ServicesExcluded.name))'),
                             'ServicesExcluded.disabled'
                         ]);
                 },
 
                 'Servicegroups'         => [
-                    'Containers' => function (Query $q) {
+                    'Containers' => function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->where([
                                 'ServiceescalationsServicegroupMemberships.excluded' => 0
@@ -314,7 +314,7 @@ class ServiceescalationsTable extends Table {
                     },
                 ],
                 'ServicegroupsExcluded' => [
-                    'Containers' => function (Query $q) {
+                    'Containers' => function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->where([
                                 'ServiceescalationsServicegroupMemberships.excluded' => 1
@@ -326,8 +326,7 @@ class ServiceescalationsTable extends Table {
                     },
                 ]
             ])
-            ->groupBy('Serviceescalations.id')
-            ->disableHydration();
+            ->groupBy('Serviceescalations.id');
         $indexFilter = $ServiceescalationsFilter->indexFilter();
         $containFilter = [
             'Servicegroups.name'         => '',
@@ -335,7 +334,7 @@ class ServiceescalationsTable extends Table {
         ];
 
         if (!empty($indexFilter['Services.servicename LIKE'])) {
-            $query->innerJoinWith('Services', function (Query $q) use ($indexFilter) {
+            $query->innerJoinWith('Services', function (SelectQuery $q) use ($indexFilter) {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
@@ -355,7 +354,7 @@ class ServiceescalationsTable extends Table {
         unset($indexFilter['Services.servicename LIKE']);
 
         if (!empty($indexFilter['ServicesExcluded.servicename LIKE'])) {
-            $query->innerJoinWith('ServicesExcluded', function (Query $q) use ($indexFilter) {
+            $query->innerJoinWith('ServicesExcluded', function (SelectQuery $q) use ($indexFilter) {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
@@ -378,7 +377,7 @@ class ServiceescalationsTable extends Table {
             $containFilter['Servicegroups.name'] = [
                 'Containers.name LIKE' => $indexFilter['Servicegroups.name LIKE']
             ];
-            $query->innerJoinWith('Servicegroups.Containers', function (Query $q) use ($containFilter) {
+            $query->innerJoinWith('Servicegroups.Containers', function (SelectQuery $q) use ($containFilter) {
                 return $q->where([
                     'ServiceescalationsServicegroupMemberships.excluded' => 0,
                     $containFilter['Servicegroups.name']
@@ -390,7 +389,7 @@ class ServiceescalationsTable extends Table {
             $containFilter['ServicegroupsExcluded.name'] = [
                 'Containers.name LIKE' => $indexFilter['ServicegroupsExcluded.name LIKE']
             ];
-            $query->innerJoinWith('ServicegroupsExcluded.Containers', function (Query $q) use ($containFilter) {
+            $query->innerJoinWith('ServicegroupsExcluded.Containers', function (SelectQuery $q) use ($containFilter) {
                 return $q->where([
                     'ServiceescalationsServicegroupMemberships.excluded' => 1,
                     $containFilter['ServicegroupsExcluded.name']
@@ -487,7 +486,7 @@ class ServiceescalationsTable extends Table {
         $query = $this->find()
             ->contain([
                 'Services'      =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->contain('Hosts')
                             ->where([
@@ -501,24 +500,24 @@ class ServiceescalationsTable extends Table {
                             ]);
                     },
                 'Servicegroups' =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->select(['uuid', 'id'])
                             ->contain(
                                 [
-                                    'Services'         => function (Query $q) {
+                                    'Services'         => function (SelectQuery $q) {
                                         return $q->enableAutoFields(false)
                                             ->select([
                                                 'Services.id'
                                             ])->where(['Services.disabled' => 0]);
                                     },
-                                    'Servicetemplates' => function (Query $q) {
+                                    'Servicetemplates' => function (SelectQuery $q) {
                                         return $q->enableAutoFields(false)
                                             ->select([
                                                 'Servicetemplates.id'
                                             ])
                                             ->contain([
-                                                'Services' => function (Query $query) {
+                                                'Services' => function (SelectQuery $query) {
                                                     $query
                                                         ->enableAutoFields(false)
                                                         ->select([
@@ -537,17 +536,17 @@ class ServiceescalationsTable extends Table {
                             );
                     },
                 'Timeperiods'   =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->select(['uuid']);
                     },
                 'Contacts'      =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->select(['uuid']);
                     },
                 'Contactgroups' =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->select(['uuid']);
                     }
@@ -585,7 +584,7 @@ class ServiceescalationsTable extends Table {
         $query = $this->find()
             ->contain([
                 'Services' =>
-                    function (Query $q) use ($serviceId) {
+                    function (SelectQuery $q) use ($serviceId) {
                         if ($serviceId !== null) {
                             $q->where([
                                 'Services.id !=' => $serviceId
@@ -621,7 +620,7 @@ class ServiceescalationsTable extends Table {
         /** @var ContactsToServiceescalationsTable $ContactsToServiceescalationsTable */
         $ContactsToServiceescalationsTable = TableRegistry::getTableLocator()->get('ContactsToServiceescalations');
 
-        $query = $ContactsToServiceescalationsTable->find()
+        $query = $ContactsToServiceescalationsTable->unhydratedFind()
             ->select([
                 'serviceescalation_id'
             ])
@@ -631,7 +630,6 @@ class ServiceescalationsTable extends Table {
             ->groupBy([
                 'serviceescalation_id'
             ])
-            ->disableHydration()
             ->all();
 
         $result = $query->toArray();
@@ -647,7 +645,7 @@ class ServiceescalationsTable extends Table {
             'Serviceescalations.id IN' => $serviceescalationIds
         ]);
 
-        $query->innerJoinWith('Containers', function (Query $q) use ($MY_RIGHTS) {
+        $query->innerJoinWith('Containers', function (SelectQuery $q) use ($MY_RIGHTS) {
             if (!empty($MY_RIGHTS)) {
                 return $q->where(['Serviceescalations.container_id IN' => $MY_RIGHTS]);
             }
@@ -733,7 +731,7 @@ class ServiceescalationsTable extends Table {
 
         $where = Hash::merge($_where, $where);
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Serviceescalations.' . $index,
         ]);
@@ -744,8 +742,6 @@ class ServiceescalationsTable extends Table {
                 'Serviceescalations.container_id IN' => $MY_RIGHTS
             ]);
         }
-
-        $query->disableHydration();
 
         $result = $query->toArray();
         if (empty($result)) {

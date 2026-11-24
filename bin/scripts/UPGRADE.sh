@@ -213,7 +213,8 @@ oitc migrations migrate
 
 echo "---------------------------------------------------------------"
 echo "Load default database"
-oitc migrations seed
+# update cakephp 5.4
+yes | oitc seeds run
 
 echo "Running openITCOCKPIT Module database migration/s"
 for PLUGIN in $(ls -1 "${APPDIR}/plugins"); do
@@ -227,7 +228,7 @@ for PLUGIN in $(ls -1 "${APPDIR}/plugins"); do
             num_files=$(find "${APPDIR}/plugins/${PLUGIN}/config/Seeds" -mindepth 1 -iname "*.php" -type f | wc -l)
             if [[ "$num_files" -gt 0 ]]; then
                 echo "Importing default records for ${PLUGIN} into database"
-                oitc migrations seed -p "${PLUGIN}"
+                yes | oitc seeds run -p "${PLUGIN}"
             fi
         fi
 

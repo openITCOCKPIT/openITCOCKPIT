@@ -144,8 +144,8 @@ class NotificationServicesLogTable extends Table implements NotificationServices
 
             'HostsToContainers.container_id',
 
-            'servicename'     => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
-            'servicepriority' => $query->newExpr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)')
+            'servicename'     => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+            'servicepriority' => $query->expr('IF(Services.priority IS NULL, Servicetemplates.priority, Services.priority)')
         ])
             ->innerJoin(
                 ['Services' => 'services'],

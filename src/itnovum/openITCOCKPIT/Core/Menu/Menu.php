@@ -565,7 +565,7 @@ class Menu {
                 'linux',
                 '',
                 ['fas', 'cubes'],
-                [],
+                ['software', 'package', 'packages', 'inventory'],
                 1,
                 true,
                 '/packages/linux'
@@ -576,7 +576,7 @@ class Menu {
                 'index',
                 '',
                 ['fas', 'bandage'],
-                [],
+                ['software', 'patch', 'patches', 'inventory'],
                 1,
                 true,
                 '/patchstatus/index'

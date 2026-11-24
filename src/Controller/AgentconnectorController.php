@@ -1496,7 +1496,7 @@ class AgentconnectorController extends AppController {
                 $config = $CheckConfig->getConfigByHostName($hostUuid);
 
                 $results = [
-                    'Messages' => []
+                    'messages' => []
                 ];
 
                 foreach ($config['checks'] as $pluginConfig) {

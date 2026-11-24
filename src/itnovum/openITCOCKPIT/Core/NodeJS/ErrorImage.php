@@ -97,7 +97,6 @@ class ErrorImage {
 
         $fp = fopen('php://temp', 'w+b'); // oder php://memory für strict RAM-only
         if ($fp === false) {
-            imagedestroy($img);
             return false;
         }
 
@@ -113,7 +112,6 @@ class ErrorImage {
             return $binaryData;
         } finally {
             fclose($fp);
-            imagedestroy($img);
         }
     }
 

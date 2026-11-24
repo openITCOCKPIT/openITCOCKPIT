@@ -179,7 +179,7 @@ class StatehistoryServicesTable extends Table implements StatehistoryServiceTabl
      */
     public function getRecordsForReporting(StatehistoryServiceConditions $StatehistoryServiceConditions) {
         $statehistoryRecords = [];
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'StatehistoryServices.service_description' => $StatehistoryServiceConditions->getServiceUuid(),
                 'StatehistoryServices.state_time <='       => $StatehistoryServiceConditions->getFrom()
@@ -194,15 +194,14 @@ class StatehistoryServicesTable extends Table implements StatehistoryServiceTabl
         }
         $query->orderBy([
             'StatehistoryServices.state_time' => 'DESC'
-        ])
-            ->disableHydration();
+        ]);
 
         $result = $query->first();
         if (!empty($result)) {
             $statehistoryRecords[] = new \itnovum\openITCOCKPIT\Core\Views\StatehistoryService($result);
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'StatehistoryServices.service_description' => $StatehistoryServiceConditions->getServiceUuid(),
                 'StatehistoryServices.state_time >'        => $StatehistoryServiceConditions->getFrom()
@@ -217,8 +216,7 @@ class StatehistoryServicesTable extends Table implements StatehistoryServiceTabl
         }
         $query->orderBy([
             'StatehistoryServices.state_time' => 'ASC'
-        ])
-            ->disableHydration();
+        ]);
 
         $results = $query->all();
 

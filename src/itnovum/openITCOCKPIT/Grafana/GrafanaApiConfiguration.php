@@ -281,6 +281,21 @@ class GrafanaApiConfiguration {
         $this->hostUuid = $uuid;
     }
 
+    /**
+     * Overwrites the dashboard style (theme) of the Grafana configuration.
+     * Used to render the Grafana iframe in the theme the user has currently selected in the frontend.
+     * Invalid values are ignored, so the configured dashboard style is used as fallback.
+     *
+     * @param mixed $dashboardStyle light or dark
+     * @return void
+     */
+    final public function setDashboardStyle($dashboardStyle): void {
+        if (!in_array($dashboardStyle, ['light', 'dark'], true)) {
+            return;
+        }
+        $this->dashboardStyle = $dashboardStyle;
+    }
+
     final public function setRefresh(string $refresh): void {
         $this->refresh = $refresh;
     }

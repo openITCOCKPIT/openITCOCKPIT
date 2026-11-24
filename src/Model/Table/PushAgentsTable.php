@@ -39,7 +39,7 @@ use Cake\Controller\Exception\MissingComponentException;
 use Cake\Core\Plugin;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\Exception\RecordNotFoundException;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -243,7 +243,7 @@ class PushAgentsTable extends Table {
                 'PushAgents.agentconfig_id IS NOT NULL'
             ])
             ->contain([
-                'Agentconfigs' => function (Query $q) {
+                'Agentconfigs' => function (SelectQuery $q) {
                     $q
                         ->disableAutoFields()
                         ->select([
@@ -251,7 +251,7 @@ class PushAgentsTable extends Table {
                             'Agentconfigs.host_id'
                         ])
                         ->contain([
-                            'Hosts' => function (Query $q) {
+                            'Hosts' => function (SelectQuery $q) {
                                 $q
                                     ->disableAutoFields()
                                     ->select([
@@ -277,7 +277,7 @@ class PushAgentsTable extends Table {
     public function getPushAgents(GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
         // Yes - this query is from hell!
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'PushAgents.id',
             'PushAgents.uuid',
@@ -306,7 +306,7 @@ class PushAgentsTable extends Table {
             }
 
             // SQL: IF(Hosts.id IS NOT NULL, `HostsToContainersSharing`.`container_id` in (1, 15, 99999), 1=1)
-            $exp = $query->newExpr();
+            $exp = $query->expr();
             $exp->add("IF(Hosts.id IS NOT NULL, `HostsToContainersSharing`.`container_id` IN (" . implode(', ', $placehoders) . "), 1=1) ");
 
             foreach ($MY_RIGHTS as $index => $MY_RIGHT) {
@@ -317,7 +317,7 @@ class PushAgentsTable extends Table {
                 );
             }
             $query->select([
-                'container_ids' => $query->newExpr('
+                'container_ids' => $query->expr('
             IF(Hosts.id IS NOT NULL,
                 GROUP_CONCAT(
                     DISTINCT `HostsToContainersSharing`.`container_id`
@@ -347,7 +347,6 @@ class PushAgentsTable extends Table {
         }
 
         $query->where($where);
-        $query->disableHydration();
         $query->orderBy(
             array_merge(
                 $GenericFilter->getOrderForPaginator('Hosts.name', 'asc'),
@@ -377,7 +376,7 @@ class PushAgentsTable extends Table {
      * @return array
      */
     public function getPushAgentsForAssignments($agentConfigId = null) {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         if (is_numeric($agentConfigId)) {
             $query->where([
                 'OR' => [
@@ -388,7 +387,6 @@ class PushAgentsTable extends Table {
         } else {
             $query->where('PushAgents.agentconfig_id IS NULL');
         }
-        $query->disableHydration();
 
         return $this->emptyArrayIfNull($query->toArray());
     }
@@ -434,7 +432,7 @@ class PushAgentsTable extends Table {
         /** @var ImportedHostsTable $ImportedHostsTable */
         $ImportedHostsTable = TableRegistry::getTableLocator()->get('ImportModule.ImportedHosts');
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $importedHostsSubSelect = $ImportedHostsTable->subquery()
             ->select('ImportedHosts.id')
             ->where([
@@ -458,7 +456,6 @@ class PushAgentsTable extends Table {
                     $importedHostsSubSelect
                 ]
             ]);
-        $query->disableHydration();
         $query->orderBy(['PushAgents.ipaddress' => 'asc']);
 
         return $this->emptyArrayIfNull($query->toArray());

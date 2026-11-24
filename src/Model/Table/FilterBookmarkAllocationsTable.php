@@ -273,7 +273,7 @@ class FilterBookmarkAllocationsTable extends Table {
 
 
     public function getFilterBookmarkAllocationForEdit($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
                 'Users',
                 'Usergroups'
@@ -281,7 +281,6 @@ class FilterBookmarkAllocationsTable extends Table {
             ->where([
                 'FilterBookmarkAllocations.id' => $id
             ])
-            ->disableHydration()
             ->first();
 
         if (empty($query)) {
@@ -301,7 +300,7 @@ class FilterBookmarkAllocationsTable extends Table {
     }
 
     public function getAllBookmarkAllocationsByUser(User $User, string $plugin = '', string $controller = '', string $action = '') {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->leftJoinWith('Users')
             ->leftJoinWith('Usergroups');
         $query->andWhere([
@@ -320,7 +319,7 @@ class FilterBookmarkAllocationsTable extends Table {
                 'FilterBookmarks.action'     => $action,
             ]);
         });
-        $query->disableHydration()
+        $query
             ->all();
 
         $allocations = $query->toArray();
@@ -338,7 +337,7 @@ class FilterBookmarkAllocationsTable extends Table {
      * @return array
      */
     public function getAllBookmarkAllocations(User $User, string $plugin = '', string $controller = '', string $action = '') {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
                 'Users',
                 'Usergroups'
@@ -353,7 +352,6 @@ class FilterBookmarkAllocationsTable extends Table {
             ->groupBy([
                 'FilterBookmarkAllocations.id'
             ])
-            ->disableHydration()
             ->all();
         $allocations = $query->toArray();
         if (empty($allocations)) {
@@ -375,7 +373,7 @@ class FilterBookmarkAllocationsTable extends Table {
             $containerIds = [$containerIds];
         }
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'FilterBookmarkAllocations.id',
             'FilterBookmarkAllocations.filter_bookmark_id'
@@ -394,7 +392,6 @@ class FilterBookmarkAllocationsTable extends Table {
         }
 
         $query->groupBy(['FilterBookmarkAllocations.filter_bookmark_id'])
-            ->disableHydration()
             ->all();
         return $this->emptyArrayIfNull($query->toArray());
     }

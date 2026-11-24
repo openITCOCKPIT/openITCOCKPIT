@@ -30,7 +30,7 @@ use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Behavior\ContainerOwnedBehavior;
 use App\Model\Entity\Instantreport;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -251,16 +251,16 @@ class InstantreportsTable extends Table {
      * @return array
      */
     public function getInstantreportsIndex(InstantreportFilter $InstantreportFilter, ?PaginateOMat $PaginateOMat = null, $MY_RIGHTS = []) {
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->contain([
-                'Timeperiods' => function (Query $q) {
+                'Timeperiods' => function (SelectQuery $q) {
                     return $q->enableAutoFields(false)
                         ->select([
                             'Timeperiods.id',
                             'Timeperiods.name'
                         ]);
                 },
-                'Users'       => function (Query $q) {
+                'Users'       => function (SelectQuery $q) {
                     return $q->enableAutoFields(false)
                         ->select([
                             'Users.id',
@@ -281,8 +281,7 @@ class InstantreportsTable extends Table {
                 'Instantreports.send_email',
                 'Instantreports.send_interval'
             ])
-            ->groupBy('Instantreports.id')
-            ->disableHydration();
+            ->groupBy('Instantreports.id');
 
         $indexFilter = $InstantreportFilter->indexFilter();
 
@@ -345,25 +344,25 @@ class InstantreportsTable extends Table {
                 'Instantreports.id' => $id
             ])
             ->contain([
-                'Hostgroups'    => function (Query $q) {
+                'Hostgroups'    => function (SelectQuery $q) {
                     return $q->disableAutoFields()
                         ->select([
                             'id'
                         ]);
                 },
-                'Hosts'         => function (Query $q) {
+                'Hosts'         => function (SelectQuery $q) {
                     return $q->disableAutoFields()
                         ->select([
                             'id'
                         ]);
                 },
-                'Servicegroups' => function (Query $q) {
+                'Servicegroups' => function (SelectQuery $q) {
                     return $q->disableAutoFields()
                         ->select([
                             'id'
                         ]);
                 },
-                'Services'      => function (Query $q) {
+                'Services'      => function (SelectQuery $q) {
                     return $q->disableAutoFields()
                         ->select([
                             'id'
@@ -380,7 +379,7 @@ class InstantreportsTable extends Table {
      * @return array
      */
     public function getInstantreportForEdit($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Instantreports.id',
                 'Instantreports.name',
@@ -404,7 +403,6 @@ class InstantreportsTable extends Table {
                 'Servicegroups',
                 'Services'
             ])
-            ->disableHydration()
             ->first();
 
         $instantreport = $query;
@@ -448,18 +446,18 @@ class InstantreportsTable extends Table {
                 }
 
                 $HostgroupsTable = TableRegistry::getTableLocator()->get('Hostgroups');
-                $hostgroups = $HostgroupsTable->find()
+                $hostgroups = $HostgroupsTable->unhydratedFind()
                     ->contain([
                         'Containers',
                         // Get all hosts that are in host group through the host template AND
                         // which does NOT have any own host groups
-                        'Hosttemplates' => function (Query $query) use ($instantReport, $MY_RIGHTS) {
+                        'Hosttemplates' => function (SelectQuery $query) use ($instantReport, $MY_RIGHTS) {
                             $query->disableAutoFields()
                                 ->select([
                                     'id'
                                 ])
                                 ->contain([
-                                    'Hosts' => function (Query $query) use ($instantReport, $MY_RIGHTS) {
+                                    'Hosts' => function (SelectQuery $query) use ($instantReport, $MY_RIGHTS) {
                                         $query
                                             ->disableAutoFields()
                                             ->select([
@@ -502,7 +500,7 @@ class InstantreportsTable extends Table {
                             return $query;
                         },
                         // Get all hosts from host group
-                        'Hosts'         => function (Query $query) use ($instantReport, $MY_RIGHTS) {
+                        'Hosts'         => function (SelectQuery $query) use ($instantReport, $MY_RIGHTS) {
                             $query->disableAutoFields()
                                 ->select([
                                     'Hosts.id',
@@ -546,7 +544,6 @@ class InstantreportsTable extends Table {
                     ]);
                 }
                 $hostgroups
-                    ->disableHydration()
                     ->all()
                     ->toArray();
                 foreach ($hostgroups as $hostgroup) {
@@ -603,7 +600,7 @@ class InstantreportsTable extends Table {
                 $HostsTable = TableRegistry::getTableLocator()->get('Hosts');
                 if ($instantReport->get('evaluation') === 1) {
                     $hosts = $HostsTable
-                        ->find()
+                        ->unhydratedFind()
                         ->disableAutoFields()
                         ->select([
                             'Hosts.id',
@@ -620,12 +617,11 @@ class InstantreportsTable extends Table {
                         ]);
                     }
                     $hosts
-                        ->disableHydration()
                         ->all()
                         ->toArray();
                 } else {
                     $hosts = $HostsTable
-                        ->find()
+                        ->unhydratedFind()
                         ->disableAutoFields()
                         ->select([
                             'Hosts.id',
@@ -656,7 +652,6 @@ class InstantreportsTable extends Table {
                         ]);
                     }
                     $hosts
-                        ->disableHydration()
                         ->all()
                         ->toArray();
                 }
@@ -685,18 +680,18 @@ class InstantreportsTable extends Table {
                 }
                 $ServicegroupsTable = TableRegistry::getTableLocator()->get('Servicegroups');
 
-                $servicegroups = $ServicegroupsTable->find()
+                $servicegroups = $ServicegroupsTable->unhydratedFind()
                     ->contain([
                         'Containers',
                         // Get all services that are in this service group through the service template AND
                         // which does NOT have any own service groups
-                        'Servicetemplates' => function (Query $query) use ($MY_RIGHTS) {
+                        'Servicetemplates' => function (SelectQuery $query) use ($MY_RIGHTS) {
                             $query->disableAutoFields()
                                 ->select([
                                     'Servicetemplates.id'
                                 ])
                                 ->contain([
-                                    'Services' => function (Query $query) use ($MY_RIGHTS) {
+                                    'Services' => function (SelectQuery $query) use ($MY_RIGHTS) {
                                         $query->disableAutoFields()
                                             ->select([
                                                 'Services.id',
@@ -712,7 +707,7 @@ class InstantreportsTable extends Table {
                                                     'Servicetemplates.name'
                                                 ]
                                             ],
-                                            'Hosts'            => function (Query $q) use ($MY_RIGHTS) {
+                                            'Hosts'            => function (SelectQuery $q) use ($MY_RIGHTS) {
                                                 $q->disableAutoFields()
                                                     ->select([
                                                         'Hosts.id',
@@ -736,7 +731,7 @@ class InstantreportsTable extends Table {
                             return $query;
                         },
                         // Get all services from this service group
-                        'Services'         => function (Query $query) use ($MY_RIGHTS) {
+                        'Services'         => function (SelectQuery $query) use ($MY_RIGHTS) {
                             $query->disableAutoFields()
                                 ->contain([
                                     'Servicetemplates' => [
@@ -744,7 +739,7 @@ class InstantreportsTable extends Table {
                                             'Servicetemplates.name'
                                         ]
                                     ],
-                                    'Hosts'            => function (Query $q) use ($MY_RIGHTS) {
+                                    'Hosts'            => function (SelectQuery $q) use ($MY_RIGHTS) {
                                         $q->disableAutoFields()
                                             ->select([
                                                 'Hosts.id',
@@ -777,7 +772,6 @@ class InstantreportsTable extends Table {
                     ]);
                 }
                 $servicegroups
-                    ->disableHydration()
                     ->all()
                     ->toArray();
                 foreach ($servicegroups as $servicegroup) {
@@ -833,7 +827,7 @@ class InstantreportsTable extends Table {
                 }
                 /** @var  $ServicesTable ServicesTable */
                 $ServicesTable = TableRegistry::getTableLocator()->get('Services');
-                $services = $ServicesTable->find()
+                $services = $ServicesTable->unhydratedFind()
                     ->select([
                         'Services.id',
                         'Services.name',
@@ -845,7 +839,7 @@ class InstantreportsTable extends Table {
                                 'Servicetemplates.name'
                             ]
                         ],
-                        'Hosts'            => function (Query $q) use ($MY_RIGHTS) {
+                        'Hosts'            => function (SelectQuery $q) use ($MY_RIGHTS) {
                             $q->disableAutoFields()
                                 ->select([
                                     'Hosts.id',
@@ -865,7 +859,6 @@ class InstantreportsTable extends Table {
                         'Services.id IN ' => $servicesIds
                     ])
                     ->distinct()
-                    ->disableHydration()
                     ->all()
                     ->toArray();
 
@@ -937,7 +930,7 @@ class InstantreportsTable extends Table {
 
         $where = Hash::merge($_where, $where);
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Instantreports.' . $index,
             'Instantreports.name'
@@ -949,8 +942,6 @@ class InstantreportsTable extends Table {
                 'Instantreports.container_id IN' => $MY_RIGHTS
             ]);
         }
-
-        $query->disableHydration();
 
         $result = $query->toArray();
         if (empty($result)) {
@@ -987,7 +978,7 @@ class InstantreportsTable extends Table {
      * @return array
      */
     public function getInstantReportsByHostId(int $hostId, array $MY_RIGHTS): array {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Instantreports.id',
             'Instantreports.name'
@@ -1005,7 +996,6 @@ class InstantreportsTable extends Table {
                 'Instantreports.container_id IN' => $MY_RIGHTS
             ]);
         }
-        $query->disableHydration();
 
         return $query->toArray();
     }
@@ -1016,7 +1006,7 @@ class InstantreportsTable extends Table {
      * @return array
      */
     public function getInstantReportsByServiceId(int $serviceId, array $MY_RIGHTS): array {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Instantreports.id',
             'Instantreports.name'
@@ -1034,7 +1024,6 @@ class InstantreportsTable extends Table {
                 'Instantreports.container_id IN' => $MY_RIGHTS
             ]);
         }
-        $query->disableHydration();
 
         return $query->toArray();
     }
@@ -1046,14 +1035,13 @@ class InstantreportsTable extends Table {
      * @return array
      */
     public function getInstantreportsForAngular($MY_RIGHTS = []) {
-        $query = $this->find('list')
+        $query = $this->unhydratedFind('list')
             ->select([
                 'Instantreports.id',
                 'Instantreports.container_id',
                 'Instantreports.name',
             ])
-            ->groupBy('Instantreports.id')
-            ->disableHydration();
+            ->groupBy('Instantreports.id');
 
         $where = [];
         if (!empty($MY_RIGHTS)) {

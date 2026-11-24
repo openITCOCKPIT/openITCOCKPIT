@@ -896,11 +896,10 @@ class WidgetsTable extends Table {
     }
 
     public function getWidgetByIdAsCake2($id) {
-        $result = $this->find()
+        $result = $this->unhydratedFind()
             ->where([
                 'Widgets.id' => $id
             ])
-            ->disableHydration()
             ->first();
         return $this->formatFirstResultAsCake2($result);
     }

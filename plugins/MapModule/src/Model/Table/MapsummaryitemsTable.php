@@ -277,7 +277,7 @@ class MapsummaryitemsTable extends Table {
             $MY_RIGHTS = [$MY_RIGHTS];
         }
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->join([
                 [
                     'table'      => 'maps',
@@ -304,7 +304,6 @@ class MapsummaryitemsTable extends Table {
         if (!empty($MY_RIGHTS)) {
             $query->where(['MapsToContainers.container_id IN' => $MY_RIGHTS]);
         }
-        $query->disableHydration();
         $result = $query->all();
         if (empty($result)) {
             return [];

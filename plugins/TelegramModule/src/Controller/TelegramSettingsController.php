@@ -153,11 +153,10 @@ class TelegramSettingsController extends AppController {
                 /** @var ContactsTable $contactsTable */
                 $contactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
-                $query = $contactsTable->find()
+                $query = $contactsTable->unhydratedFind()
                     ->where([
                         'Contacts.uuid' => $contact_uuid
                     ])
-                    ->disableHydration()
                     ->first();
 
                 if ($query !== null) {
@@ -191,11 +190,10 @@ class TelegramSettingsController extends AppController {
                 /** @var ContactsTable $contactsTable */
                 $contactsTable = TableRegistry::getTableLocator()->get('Contacts');
 
-                $query = $contactsTable->find()
+                $query = $contactsTable->unhydratedFind()
                     ->where([
                         'Contacts.uuid' => $contact_uuid
                     ])
-                    ->disableHydration()
                     ->first();
 
                 if ($query !== null) {

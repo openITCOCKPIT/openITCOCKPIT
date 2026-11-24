@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today AVENDIS GmbH
 //
 // This file is dual licensed
 //
@@ -31,9 +32,18 @@ declare(strict_types=1);
  * oitc4 bake seed -p GrafanaModule --table commands --data Install
  *
  * Apply:
- * oitc4 migrations seed -p GrafanaModule
+ * oitc4 seeds run -p GrafanaModule
  */
 class InstallSeed extends \Migrations\BaseSeed {
+
+    /**
+     * It will run every openitcockpit-update runs
+     * https://book.cakephp.org/migrations/5/guides/seeding.html#idempotent-seeds
+     */
+    public function isIdempotent(): bool {
+        return true;
+    }
+
     /**
      * Run Method.
      *

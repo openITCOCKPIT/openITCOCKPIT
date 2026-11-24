@@ -37,7 +37,7 @@ use Acl\Model\Table\AcosTable;
 use Acl\Model\Table\ArosTable;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\UsersTable;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
@@ -137,18 +137,17 @@ class MyRightsFactory {
         /** @var AcosTable $AcosTable */
         $AcosTable = TableRegistry::getTableLocator()->get('Acl.Acos');
 
-        $AcosAros = $ArosTable->find()
+        $AcosAros = $ArosTable->unhydratedFind()
             ->where([
                 'Aros.foreign_key' => $usergroupId
             ])
             ->contain([
-                'Acos' => function (Query $query) {
+                'Acos' => function (SelectQuery $query) {
                     return $query->where([
                         '_create' => '1'
                     ]);
                 }
             ])
-            ->disableHydration()
             ->first();
 
         $acos = $AcosAros['acos'];
@@ -156,8 +155,7 @@ class MyRightsFactory {
         $acoIdsOfUsergroup = Hash::combine($acos, '{n}.id', '{n}.id');
         unset($acos, $AcosAros);
 
-        $acos = $AcosTable->find('threaded')
-            ->disableHydration()
+        $acos = $AcosTable->unhydratedFind('threaded')
             ->all();
 
         $acos = $acos->toArray();

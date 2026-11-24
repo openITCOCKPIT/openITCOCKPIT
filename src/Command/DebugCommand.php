@@ -45,11 +45,6 @@ use Cake\Core\Configure;
  */
 class DebugCommand extends Command {
 
-    /**
-     * @var ConsoleIo
-     */
-    private $io;
-
     private $conf = [];
 
     /**

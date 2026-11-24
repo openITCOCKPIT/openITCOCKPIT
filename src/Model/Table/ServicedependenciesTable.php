@@ -32,7 +32,7 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use App\Model\Entity\Service;
 use Cake\Database\Expression\ComparisonExpression;
 use Cake\Http\Exception\NotFoundException;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Utility\Hash;
@@ -181,16 +181,16 @@ class ServicedependenciesTable extends Table {
      * @return array
      */
     public function getServicedependenciesIndex(ServicedependenciesFilter $ServicedependenciesFilter, $PaginateOMat = null, $MY_RIGHTS = []) {
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->contain([
-                'Timeperiods'       => function (Query $q) {
+                'Timeperiods'       => function (SelectQuery $q) {
                     return $q->enableAutoFields(false)
                         ->select([
                             'Timeperiods.id',
                             'Timeperiods.name'
                         ]);
                 },
-                'Services'          => function (Query $q) {
+                'Services'          => function (SelectQuery $q) {
                     return $q->enableAutoFields(false)
                         ->where([
                             'ServicedependenciesServiceMemberships.dependent' => 0
@@ -199,11 +199,11 @@ class ServicedependenciesTable extends Table {
                         ->innerJoinWith('Hosts')
                         ->select([
                             'Services.id',
-                            'servicename' => $q->newExpr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
+                            'servicename' => $q->expr('CONCAT(Hosts.name, "/", IF(Services.name IS NULL, Servicetemplates.name, Services.name))'),
                             'Services.disabled'
                         ]);
                 },
-                'ServicesDependent' => function (Query $q) {
+                'ServicesDependent' => function (SelectQuery $q) {
                     return $q->enableAutoFields(false)
                         ->where([
                             'ServicedependenciesServiceMemberships.dependent' => 1
@@ -212,13 +212,13 @@ class ServicedependenciesTable extends Table {
                         ->innerJoinWith('Hosts')
                         ->select([
                             'ServicesDependent.id',
-                            'servicename' => $q->newExpr('CONCAT(Hosts.name, "/", IF(ServicesDependent.name IS NULL, Servicetemplates.name, ServicesDependent.name))'),
+                            'servicename' => $q->expr('CONCAT(Hosts.name, "/", IF(ServicesDependent.name IS NULL, Servicetemplates.name, ServicesDependent.name))'),
                             'ServicesDependent.disabled'
                         ]);
                 },
 
                 'Servicegroups'          => [
-                    'Containers' => function (Query $q) {
+                    'Containers' => function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->where([
                                 'ServicedependenciesServicegroupMemberships.dependent' => 0
@@ -230,7 +230,7 @@ class ServicedependenciesTable extends Table {
                     },
                 ],
                 'ServicegroupsDependent' => [
-                    'Containers' => function (Query $q) {
+                    'Containers' => function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->where([
                                 'ServicedependenciesServicegroupMemberships.dependent' => 1
@@ -242,8 +242,7 @@ class ServicedependenciesTable extends Table {
                     },
                 ]
             ])
-            ->groupBy('Servicedependencies.id')
-            ->disableHydration();
+            ->groupBy('Servicedependencies.id');
 
         $indexFilter = $ServicedependenciesFilter->indexFilter();
         $containFilter = [
@@ -252,7 +251,7 @@ class ServicedependenciesTable extends Table {
         ];
 
         if (!empty($indexFilter['Services.servicename LIKE'])) {
-            $query->innerJoinWith('Services', function (Query $q) use ($indexFilter) {
+            $query->innerJoinWith('Services', function (SelectQuery $q) use ($indexFilter) {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
@@ -271,7 +270,7 @@ class ServicedependenciesTable extends Table {
         unset($indexFilter['Services.servicename LIKE']);
 
         if (!empty($indexFilter['ServicesDependent.servicename LIKE'])) {
-            $query->innerJoinWith('ServicesDependent', function (Query $q) use ($indexFilter) {
+            $query->innerJoinWith('ServicesDependent', function (SelectQuery $q) use ($indexFilter) {
                 return $q->innerJoinWith('Hosts')
                     ->innerJoinWith('Servicetemplates');
             });
@@ -294,7 +293,7 @@ class ServicedependenciesTable extends Table {
             $containFilter['Servicegroups.name'] = [
                 'Containers.name LIKE' => $indexFilter['Servicegroups.name LIKE']
             ];
-            $query->innerJoinWith('Servicegroups.Containers', function (Query $q) use ($containFilter) {
+            $query->innerJoinWith('Servicegroups.Containers', function (SelectQuery $q) use ($containFilter) {
                 return $q->where([
                     'ServicedependenciesServicegroupMemberships.dependent' => 0,
                     $containFilter['Servicegroups.name']
@@ -306,7 +305,7 @@ class ServicedependenciesTable extends Table {
             $containFilter['ServicegroupsDependent.name'] = [
                 'Containers.name LIKE' => $indexFilter['ServicegroupsDependent.name LIKE']
             ];
-            $query->innerJoinWith('ServicegroupsDependent.Containers', function (Query $q) use ($containFilter) {
+            $query->innerJoinWith('ServicegroupsDependent.Containers', function (SelectQuery $q) use ($containFilter) {
                 return $q->where([
                     'ServicedependenciesServicegroupMemberships.dependent' => 1,
                     $containFilter['ServicegroupsDependent.name']
@@ -395,10 +394,10 @@ class ServicedependenciesTable extends Table {
         $query = $this->find()
             ->contain([
                 'Services'      =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->contain([
-                                'Hosts' => function (Query $q) {
+                                'Hosts' => function (SelectQuery $q) {
                                     return $q->enableAutoFields(false)
                                         ->select(['Hosts.uuid']);
                                 }
@@ -412,7 +411,7 @@ class ServicedependenciesTable extends Table {
                             ]);
                     },
                 'Servicegroups' =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->select([
                                 'id',
@@ -420,7 +419,7 @@ class ServicedependenciesTable extends Table {
                             ]);
                     },
                 'Timeperiods'   =>
-                    function (Query $q) {
+                    function (SelectQuery $q) {
                         return $q->enableAutoFields(false)
                             ->select(['uuid']);
                     }
@@ -464,7 +463,7 @@ class ServicedependenciesTable extends Table {
         $query = $this->find()
             ->contain([
                 'Services' =>
-                    function (Query $q) use ($serviceId) {
+                    function (SelectQuery $q) use ($serviceId) {
                         if ($serviceId !== null) {
                             $q->where([
                                 'Services.id !=' => $serviceId
@@ -566,7 +565,7 @@ class ServicedependenciesTable extends Table {
 
         $where = Hash::merge($_where, $where);
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Servicedependencies.' . $index,
         ]);
@@ -577,8 +576,6 @@ class ServicedependenciesTable extends Table {
                 'Servicedependencies.container_id IN' => $MY_RIGHTS
             ]);
         }
-
-        $query->disableHydration();
 
         $result = $query->toArray();
         if (empty($result)) {

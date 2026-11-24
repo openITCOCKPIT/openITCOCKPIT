@@ -24,7 +24,7 @@
 //     confirmation.
 
 if (!defined('OPENITCOCKPIT_VERSION')) {
-    define('OPENITCOCKPIT_VERSION', '5.9.0');
+    define('OPENITCOCKPIT_VERSION', '5.10.0');
 }
 
 return [];

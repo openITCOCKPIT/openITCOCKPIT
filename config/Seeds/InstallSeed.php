@@ -40,9 +40,18 @@ use Cake\ORM\TableRegistry;
  * manually
  *
  * Apply:
- * oitc migrations seed
+ * oitc seeds run
  */
 class InstallSeed extends \Migrations\BaseSeed {
+
+    /**
+     * It will run every openitcockpit-update runs
+     * https://book.cakephp.org/migrations/5/guides/seeding.html#idempotent-seeds
+     */
+    public function isIdempotent(): bool {
+        return true;
+    }
+
     /**
      * Run Method.
      *

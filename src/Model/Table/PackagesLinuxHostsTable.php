@@ -28,7 +28,7 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -151,13 +151,13 @@ class PackagesLinuxHostsTable extends Table {
      * @return array
      */
     public function getHostsWithPackage(int $packageId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->innerJoin(
                 ['Hosts' => 'hosts'],
                 ['Hosts.id = PackagesLinuxHosts.host_id']
             )
             ->contain([
-                'Hosts' => function (Query $query) {
+                'Hosts' => function (SelectQuery $query) {
                     return $query->select([
                         'Hosts.id',
                         'Hosts.name',
@@ -191,8 +191,6 @@ class PackagesLinuxHostsTable extends Table {
             )
             ->groupBy(['Hosts.id']);
 
-        $query->disableHydration();
-
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $query->toArray();
@@ -215,13 +213,13 @@ class PackagesLinuxHostsTable extends Table {
      * @return array
      */
     public function getPackagesOfHost(int $hostId, GenericFilter $GenericFilter, ?PaginateOMat $PaginateOMat = null, array $MY_RIGHTS = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->innerJoin(
                 ['Hosts' => 'hosts'],
                 ['Hosts.id = PackagesLinuxHosts.host_id']
             )
             ->contain([
-                'Hosts'         => function (Query $query) {
+                'Hosts'         => function (SelectQuery $query) {
                     return $query->select([
                         'Hosts.id',
                         'Hosts.name',
@@ -229,7 +227,7 @@ class PackagesLinuxHostsTable extends Table {
                         'Hosts.container_id',
                     ]);
                 },
-                'PackagesLinux' => function (Query $query) {
+                'PackagesLinux' => function (SelectQuery $query) {
                     return $query->select([
                         'PackagesLinux.id',
                         'PackagesLinux.name',
@@ -260,8 +258,6 @@ class PackagesLinuxHostsTable extends Table {
             $GenericFilter->getOrderForPaginator('PackagesLinux.name', 'asc')
         );
 
-        $query->disableHydration();
-
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $query->toArray();
@@ -289,12 +285,11 @@ class PackagesLinuxHostsTable extends Table {
      * @return array
      */
     public function getUpdatesByHostId($hostId): array {
-        return $this->find()
+        return $this->unhydratedFind()
             ->where([
                 'host_id'      => $hostId,
                 'needs_update' => 1
             ])
-            ->disableHydration()
             ->toArray();
     }
 }

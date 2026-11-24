@@ -31,6 +31,7 @@ use App\Lib\Traits\PaginationAndScrollIndexTrait;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Log\Log;
 use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
@@ -124,11 +125,10 @@ class WindowsUpdatesTable extends Table {
     }
 
     public function getUpdateById($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'WindowsUpdates.id' => $id
             ])
-            ->disableHydration()
             ->firstOrFail();
 
         return $query;
@@ -164,7 +164,7 @@ class WindowsUpdatesTable extends Table {
      * @param null|int $offset
      */
     public function getWindowsUpdatesWithLimit(?int $limit = null, ?int $offset = null): array {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'WindowsUpdates.id',
                 'WindowsUpdates.update_id',
@@ -176,8 +176,6 @@ class WindowsUpdatesTable extends Table {
         if ($offset !== null) {
             $query->offset($offset);
         }
-
-        $query->disableHydration();
 
         $query->all();
         return $query->toArray();
@@ -358,7 +356,7 @@ class WindowsUpdatesTable extends Table {
             'hostsWithSecurityUpdates' => [],
         ];
 
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->select([
                 'WindowsUpdates.id',
                 'WindowsUpdates.name',
@@ -366,7 +364,7 @@ class WindowsUpdatesTable extends Table {
                 'WindowsUpdates.kbarticle_ids',
                 'WindowsUpdates.update_id'
             ])->contain([
-                'WindowsUpdatesHosts' => function (Query $q) use ($MY_RIGHTS) {
+                'WindowsUpdatesHosts' => function (SelectQuery $q) use ($MY_RIGHTS) {
                     $query = $q->select([
                         'windows_update_id',
                         'host_id',
@@ -391,8 +389,7 @@ class WindowsUpdatesTable extends Table {
                 }
             ]);
 
-        $query->disableAutoFields()
-            ->disableHydration();
+        $query->disableAutoFields();
         $result = $query->toArray();
         if (empty($result)) {
             return $all_windows_updates;
@@ -437,7 +434,7 @@ class WindowsUpdatesTable extends Table {
                 'is_security_update' => 1,
             ]);
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'WindowsUpdates.id',
                 'WindowsUpdates.name',
@@ -450,7 +447,7 @@ class WindowsUpdatesTable extends Table {
                 'available_security_updates' => $subQueryForSecurityUpdates,
             ])
             ->contain([
-                'WindowsUpdatesHosts' => function (Query $query) use ($MY_RIGHTS) {
+                'WindowsUpdatesHosts' => function (SelectQuery $query) use ($MY_RIGHTS) {
                     $query->select([
                         'WindowsUpdatesHosts.windows_update_id',
                         'WindowsUpdatesHosts.reboot_required',
@@ -501,8 +498,6 @@ class WindowsUpdatesTable extends Table {
                 ['WindowsUpdates.id' => 'asc']
             )
         );
-
-        $query->disableHydration();
 
         if ($PaginateOMat === null) {
             //Just execute query

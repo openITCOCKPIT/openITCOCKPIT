@@ -126,7 +126,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
             'DowntimeHosts.scheduled_end_time',
             'DowntimeHosts.actual_end_time',
             'DowntimeHosts.duration',
-            'DowntimeHosts__actual_duration' => $query->newExpr('DowntimeHosts.actual_end_time - DowntimeHosts.actual_start_time'),
+            'DowntimeHosts__actual_duration' => $query->expr('DowntimeHosts.actual_end_time - DowntimeHosts.actual_start_time'),
             'DowntimeHosts.was_started',
             'DowntimeHosts.internal_downtime_id',
             'DowntimeHosts.downtimehistory_id',
@@ -203,7 +203,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
      * @return array
      */
     public function getHostUuidWithDowntimeByInternalDowntimeId($internalDowntimeId) {
-        $result = $this->find()
+        $result = $this->unhydratedFind()
             ->select([
                 'DowntimeHosts.author_name',
                 'DowntimeHosts.comment_data',
@@ -225,7 +225,6 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
             ->where([
                 'DowntimeHosts.internal_downtime_id' => $internalDowntimeId
             ])
-            ->disableHydration()
             ->first();
 
         if ($result === null) {
@@ -356,7 +355,7 @@ class DowntimeHostsTable extends Table implements DowntimehistoryHostsTableInter
             'DowntimeHosts.scheduled_end_time',
             'DowntimeHosts.actual_end_time',
             'DowntimeHosts.duration',
-            'DowntimeHosts__actual_duration' => $query->newExpr('DowntimeHosts.actual_end_time - DowntimeHosts.actual_start_time'),
+            'DowntimeHosts__actual_duration' => $query->expr('DowntimeHosts.actual_end_time - DowntimeHosts.actual_start_time'),
             'DowntimeHosts.was_started',
             'DowntimeHosts.internal_downtime_id',
             'DowntimeHosts.downtimehistory_id',

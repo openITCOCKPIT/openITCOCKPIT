@@ -30,7 +30,7 @@ use Acl\Model\Table\ArosTable;
 use App\Lib\AclDependencies;
 use App\Lib\Traits\Cake2ResultTableTrait;
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -156,17 +156,16 @@ class UsergroupsTable extends Table {
      * @return array
      */
     public function getUsergroups($PaginateOMat, GenericFilter $GenericFilter) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
-                'Users' => function (Query $q) {
+                'Users' => function (SelectQuery $q) {
                     return $q->select([
                         'Users.id',
                         'Users.usergroup_id'
                     ]);
                 }
             ])
-            ->orderBy($GenericFilter->getOrderForPaginator('Usergroups.name', 'asc'))
-            ->disableHydration();
+            ->orderBy($GenericFilter->getOrderForPaginator('Usergroups.name', 'asc'));
 
 
         if (!empty($GenericFilter->genericFilters())) {
@@ -193,8 +192,7 @@ class UsergroupsTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface|null
      */
     public function getUsergroupById($id) {
-        $query = $this->find('all')
-            ->disableHydration()
+        $query = $this->unhydratedFind('all')
             ->where([
                 'id' => $id
             ]);
@@ -213,8 +211,7 @@ class UsergroupsTable extends Table {
         $AcosTable = TableRegistry::getTableLocator()->get('Acl.Acos');
 
         $acosAsList = [];
-        $acos = $AcosTable->find('threaded')
-            ->disableHydration()
+        $acos = $AcosTable->unhydratedFind('threaded')
             ->all();
 
         $acos = $acos->toArray();
@@ -259,13 +256,12 @@ class UsergroupsTable extends Table {
         if (!is_array($memberOfGroups)) {
             $memberOfGroups = [$memberOfGroups];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->innerJoinWith('Ldapgroups')
             ->where([
                 'Ldapgroups.dn IN' => $memberOfGroups
             ])
             ->orderBy(['Usergroups.name' => 'asc'])
-            ->disableHydration()
             ->first();
 
         return $this->emptyArrayIfNull($query);
@@ -276,7 +272,7 @@ class UsergroupsTable extends Table {
      * @return array
      */
     public function getUsergroupsForCopy($ids = []) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Usergroups.id',
                 'Usergroups.name',
@@ -285,7 +281,7 @@ class UsergroupsTable extends Table {
             ->where(['Usergroups.id IN' => $ids])
             ->orderBy(['Usergroups.id' => 'asc']);
 
-        $query->disableHydration()
+        $query
             ->all();
 
         return $this->emptyArrayIfNull($query->toArray());
@@ -329,7 +325,7 @@ class UsergroupsTable extends Table {
         if (!is_array($ids)) {
             $ids = [$ids];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select([
                 'Usergroups.id',
                 'Usergroups.name',
@@ -337,8 +333,7 @@ class UsergroupsTable extends Table {
             ])
             ->where([
                 'Usergroups.id IN' => $ids
-            ])
-            ->disableHydration();
+            ]);
         return $this->emptyArrayIfNull($query->toArray());
 
     }
@@ -352,8 +347,7 @@ class UsergroupsTable extends Table {
         $AcosTable = TableRegistry::getTableLocator()->get('Acl.Acos');
 
         $acosAsList = [];
-        $acos = $AcosTable->find('threaded')
-            ->disableHydration()
+        $acos = $AcosTable->unhydratedFind('threaded')
             ->all();
 
         $acos = $acos->toArray();
@@ -402,18 +396,17 @@ class UsergroupsTable extends Table {
         /** @var ArosTable $ArosTable */
         $ArosTable = TableRegistry::getTableLocator()->get('Acl.Aros');
 
-        $AcosAros = $ArosTable->find()
+        $AcosAros = $ArosTable->unhydratedFind()
             ->where([
                 'Aros.foreign_key' => $usergroupId
             ])
             ->contain([
-                'Acos' => function (Query $query) {
+                'Acos' => function (SelectQuery $query) {
                     return $query->where([
                         '_create' => '1'
                     ]);
                 }
             ])
-            ->disableHydration()
             ->first();
         if (empty($AcosAros['acos'])) {
             return [];

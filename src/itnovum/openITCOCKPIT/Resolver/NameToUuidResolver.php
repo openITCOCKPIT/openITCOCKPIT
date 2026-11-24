@@ -110,7 +110,7 @@ class NameToUuidResolver {
         $query
             ->select([
                 'Services.uuid',
-                'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
             ])
             ->contain([
                 'Hosts',
@@ -189,7 +189,7 @@ class NameToUuidResolver {
             ->select([
                 'Hosts.uuid',
                 'Services.uuid',
-                'servicename' => $query->newExpr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
+                'servicename' => $query->expr('IF((Services.name IS NULL OR Services.name=""), Servicetemplates.name, Services.name)'),
             ])
             ->contain([
                 'Hosts',

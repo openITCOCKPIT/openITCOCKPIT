@@ -1,5 +1,6 @@
 <?php
-// Copyright (C) <2015-present>  <it-novum GmbH>
+// Copyright (C) 2015-2025  it-novum GmbH
+// Copyright (C) 2025-today AVENDIS GmbH
 //
 // This file is dual licensed
 //
@@ -35,8 +36,8 @@
  */
 
 use App\Identifier\ApikeyIdentifier;
-use Authentication\Identifier\AbstractIdentifier;
-use Authentication\Identifier\IdentifierCollection;
+use Authentication\Identifier\IdentifierFactory;
+use Authentication\Identifier\PasswordIdentifier;
 use Authentication\PasswordHasher\DefaultPasswordHasher;
 use Cake\Http\Exception\UnauthorizedException;
 use Cake\Log\Log;
@@ -105,16 +106,15 @@ try {
 
         [$username, $tokenHash] = $token;
 
-        $IdentifierCollection = new IdentifierCollection([
-            'Authentication.Password' => [
-                'fields' => [
-                    AbstractIdentifier::CREDENTIAL_USERNAME => 'email',
-                    AbstractIdentifier::CREDENTIAL_PASSWORD => 'password'
-                ]
+        $PasswordIdentifier = IdentifierFactory::create([
+            'className' => PasswordIdentifier::class,
+            'fields'    => [
+                PasswordIdentifier::CREDENTIAL_USERNAME => 'email',
+                PasswordIdentifier::CREDENTIAL_PASSWORD => 'password'
             ]
         ]);
 
-        $identity = $IdentifierCollection->identify(['username' => $username]);
+        $identity = $PasswordIdentifier->identify([PasswordIdentifier::CREDENTIAL_USERNAME => $username]);
 
         if (empty($identity)) {
             throw new UnauthorizedException();
@@ -141,13 +141,9 @@ try {
 
         if (sizeof($apiKeyArray) === 2) {
             $apikey = $apiKeyArray[1];
-            $IdentifierCollection = new IdentifierCollection([
-                'Authentication.Apikey' => [
-                    'className' => ApikeyIdentifier::class
-                ]
-            ]);
+            $ApikeyIdentifier = IdentifierFactory::create(ApikeyIdentifier::class);
 
-            $identity = $IdentifierCollection->identify(['apikey' => $apikey]);
+            $identity = $ApikeyIdentifier->identify(['apikey' => $apikey]);
 
             if (!empty($identity)) {
                 //Login success
@@ -167,13 +163,9 @@ try {
 
         if (sizeof($apiKeyArray) === 2) {
             $apikey = $apiKeyArray[1];
-            $IdentifierCollection = new IdentifierCollection([
-                'Authentication.Apikey' => [
-                    'className' => ApikeyIdentifier::class
-                ]
-            ]);
+            $ApikeyIdentifier = IdentifierFactory::create(ApikeyIdentifier::class);
 
-            $identity = $IdentifierCollection->identify(['apikey' => $apikey]);
+            $identity = $ApikeyIdentifier->identify(['apikey' => $apikey]);
 
             if (!empty($identity)) {
                 //Login success

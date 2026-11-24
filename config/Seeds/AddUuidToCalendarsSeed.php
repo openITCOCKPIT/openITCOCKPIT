@@ -37,9 +37,18 @@ use Migrations\BaseSeed;
  * oitc bake seed --table calendars  AddUuidToCalendarsSeed
  *
  * Apply:
- * oitc migrations seed
+ * oitc seeds run
  */
 class AddUuidToCalendarsSeed extends BaseSeed {
+
+    /**
+     * It will run every openitcockpit-update runs
+     * https://book.cakephp.org/migrations/5/guides/seeding.html#idempotent-seeds
+     */
+    public function isIdempotent(): bool {
+        return true;
+    }
+
     /**
      * Run Method.
      *

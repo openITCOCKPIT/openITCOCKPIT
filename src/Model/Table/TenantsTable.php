@@ -108,9 +108,8 @@ class TenantsTable extends Table {
      * @return array
      */
     public function getTenantsIndex(TenantFilter $TenantFilter, $PaginateOMat = null, array $MY_RIGHTS = []) {
-        $query = $this->find('all')
-            ->contain(['Containers'])
-            ->disableHydration();
+        $query = $this->unhydratedFind('all')
+            ->contain(['Containers']);
         $query->where($TenantFilter->indexFilter());
 
         if (!empty($MY_RIGHTS)) {
@@ -153,14 +152,13 @@ class TenantsTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface
      */
     public function getTenantById($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Tenants.id' => $id
             ])
             ->contain([
                 'Containers'
             ])
-            ->disableHydration()
             ->firstOrFail();
 
         return $query;
@@ -171,14 +169,13 @@ class TenantsTable extends Table {
      * @return array|\Cake\Datasource\EntityInterface
      */
     public function getTenantByContainerId($id) {
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'Tenants.container_id' => $id
             ])
             ->contain([
                 'Containers'
             ])
-            ->disableHydration()
             ->firstOrFail();
 
         return $query;
@@ -277,14 +274,13 @@ class TenantsTable extends Table {
         }
         $containerIds = array_unique($containerIds);
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->where([
                 'container_id IN' => $containerIds
             ])
             ->contain([
                 'Containers'
             ])
-            ->disableHydration()
             ->all();
 
         switch ($type) {
@@ -309,7 +305,7 @@ class TenantsTable extends Table {
      * @return array|null
      */
     public function getTenants($type = 'all', $index = 'id', $MY_RIGHTS = []) {
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         if (!empty($MY_RIGHTS)) {
             $query->where([
                 'container_id IN' => $MY_RIGHTS
@@ -320,7 +316,6 @@ class TenantsTable extends Table {
             ->contain([
                 'Containers'
             ])
-            ->disableHydration()
             ->all();
 
         switch ($type) {

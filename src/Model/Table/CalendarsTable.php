@@ -239,14 +239,13 @@ class CalendarsTable extends Table {
             return [];
         }
 
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->contain([
                 'Containers'
             ])
             ->where([
                 'Calendars.container_id IN' => $containerIds
-            ])
-            ->disableHydration();
+            ]);
 
         if ($type === 'all') {
             return $this->formatResultAsCake2($query->toArray());
@@ -256,14 +255,13 @@ class CalendarsTable extends Table {
     }
 
     public function getCalendarByIdForEdit($id) {
-        $result = $this->find()
+        $result = $this->unhydratedFind()
             ->contain([
                 'CalendarHolidays'
             ])
             ->where([
                 'Calendars.id' => $id
             ])
-            ->disableHydration()
             ->firstOrFail();
 
         return $result;
@@ -277,15 +275,14 @@ class CalendarsTable extends Table {
         if (!is_array($ids)) {
             $ids = [$ids];
         }
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->contain([
                 'CalendarHolidays'
             ])
             ->where([
                 'Calendars.id IN'        => $ids,
                 'Calendars.container_id' => ROOT_CONTAINER
-            ])
-            ->disableHydration();
+            ]);
         return $this->emptyArrayIfNull($query->toArray());
     }
 
@@ -303,10 +300,9 @@ class CalendarsTable extends Table {
      * @return array
      */
     public function getCalendarByUuidForImportDiff($uuid) {
-        $query = $this->find('all')
+        $query = $this->unhydratedFind('all')
             ->contain('CalendarHolidays')
             ->where(['Calendars.uuid' => $uuid])
-            ->disableHydration()
             ->firstOrFail();
 
         return $this->emptyArrayIfNull($query);

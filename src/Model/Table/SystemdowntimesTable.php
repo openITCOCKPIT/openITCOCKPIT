@@ -26,7 +26,7 @@
 namespace App\Model\Table;
 
 use App\Lib\Traits\PaginationAndScrollIndexTrait;
-use Cake\ORM\Query;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -342,7 +342,7 @@ class SystemdowntimesTable extends Table {
      */
     public function getRecurringHostDowntimes(SystemdowntimesConditions $SystemdowntimesConditions, $PaginateOMat = null) {
         $MY_RIGHTS = $SystemdowntimesConditions->getContainerIds();
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Systemdowntimes.id',
             'Systemdowntimes.objecttype_id',
@@ -358,7 +358,7 @@ class SystemdowntimesTable extends Table {
             'Hosts.id',
             'Hosts.name',
             'Hosts.uuid',
-            'container_ids' => $query->newExpr('GROUP_CONCAT(DISTINCT HostsToContainersSharing.container_id)')
+            'container_ids' => $query->expr('GROUP_CONCAT(DISTINCT HostsToContainersSharing.container_id)')
         ])
             ->innerJoin(['Hosts' => 'hosts'], [
                 'Hosts.id = Systemdowntimes.object_id'
@@ -393,7 +393,7 @@ class SystemdowntimesTable extends Table {
                 ['Systemdowntimes.id' => 'asc']
             )
 
-        )->disableHydration();
+        );
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -417,7 +417,7 @@ class SystemdowntimesTable extends Table {
     public function getRecurringServiceDowntimes(SystemdowntimesConditions $SystemdowntimesConditions, $PaginateOMat = null) {
         $MY_RIGHTS = $SystemdowntimesConditions->getContainerIds();
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Systemdowntimes.id',
             'Systemdowntimes.objecttype_id',
@@ -432,8 +432,8 @@ class SystemdowntimesTable extends Table {
             'Systemdowntimes.author',
             'Services.id',
             'Services.uuid',
-            'container_ids' => $query->newExpr('GROUP_CONCAT(DISTINCT HostsToContainersSharing.container_id)'),
-            'servicename'   => $query->newExpr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
+            'container_ids' => $query->expr('GROUP_CONCAT(DISTINCT HostsToContainersSharing.container_id)'),
+            'servicename'   => $query->expr('IF(Services.name IS NULL, Servicetemplates.name, Services.name)'),
             'Hosts.id',
             'Hosts.uuid',
             'Hosts.name',
@@ -492,7 +492,7 @@ class SystemdowntimesTable extends Table {
                     ['Systemdowntimes.id' => 'asc']
                 )
 
-            )->disableHydration();
+            );
         if ($PaginateOMat === null) {
             //Just execute query
             $result = $this->emptyArrayIfNull($query->toArray());
@@ -515,7 +515,7 @@ class SystemdowntimesTable extends Table {
     public function getRecurringHostgroupDowntimes(SystemdowntimesConditions $SystemdowntimesConditions, $PaginateOMat = null) {
         $MY_RIGHTS = $SystemdowntimesConditions->getContainerIds();
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Systemdowntimes.id',
             'Systemdowntimes.objecttype_id',
@@ -530,7 +530,7 @@ class SystemdowntimesTable extends Table {
             'Systemdowntimes.author',
         ])
             ->contain([
-                'Hostgroups' => function (Query $query) {
+                'Hostgroups' => function (SelectQuery $query) {
                     $query
                         ->disableAutoFields()
                         ->select([
@@ -540,7 +540,7 @@ class SystemdowntimesTable extends Table {
                             'Hostgroups.container_id'
                         ])
                         ->contain([
-                            'Containers' => function (Query $query) {
+                            'Containers' => function (SelectQuery $query) {
                                 $query
                                     ->disableAutoFields()
                                     ->select([
@@ -576,7 +576,7 @@ class SystemdowntimesTable extends Table {
                     $SystemdowntimesConditions->getOrder(),
                     ['Systemdowntimes.id' => 'asc']
                 )
-            )->disableHydration();
+            );
 
         if ($PaginateOMat === null) {
             //Just execute query
@@ -600,7 +600,7 @@ class SystemdowntimesTable extends Table {
     public function getRecurringNodeDowntimes(SystemdowntimesConditions $SystemdowntimesConditions, $PaginateOMat = null) {
         $MY_RIGHTS = $SystemdowntimesConditions->getContainerIds();
 
-        $query = $this->find();
+        $query = $this->unhydratedFind();
         $query->select([
             'Systemdowntimes.id',
             'Systemdowntimes.objecttype_id',
@@ -615,7 +615,7 @@ class SystemdowntimesTable extends Table {
             'Systemdowntimes.author',
         ])
             ->contain([
-                'Containers' => function (Query $query) {
+                'Containers' => function (SelectQuery $query) {
                     $query
                         ->disableAutoFields()
                         ->select([
@@ -648,7 +648,7 @@ class SystemdowntimesTable extends Table {
                     $SystemdowntimesConditions->getOrder(),
                     ['Systemdowntimes.id' => 'asc']
                 )
-            )->disableHydration();
+            );
 
         if ($PaginateOMat === null) {
             //Just execute query

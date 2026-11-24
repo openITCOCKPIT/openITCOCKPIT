@@ -108,11 +108,10 @@ class MattermostSettingsTable extends Table {
             'use_proxy'   => false
         ];
 
-        $result = $this->find()
+        $result = $this->unhydratedFind()
             ->where([
                 'id' => 1
             ])
-            ->disableHydration()
             ->first();
 
         if (empty($result)) {

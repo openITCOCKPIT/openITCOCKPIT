@@ -24,7 +24,6 @@
 //	confirmation.
 
 
-use Migrations\AbstractMigration;
 
 class GrafanaDashboardSettings extends \Migrations\BaseMigration {
     /**

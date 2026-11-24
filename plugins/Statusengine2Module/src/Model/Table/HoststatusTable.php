@@ -123,7 +123,7 @@ class HoststatusTable extends Table implements HoststatusTableInterface {
 
         $select = $HoststatusFields->getFields();
 
-        $query = $this->find()
+        $query = $this->unhydratedFind()
             ->select($select)
             ->contain([
                 'Objects' => [
@@ -150,7 +150,6 @@ class HoststatusTable extends Table implements HoststatusTableInterface {
         }
 
         $query->where($where);
-        $query->disableHydration();
 
         if ($findType === 'all') {
             $result = $query->all();

@@ -257,7 +257,7 @@ class InstantReportCommand extends Command implements CronjobInterface {
         if (!$toSend) {
             $io->success('No emails to send');
         }
-        $this->cleanUp();
+       // $this->cleanUp();
         $io->hr();
     }
 
@@ -267,6 +267,14 @@ class InstantReportCommand extends Command implements CronjobInterface {
      * @return bool
      */
     private function cleanUp() {
+        /**
+         * Not used anymore - the call in execute() is commented out.
+         * The path APP . '/webroot/img/charts/' points to src/webroot, which does not exist, so this method never deleted anything.
+         * The charts are removed by CleanupTempCommand::clenupPiCharts() (WWW_ROOT/img/charts, files older than 120 seconds).
+         * Do NOT just fix the path: this method deletes all files without a grace period, so it would also delete
+         * charts of reports that are rendered at the same time (e.g. instant or downtime reports from the web interface).
+         */
+
         $savePath = APP . '/webroot/img/charts/';
         if (!is_dir($savePath)) {
             return false;

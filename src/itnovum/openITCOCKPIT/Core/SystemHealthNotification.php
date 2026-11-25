@@ -26,6 +26,7 @@
 namespace App\itnovum\openITCOCKPIT\Core;
 
 use App\Model\Table\SystemsettingsTable;
+use Cake\Log\Log;
 use Cake\Mailer\Mailer;
 use Cake\ORM\TableRegistry;
 use itnovum\openITCOCKPIT\Core\Views\Logo;
@@ -47,8 +48,6 @@ class SystemHealthNotification {
      */
     private $state;
 
-    private $satellites_state;
-
     /**
      * @var array
      */
@@ -58,10 +57,9 @@ class SystemHealthNotification {
      * @param array $mailingList
      * @param string $state
      */
-    public function __construct(array $mailingList, string $state, string $satellites_state) {
+    public function __construct(array $mailingList, string $state) {
         $this->mailingList = $mailingList;
         $this->state = $state;
-        $this->satellites_state = $satellites_state;
     }
 
     /**
@@ -88,11 +86,6 @@ class SystemHealthNotification {
         return $this->state;
     }
 
-    public function getSatellitesState(): string {
-        return $this->satellites_state;
-    }
-
-
     /**
      * @param string $state
      * @return void
@@ -110,28 +103,6 @@ class SystemHealthNotification {
     }
 
     /**
-     * @return ServicestatusIcon
-     */
-    private function getStatusIcon($state) {
-        switch (strtoupper($state)) {
-            case 'OK':
-                $stateId = 0;
-                break;
-            case 'WARNING':
-                $stateId = 1;
-                break;
-            case 'CRITICAL':
-                $stateId = 2;
-                break;
-            default:
-                $stateId = 3;
-                break;
-        }
-
-        return new ServicestatusIcon($stateId);
-    }
-
-    /**
      * @return void
      */
     public function sendNotification() {
@@ -141,13 +112,8 @@ class SystemHealthNotification {
             /** @var SystemsettingsTable $SystemsettingsTable */
             $SystemsettingsTable = TableRegistry::getTableLocator()->get('Systemsettings');
             $systemsettings = $SystemsettingsTable->findAsArray();
-            $statusIcon = $this->getStatusIcon($this->state);
-            $statusSatelliteIcon = $this->getStatusIcon($this->satellites_state);
+            $statusIcon = ServicestatusIcon::fromStatusText($this->state);
             $subject = $statusIcon->getEmoji() . ' ' . __('System health is {0}', $this->getState());
-
-            if ($this->data['isDistributeModuleInstalled'] ?? 0 == 1) {
-                $subject .= ' , ' . $statusSatelliteIcon->getEmoji() . ' ' . __('Satellites System Health is {0}', $this->getSatellitesState());
-            }
 
             foreach ($this->getMailingList() as $email => $name) {
 
@@ -170,12 +136,14 @@ class SystemHealthNotification {
                     ->setTemplate('notification_system_health')
                     ->setVar('systemname', $systemsettings['FRONTEND']['FRONTEND.SYSTEMNAME'])
                     ->setVar('StatusIcon', $statusIcon)
-                    ->setVar('StatusSatelliteIcon', $statusSatelliteIcon)
-                    ->setVar('satelliteState', $this->getSatellitesState())
                     ->setVar('systemAddress', $systemsettings['SYSTEM']['SYSTEM.ADDRESS'])
                     ->setVar('systemHealth', $this->data);
 
-                $Mailer->deliver();
+                try {
+                    $Mailer->deliver();
+                } catch (\Throwable $e) {
+                    Log::error(sprintf('Could not send SystemHealthNotification to %s: %s', $email, $e->getMessage()));
+                }
             }
         }
 

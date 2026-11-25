@@ -110,6 +110,7 @@ use itnovum\openITCOCKPIT\Core\UUID;
 use itnovum\openITCOCKPIT\Core\ValueObjects\User;
 use itnovum\openITCOCKPIT\Core\Views\AcknowledgementHost;
 use itnovum\openITCOCKPIT\Core\Views\AcknowledgementService;
+use itnovum\openITCOCKPIT\Core\Views\BBCMarkDownParser;
 use itnovum\openITCOCKPIT\Core\Views\BBCodeParser;
 use itnovum\openITCOCKPIT\Core\Views\Command;
 use itnovum\openITCOCKPIT\Core\Views\Contact;
@@ -1799,10 +1800,13 @@ class ServicesController extends AppController {
         $Servicestatus = new Servicestatus($servicestatus['Servicestatus'], $UserTime);
         $servicestatus = $Servicestatus->toArrayForBrowser();
 
-        //Parse BBCode in long output
+        //Parse BBCode in short output
         $BBCodeParser = new BBCodeParser();
         $servicestatus['outputHtml'] = $BBCodeParser->nagiosNl2br($BBCodeParser->asHtml($Servicestatus->getOutput(), true));
-        $servicestatus['longOutputHtml'] = $BBCodeParser->nagiosNl2br($BBCodeParser->asHtml($Servicestatus->getLongOutput(), true));
+
+        //Parse BBCode or Markdown in long output
+        $BBCMarkDownParser = new BBCMarkDownParser();
+        $servicestatus['longOutputHtml'] = $BBCMarkDownParser->render($Servicestatus->getLongOutput(), true);
 
         $mergedService['allowEdit'] = $allowEdit;
 

@@ -1047,8 +1047,6 @@ class HostsTable extends Table {
             'Hosts.hosttemplate_id',
             'Hosts.tags',
             'Hosts.priority',
-            //'keywords'     => 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
-            //'not_keywords' => 'IF((Hosts.tags IS NULL OR Hosts.tags=""), Hosttemplates.tags, Hosts.tags)',
             'Hosts.notes',
             'Hosts.host_type',
             'Hoststatus.current_state',
@@ -1084,6 +1082,12 @@ class HostsTable extends Table {
             ]);
         }
 
+        // Keep the hasMany association because the host index controller reads
+        // hosts_to_containers_sharing to calculate sharing permissions.
+        // The hostgroup filter below must not reference SELECT aliases in HAVING:
+        // CakePHP copies every SELECT alias used in HAVING into the subquery's
+        // GROUP BY, and grouping by the aggregate alias hostgroup_ids fails with
+        // SQL error 1056 ("Can't group on 'hostgroup_ids'").
         $query->contain([
             'HostsToContainersSharing',
             'Hosttemplates' => [
@@ -1104,6 +1108,9 @@ class HostsTable extends Table {
 
         $where = $HostFilter->indexFilter();
         if (!empty($where['Hostgroups.id IN']) && is_array($where['Hostgroups.id IN'])) {
+            // Normalize to integers before the IDs are inlined into the aggregate
+            // expressions below.
+            $hostgroupIds = array_map('intval', $where['Hostgroups.id IN']);
             $query->select([
                 'hostgroup_ids' => $query->expr(
                     'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
@@ -1115,7 +1122,7 @@ class HostsTable extends Table {
                                 WHERE FIND_IN_SET (hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
                                 GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
                                 GROUP_CONCAT(HostToHostgroups.hostgroup_id)))
-                                AND hostgroups.id IN (' . implode(', ', $where['Hostgroups.id IN']) . ')')
+                                AND hostgroups.id IN (' . implode(', ', $hostgroupIds) . ')')
             ]);
             $query->join([
                 'hosts_to_hostgroups'         => [
@@ -1131,9 +1138,23 @@ class HostsTable extends Table {
                     'conditions' => 'HosttemplatesToHostgroups.hosttemplate_id = Hosts.hosttemplate_id',
                 ]
             ]);
+            // Inline the aggregate expressions instead of referencing the
+            // hostgroup_ids/count SELECT aliases. CakePHP copies aliases used in
+            // HAVING into the subquery GROUP BY, which fails for aggregates.
             $query->having([
-                'hostgroup_ids IS NOT NULL',
-                'count > 0'
+                $query->expr(
+                    'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+                    GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
+                    GROUP_CONCAT(HostToHostgroups.hostgroup_id)) IS NOT NULL'
+                ),
+                $query->expr(
+                    '(SELECT COUNT(hostgroups.id)
+                                FROM hostgroups
+                                WHERE FIND_IN_SET (hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+                                GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
+                                GROUP_CONCAT(HostToHostgroups.hostgroup_id)))
+                                AND hostgroups.id IN (' . implode(', ', $hostgroupIds) . ')) > 0'
+                )
             ]);
 
             unset($where['Hostgroups.id IN']);
@@ -1380,6 +1401,12 @@ class HostsTable extends Table {
             ]);
         }
 
+        // Keep the hasMany association because the extended hostgroup index reads
+        // hosts_to_containers_sharing to calculate sharing permissions.
+        // The hostgroup filter below must not reference SELECT aliases in HAVING:
+        // CakePHP copies every SELECT alias used in HAVING into the subquery's
+        // GROUP BY, and grouping by the aggregate alias hostgroup_ids fails with
+        // SQL error 1056 ("Can't group on 'hostgroup_ids'").
         $query->contain([
             'HostsToContainersSharing',
             'Hosttemplates' => [
@@ -1398,6 +1425,9 @@ class HostsTable extends Table {
 
         $where = $HostFilter->indexFilter();
         if (!empty($where['Hostgroups.id IN']) && is_array($where['Hostgroups.id IN'])) {
+            // Normalize to integers before the IDs are inlined into the aggregate
+            // expressions below.
+            $hostgroupIds = array_map('intval', $where['Hostgroups.id IN']);
             $query->select([
                 'hostgroup_ids' => $query->expr(
                     'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
@@ -1409,7 +1439,7 @@ class HostsTable extends Table {
                                 WHERE FIND_IN_SET (hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
                                 GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
                                 GROUP_CONCAT(HostToHostgroups.hostgroup_id)))
-                                AND hostgroups.id IN (' . implode(', ', $where['Hostgroups.id IN']) . ')')
+                                AND hostgroups.id IN (' . implode(', ', $hostgroupIds) . ')')
             ]);
             $query->join([
                 'hosts_to_hostgroups'         => [
@@ -1425,9 +1455,23 @@ class HostsTable extends Table {
                     'conditions' => 'HosttemplatesToHostgroups.hosttemplate_id = Hosts.hosttemplate_id',
                 ]
             ]);
+            // Inline the aggregate expressions instead of referencing the
+            // hostgroup_ids/count SELECT aliases. CakePHP copies aliases used in
+            // HAVING into the subquery GROUP BY, which fails for aggregates.
             $query->having([
-                'hostgroup_ids IS NOT NULL',
-                'count > 0'
+                $query->expr(
+                    'IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+                    GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
+                    GROUP_CONCAT(HostToHostgroups.hostgroup_id)) IS NOT NULL'
+                ),
+                $query->expr(
+                    '(SELECT COUNT(hostgroups.id)
+                                FROM hostgroups
+                                WHERE FIND_IN_SET (hostgroups.id,IF(GROUP_CONCAT(HostToHostgroups.hostgroup_id) IS NULL,
+                                GROUP_CONCAT(HosttemplatesToHostgroups.hostgroup_id),
+                                GROUP_CONCAT(HostToHostgroups.hostgroup_id)))
+                                AND hostgroups.id IN (' . implode(', ', $hostgroupIds) . ')) > 0'
+                )
             ]);
 
             unset($where['Hostgroups.id IN']);
@@ -5407,8 +5451,13 @@ class HostsTable extends Table {
             ]);
         }
 
+        // Do not eager-load the hasMany association HostsToContainersSharing here.
+        // CakePHP wraps hasMany contains into a subquery and copies every SELECT
+        // alias referenced by HAVING into GROUP BY. The hostgroup filter below uses
+        // the aggregate alias hostgroup_ids in HAVING, which would result in
+        // "Can't group on 'hostgroup_ids'" (SQL error 1056).
+        // Neither caller of this method uses the association data.
         $query->contain([
-            'HostsToContainersSharing',
             'Hosttemplates' => [
                 'fields' => [
                     'Hosttemplates.priority',

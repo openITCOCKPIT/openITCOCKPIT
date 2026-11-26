@@ -140,7 +140,7 @@ class ChangelogsController extends AppController {
             $all_changes[$index]['faIcon'] = $ChangelogsTable->getFaIconByAction($change['action']);
             $all_changes[$index]['includeUser'] = $includeUser;
         }
-        $this->set('all_changes', $all_changes);
+        $this->set('all_changes', array_values($all_changes));
         $this->viewBuilder()->setOption('serialize', ['all_changes']);
     }
 

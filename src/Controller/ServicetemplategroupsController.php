@@ -114,7 +114,7 @@ class ServicetemplategroupsController extends AppController {
         }
 
         $servicetemplategroup = $ServicetemplategroupsTable->getServicetemplategroupForView($id);
-        if (!$this->allowedByContainerId($servicetemplategroup->get('Containers')['parent_id'])) {
+        if (!$this->allowedByContainerId($servicetemplategroup->get('container')['parent_id'])) {
             $this->render403();
             return;
         }

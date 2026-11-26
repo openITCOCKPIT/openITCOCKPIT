@@ -108,7 +108,7 @@ class StatehistoriesController extends AppController {
             //Parse BBCode in output
             $BBCodeParser = new BBCodeParser();
             $StatehistoryHostArray['outputHtml'] = $BBCodeParser->nagiosNl2br($BBCodeParser->asHtml($StatehistoryHost->getOutput(), true));
-
+            $StatehistoryHostArray['longOutputHtml'] = $BBCodeParser->nagiosNl2br($BBCodeParser->asHtml($StatehistoryHost->getLongOutput(), true));
             $all_statehistories[] = [
                 'StatehistoryHost' => $StatehistoryHostArray
             ];
@@ -178,6 +178,7 @@ class StatehistoriesController extends AppController {
             //Parse BBCode in output
             $BBCodeParser = new BBCodeParser();
             $StatehistoryServiceArray['outputHtml'] = $BBCodeParser->nagiosNl2br($BBCodeParser->asHtml($StatehistoryService->getOutput(), true));
+            $StatehistoryServiceArray['longOutputHtml'] = $BBCodeParser->nagiosNl2br($BBCodeParser->asHtml($StatehistoryService->getLongOutput(), true));
 
             $all_statehistories[] = [
                 'StatehistoryService' => $StatehistoryServiceArray

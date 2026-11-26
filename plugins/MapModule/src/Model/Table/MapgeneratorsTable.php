@@ -305,35 +305,26 @@ class MapgeneratorsTable extends Table {
         $query->where($where)->groupBy(['Mapgenerators.id']);
 
         if (!empty($MY_RIGHTS)) {
-            $query->select([
-                'permission_status' => $query->expr(
-                    'IF(
-                        COUNT(`Containers`.`id`) > 0,
-                        IF(
-                          NOT EXISTS (
-                            SELECT mcs.mapgenerator_id
-                            FROM `mapgenerators_to_containers` mcs
-                            WHERE mcs.mapgenerator_id = `Mapgenerators`.`id`
-                              AND mcs.container_id IN (' . implode(',', $MY_RIGHTS) . ')
-                          ),
-                          "not_permitted",
-                          "permitted"
-                        ),
-                        "permitted"
-                      )'
-                ),
-            ])->join([
-                [
-                    'table'      => 'mapgenerators_to_containers',
-                    'alias'      => 'Containers',
-                    'type'       => 'LEFT',
-                    'conditions' => [
-                        'Mapgenerators.id = Containers.mapgenerator_id',
-                    ],
-                ]
-            ])->having([
-                'permission_status' => 'permitted'
-            ])->groupBy(['Mapgenerators.id']);
+            $containerIds = implode(',', array_map('intval', $MY_RIGHTS));
+
+            // Filter by container permissions without an aggregate + HAVING.
+            // CakePHP eager-loads the Maps association by wrapping this query
+            // in a derived table. MySQL rejects the aggregate expression in
+            // the derived table's HAVING clause with "Invalid use of group
+            // function" (error 1111), so the index returned HTTP 500 for
+            // non-root users as soon as one map generator existed.
+            $query->where(
+                '(NOT EXISTS (
+                    SELECT 1
+                    FROM `mapgenerators_to_containers` mcs
+                    WHERE mcs.mapgenerator_id = `Mapgenerators`.`id`
+                ) OR EXISTS (
+                    SELECT 1
+                    FROM `mapgenerators_to_containers` mcs
+                    WHERE mcs.mapgenerator_id = `Mapgenerators`.`id`
+                      AND mcs.container_id IN (' . $containerIds . ')
+                ))'
+            );
         }
         $query->orderBy($MapgeneratorFilter->getOrderForPaginator('Mapgenerators.name', 'asc'));
 

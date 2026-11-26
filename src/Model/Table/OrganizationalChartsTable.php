@@ -136,36 +136,27 @@ class OrganizationalChartsTable extends Table {
                 }
             ]);
         if (!empty($MY_RIGHTS)) {
-            $query->select([
-                'permission_status' => $query->expr(
-                    'IF(
-                        COUNT(`OrganizationalChartNodes`.`id`) > 0,
-                        IF(
-                          NOT EXISTS (
-                            SELECT ocs.organizational_chart_id
-                            FROM `organizational_chart_nodes` ocs
-                            WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`
-                              AND ocs.container_id IN (' . implode(',', $MY_RIGHTS) . ')
-                          ),
-                          "not_permitted",
-                          "permitted"
-                        ),
-                        "permitted"
-                      )'
-                )
-            ])->join([
-                [
-                    'table'      => 'organizational_chart_nodes',
-                    'alias'      => 'OrganizationalChartNodes',
-                    'type'       => 'LEFT',
-                    'conditions' => [
-                        'OrganizationalCharts.id = OrganizationalChartNodes.organizational_chart_id',
-                    ],
-                ]
-            ]);
-            $query->having([
-                'permission_status' => 'permitted'
-            ])->groupBy(['OrganizationalCharts.id']);
+            $containerIds = implode(',', array_map('intval', $MY_RIGHTS));
+
+            // Filter by container permissions without an aggregate + HAVING.
+            // CakePHP eager-loads the OrganizationalChartNodes association by
+            // wrapping this query in a derived table. MySQL rejects the
+            // aggregate expression in the derived table's HAVING clause with
+            // "Invalid use of group function" (error 1111), so the index
+            // returned HTTP 500 for non-root users as soon as one
+            // organizational chart existed.
+            $query->where(
+                '(NOT EXISTS (
+                    SELECT 1
+                    FROM `organizational_chart_nodes` ocs
+                    WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`
+                ) OR EXISTS (
+                    SELECT 1
+                    FROM `organizational_chart_nodes` ocs
+                    WHERE ocs.organizational_chart_id = `OrganizationalCharts`.`id`
+                      AND ocs.container_id IN (' . $containerIds . ')
+                ))'
+            );
         }
         if (!empty($GenericFilter->genericFilters())) {
             $query->where($GenericFilter->genericFilters());

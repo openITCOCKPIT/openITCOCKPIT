@@ -242,6 +242,18 @@ class Menu {
                         true,
                         '/eventlogs/index'
                     ))
+                    ->addLink(new MenuLink(
+                        __('Report Mail Log'),
+                        'ReportMailLogIndex',
+                        'ReportMailLog',
+                        'index',
+                        '',
+                        ['fas', 'envelope-open-text'],
+                        ['email', 'mail', 'report'],
+                        5,
+                        true,
+                        '/report_mail_log/index'
+                    ))
             );
 
         $Monitoring = new MenuHeadline(self::MENU_MONITORING, __('Monitoring'), 2);

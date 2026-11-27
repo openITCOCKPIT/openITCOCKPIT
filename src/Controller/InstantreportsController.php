@@ -37,8 +37,10 @@ namespace App\Controller;
 use App\Form\InstantreportForm;
 use App\itnovum\openITCOCKPIT\Core\Reports\InstantreportCreator;
 use App\Lib\Exceptions\MissingDbBackendException;
+use App\Model\Entity\ReportMailLog;
 use App\Model\Table\ContainersTable;
 use App\Model\Table\InstantreportsTable;
+use App\Model\Table\ReportMailLogTable;
 use App\Model\Table\TimeperiodsTable;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
@@ -52,6 +54,7 @@ use itnovum\openITCOCKPIT\Core\Views\StatehistoryService;
 use itnovum\openITCOCKPIT\Core\Views\UserTime;
 use itnovum\openITCOCKPIT\Database\PaginateOMat;
 use itnovum\openITCOCKPIT\Filter\InstantreportFilter;
+use itnovum\openITCOCKPIT\Filter\ReportMailLogFilter;
 use Statusengine2Module\Model\Entity\DowntimeHost;
 
 
@@ -293,6 +296,67 @@ class InstantreportsController extends AppController {
         $this->set('success', false);
         $this->viewBuilder()->setOption('serialize', ['success']);
         return;
+    }
+
+    /**
+     * Returns the mail log (sent and failed emails) of the given instant report.
+     *
+     * @param int|null $id
+     * @return void
+     */
+    public function mailLog($id = null) {
+        if (!$this->isApiRequest()) {
+            throw new MethodNotAllowedException();
+        }
+
+        /** @var InstantreportsTable $InstantreportsTable */
+        $InstantreportsTable = TableRegistry::getTableLocator()->get('Instantreports');
+
+        /** @var ReportMailLogTable $ReportMailLogTable */
+        $ReportMailLogTable = TableRegistry::getTableLocator()->get('ReportMailLog');
+
+        if (!$InstantreportsTable->existsById($id)) {
+            throw new NotFoundException(__('Instant report not found'));
+        }
+
+        $instantreport = $InstantreportsTable->getInstantreportById($id);
+        if (!$this->allowedByContainerId($instantreport['Instantreport']['container_id'], false)) {
+            $this->render403();
+            return;
+        }
+
+        $MY_RIGHTS = [];
+        if ($this->hasRootPrivileges === false) {
+            $MY_RIGHTS = $this->MY_RIGHTS;
+        }
+
+        $User = new User($this->getUser());
+        $UserTime = $User->getUserTime();
+
+        $ReportMailLogFilter = new ReportMailLogFilter($this->request, $UserTime);
+        $PaginateOMat = new PaginateOMat($this, $this->isScrollRequest(), $ReportMailLogFilter->getPage());
+
+        $mailLog = $ReportMailLogTable->getMailLogByReport(
+            ReportMailLog::REPORT_TYPE_INSTANTREPORT,
+            (int)$id,
+            $ReportMailLogFilter,
+            $PaginateOMat,
+            $MY_RIGHTS
+        );
+        $mailLog = $ReportMailLogTable->formatMailLogForApi($mailLog, $UserTime, $MY_RIGHTS);
+
+        $this->set('instantreport', [
+            'id'           => $instantreport['Instantreport']['id'],
+            'name'         => $instantreport['Instantreport']['name'],
+            'container_id' => $instantreport['Instantreport']['container_id'],
+        ]);
+        $this->set('mailLog', $mailLog);
+
+        $toJson = ['instantreport', 'mailLog', 'paging'];
+        if ($this->isScrollRequest()) {
+            $toJson = ['instantreport', 'mailLog', 'scroll'];
+        }
+        $this->viewBuilder()->setOption('serialize', $toJson);
     }
 
     /**

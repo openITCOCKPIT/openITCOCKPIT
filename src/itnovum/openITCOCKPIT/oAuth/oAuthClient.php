@@ -233,7 +233,6 @@ class oAuthClient {
                     'scopes'                     => [
                         'openid',
                         'profile',
-                        'email' // ITC-3716
                     ]
                 ]);
 
@@ -252,6 +251,25 @@ class oAuthClient {
                         'profile',
                         'offline_access',
                         'user.read'
+                    ]
+                ]);
+
+            case 'OpenID-Email':
+                // OpenID Connect, but with email as scope
+                return new GenericProvider([
+                    'clientId'                => $this->config['FRONTEND.SSO.CLIENT_ID'],       // The client ID assigned to you by the provider
+                    'clientSecret'            => $this->config['FRONTEND.SSO.CLIENT_SECRET'],   // The client password assigned to you by the provider
+                    'redirectUri'             => Router::url(['controller' => 'users', 'action' => 'login'], true), //Login screen of openITCOCKPIT itself
+                    'urlAuthorize'            => $this->config['FRONTEND.SSO.AUTH_ENDPOINT'],   //Login screen
+                    'urlAccessToken'          => $this->config['FRONTEND.SSO.TOKEN_ENDPOINT'],  //Where to get the access token from
+                    'urlResourceOwnerDetails' => $this->config['FRONTEND.SSO.USER_ENDPOINT'],   // Where to get user information from
+
+                    'accessTokenResourceOwnerId' => 'id',
+                    'scopeSeparator'             => ' ',
+                    'scopes'                     => [
+                        'openid',
+                        'profile',
+                        'email' // ITC-3716
                     ]
                 ]);
 

@@ -232,7 +232,8 @@ class oAuthClient {
                     'scopeSeparator'             => ' ',
                     'scopes'                     => [
                         'openid',
-                        'profile'
+                        'profile',
+                        'email' // ITC-3716
                     ]
                 ]);
 
